@@ -9,9 +9,10 @@ import java.util.Set;
 
 import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
 import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.data.DepTree.Dir;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
+import edu.jhu.parse.dep.ParentsArray;
+import edu.jhu.parse.dep.ParentsArray.Dir;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.util.Prm;
 
@@ -210,7 +211,7 @@ public class SentFeatureExtractor {
         FeaturizedToken predObject = getFeatureObject(pidx);
         FeaturizedToken argObject = getFeatureObject(aidx);
         FeaturizedTokenPair predArgPathObject = getFeatureObject(pidx, aidx);
-        List<Pair<Integer, Dir>> dependencyPath = predArgPathObject.getDependencyPath();
+        List<Pair<Integer, ParentsArray.Dir>> dependencyPath = predArgPathObject.getDependencyPath();
         String feat;
         ArrayList<String> depRelPathWord = new ArrayList<String>();
         ArrayList<FeaturizedToken> dependencyPathObjectList = getFeatureObjectList(dependencyPath);
@@ -398,11 +399,11 @@ public class SentFeatureExtractor {
                 
         ArrayList<Integer> predChildren = pred.getChildren();
         ArrayList<Integer> argChildren = arg.getChildren();
-        List<Pair<Integer, Dir>> dependencyPath = predArgPair.getDependencyPath();
+        List<Pair<Integer, ParentsArray.Dir>> dependencyPath = predArgPair.getDependencyPath();
         
         // Initialize Path structures.
         //List<Pair<Integer, Dir>> dpPathPred = predArgPair.getDpPathPred();
-        List<Pair<Integer, Dir>> dpPathArg = predArgPair.getDpPathArg();
+        List<Pair<Integer, ParentsArray.Dir>> dpPathArg = predArgPair.getDpPathArg();
         ArrayList<Integer> linePath = predArgPair.getLinePath();
 
         ArrayList<FeaturizedToken> predChildrenObjectList = getFeatureObjectList(predChildren);
@@ -476,7 +477,7 @@ public class SentFeatureExtractor {
     }
     
     private void addZhaoSupervisedCombinedFeats(FeaturizedToken pred, FeaturizedToken arg, ArrayList<String> feats, ArrayList<FeaturizedToken> dependencyPathObjectList,
-            ArrayList<FeaturizedToken> linePathCoNLL, List<Pair<Integer, Dir>> dpPathArg) {
+            ArrayList<FeaturizedToken> linePathCoNLL, List<Pair<Integer, ParentsArray.Dir>> dpPathArg) {
         // ------- Combined features (supervised) -------
         String feat;
         // a.lemma + p.lemma 
@@ -518,7 +519,7 @@ public class SentFeatureExtractor {
         feat = buildString(linePathDeprel);
         feats.add(feat);
         ArrayList<String> dpPathLemma = new ArrayList<String>();
-        for (Pair<Integer, Dir> dpP : dpPathArg) {
+        for (Pair<Integer, ParentsArray.Dir> dpP : dpPathArg) {
             dpPathLemma.add(getFeatureObject(dpP.get1()).getLemma());            
         }
         // a:p|dpPathArgu.lemma.seq 
@@ -784,7 +785,7 @@ public class SentFeatureExtractor {
 
     private void addBjorkelundPathFeats(FeaturizedTokenPair predArgPair, ArrayList<String> feats) {
         String feat;
-        List<Pair<Integer, Dir>> dependencyPath = predArgPair.getDependencyPath();
+        List<Pair<Integer, ParentsArray.Dir>> dependencyPath = predArgPair.getDependencyPath();
         // DeprelPath: the path from predicate to argument concatenating dependency labels with the
         // direction of the edge, e.g. OBJ↑OPRD↓SUB↓.
         ArrayList<String> depRelPath = new ArrayList<String>();
@@ -920,9 +921,9 @@ public class SentFeatureExtractor {
         return fSent.getFeatTokPair(pidx, cidx);
     }
     
-    protected ArrayList<FeaturizedToken> getFeatureObjectList(List<Pair<Integer, Dir>> path) {
+    protected ArrayList<FeaturizedToken> getFeatureObjectList(List<Pair<Integer, ParentsArray.Dir>> path) {
         ArrayList<FeaturizedToken> pathObjectList = new ArrayList<FeaturizedToken>();
-        for (Pair<Integer,Dir> p : path) {
+        for (Pair<Integer,ParentsArray.Dir> p : path) {
             FeaturizedToken newFeatureObject = getFeatureObject(p.get1());
             // Adding directionality here, given the type of path.
             // These serve as additional features following Bjorkelund.

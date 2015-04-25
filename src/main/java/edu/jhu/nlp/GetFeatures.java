@@ -23,6 +23,7 @@ import edu.jhu.nlp.data.conll.CoNLL09FileReader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.util.Alphabet;
 import edu.jhu.util.cli.ArgParser;
 import edu.jhu.util.cli.Opt;
@@ -445,18 +446,18 @@ public class GetFeatures {
         HashSet<String> pair = new HashSet<String>(Arrays.asList(w1, w2));
         MutableInt count = bigrams.get(pair);
         if (count == null) {
-            bigrams.put(pair, new MutableInt());
+            bigrams.put(pair, new MutableInt(1));
         } else {
-            count.increment();
+            count.v++;
         }
     }
     
     private Map<String, MutableInt> addWord(Map<String,MutableInt> inputHash, String w) {
         MutableInt count = inputHash.get(w);
         if (count == null) {
-            inputHash.put(w,  new MutableInt());
+            inputHash.put(w,  new MutableInt(1));
         } else {
-            count.increment();
+            count.v++;
         }
         return inputHash;
     }
@@ -467,7 +468,7 @@ public class GetFeatures {
         Iterator<Entry<Set<String>, MutableInt>> it = inputHash.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry)it.next();
-            int count = ((MutableInt) pairs.getValue()).get();
+            int count = ((MutableInt) pairs.getValue()).v;
             if (count > cutoff) {
                 knownHash.add((Set<String>) pairs.getKey());
             } 
@@ -480,7 +481,7 @@ public class GetFeatures {
         Iterator<Entry<String, MutableInt>> it = inputHash.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = (Map.Entry)it.next();
-            int count = ((MutableInt) pairs.getValue()).get();
+            int count = ((MutableInt) pairs.getValue()).v;
             if (count > cutoff) {
                 knownHash.add((String) pairs.getKey());
             } 

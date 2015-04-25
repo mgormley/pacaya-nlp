@@ -4,13 +4,15 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
+import edu.jhu.parse.dep.ParentsArray;
+
 public class ProjDepTreeNode implements DepTreeNode {
 
     private String label;
     private ProjDepTreeNode parent;
     private LinkedList<ProjDepTreeNode> leftChildren = new LinkedList<ProjDepTreeNode>();
     private ArrayList<ProjDepTreeNode> rightChildren = new ArrayList<ProjDepTreeNode>();
-    private int position = DepTree.EMPTY_POSITION;
+    private int position = ParentsArray.EMPTY_POSITION;
 
     public ProjDepTreeNode(String tw) {
         this.label = tw;
@@ -100,7 +102,7 @@ public class ProjDepTreeNode implements DepTreeNode {
     public String toString() {
         int parentPos;
         if (parent == null) {
-            parentPos = DepTree.EMPTY_POSITION;
+            parentPos = ParentsArray.EMPTY_POSITION;
         } else {
             parentPos = parent.getPosition();
         }

@@ -16,12 +16,27 @@ public class CoNLLXDepTree extends DepTree {
     
     public CoNLLXDepTree(CoNLLXSentence sent, Alphabet<String> alphabet) {
         // TODO: filter out punctuation.
-        super(new Sentence(sent, alphabet), sent.getParentsFromHead(), false);
+        super(new CXWrappedSentence(sent, alphabet), sent.getParentsFromHead(), false);
         this.sent = sent;
     }
 
     public CoNLLXSentence getCoNLLXSentence() {
         return sent;
     }
-    
+
+    // This class adds an alternative constructor to Sentence.
+    private static class CXWrappedSentence extends Sentence {
+
+        private static final long serialVersionUID = 1L;
+
+        public CXWrappedSentence(CoNLLXSentence sent, Alphabet<String> alphabet) {
+            super(alphabet);
+            for (CoNLLXToken token : sent) {
+                // TODO: Here we just add the tags.
+                add(token.getPosTag());
+            }
+        }
+        
+    }
+
 }

@@ -3,9 +3,11 @@ package edu.jhu.nlp.data;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhu.parse.dep.ParentsArray;
+
 public class NonprojDepTreeNode implements DepTreeNode {
 
-    private int position = DepTree.EMPTY_POSITION;
+    private int position = ParentsArray.EMPTY_POSITION;
     private String label;
     private NonprojDepTreeNode parent;
     private List<NonprojDepTreeNode> children = new ArrayList<NonprojDepTreeNode>();
@@ -67,7 +69,7 @@ public class NonprojDepTreeNode implements DepTreeNode {
     public String toString() {
         int parentPos;
         if (parent == null) {
-            parentPos = DepTree.EMPTY_POSITION;
+            parentPos = ParentsArray.EMPTY_POSITION;
         } else {
             parentPos = parent.position;
         }

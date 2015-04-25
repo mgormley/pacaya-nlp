@@ -9,6 +9,7 @@ import edu.jhu.nlp.data.DepTreebank;
 import edu.jhu.nlp.data.Sentence;
 import edu.jhu.nlp.data.SentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.parse.dep.ParentsArray;
 import edu.jhu.util.Alphabet;
 
 public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
@@ -79,7 +80,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
                 labels.add(t);
             }
             Sentence sentence = new Sentence(alphabet, labels);
-            boolean isProjective = DepTree.isProjective(sent.getParents());
+            boolean isProjective = ParentsArray.isProjective(sent.getParents());
             trees.add(new DepTree(sentence, sent.getParents(), isProjective));
         }
         return trees; 

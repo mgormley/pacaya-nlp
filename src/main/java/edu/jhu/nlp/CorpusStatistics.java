@@ -21,6 +21,7 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationMunger;
+import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.util.Alphabet;
@@ -200,9 +201,9 @@ public class CorpusStatistics implements Serializable {
     private static void addWord(Map<String, MutableInt> inputHash, String w) {
         MutableInt count = inputHash.get(w);
         if (count == null) {
-            inputHash.put(w, new MutableInt());
+            inputHash.put(w, new MutableInt(1));
         } else {
-            count.increment();
+            count.v++;
         }
     }
 
@@ -212,7 +213,7 @@ public class CorpusStatistics implements Serializable {
         Iterator<Entry<String, MutableInt>> it = inputHash.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry pairs = it.next();
-            int count = ((MutableInt) pairs.getValue()).get();
+            int count = ((MutableInt) pairs.getValue()).v;
             if (count > cutoff) {
                 knownHash.add((String) pairs.getKey());
             }
@@ -223,7 +224,7 @@ public class CorpusStatistics implements Serializable {
     private static Set<String> getTopNUnigrams(Map<String, MutableInt> map, int topN, int cutoff) {
         List<ComparablePair<Integer, String>> pairs = new ArrayList<ComparablePair<Integer, String>>(map.size());
         for (Entry<String, MutableInt> entry : map.entrySet()) {
-            int count = entry.getValue().value;
+            int count = entry.getValue().v;
             if (count > cutoff) {
                 pairs.add(new ComparablePair<Integer, String>(count, entry.getKey()));
             }

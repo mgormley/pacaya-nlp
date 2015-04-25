@@ -16,9 +16,9 @@ import edu.jhu.gm.model.Var.VarType;
 import edu.jhu.gm.model.VarConfig;
 import edu.jhu.gm.model.VarTensor;
 import edu.jhu.gm.model.globalfac.LinkVar;
-import edu.jhu.nlp.data.DepTree;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.parse.dep.EdgeScores;
+import edu.jhu.parse.dep.ParentsArray;
 import edu.jhu.parse.dep.ProjectiveDependencyParser;
 import edu.jhu.prim.tuple.Pair;
 
@@ -61,7 +61,7 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
         // score of a tree as the sum of the edge scores.
         int n = scores.root.length;
         int[] parents = new int[n];
-        Arrays.fill(parents, DepTree.EMPTY_POSITION);
+        Arrays.fill(parents, ParentsArray.EMPTY_POSITION);
         if (InsideOutsideDepParse.singleRoot) {
             ProjectiveDependencyParser.parseSingleRoot(scores.root, scores.child, parents);
         } else {

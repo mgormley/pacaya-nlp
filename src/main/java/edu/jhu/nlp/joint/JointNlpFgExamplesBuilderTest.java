@@ -29,7 +29,6 @@ import edu.jhu.hlt.optimize.MalletLBFGS;
 import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.DepTree;
 import edu.jhu.nlp.data.conll.CoNLL09FileReader;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
@@ -40,6 +39,7 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlDecoder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
+import edu.jhu.parse.dep.ParentsArray;
 
 /**
  * Unit tests for {@link JointNlpFgExamplesBuilderTest}.
@@ -226,7 +226,7 @@ public class JointNlpFgExamplesBuilderTest {
         
         int[] parents = ProjDepTreeFactor.getParents(sents.get(0).size(), vc);
         System.out.println(Arrays.toString(parents));
-        assertTrue(DepTree.isProjective(parents));
+        assertTrue(ParentsArray.isProjective(parents));
         assertArrayEquals(new int[]{2, 2, -1, 4, 2, 4, 7, 5, 7, 8, 7, 14, 11, 11, 10, 14, 17, 15, 2}, parents);
     }
 

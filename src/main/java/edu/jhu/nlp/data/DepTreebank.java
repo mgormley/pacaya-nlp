@@ -27,7 +27,11 @@ public class DepTreebank implements Iterable<DepTree> {
     
     public SentenceCollection getSentences() {
         if (sentences == null) {
-            sentences = new SentenceCollection(this);
+            sentences = new SentenceCollection(this.getAlphabet());
+            for (DepTree tree : this) {
+                Sentence sentence = tree.getSentence(this.getAlphabet());
+                sentences.add(sentence);
+            }
         }
         return sentences;
     }
