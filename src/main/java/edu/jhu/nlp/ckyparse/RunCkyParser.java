@@ -1,4 +1,4 @@
-package edu.jhu.parse.cky;
+package edu.jhu.nlp.ckyparse;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,14 +7,19 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
 
-import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.berkeley.nlp.PCFGLA.smoothing.BerkeleySignatureBuilder;
 import edu.jhu.nlp.data.Sentence;
+import edu.jhu.parse.cky.CkyPcfgParser;
 import edu.jhu.parse.cky.CkyPcfgParser.CkyPcfgParserPrm;
 import edu.jhu.parse.cky.CkyPcfgParser.LoopOrder;
+import edu.jhu.parse.cky.CnfGrammar;
+import edu.jhu.parse.cky.CnfGrammarReader;
+import edu.jhu.parse.cky.Evalb;
+import edu.jhu.parse.cky.GrammarConstants;
 import edu.jhu.parse.cky.chart.Chart;
 import edu.jhu.parse.cky.chart.Chart.ChartCellType;
 import edu.jhu.parse.cky.chart.Chart.ParseType;
@@ -174,7 +179,7 @@ public class RunCkyParser {
                     String word = node.getSymbol();
                     if (grammar.isUnknownWord(word)) {
                         // Replace unknown words with their signature.
-                        word = GrammarConstants.getSignature(word, node.getStart(), emptySet);
+                        word = getSignature(word, node.getStart(), emptySet);
                     }
                     node.setSymbol(word);
                 }
@@ -185,6 +190,15 @@ public class RunCkyParser {
             tree.postOrderTraversal(ftRemover);
             naryTrees.set(i, tree);
         }
+    }
+    
+    // TODO: This should live in GrammarConstants, but was moved here to take it out of pacaya.
+    //
+    // Hard-coded to Berkeley OOV signatures.
+    public static String getSignature(String word, int loc, Alphabet<String> lexAlphabet) {
+        BerkeleySignatureBuilder bsb = new BerkeleySignatureBuilder(lexAlphabet);
+        String signature = bsb.getSignature(word, loc, GrammarConstants.unknownLevel);
+        return signature;
     }
     
     private void removeFunctionTagsAndTraces(NaryTreebank naryTrees) {
