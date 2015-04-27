@@ -16,8 +16,8 @@ import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFea
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatures.FeatureCollection;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Timer;
 
 public class BitshiftDepParseFeaturesSpeedTest {
     

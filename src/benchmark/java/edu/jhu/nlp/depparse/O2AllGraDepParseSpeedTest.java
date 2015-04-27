@@ -19,9 +19,9 @@ import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFea
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.features.TemplateSets;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Timer;
 import edu.jhu.util.semiring.Algebras;
 
 /**

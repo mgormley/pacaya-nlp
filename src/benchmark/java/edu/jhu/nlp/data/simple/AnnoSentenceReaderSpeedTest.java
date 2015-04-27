@@ -5,7 +5,7 @@ import java.io.IOException;
 
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
-import edu.jhu.util.Timer;
+import edu.jhu.prim.util.Timer;
 
 /**
  * Speed test for AnnoSentenceReader.

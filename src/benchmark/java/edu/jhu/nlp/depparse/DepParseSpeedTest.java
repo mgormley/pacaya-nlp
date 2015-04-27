@@ -15,9 +15,9 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Timer;
 
 public class DepParseSpeedTest {
     

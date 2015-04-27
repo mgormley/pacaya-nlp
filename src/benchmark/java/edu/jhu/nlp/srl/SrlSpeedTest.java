@@ -30,9 +30,9 @@ import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.util.Threads;
-import edu.jhu.util.Timer;
 
 public class SrlSpeedTest {
     

@@ -10,7 +10,7 @@ import edu.jhu.gm.model.Var;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
-import edu.jhu.util.Timer;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.util.semiring.Algebras;
 
 public class DepParseInferenceSpeedTest {

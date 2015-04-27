@@ -15,8 +15,8 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.relations.FeatureUtils;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Timer;
 
 public class TemplateFeatureExtractorSpeedTest {
     

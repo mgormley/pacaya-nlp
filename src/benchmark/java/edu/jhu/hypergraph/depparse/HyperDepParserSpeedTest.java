@@ -5,8 +5,8 @@ import org.junit.Test;
 import edu.jhu.hypergraph.Hyperalgo;
 import edu.jhu.hypergraph.Hyperalgo.Scores;
 import edu.jhu.prim.arrays.Multinomials;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.Timer;
 import edu.jhu.util.semiring.LogViterbiSemiring;
 import edu.jhu.util.semiring.Semiring;
 

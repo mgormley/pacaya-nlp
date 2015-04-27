@@ -27,10 +27,10 @@ import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.tuple.Triple;
 import edu.jhu.prim.tuple.Tuple;
 import edu.jhu.prim.util.SafeCast;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.util.Alphabet;
 import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Timer;
 import edu.jhu.util.hash.MurmurHash3;
 
 /**
