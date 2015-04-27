@@ -37,8 +37,8 @@ import edu.jhu.nlp.depparse.DepParseInferenceSpeedTest;
 import edu.jhu.nlp.depparse.O2AllGraFgInferencer;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.parse.dep.EdgeScores;
-import edu.jhu.prim.util.Prng;
 import edu.jhu.prim.util.Timer;
+import edu.jhu.prim.util.random.Prng;
 import edu.jhu.util.FeatureNames;
 import edu.jhu.util.semiring.Algebras;
 
