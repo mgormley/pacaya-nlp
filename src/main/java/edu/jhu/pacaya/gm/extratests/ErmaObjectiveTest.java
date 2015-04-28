@@ -1,4 +1,4 @@
-package edu.jhu.gm.extratests;
+package edu.jhu.pacaya.gm.extratests;
 
 import java.io.File;
 import java.io.IOException;

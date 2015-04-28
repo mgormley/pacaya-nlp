@@ -1,4 +1,4 @@
-package edu.jhu.gm.extratests;
+package edu.jhu.pacaya.gm.extratests;
 
 import static edu.jhu.nlp.data.simple.AnnoSentenceCollection.getSingleton;
 import static org.junit.Assert.assertEquals;
