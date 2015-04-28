@@ -1,7 +1,11 @@
 package edu.jhu.nlp.tag;
 
-import static org.junit.Assert.*;
-import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.*;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.CONJ;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.NOUN;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.OTHER;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.PUNC;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.VERB;
+import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 

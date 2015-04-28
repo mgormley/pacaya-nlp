@@ -37,7 +37,6 @@ import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
-import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.semiring.Algebras;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.random.Prng;

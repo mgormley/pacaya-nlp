@@ -19,7 +19,6 @@ import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.VarConfig;
-import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.semiring.Algebras;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;

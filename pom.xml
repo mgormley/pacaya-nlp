@@ -272,6 +272,13 @@
       <groupId>edu.jhu.pacaya</groupId>
       <artifactId>pacaya</artifactId>
       <version>${pacaya.version}</version>
+      <type>test-jar</type>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>edu.jhu.pacaya</groupId>
+      <artifactId>pacaya</artifactId>
+      <version>${pacaya.version}</version>
     </dependency>
     <dependency>
       <groupId>edu.jhu.prim</groupId>

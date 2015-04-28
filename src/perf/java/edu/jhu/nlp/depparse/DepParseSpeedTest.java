@@ -15,7 +15,6 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
-import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 

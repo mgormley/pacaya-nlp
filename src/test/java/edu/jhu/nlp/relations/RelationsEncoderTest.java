@@ -1,19 +1,6 @@
 package edu.jhu.nlp.relations;
 
-import static org.junit.Assert.*;
-
-import java.util.List;
-
 import org.junit.Test;
-
-import edu.jhu.nlp.data.NerMention;
-import edu.jhu.nlp.data.NerMentions;
-import edu.jhu.nlp.data.RelationMention;
-import edu.jhu.nlp.data.RelationMentions;
-import edu.jhu.nlp.data.Span;
-import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.prim.tuple.Pair;
 
 public class RelationsEncoderTest {
 

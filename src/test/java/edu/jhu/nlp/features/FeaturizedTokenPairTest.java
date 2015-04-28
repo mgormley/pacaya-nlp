@@ -12,7 +12,6 @@ import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceTest;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
 import edu.jhu.prim.tuple.Pair;
 
 public class FeaturizedTokenPairTest {

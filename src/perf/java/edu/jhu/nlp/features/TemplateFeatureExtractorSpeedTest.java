@@ -12,9 +12,7 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
-import edu.jhu.nlp.relations.FeatureUtils;
 import edu.jhu.nlp.words.PrefixAnnotator;
-import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.prim.util.Timer;
 
