@@ -10,21 +10,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.gm.data.FgExampleList;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.inf.BeliefPropagation.BeliefPropagationPrm;
-import edu.jhu.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.gm.model.FgModel;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.globalfac.ProjDepTreeFactor;
-import edu.jhu.gm.train.CrfTrainer;
-import edu.jhu.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.hlt.optimize.MalletLBFGS;
 import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
 import edu.jhu.nlp.CorpusStatistics;
@@ -39,7 +24,22 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlDecoder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
-import edu.jhu.parse.dep.ParentsArray;
+import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
+import edu.jhu.pacaya.gm.train.CrfTrainer;
+import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
 
 /**
  * Unit tests for {@link JointNlpFgExamplesBuilderTest}.

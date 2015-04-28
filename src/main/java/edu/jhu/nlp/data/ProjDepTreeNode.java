@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import edu.jhu.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
 
 public class ProjDepTreeNode implements DepTreeNode {
 

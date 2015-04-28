@@ -8,14 +8,14 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.gm.model.Factor;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarSet;
 import edu.jhu.nlp.joint.JointNlpFactorGraph;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
 import edu.jhu.nlp.joint.JointNlpFactorGraphTest;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.pacaya.gm.model.Factor;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.Var.VarType;
 
 public class SrlFactorGraphBuilderTest {
 

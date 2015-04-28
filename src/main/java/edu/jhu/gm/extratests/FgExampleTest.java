@@ -8,13 +8,6 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.gm.data.FgExampleList;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.model.Factor;
-import edu.jhu.gm.model.Var.VarType;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
@@ -23,7 +16,14 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.model.Factor;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class FgExampleTest {
 

@@ -2,13 +2,15 @@ package edu.jhu.hypergraph.depparse;
 
 import org.junit.Test;
 
-import edu.jhu.hypergraph.Hyperalgo;
-import edu.jhu.hypergraph.Hyperalgo.Scores;
+import edu.jhu.pacaya.hypergraph.Hyperalgo;
+import edu.jhu.pacaya.hypergraph.Hyperalgo.Scores;
+import edu.jhu.pacaya.hypergraph.depparse.HyperDepParser;
+import edu.jhu.pacaya.hypergraph.depparse.O1DpHypergraph;
+import edu.jhu.pacaya.util.semiring.LogViterbiSemiring;
+import edu.jhu.pacaya.util.semiring.Semiring;
 import edu.jhu.prim.arrays.Multinomials;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.semiring.LogViterbiSemiring;
-import edu.jhu.util.semiring.Semiring;
 
 public class HyperDepParserSpeedTest {
 

@@ -21,11 +21,11 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationMunger;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.collections.Lists;
 
 /**
  * Extract corpus statistics about a CoNLL-2009 dataset.

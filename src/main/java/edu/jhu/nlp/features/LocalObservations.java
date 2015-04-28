@@ -1,7 +1,7 @@
 package edu.jhu.nlp.features;
 
 import edu.jhu.nlp.data.NerMention;
-import edu.jhu.parse.cky.Rule;
+import edu.jhu.pacaya.parse.cky.Rule;
 
 /**
  * The local observations. The union of this class with the sentence / corpus stats member variables

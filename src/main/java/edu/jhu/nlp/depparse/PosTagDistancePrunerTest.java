@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class PosTagDistancePrunerTest {
 

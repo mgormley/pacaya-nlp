@@ -3,10 +3,10 @@ package edu.jhu.nlp.relations;
 import java.util.Collection;
 import java.util.List;
 
-import edu.jhu.gm.feat.FeatureVector;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.hash.MurmurHash3;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.hash.MurmurHash3;
 
 public class FeatureUtils {
 

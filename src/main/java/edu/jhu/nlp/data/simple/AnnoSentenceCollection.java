@@ -6,11 +6,11 @@ import java.util.List;
 
 import edu.jhu.nlp.data.DepTree;
 import edu.jhu.nlp.data.DepTreebank;
-import edu.jhu.nlp.data.Sentence;
-import edu.jhu.nlp.data.SentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.parse.dep.ParentsArray;
-import edu.jhu.util.Alphabet;
+import edu.jhu.pacaya.nlp.data.Sentence;
+import edu.jhu.pacaya.nlp.data.SentenceCollection;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.util.Alphabet;
 
 public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
 

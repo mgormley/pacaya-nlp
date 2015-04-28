@@ -5,23 +5,6 @@ import java.io.IOException;
 
 import org.junit.Test;
 
-import edu.jhu.autodiff.ModuleTestUtils;
-import edu.jhu.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.autodiff.erma.ErmaObjective;
-import edu.jhu.autodiff.erma.ErmaObjective.DlFactory;
-import edu.jhu.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
-import edu.jhu.gm.data.FgExampleList;
-import edu.jhu.gm.data.FgExampleListBuilder.CacheType;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.gm.model.FgModel;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.train.AvgBatchObjective;
-import edu.jhu.gm.train.CrfObjective;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -30,9 +13,26 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
+import edu.jhu.pacaya.autodiff.ModuleTestUtils;
+import edu.jhu.pacaya.autodiff.erma.ErmaObjective;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.autodiff.erma.ErmaObjective.DlFactory;
+import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
+import edu.jhu.pacaya.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.train.AvgBatchObjective;
+import edu.jhu.pacaya.gm.train.CrfObjective;
+import edu.jhu.pacaya.util.semiring.Algebra;
+import edu.jhu.pacaya.util.semiring.Algebras;
 import edu.jhu.prim.arrays.DoubleArrays;
-import edu.jhu.util.semiring.Algebra;
-import edu.jhu.util.semiring.Algebras;
 
 public class ErmaObjectiveTest {
         

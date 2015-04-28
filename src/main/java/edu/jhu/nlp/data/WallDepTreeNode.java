@@ -1,6 +1,6 @@
 package edu.jhu.nlp.data;
 
-import edu.jhu.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
 
 
 public class WallDepTreeNode extends NonprojDepTreeNode {

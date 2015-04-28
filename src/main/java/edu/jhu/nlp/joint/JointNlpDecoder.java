@@ -3,19 +3,19 @@ package edu.jhu.nlp.joint;
 
 import java.util.List;
 
-import edu.jhu.gm.app.Decoder;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.decode.MbrDecoder;
-import edu.jhu.gm.decode.MbrDecoder.MbrDecoderPrm;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.depparse.DepEdgeMaskDecoder.DepEdgeMaskDecoderPrm;
 import edu.jhu.nlp.depparse.DepParseDecoder;
 import edu.jhu.nlp.relations.RelationsDecoder;
 import edu.jhu.nlp.srl.SrlDecoder;
-import edu.jhu.util.Prm;
+import edu.jhu.pacaya.gm.app.Decoder;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.decode.MbrDecoder;
+import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.util.Prm;
 
 /**
  * Decodes from the marginals for a joint NLP factor graph to a new {@link AnnoSentence} with the

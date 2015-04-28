@@ -6,16 +6,16 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.model.ClampFactor;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarSet;
-import edu.jhu.gm.model.globalfac.LinkVar;
-import edu.jhu.gm.model.globalfac.ProjDepTreeFactor;
 import edu.jhu.nlp.FeTypedFactor;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.model.ClampFactor;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
 
 /**
  * A factor graph builder for syntactic dependency parsing.

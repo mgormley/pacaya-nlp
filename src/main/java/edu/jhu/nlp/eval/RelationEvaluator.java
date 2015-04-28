@@ -9,7 +9,7 @@ import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationsEncoder;
-import edu.jhu.util.report.Reporter;
+import edu.jhu.pacaya.util.report.Reporter;
 
 /**
  * Computes the precision, recall, and micro-averaged F1 of relations mentions.

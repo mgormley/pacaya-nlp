@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 /**
  * One token from a CoNNL-2009 formatted file.

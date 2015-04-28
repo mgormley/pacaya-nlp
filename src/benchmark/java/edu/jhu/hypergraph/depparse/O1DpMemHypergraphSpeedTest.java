@@ -4,20 +4,21 @@ import java.util.ArrayList;
 
 import org.junit.Test;
 
-import edu.jhu.hypergraph.Hyperalgo;
-import edu.jhu.hypergraph.Hyperalgo.Scores;
-import edu.jhu.hypergraph.Hyperedge;
-import edu.jhu.hypergraph.Hypergraph;
-import edu.jhu.hypergraph.Hypergraph.HyperedgeFn;
-import edu.jhu.hypergraph.ListHypergraph;
-import edu.jhu.hypergraph.WeightedHyperedge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
+import edu.jhu.pacaya.hypergraph.Hyperalgo;
+import edu.jhu.pacaya.hypergraph.Hyperedge;
+import edu.jhu.pacaya.hypergraph.Hypergraph;
+import edu.jhu.pacaya.hypergraph.ListHypergraph;
+import edu.jhu.pacaya.hypergraph.WeightedHyperedge;
+import edu.jhu.pacaya.hypergraph.Hyperalgo.Scores;
+import edu.jhu.pacaya.hypergraph.Hypergraph.HyperedgeFn;
+import edu.jhu.pacaya.hypergraph.depparse.O1DpHypergraph;
+import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogViterbiSemiring;
+import edu.jhu.pacaya.util.semiring.Semiring;
 import edu.jhu.prim.util.Timer;
-import edu.jhu.util.semiring.Algebras;
-import edu.jhu.util.semiring.LogViterbiSemiring;
-import edu.jhu.util.semiring.Semiring;
 
 public class O1DpMemHypergraphSpeedTest {
 

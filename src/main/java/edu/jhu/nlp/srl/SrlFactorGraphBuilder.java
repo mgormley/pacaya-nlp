@@ -7,18 +7,18 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarSet;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.iter.IntIter;
 import edu.jhu.prim.set.IntSet;
-import edu.jhu.util.collections.Lists;
 
 /**
  * A factor graph builder for SRL.

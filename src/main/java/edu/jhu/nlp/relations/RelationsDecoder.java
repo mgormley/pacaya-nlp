@@ -4,20 +4,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import edu.jhu.gm.app.Decoder;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.decode.MbrDecoder;
-import edu.jhu.gm.decode.MbrDecoder.MbrDecoderPrm;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.RelationMention;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
+import edu.jhu.pacaya.gm.app.Decoder;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.decode.MbrDecoder;
+import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 public class RelationsDecoder implements Decoder<AnnoSentence, List<String>> {
     

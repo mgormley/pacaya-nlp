@@ -6,7 +6,6 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.feat.FeatureVector;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -16,8 +15,9 @@ import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFea
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatures.FeatureCollection;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.prim.util.Timer;
-import edu.jhu.util.FeatureNames;
 
 public class BitshiftDepParseFeaturesSpeedTest {
     

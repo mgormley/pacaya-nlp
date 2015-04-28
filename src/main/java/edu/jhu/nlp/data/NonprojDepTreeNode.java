@@ -3,7 +3,7 @@ package edu.jhu.nlp.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import edu.jhu.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
 
 public class NonprojDepTreeNode implements DepTreeNode {
 

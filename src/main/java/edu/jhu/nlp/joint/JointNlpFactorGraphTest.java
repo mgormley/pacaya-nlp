@@ -11,25 +11,6 @@ import java.util.Map;
 
 import org.junit.Test;
 
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.inf.BeliefPropagation;
-import edu.jhu.gm.inf.BeliefPropagation.BeliefPropagationPrm;
-import edu.jhu.gm.model.Factor;
-import edu.jhu.gm.model.FactorGraph.FgNode;
-import edu.jhu.gm.model.FgModel;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.VarSet;
-import edu.jhu.gm.model.VarTensor;
-import edu.jhu.gm.model.globalfac.LinkVar;
-import edu.jhu.gm.train.CrfTrainerTest.SimpleVCObsFeatureExtractor;
-import edu.jhu.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.ObsFeTypedFactor;
@@ -40,10 +21,29 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorTemplate;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.model.Factor;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.gm.model.FactorGraph.FgNode;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
+import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCObsFeatureExtractor;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.Primitives;
 import edu.jhu.prim.set.IntHashSet;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.collections.Lists;
 
 /**
  * Unit tests for {@link JointNlpFactorGraph}.

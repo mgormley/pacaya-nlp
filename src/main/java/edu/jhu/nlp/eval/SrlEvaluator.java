@@ -9,8 +9,8 @@ import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.util.Prm;
-import edu.jhu.util.report.Reporter;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.report.Reporter;
 
 /**
  * Computes the precision, recall, and micro-averaged F1 of SRL.

@@ -1,12 +1,5 @@
 package edu.jhu.nlp.depparse;
 
-import edu.jhu.autodiff.erma.ErmaBp;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.FgModel;
 import edu.jhu.hypergraph.depparse.DepParseFirstVsSecondOrderTest;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
@@ -15,9 +8,16 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.FeatureNames;
 
 public class DepParseSpeedTest {
     

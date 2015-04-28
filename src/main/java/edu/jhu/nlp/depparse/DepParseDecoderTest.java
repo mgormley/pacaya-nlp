@@ -11,22 +11,22 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.Factor;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.VarSet;
-import edu.jhu.gm.model.VarTensor;
-import edu.jhu.gm.model.globalfac.LinkVar;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.parse.dep.EdgeScores;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.model.Factor;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.parse.dep.EdgeScores;
+import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Maps;
+import edu.jhu.pacaya.util.semiring.Algebras;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
-import edu.jhu.util.collections.Maps;
-import edu.jhu.util.semiring.Algebras;
 
 public class DepParseDecoderTest {
     

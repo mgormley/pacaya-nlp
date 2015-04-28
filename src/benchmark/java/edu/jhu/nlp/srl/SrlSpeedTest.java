@@ -2,19 +2,6 @@ package edu.jhu.nlp.srl;
 
 import java.io.File;
 
-import edu.jhu.autodiff.erma.ErmaBp;
-import edu.jhu.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.gm.data.AbstractFgExampleList;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.FgModel;
-import edu.jhu.gm.model.Var;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.conll.SrlGraph;
@@ -29,10 +16,23 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.util.Threads;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.Threads;
 
 public class SrlSpeedTest {
     

@@ -6,7 +6,7 @@ import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.*;
 import org.junit.Test;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class StrictPosTagAnnotatorTest {
 

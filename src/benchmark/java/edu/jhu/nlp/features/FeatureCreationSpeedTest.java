@@ -11,7 +11,6 @@ import java.util.List;
 
 import com.google.common.primitives.UnsignedBytes;
 
-import edu.jhu.gm.feat.FeatureVector;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -20,6 +19,10 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.hash.MurmurHash3;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.list.ShortArrayList;
 import edu.jhu.prim.map.IntIntHashMap;
@@ -29,9 +32,6 @@ import edu.jhu.prim.tuple.Tuple;
 import edu.jhu.prim.util.SafeCast;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.hash.MurmurHash3;
 
 /**
  * Class for comparing methods of representing features. Allows for testing of

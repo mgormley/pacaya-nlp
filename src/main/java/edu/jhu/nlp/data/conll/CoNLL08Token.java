@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 /**
  * One token from a CoNNL-2008 formatted file.

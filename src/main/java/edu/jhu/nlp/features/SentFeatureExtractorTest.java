@@ -11,7 +11,7 @@ import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.features.SentFeatureExtractor.SentFeatureExtractorPrm;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class SentFeatureExtractorTest {
 

@@ -13,7 +13,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.util.collections.Maps;
+import edu.jhu.pacaya.util.collections.Maps;
 
 public class CoNLL08SentenceTest {
 

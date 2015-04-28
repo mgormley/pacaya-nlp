@@ -5,18 +5,18 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.InsideOutsideDepParse;
-import edu.jhu.gm.app.Decoder;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.FactorGraph;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.parse.dep.EdgeScores;
+import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.gm.app.Decoder;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.parse.dep.EdgeScores;
+import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.sort.IntDoubleSort;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.Prm;
 
 /**
  * Decodes from the marginals of a factor graph for dependency parsing to a {@link DepEdgeMask}

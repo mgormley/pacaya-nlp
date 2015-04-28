@@ -9,8 +9,8 @@ import org.apache.commons.lang3.StringUtils;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.conll.LanguageConstants;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.parse.dep.ParentsArray;
-import edu.jhu.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
 import edu.jhu.prim.tuple.Pair;
 
 /**

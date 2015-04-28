@@ -3,17 +3,17 @@ package edu.jhu.nlp.depparse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.feat.FeatureVector;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.util.hash.MurmurHash;
 import edu.jhu.prim.list.ShortArrayList;
 import edu.jhu.prim.sort.ByteSort;
 import edu.jhu.prim.sort.ShortSort;
 import edu.jhu.prim.util.SafeCast;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.hash.MurmurHash;
 
 /**
  * Very fast feature extraction for dependency parsing.

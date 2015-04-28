@@ -5,21 +5,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import edu.jhu.autodiff.Tensor;
-import edu.jhu.autodiff.erma.ErmaBp;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.FgModel;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.VarTensor;
-import edu.jhu.gm.model.globalfac.LinkVar;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -36,11 +21,26 @@ import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm
 import edu.jhu.nlp.depparse.DepParseInferenceSpeedTest;
 import edu.jhu.nlp.depparse.O2AllGraFgInferencer;
 import edu.jhu.nlp.features.TemplateSets;
-import edu.jhu.parse.dep.EdgeScores;
+import edu.jhu.pacaya.autodiff.Tensor;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.parse.dep.EdgeScores;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.semiring.Algebras;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.random.Prng;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.semiring.Algebras;
 
 /**
  * Tests comparing inference in first and second order dep parsing models.

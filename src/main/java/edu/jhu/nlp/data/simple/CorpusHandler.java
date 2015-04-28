@@ -15,9 +15,9 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.data.simple.AnnoSentenceWriter.AnnoSentenceWriterPrm;
 import edu.jhu.nlp.depparse.Projectivizer;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.pacaya.util.collections.Sets;
 import edu.jhu.prim.sample.Sample;
-import edu.jhu.util.cli.Opt;
-import edu.jhu.util.collections.Sets;
 
 public class CorpusHandler {
     private static final Logger log = LoggerFactory.getLogger(CorpusHandler.class);

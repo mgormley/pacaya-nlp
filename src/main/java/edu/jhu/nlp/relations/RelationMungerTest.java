@@ -20,8 +20,8 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 public class RelationMungerTest {
 

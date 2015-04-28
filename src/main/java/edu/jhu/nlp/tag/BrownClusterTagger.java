@@ -17,14 +17,14 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
-import edu.jhu.nlp.data.Sentence;
-import edu.jhu.nlp.data.SentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.Prm;
-import edu.jhu.util.collections.Sets;
+import edu.jhu.pacaya.nlp.data.Sentence;
+import edu.jhu.pacaya.nlp.data.SentenceCollection;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.collections.Sets;
 
 /**
  * Reads a brown clusters file and tags a sentence, by replacing each word with

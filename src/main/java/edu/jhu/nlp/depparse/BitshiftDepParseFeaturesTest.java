@@ -4,17 +4,17 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import edu.jhu.gm.feat.FeatureVector;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AlphabetStoreTest;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatures.ArcTs;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.set.LongHashSet;
 import edu.jhu.prim.util.SafeCast;
 import edu.jhu.prim.vector.LongDoubleUnsortedVector;
-import edu.jhu.util.collections.Lists;
 
 
 public class BitshiftDepParseFeaturesTest {

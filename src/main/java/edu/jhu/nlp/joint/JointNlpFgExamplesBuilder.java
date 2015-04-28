@@ -5,17 +5,6 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.data.AbstractFgExampleList;
-import edu.jhu.gm.data.FgExampleList;
-import edu.jhu.gm.data.FgExampleListBuilder;
-import edu.jhu.gm.data.FgExampleListBuilder.FgExamplesBuilderPrm;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.feat.FactorTemplate;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarSet;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -24,8 +13,19 @@ import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpEncoderPrm;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Prm;
+import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
+import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.FgExampleListBuilder;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.FgExampleListBuilder.FgExamplesBuilderPrm;
+import edu.jhu.pacaya.gm.feat.FactorTemplate;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.Prm;
 
 /**
  * Factory for NLP FgExamples.

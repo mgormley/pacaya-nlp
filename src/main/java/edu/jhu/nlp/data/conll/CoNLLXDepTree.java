@@ -1,8 +1,8 @@
 package edu.jhu.nlp.data.conll;
 
 import edu.jhu.nlp.data.DepTree;
-import edu.jhu.nlp.data.Sentence;
-import edu.jhu.util.Alphabet;
+import edu.jhu.pacaya.nlp.data.Sentence;
+import edu.jhu.pacaya.util.Alphabet;
 
 /**
  * Dependency tree that carries the original CoNLL-X sentence as metadata.

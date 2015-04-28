@@ -6,8 +6,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.pacaya.util.Threads;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
-import edu.jhu.util.Threads;
 
 public abstract class AbstractParallelAnnotator implements Annotator {
 

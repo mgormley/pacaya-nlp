@@ -29,11 +29,11 @@ import edu.jhu.nlp.features.TemplateLanguage.RulePiece;
 import edu.jhu.nlp.features.TemplateLanguage.SymbolProperty;
 import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
-import edu.jhu.parse.cky.Rule;
-import edu.jhu.parse.dep.ParentsArray;
-import edu.jhu.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.parse.cky.Rule;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 /**
  * Defines a feature template extractor for templates based on a 'little

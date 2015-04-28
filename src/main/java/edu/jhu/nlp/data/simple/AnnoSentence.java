@@ -13,13 +13,13 @@ import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
-import edu.jhu.parse.cky.data.NaryTree;
-import edu.jhu.parse.dep.ParentsArray;
-import edu.jhu.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 /**
  * Simple representation of a single sentence with many annotations.

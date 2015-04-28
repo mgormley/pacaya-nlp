@@ -4,12 +4,12 @@ import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
 
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class SrlDecoderTest {
 

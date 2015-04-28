@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class AlphabetStoreTest {
 

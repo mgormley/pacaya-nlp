@@ -6,8 +6,8 @@ import java.util.List;
 
 import org.junit.Test;
 
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 
 public class RelationMentionTest {

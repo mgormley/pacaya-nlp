@@ -12,8 +12,8 @@ import edu.jhu.nlp.data.RelationMention;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 public class RelationsEncoderTest {
 

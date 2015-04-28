@@ -15,7 +15,7 @@ import edu.jhu.nlp.data.DepTreebank;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.Sets;
 
 public abstract class AbstractTagReducer extends AbstractParallelAnnotator implements Annotator {
 

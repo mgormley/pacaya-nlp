@@ -7,23 +7,23 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.inf.BeliefPropagation;
-import edu.jhu.gm.inf.BeliefPropagation.BeliefPropagationPrm;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.FgModel;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.VarTensor;
-import edu.jhu.gm.model.globalfac.LinkVar;
-import edu.jhu.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.Primitives;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.collections.Lists;
 
 
 public class DepParseFactorGraphBuilderTest {

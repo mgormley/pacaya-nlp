@@ -5,10 +5,10 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.app.Loss;
 import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.pacaya.gm.app.Loss;
 
 /**
  * Computes the unlabeled directed dependency accuracy. This is simply the

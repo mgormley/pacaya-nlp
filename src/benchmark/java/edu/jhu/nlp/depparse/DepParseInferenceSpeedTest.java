@@ -1,17 +1,17 @@
 package edu.jhu.nlp.depparse;
 
-import edu.jhu.autodiff.erma.ErmaBp;
-import edu.jhu.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.util.semiring.Algebras;
 import edu.jhu.prim.util.Timer;
-import edu.jhu.util.semiring.Algebras;
 
 public class DepParseInferenceSpeedTest {
     

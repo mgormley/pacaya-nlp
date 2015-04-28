@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class IntAnnoSentenceTest {
     

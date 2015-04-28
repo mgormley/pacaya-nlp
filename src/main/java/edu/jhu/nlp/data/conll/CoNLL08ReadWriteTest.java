@@ -7,7 +7,7 @@ import java.io.StringWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.jhu.util.files.Files;
+import edu.jhu.pacaya.util.files.Files;
 
 public class CoNLL08ReadWriteTest {
 

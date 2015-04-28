@@ -7,16 +7,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.FeatureVector;
-import edu.jhu.gm.model.Factor;
-import edu.jhu.gm.model.FeExpFamFactor;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.VarSet;
-import edu.jhu.gm.model.globalfac.LinkVar;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.FeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -29,8 +19,18 @@ import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.relations.FeatureUtils;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Prm;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.gm.model.Factor;
+import edu.jhu.pacaya.gm.model.FeExpFamFactor;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.Prm;
 
 public class DepParseFeatureExtractor implements FeatureExtractor {
 

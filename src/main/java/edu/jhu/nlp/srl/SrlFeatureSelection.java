@@ -21,7 +21,7 @@ import edu.jhu.nlp.joint.JointNlpEncoder;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpRunner;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
-import edu.jhu.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.Sets;
 
 /**
  * Train-time only "annotator" for feature selection. This modifies the feature templates on the

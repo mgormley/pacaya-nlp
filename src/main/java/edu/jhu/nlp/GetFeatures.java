@@ -23,11 +23,10 @@ import edu.jhu.nlp.data.conll.CoNLL09FileReader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.cli.ArgParser;
+import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.Primitives.MutableInt;
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.cli.ArgParser;
-import edu.jhu.util.cli.Opt;
-//import com.google.common.collect.Maps;
 
 /**
  * Converts CoNLL 2009 input files to featurized "ERMA" train/test files with a feature template.

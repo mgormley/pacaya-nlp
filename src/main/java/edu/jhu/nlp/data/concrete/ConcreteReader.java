@@ -48,13 +48,13 @@ import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.map.IntIntHashMap;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Lambda.FnO1ToVoid;
-import edu.jhu.util.Prm;
 
 /**
  * Reader of Concrete protocol buffer files.
@@ -107,7 +107,7 @@ public class ConcreteReader {
 
     public AnnoSentenceCollection sentsFromDir(File inDir) throws IOException {
         try {
-            List<File> commFiles = edu.jhu.util.files.Files.getMatchingFiles(inDir, ".+\\.comm$");
+            List<File> commFiles = edu.jhu.pacaya.util.files.Files.getMatchingFiles(inDir, ".+\\.comm$");
             AnnoSentenceCollection annoSents = new AnnoSentenceCollection();
             for (File commFile : commFiles) {
                 Communication comm = ser.fromPathString(commFile.getAbsolutePath());

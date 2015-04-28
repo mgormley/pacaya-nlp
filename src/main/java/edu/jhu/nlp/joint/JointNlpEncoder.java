@@ -3,19 +3,6 @@ package edu.jhu.nlp.joint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.app.Encoder;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.data.LabeledFgExample;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.FeatureCache;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.ObsFeatureCache;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -31,7 +18,20 @@ import edu.jhu.nlp.relations.RelationsEncoder;
 import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.nlp.srl.SrlFeatureExtractor;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
-import edu.jhu.util.Prm;
+import edu.jhu.pacaya.gm.app.Encoder;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LabeledFgExample;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.FeatureCache;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.Prm;
 
 /**
  * Encodes a joint NLP factor graph and its variable assignment.

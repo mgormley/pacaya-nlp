@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import edu.jhu.nlp.data.Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.pacaya.nlp.data.Sentence;
 
 /**
  * One sentence from a CoNLL-X formatted file.

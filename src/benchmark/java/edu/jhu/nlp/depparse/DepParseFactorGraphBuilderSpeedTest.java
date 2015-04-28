@@ -1,11 +1,5 @@
 package edu.jhu.nlp.depparse;
 
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -14,6 +8,12 @@ import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFea
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.features.TemplateSets;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.prim.util.Timer;
 
 public class DepParseFactorGraphBuilderSpeedTest {

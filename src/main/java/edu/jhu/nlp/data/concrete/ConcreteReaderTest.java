@@ -34,7 +34,7 @@ import edu.jhu.hlt.concrete.uuid.UUIDFactory;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class ConcreteReaderTest {
 
