@@ -10,7 +10,7 @@ import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.util.Timer;
 
 public class DepParseInferenceSpeedTest {
@@ -54,7 +54,7 @@ public class DepParseInferenceSpeedTest {
         bpPrm.maxIterations = numIters;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
-        bpPrm.s = Algebras.LOG_SEMIRING;
+        bpPrm.s = LogSemiring.LOG_SEMIRING;
         ErmaBp bp = new ErmaBp(fg, bpPrm);
         bp.run();
         for (Var v : fg.getVars()) {

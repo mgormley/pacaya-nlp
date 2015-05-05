@@ -64,7 +64,7 @@ public class DepParseSpeedTest {
     //@Test
     public void testSpeed() {
         FastMath.useLogAddTable = true;
-        boolean firstOrder = true;
+        boolean firstOrder = false;
         for (int trial = 0; trial < 2; trial++) {
             Timer t = new Timer();
             Timer t0 = new Timer();

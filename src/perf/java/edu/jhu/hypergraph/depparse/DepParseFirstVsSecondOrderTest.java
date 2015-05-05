@@ -37,7 +37,7 @@ import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.random.Prng;
 
@@ -288,7 +288,7 @@ public class DepParseFirstVsSecondOrderTest {
                 UFgExample ex = get2ndOrderGraOnlyFg(sent, cs, ofc, numParams, onlyFast);
                 fg2 = ex.getFgLatPred();
                 fg2.updateFromModel(model);
-                bp2 = new O2AllGraFgInferencer(fg2, Algebras.LOG_SIGN_ALGEBRA);
+                bp2 = new O2AllGraFgInferencer(fg2, LogSignAlgebra.LOG_SIGN_ALGEBRA);
                 bp2.run();
                 DepParseDecoder decode = new DepParseDecoder();
                 parents2 = decode.decode(bp2, ex, sent);

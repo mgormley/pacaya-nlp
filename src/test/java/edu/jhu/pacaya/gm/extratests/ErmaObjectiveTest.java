@@ -31,17 +31,18 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.CrfObjective;
 import edu.jhu.pacaya.util.semiring.Algebra;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.arrays.DoubleArrays;
 
 public class ErmaObjectiveTest {
         
     @Test
     public void testDpData() throws IOException {
-        helpDpDataErma(new ExpectedRecallFactory(), Algebras.REAL_ALGEBRA);
-        helpDpDataErma(new MeanSquaredErrorFactory(), Algebras.REAL_ALGEBRA);
-        helpDpDataErma(new ExpectedRecallFactory(), Algebras.LOG_SIGN_ALGEBRA);
-        helpDpDataErma(new MeanSquaredErrorFactory(), Algebras.LOG_SIGN_ALGEBRA);
+        helpDpDataErma(new ExpectedRecallFactory(), RealAlgebra.REAL_ALGEBRA);
+        helpDpDataErma(new MeanSquaredErrorFactory(), RealAlgebra.REAL_ALGEBRA);
+        helpDpDataErma(new ExpectedRecallFactory(), LogSignAlgebra.LOG_SIGN_ALGEBRA);
+        helpDpDataErma(new MeanSquaredErrorFactory(), LogSignAlgebra.LOG_SIGN_ALGEBRA);
     }
 
     private void helpDpDataErma(DlFactory dl, Algebra s) throws IOException {
@@ -85,7 +86,7 @@ public class ErmaObjectiveTest {
         FgModel model = new FgModel(ofc.getNumParams());
         model.setRandomStandardNormal();
 
-        CrfObjective exObj = new CrfObjective(data, getErmaBpPrm(Algebras.REAL_ALGEBRA));
+        CrfObjective exObj = new CrfObjective(data, getErmaBpPrm(RealAlgebra.REAL_ALGEBRA));
         AvgBatchObjective obj = new AvgBatchObjective(exObj, model, 1);
         
         ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-8);

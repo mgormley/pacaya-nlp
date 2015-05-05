@@ -109,7 +109,11 @@ import edu.jhu.pacaya.util.files.Files;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.pacaya.util.semiring.Algebra;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
+import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
+import edu.jhu.pacaya.util.semiring.ShiftedRealAlgebra;
+import edu.jhu.pacaya.util.semiring.SplitAlgebra;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
@@ -130,9 +134,9 @@ public class JointNlpRunner {
     public enum RegularizerType { L2, NONE };
     
     public enum AlgebraType {
-        REAL(Algebras.REAL_ALGEBRA), LOG(Algebras.LOG_SEMIRING), LOG_SIGN(Algebras.LOG_SIGN_ALGEBRA),
+        REAL(RealAlgebra.REAL_ALGEBRA), LOG(LogSemiring.LOG_SEMIRING), LOG_SIGN(LogSignAlgebra.LOG_SIGN_ALGEBRA),
         // SHIFTED_REAL and SPLIT algebras are for testing only.
-        SHIFTED_REAL(Algebras.SHIFTED_REAL_ALGEBRA), SPLIT(Algebras.SPLIT_ALGEBRA);
+        SHIFTED_REAL(ShiftedRealAlgebra.SHIFTED_REAL_ALGEBRA), SPLIT(SplitAlgebra.SPLIT_ALGEBRA);
 
         private Algebra s;
         

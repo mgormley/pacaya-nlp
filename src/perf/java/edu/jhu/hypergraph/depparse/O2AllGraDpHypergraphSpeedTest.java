@@ -15,7 +15,7 @@ import edu.jhu.pacaya.hypergraph.WeightedHyperedge;
 import edu.jhu.pacaya.hypergraph.depparse.ExplicitDependencyScorer;
 import edu.jhu.pacaya.hypergraph.depparse.O2AllGraDpHypergraph;
 import edu.jhu.pacaya.util.semiring.Algebra;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.util.Timer;
 
 public class O2AllGraDpHypergraphSpeedTest {
@@ -40,7 +40,7 @@ public class O2AllGraDpHypergraphSpeedTest {
     @Test
     public void testSpeed() {
         final int opt = 2;
-        Algebra a = Algebras.LOG_SEMIRING;
+        Algebra a = LogSemiring.LOG_SEMIRING;
         AnnoSentenceCollection sents = AnnoSentenceReaderSpeedTest.readPtbYmConllx();
         
         Timer t = new Timer();

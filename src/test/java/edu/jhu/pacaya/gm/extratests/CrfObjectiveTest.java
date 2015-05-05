@@ -46,7 +46,11 @@ import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.CrfObjective;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.pacaya.util.semiring.Algebra;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
+import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
+import edu.jhu.pacaya.util.semiring.ShiftedRealAlgebra;
+import edu.jhu.pacaya.util.semiring.SplitAlgebra;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
@@ -198,13 +202,13 @@ public class CrfObjectiveTest {
     //    10856    INFO  AvgBatchObjective - Average objective for full dataset: -1320.3962741774715
     @Test
     public void testDp2ndOrderBetheFreeEnergy() throws Exception {
-        checkDp2ndOrderBetheFreeEnergy(Algebras.REAL_ALGEBRA);
+        checkDp2ndOrderBetheFreeEnergy(RealAlgebra.REAL_ALGEBRA);
         // checkDp2ndOrderBetheFreeEnergy(Algebras.SPLIT_ALGEBRA);
         // The shifted real algebra gives invalid BFE, it's still not clear if this is just a
         // precision problem or actually a bug.
         //checkDp2ndOrderBetheFreeEnergy(Algebras.SHIFTED_REAL_ALGEBRA);
-        checkDp2ndOrderBetheFreeEnergy(Algebras.LOG_SEMIRING);
-        checkDp2ndOrderBetheFreeEnergy(Algebras.LOG_SIGN_ALGEBRA);
+        checkDp2ndOrderBetheFreeEnergy(LogSemiring.LOG_SEMIRING);
+        checkDp2ndOrderBetheFreeEnergy(LogSignAlgebra.LOG_SIGN_ALGEBRA);
     }
     
     public void checkDp2ndOrderBetheFreeEnergy(Algebra s) throws Exception {
@@ -251,18 +255,18 @@ public class CrfObjectiveTest {
         
         {
             // Take one gradient step.
-            IntDoubleVector gradReal = getGradientDp2ndOrder(model, Algebras.REAL_ALGEBRA, featureHashMod);
+            IntDoubleVector gradReal = getGradientDp2ndOrder(model, RealAlgebra.REAL_ALGEBRA, featureHashMod);
             gradReal.scale(0.05);
             model.getParams().add(gradReal);
         }
         
         // Get the gradient using different semirings.
-        IntDoubleVector gradReal = getGradientDp2ndOrder(model, Algebras.REAL_ALGEBRA, featureHashMod);
-        IntDoubleVector gradSplit = getGradientDp2ndOrder(model, Algebras.SPLIT_ALGEBRA, featureHashMod);
+        IntDoubleVector gradReal = getGradientDp2ndOrder(model, RealAlgebra.REAL_ALGEBRA, featureHashMod);
+        IntDoubleVector gradSplit = getGradientDp2ndOrder(model, SplitAlgebra.SPLIT_ALGEBRA, featureHashMod);
         // The shifted algebra sometimes gives invalid gradients but might be due to loss of precision.
-        IntDoubleVector gradShifted = getGradientDp2ndOrder(model, Algebras.SHIFTED_REAL_ALGEBRA, featureHashMod);
-        IntDoubleVector gradLog = getGradientDp2ndOrder(model, Algebras.LOG_SEMIRING, featureHashMod);
-        IntDoubleVector gradLogSign = getGradientDp2ndOrder(model, Algebras.LOG_SIGN_ALGEBRA, featureHashMod);
+        IntDoubleVector gradShifted = getGradientDp2ndOrder(model, ShiftedRealAlgebra.SHIFTED_REAL_ALGEBRA, featureHashMod);
+        IntDoubleVector gradLog = getGradientDp2ndOrder(model, LogSemiring.LOG_SEMIRING, featureHashMod);
+        IntDoubleVector gradLogSign = getGradientDp2ndOrder(model, LogSignAlgebra.LOG_SIGN_ALGEBRA, featureHashMod);
 
         // Assert that the gradients are all equal.
         for (int i=0; i<featureHashMod; i++) {

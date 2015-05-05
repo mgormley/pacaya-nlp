@@ -34,7 +34,7 @@ import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.collections.Sets;
 import edu.jhu.pacaya.util.files.Files;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
@@ -76,7 +76,7 @@ public class FirstOrderPruner implements Annotator {
         exPrm.fePrm = fePrm;
                 
         final ErmaBpPrm bpPrm = new ErmaBpPrm();
-        bpPrm.s = Algebras.LOG_SEMIRING;
+        bpPrm.s = LogSemiring.LOG_SEMIRING;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.normalizeMessages = false;

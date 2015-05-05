@@ -19,7 +19,7 @@ import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.VarConfig;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 
@@ -91,7 +91,7 @@ public class O2AllGraDepParseSpeedTest {
                 if (true) {
                     bp = DepParseInferenceSpeedTest.runBp(fg, 5);
                 } else {
-                    bp = new O2AllGraFgInferencer(fg, Algebras.LOG_SEMIRING);
+                    bp = new O2AllGraFgInferencer(fg, LogSemiring.LOG_SEMIRING);
                     bp.run();
                 }
                 //}

@@ -28,6 +28,7 @@ import edu.jhu.pacaya.hypergraph.depparse.O2AllGraDpHypergraph;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.util.semiring.Algebra;
 import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.arrays.DoubleArrays;
 
 public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInferencer {
@@ -142,7 +143,7 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         }
         
         // Convert the scores to the semiring used by this inference method.
-        Algebras.convertAlgebra(scores, Algebras.LOG_SEMIRING, s);
+        Algebras.convertAlgebra(scores, LogSemiring.LOG_SEMIRING, s);
         
         if (log.isTraceEnabled()) { log.trace("scores: " + Arrays.deepToString(scores)); }
         return new ExplicitDependencyScorer(scores, n);

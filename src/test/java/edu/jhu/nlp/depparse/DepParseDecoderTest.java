@@ -25,7 +25,7 @@ import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.pacaya.util.collections.Maps;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.tuple.Pair;
 
 public class DepParseDecoderTest {
@@ -48,7 +48,7 @@ public class DepParseDecoderTest {
             for (int c=0; c<n; c++) {
                 if (p == c) { continue; }
                 LinkVar v = new LinkVar(VarType.PREDICTED, LinkVar.getDefaultName(p, c), p, c);
-                VarTensor f = new VarTensor(Algebras.REAL_ALGEBRA, new VarSet(v));
+                VarTensor f = new VarTensor(RealAlgebra.REAL_ALGEBRA, new VarSet(v));
                 if ((p == -1 && c == 1) || 
                         (p == 1 && c == 0) || 
                         (p == 1 && c == 2)) {

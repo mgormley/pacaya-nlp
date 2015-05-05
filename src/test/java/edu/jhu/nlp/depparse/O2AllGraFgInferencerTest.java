@@ -31,7 +31,7 @@ import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
 
 public class O2AllGraFgInferencerTest {
     
@@ -115,9 +115,9 @@ public class O2AllGraFgInferencerTest {
             System.out.println(f);
         }
         
-        BruteForceInferencer bf = new BruteForceInferencer(fg, Algebras.REAL_ALGEBRA);
+        BruteForceInferencer bf = new BruteForceInferencer(fg, RealAlgebra.REAL_ALGEBRA);
         bf.run();
-        O2AllGraFgInferencer dp = new O2AllGraFgInferencer(fg, Algebras.REAL_ALGEBRA);
+        O2AllGraFgInferencer dp = new O2AllGraFgInferencer(fg, RealAlgebra.REAL_ALGEBRA);
         dp.run();
         
         if (words.size() <= 3) {
