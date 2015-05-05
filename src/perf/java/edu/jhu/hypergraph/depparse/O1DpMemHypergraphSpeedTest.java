@@ -42,7 +42,7 @@ public class O1DpMemHypergraphSpeedTest {
     @Test
     public void testSpeed() {
         final int opt = 0;
-        Semiring a = new LogViterbiSemiring();
+        Semiring a = LogViterbiSemiring.LOG_VITERBI_SEMIRING;
         AnnoSentenceCollection sents = AnnoSentenceReaderSpeedTest.readPtbYmConllx();
         
         Timer t = new Timer();
