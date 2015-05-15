@@ -33,6 +33,7 @@ import edu.jhu.nlp.features.TemplateLanguage.RulePiece;
 import edu.jhu.nlp.features.TemplateLanguage.SymbolProperty;
 import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
+import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.parse.cky.Rule;
 import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.collections.Lists;
@@ -189,7 +190,7 @@ public class TemplateFeatureExtractorTest {
         assertEquals("BEGIN_NO_DEPREL", extr.getTokProp(TokProperty.DEPREL, -1));
         assertEquals("UNK-CAPS", extr.getTokProp(TokProperty.UNK, -1));
         assertEquals("begin_no_form", extr.getTokProp(TokProperty.LC, -1));
-        assertEquals("BEGIN", extr.getTokProp(TokProperty.CHPRE5, -1));
+        assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE5, -1));
     }
     
     @Test    
@@ -208,7 +209,7 @@ public class TemplateFeatureExtractorTest {
         assertEquals("END_NO_DEPREL", extr.getTokProp(TokProperty.DEPREL, n));
         assertEquals("UNK-CAPS", extr.getTokProp(TokProperty.UNK, n));
         assertEquals("end_no_form", extr.getTokProp(TokProperty.LC, n));
-        assertEquals("END_N", extr.getTokProp(TokProperty.CHPRE5, n));
+        assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE5, n));
     }
     
     @Test
@@ -495,6 +496,7 @@ public class TemplateFeatureExtractorTest {
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor1() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(SentFeatureExtractorTest.getSpanishConll09Sentence1(), true);
         addFakeBrownClusters(sent);
+        PrefixAnnotator.addPrefixes(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(Lists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
