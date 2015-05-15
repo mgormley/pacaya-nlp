@@ -31,11 +31,11 @@ public class FeaturizedTokenTest {
         intendedPredFeats.add("postype=relative");
         intendedPredFeats.add("gen=c");
         intendedPredFeats.add("num=c");
-        assertEquals(predFeat,intendedPredFeats);
+        assertEquals(intendedPredFeats, predFeat);
         ArrayList<String> intendedArgFeats = new ArrayList<String>();
         intendedArgFeats.add("NO_MORPH");
         System.out.println(argFeat);
-        assertEquals(argFeat,intendedArgFeats);
+        assertEquals(intendedArgFeats, argFeat);
     }
 
     @Test

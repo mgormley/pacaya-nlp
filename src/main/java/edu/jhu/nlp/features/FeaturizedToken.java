@@ -108,7 +108,7 @@ public class FeaturizedToken {
             feat.add(NO_MORPH);
         } else {
             List<String> coNLLFeats = sent.getFeats(idx);
-            if (coNLLFeats == null) {
+            if (coNLLFeats == null || coNLLFeats.size() == 0) {
                 feat = new ArrayList<String>(1);
                 feat.add(NO_MORPH);
             } else {
