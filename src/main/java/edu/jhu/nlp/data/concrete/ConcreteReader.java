@@ -257,12 +257,11 @@ public class ConcreteReader {
         Map<String, Integer> emId2SentIdx = getUuid2SentIdxMap(tmpSents);
 
         for (SituationMention cSm : cSms.getMentionList()) {
-            if (!"STATE".equals(cSm.getSituationType())) {
-                throw new IllegalStateException("Expecting situations of type STATE. " + cSm.getSituationType());
-            }
-            
             // Type / subtype.
             String type = cSm.getSituationKind();
+            if (type == null) { // For SemEval data.
+                type = cSm.getSituationType();
+            }
             String subtype = null;
             if (type.contains(":")) {
                 String[] splits = type.split(":");
