@@ -218,6 +218,14 @@ public class ConcreteReader {
             int sentIdx = toksUuid2SentIdx.get(cEmToks.getTokenizationId().getUuidString());
             String entityType = cEm.getEntityType();
             String entitySubtype = null;
+            // TODO: Remove this SemEval-2010 Task 8 specific logic.
+            if (entityType != null) {
+                if (entityType.startsWith("I-") || entityType.startsWith("B-")) {
+                    entityType = entityType.substring(2);
+                    entityType = entityType.replace(':', '_');
+                }
+            }
+            // TODO: Remove this ACE 2005-specific logic.
             if (entityType != null && entityType.contains(":")) {
                 String[] splits = entityType.split(":");
                 entityType = splits[0];
