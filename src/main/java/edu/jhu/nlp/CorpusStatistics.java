@@ -16,6 +16,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
+import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
@@ -101,6 +102,8 @@ public class CorpusStatistics implements Serializable {
         Map<String,Set<String>> predSenseSetMap = new HashMap<String,Set<String>>();
         Set<String> knownRoles = new HashSet<String>();
         Set<String> knownLinks = new HashSet<String>();
+        Set<String> knownNeTypes = new TreeSet<String>();
+        Set<String> knownNeSubtypes = new TreeSet<String>();
         Set<String> knownRelations = new TreeSet<String>();
         Map<String, MutableInt> words = new HashMap<String, MutableInt>();
         Map<String, MutableInt> unks = new HashMap<String, MutableInt>();
@@ -161,6 +164,15 @@ public class CorpusStatistics implements Serializable {
                     senses.add(pred.getLabel());
                 }
             }
+
+            // Named Entity stats.
+            if (sent.getNamedEntities() != null) {
+                for (int k=0; k<sent.getNamedEntities().size(); k++) {
+                    NerMention ne = sent.getNamedEntities().get(k);
+                    knownNeTypes.add(ne.getEntityType());
+                    knownNeSubtypes.add(ne.getEntityType() + ":" + ne.getEntitySubType());
+                }
+            }
             
             // Relation stats.
             if (sent.getRelLabels() != null) {
@@ -177,7 +189,7 @@ public class CorpusStatistics implements Serializable {
         // For words and unknown word classes, we only keep those above some threshold.
         knownWords = getUnigramsAboveThreshold(words, prm.cutoff);
         knownUnks = getUnigramsAboveThreshold(unks, prm.cutoff);
-                    
+        
         topNWords = getTopNUnigrams(words, prm.topN, prm.cutoff);
         
         this.linkStateNames = new ArrayList<String>(knownLinks);
@@ -186,14 +198,14 @@ public class CorpusStatistics implements Serializable {
         for (Entry<String,Set<String>> entry : predSenseSetMap.entrySet()) {
             predSenseListMap.put(entry.getKey(), new ArrayList<String>(entry.getValue()));
         }
-        
-        log.info("Num known roles: " + roleStateNames.size());
-        log.info("Known roles: " + roleStateNames);
-        log.info("Num known predicates: " + predSenseListMap.size());
-        
+
+        log.info("Found {} Word types.", words.size());
+        log.info("Found {} POS tag types: {}", knownPostags.size(), knownPostags);
+        log.info("Found {} SRL Predicate types.", predSenseListMap.size());
+        log.info("Found {} SRL Role types: {}", roleStateNames.size(), roleStateNames);
+        log.info("Found {} NER types: {}", knownNeTypes.size(), knownNeTypes);
+        log.info("Found {} Relation types: {}", relationStateNames.size(), relationStateNames);        
         log.info("Num true positive relations: " + numTruePosRels);
-        log.info("Num known relations: " + relationStateNames.size());
-        log.info("Known relations: " + relationStateNames);
     }
     
     // ------------------- private ------------------- //
