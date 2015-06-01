@@ -206,6 +206,7 @@ public class JointNlpFactorGraphTest {
         JointFactorGraphPrm prm = new JointFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.srlPrm.predictSense = true;
+        prm.srlPrm.predictPredPos = false;
         JointNlpFactorGraph sfg = getJointNlpFg(prm);
         
         // Assertions about the Sense variables.
@@ -219,8 +220,8 @@ public class JointNlpFactorGraphTest {
         assertEquals(0, sfg.getSenseVar(0).getParent());
         assertEquals(2, sfg.getSenseVar(2).getParent());
         
-        assertEquals(Lists.getList("w1.01", "w1.02"), sfg.getSenseVar(0).getStateNames());
-        assertEquals(Lists.getList("w3.01", "w3.02"), sfg.getSenseVar(2).getStateNames());
+        assertEquals(Lists.getList("w1.01", "w1.02", "_"), sfg.getSenseVar(0).getStateNames());
+        assertEquals(Lists.getList("w3.01", "w3.02", "_"), sfg.getSenseVar(2).getStateNames());
         
         // Assertions about the Sense factors.
         int numSenseFactors = 0;
