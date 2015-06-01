@@ -215,7 +215,7 @@ public class SrlFeatureExtractorTest {
         
         System.out.println(fts);
         // We should include some bias features as well.
-        assertEquals(6, fts.getNumObsFeats());
+        assertEquals(4, fts.getNumObsFeats());
     }
     
 

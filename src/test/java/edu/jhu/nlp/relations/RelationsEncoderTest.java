@@ -11,7 +11,7 @@ public class RelationsEncoderTest {
         //        RelationsFactorGraphBuilderPrm prm = new RelationsFactorGraphBuilderPrm();
         //        RelationsFactorGraphBuilder rfgb = new RelationsFactorGraphBuilder(prm );
         //        rfgb.build(sent, cj, fg, cs, obsFe);
-        //        RelationsEncoder.addRelVarAssignments(sent, rels, rfgb, vc);        
+        //        RelationsEncoder.addRelVarAssignments(sent, rels, rfgb, vc);S        
     }
 
 }
