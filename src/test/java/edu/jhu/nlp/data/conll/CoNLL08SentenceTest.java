@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.jhu.pacaya.util.collections.Maps;
@@ -60,9 +61,10 @@ public class CoNLL08SentenceTest {
         cr.close();
     }
 
+    @Ignore("This doesn't test anything, it just counts the number of predicates.")
     @Test
     public void testAllTagsWithPreds() throws IOException {
-        String f = "data/LDC/LDC2009T12/data/train/train.closed";
+        String f = "/Users/mgormley/research/LDC/LDC2009T12/data/train/train.closed";
         //String f = "data/LDC/LDC2009T12/data/test.wsj/test.wsj.closed.GOLD";
         //String f = "/Users/mgormley/research/other_lib/srl/conll05_to_08/gold/test.wsj.GOLD.simplified.conll08";
         //String f = "/Users/mgormley/research/other_lib/srl/conll05_to_08/gold/train.GOLD.simplified.conll08";

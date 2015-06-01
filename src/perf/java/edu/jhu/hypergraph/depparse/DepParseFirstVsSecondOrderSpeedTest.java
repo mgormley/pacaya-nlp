@@ -45,7 +45,7 @@ import edu.jhu.prim.util.random.Prng;
  * Tests comparing inference in first and second order dep parsing models.
  * @author mgormley
  */
-public class DepParseFirstVsSecondOrderTest {
+public class DepParseFirstVsSecondOrderSpeedTest {
     
     /**
      * Commenting out lines 80 and 83 in {@link FastDepParseFeatureExtractor} allows this test to (correctly) pass.
@@ -385,7 +385,7 @@ public class DepParseFirstVsSecondOrderTest {
     }
     
     public static void main(String[] args) {
-        (new DepParseFirstVsSecondOrderTest()).testEqualMarginalsAndParentsNumBpIters();
+        (new DepParseFirstVsSecondOrderSpeedTest()).testEqualMarginalsAndParentsNumBpIters();
     }
     
 }

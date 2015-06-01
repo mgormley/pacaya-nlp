@@ -1,6 +1,6 @@
 package edu.jhu.nlp.depparse;
 
-import edu.jhu.hypergraph.depparse.DepParseFirstVsSecondOrderTest;
+import edu.jhu.hypergraph.depparse.DepParseFirstVsSecondOrderSpeedTest;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -104,7 +104,7 @@ public class DepParseSpeedTest {
                 t1.start();
                 UFgExample ex = firstOrder ?
                         DepParseFactorGraphBuilderSpeedTest.get1stOrderFg(sent, cs, ofc, numParams, onlyFast) :
-                        DepParseFirstVsSecondOrderTest.get2ndOrderFg(sent, cs, ofc, numParams, onlyFast);
+                        DepParseFirstVsSecondOrderSpeedTest.get2ndOrderFg(sent, cs, ofc, numParams, onlyFast);
                 t1.stop();
                 
                 t2.start();
