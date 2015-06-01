@@ -13,11 +13,15 @@ import edu.jhu.pacaya.util.collections.Lists;
 
 public class PosTagDistancePrunerTest {
 
+    public static PosTagDistancePruner getDefaultPosTagDistancePruner() {
+        return new PosTagDistancePruner(false);
+    }
+    
     @Test
     public void testAutoSents() {
         AnnoSentenceCollection sents = getSents(3, 10, 10);
         System.out.println(sents);
-        PosTagDistancePruner pruner = new PosTagDistancePruner();
+        PosTagDistancePruner pruner = getDefaultPosTagDistancePruner();
         pruner.train(null, sents, null, null);
         pruner.annotate(sents);
         System.out.println(sents);
@@ -29,9 +33,7 @@ public class PosTagDistancePrunerTest {
                     continue;
                 }
                 boolean pruned = sent.getDepEdgeMask().isPruned(p, child);
-                if (p == -1) {
-                    assertTrue(!pruned);
-                } else if (p == trueParent) {
+                if (p == trueParent) {
                     assertTrue(!pruned);
                 } else {
                     assertTrue(pruned);
@@ -56,7 +58,7 @@ public class PosTagDistancePrunerTest {
         sent2.setParents(new int[]    { -1,   0,   1,   2,   3,   4,  5 });
         sents2.add(sent2);
         
-        PosTagDistancePruner pruner = new PosTagDistancePruner();
+        PosTagDistancePruner pruner = getDefaultPosTagDistancePruner();
         pruner.train(null, sents1, null, null);
         pruner.annotate(sents2);        
 
@@ -87,7 +89,7 @@ public class PosTagDistancePrunerTest {
         sent2.setPosTags(Lists.getList("V", "V", "N", "N", "V"));
         sents2.add(sent2);
         
-        PosTagDistancePruner pruner = new PosTagDistancePruner();
+        PosTagDistancePruner pruner = getDefaultPosTagDistancePruner();
         pruner.train(null, sents1, null, null);
         pruner.annotate(sents2);        
 
@@ -118,7 +120,7 @@ public class PosTagDistancePrunerTest {
         sent2.setParents(new int[]    { -1,   0 });
         sents2.add(sent2);
         
-        PosTagDistancePruner pruner = new PosTagDistancePruner();
+        PosTagDistancePruner pruner = getDefaultPosTagDistancePruner();
         pruner.train(null, sents1, null, null);
         pruner.annotate(sents2);        
 

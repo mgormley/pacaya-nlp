@@ -44,7 +44,14 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
     private Alphabet<String> alphabet = new Alphabet<String>();
     private int[][][] mat;
     
-    public PosTagDistancePruner() { }
+    // Whether to always keep a right branching tree, to ensure that we don't prune all trees.
+    private boolean alwaysKeepRightBranching; 
+    
+    public PosTagDistancePruner() { this(true); }
+    
+    public PosTagDistancePruner(boolean alwaysKeepRightBranching) { 
+        this.alwaysKeepRightBranching = alwaysKeepRightBranching;
+    }
     
     @Override
     public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold, 
@@ -126,9 +133,12 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
                             }
                         }
                     }
-                    // Always keep a right-branching tree, so that we never prune all trees.
-                    for (int c = 0; c < tags.length; c++) {
-                        mask.setIsPruned(c-1, c, false);
+                    
+                    if (alwaysKeepRightBranching) {
+                        // Always keep a right-branching tree, so that we never prune all trees.
+                        for (int c = 0; c < tags.length; c++) {
+                            mask.setIsPruned(c-1, c, false);
+                        }
                     }
                     
                     // Check that there still exists some singly-rooted spanning tree that wasn't pruned.
