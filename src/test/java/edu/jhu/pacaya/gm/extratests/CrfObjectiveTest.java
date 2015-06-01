@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import org.junit.Test;
 import edu.jhu.hlt.optimize.function.Function;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
+import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -302,7 +305,7 @@ public class CrfObjectiveTest {
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
         try {
             //r.loadSents(CrfObjectiveTest.class.getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example), DatasetType.CONLL_2009);
-            r.loadSents(new File("/Users/mgormley/research/pacaya/data/conllx/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
+            r.loadSents(new File("/Users/mgormley/research/corpora/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

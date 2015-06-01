@@ -407,6 +407,7 @@ public class CrfTrainerTest {
             prm.optimizer = null;
         } else {
             prm.optimizer = new MalletLBFGS(new MalletLBFGSPrm());
+            prm.batchOptimizer = null;
         }
         prm.regularizer = r;
         
