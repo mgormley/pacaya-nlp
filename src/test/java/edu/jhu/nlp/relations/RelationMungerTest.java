@@ -36,6 +36,7 @@ public class RelationMungerTest {
         RelationMungerPrm prm = new RelationMungerPrm();
         prm.useRelationSubtype = true;
         prm.predictArgRoles = true;
+        prm.useRelationsForNePairs = false;
         RelationMunger munger = new RelationMunger(prm);
         RelationDataPreproc pre = munger.getDataPreproc(); 
         pre.addNePairsAndMaybeRelLabels(sent);
