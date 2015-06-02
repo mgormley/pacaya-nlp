@@ -4,7 +4,6 @@ import static edu.jhu.nlp.data.simple.AnnoSentenceCollection.getSingleton;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +16,7 @@ import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
+import edu.jhu.nlp.data.conll.CoNLLXReadWriteTest;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
@@ -58,7 +58,9 @@ import edu.jhu.prim.util.random.Prng;
 import edu.jhu.prim.vector.IntDoubleVector;
 
 public class CrfObjectiveTest {
-	
+
+    public static final String conllXExample= "/edu/jhu/nlp/data/conll/bulgarian_bultreebank_train.conll";
+
     @Test
     public void testSrlLogLikelihood() throws Exception {
         checkSrlLogLikelihoodCorrect(false);
@@ -166,17 +168,16 @@ public class CrfObjectiveTest {
         Function obj = getCrfObj(model, data, infFactory);
         double ll = obj.getValue(model.getParams());        
         assertTrue(ll < 0d);
-        assertEquals(-73.928, ll, 1e-3);
+        assertEquals(-15.006, ll, 1e-3);
     }
 
     public static FgExampleList getDp1stOrderData(ObsFeatureConjoiner ofc) throws IOException {
         AnnoSentenceReaderPrm rPrm = new AnnoSentenceReaderPrm();
         rPrm.maxNumSentences = 3;
-        rPrm.maxSentenceLength = 15;
+        rPrm.maxSentenceLength = 7;
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
-        r.loadSents(CrfObjectiveTest.class.getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example), DatasetType.CONLL_2009);
-        //r.loadSents(new File("/Users/mgormley/research/pacaya/data/conllx/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
+        r.loadSents(CrfObjectiveTest.class.getResourceAsStream(conllXExample), DatasetType.CONLL_X);
         
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
@@ -302,8 +303,7 @@ public class CrfObjectiveTest {
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
         try {
-            //r.loadSents(CrfObjectiveTest.class.getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example), DatasetType.CONLL_2009);
-            r.loadSents(new File("/Users/mgormley/research/corpora/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
+            r.loadSents(CrfObjectiveTest.class.getResourceAsStream(conllXExample), DatasetType.CONLL_X);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

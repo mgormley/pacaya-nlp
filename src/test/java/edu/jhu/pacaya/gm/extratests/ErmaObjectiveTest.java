@@ -104,12 +104,10 @@ public class ErmaObjectiveTest {
     public static FgExampleList getDpData(ObsFeatureConjoiner ofc, int featureHashMod) throws IOException {
         AnnoSentenceReaderPrm rPrm = new AnnoSentenceReaderPrm();
         rPrm.maxNumSentences = 3;
-        rPrm.maxSentenceLength = 15;
+        rPrm.maxSentenceLength = 7;
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
-        r.loadSents(ErmaObjectiveTest.class.getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example), DatasetType.CONLL_2009);        
-        //r.loadSents(ErmaObjectiveTest.class.getResourceAsStream(CoNLLXReadWriteTest.conllXExample), DatasetType.CONLL_X);        
-        //r.loadSents(new File("/Users/mgormley/research/corpora/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
+        r.loadSents(ErmaObjectiveTest.class.getResourceAsStream(CrfObjectiveTest.conllXExample), DatasetType.CONLL_X);        
         
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);

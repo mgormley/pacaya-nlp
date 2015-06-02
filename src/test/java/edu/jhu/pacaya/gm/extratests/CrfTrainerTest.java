@@ -231,8 +231,8 @@ public class CrfTrainerTest {
         System.out.println(DoubleArrays.toString( params1, "%.3f"));
         System.out.println(DoubleArrays.toString( params2, "%.3f"));
         
-        JUnitUtils.assertArrayEquals(new double[]{0.000, -0.000, -0.515, 0.374, 0.646, 0.710, -0.400}, params1, 1e-3);
-        JUnitUtils.assertArrayEquals(new double[]{-0.000, 0.000, -1.323, 0.471, 0.515, 0.495, -0.649}, params2, 1e-3);
+        JUnitUtils.assertArrayEquals(new double[]{0.223, 0.126, 0.000, 0.410, -0.619}, params1, 1e-3);
+        JUnitUtils.assertArrayEquals(new double[]{0.259, 0.029, 1.585, 0.773, -0.339}, params2, 1e-3);
     }
     
     @Test
@@ -425,7 +425,7 @@ public class CrfTrainerTest {
         bpPrm.s = RealAlgebra.REAL_ALGEBRA;
         
         CrfTrainerPrm prm = new CrfTrainerPrm();
-        prm.infFactory = bpPrm;
+        prm.bFactory = bpPrm;
         prm.dlFactory = new MeanSquaredErrorFactory();
         //prm.dlFactory = new ExpectedRecallFactory();
         prm.trainer = Trainer.ERMA;
@@ -440,6 +440,7 @@ public class CrfTrainerTest {
             prm.batchOptimizer = new SGD(optPrm);
             prm.optimizer = null;
         } else {
+            prm.batchOptimizer = null;
             prm.optimizer = new MalletLBFGS(new MalletLBFGSPrm());
         }
         prm.regularizer = r;
