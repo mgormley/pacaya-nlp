@@ -67,7 +67,22 @@ public class AnnoSentenceReader {
     
     public void loadSents(File dataFile, DatasetType type) throws IOException {
         log.info("Reading " + prm.name + " data of type " + type + " from " + dataFile);
-
+        if (type == DatasetType.CONCRETE && (dataFile.isDirectory() || dataFile.getName().endsWith(".zip"))) {
+            ConcreteReader cr = new ConcreteReader(prm.rePrm);
+            AnnoSentenceCollection csents = cr.sentsFromPath(dataFile);
+            CloseableIterable<AnnoSentence> reader = new ListCloseableIterable(csents);
+            loadSents(reader);
+            sents.setSourceSents(csents.getSourceSents());
+            reader.close();
+            logSentStats();
+        } else {
+            InputStream fis = new FileInputStream(dataFile);
+            loadSents(fis, type);
+            fis.close();
+        }
+    }
+    
+    public void loadSents(InputStream fis, DatasetType type) throws IOException {
         if (prm.normalizeRoleNames) {
             if (type == DatasetType.CONLL_2008 || type == DatasetType.CONLL_2009) {
                 log.info("Normalizing role names");
@@ -78,11 +93,10 @@ public class AnnoSentenceReader {
         Object sourceSents = null;
         if (type == DatasetType.CONCRETE) {
             ConcreteReader cr = new ConcreteReader(prm.rePrm);
-            AnnoSentenceCollection csents = cr.sentsFromPath(dataFile);
+            AnnoSentenceCollection csents = cr.sentsFromCommInputStream(fis);
             sourceSents = csents.getSourceSents();
             reader = new ListCloseableIterable(csents);
         } else {
-            InputStream fis = new FileInputStream(dataFile);
             if (type == DatasetType.CONLL_2009) {
                 reader = ConvCloseableIterable.getInstance(new CoNLL09FileReader(fis), new CoNLL092Anno());
             } else if (type == DatasetType.CONLL_2008) {
@@ -94,22 +108,24 @@ public class AnnoSentenceReader {
             //} else if (type == DatasetType.PTB) {
                 //reader = new Ptb2Anno(new PtbFileReader(dataFile));
             } else {
-                fis.close();
                 throw new IllegalStateException("Unsupported data type: " + type);
             }
         }
         
         loadSents(reader);
         sents.setSourceSents(sourceSents);
-        
+        reader.close();
+        logSentStats();
+    }
+
+    private void logSentStats() {
         log.info("Num " + prm.name + " sentences: " + sents.size());   
         log.info("Num " + prm.name + " tokens: " + sents.getNumTokens());
         log.info("Longest sentence: " + sents.getMaxLength());
         log.info("Average sentence length: " + sents.getAvgLength());
-        reader.close();
     }
     
-    public void loadSents(Iterable<AnnoSentence> reader) {
+    private void loadSents(Iterable<AnnoSentence> reader) {
         for (AnnoSentence sent : reader) {
             if (sents.size() >= prm.maxNumSentences) {
                 break;

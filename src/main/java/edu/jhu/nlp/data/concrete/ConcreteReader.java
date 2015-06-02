@@ -159,6 +159,16 @@ public class ConcreteReader {
         } catch (ConcreteException e) {
             throw new RuntimeException(e);
         }
+    }    
+
+    public AnnoSentenceCollection sentsFromCommInputStream(InputStream is) throws IOException {
+        try {
+            Communication communication = ser.fromInputStream(is);
+            AnnoSentenceCollection sents = sentsFromComm(communication);
+            return sents;
+        } catch (ConcreteException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public AnnoSentenceCollection sentsFromComm(Communication comm) {

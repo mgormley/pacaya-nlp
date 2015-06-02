@@ -1,12 +1,15 @@
 package edu.jhu.pacaya.gm.extratests;
 
-import java.io.File;
+import static org.junit.Assert.assertEquals;
+
 import java.io.IOException;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
+import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
@@ -34,9 +37,15 @@ import edu.jhu.pacaya.util.semiring.Algebra;
 import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.arrays.DoubleArrays;
+import edu.jhu.prim.util.random.Prng;
 
 public class ErmaObjectiveTest {
-        
+    
+    @Before
+    public void setUp() {
+        Prng.seed(1l);
+    }
+    
     @Test
     public void testDpData() throws IOException {
         helpDpDataErma(new ExpectedRecallFactory(), RealAlgebra.REAL_ALGEBRA);
@@ -95,15 +104,17 @@ public class ErmaObjectiveTest {
     public static FgExampleList getDpData(ObsFeatureConjoiner ofc, int featureHashMod) throws IOException {
         AnnoSentenceReaderPrm rPrm = new AnnoSentenceReaderPrm();
         rPrm.maxNumSentences = 3;
-        rPrm.maxSentenceLength = 7;
+        rPrm.maxSentenceLength = 15;
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
-        //r.loadSents(CrfObjectiveTest.class.getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example), DatasetType.CONLL_2009);
-        r.loadSents(new File("/Users/mgormley/research/corpora/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
+        r.loadSents(ErmaObjectiveTest.class.getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example), DatasetType.CONLL_2009);        
+        //r.loadSents(ErmaObjectiveTest.class.getResourceAsStream(CoNLLXReadWriteTest.conllXExample), DatasetType.CONLL_X);        
+        //r.loadSents(new File("/Users/mgormley/research/corpora/CoNLL-X/train/data/bulgarian/bultreebank/train/bulgarian_bultreebank_train.conll"), DatasetType.CONLL_X);
         
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
         AnnoSentenceCollection sents = r.getData();
+        assertEquals(rPrm.maxNumSentences, sents.size());
         cs.init(sents);
         
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
