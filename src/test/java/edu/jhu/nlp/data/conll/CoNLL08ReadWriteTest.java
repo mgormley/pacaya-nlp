@@ -11,7 +11,7 @@ import edu.jhu.pacaya.util.files.Files;
 
 public class CoNLL08ReadWriteTest {
 
-    public static final String conll2008Example= "/edu/jhu/data/conll/conll-08-example.conll";
+    public static final String conll2008Example= "/edu/jhu/nlp/data/conll/conll-08-example.conll";
     
     @Test
     public void testReadWrite() throws IOException {

@@ -37,12 +37,9 @@ public class CoNLL08SentenceTest {
         assertEquals(sent1, sent2);
     }
     
-
-    public static final String conll2008Example= "/edu/jhu/data/conll/conll-08-example.conll";
-    
     @Test
     public void testToC09() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream(conll2008Example);
+        InputStream inputStream = this.getClass().getResourceAsStream(CoNLL08ReadWriteTest.conll2008Example);
         CoNLL08FileReader cr = new CoNLL08FileReader(inputStream);
         for (CoNLL08Sentence sent : cr) {
             System.out.println(sent.toCoNLL09Sent(true));
@@ -52,7 +49,7 @@ public class CoNLL08SentenceTest {
     
     @Test
     public void testRemoveNominal() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream(conll2008Example);
+        InputStream inputStream = this.getClass().getResourceAsStream(CoNLL08ReadWriteTest.conll2008Example);
         CoNLL08FileReader cr = new CoNLL08FileReader(inputStream);
         for (CoNLL08Sentence sent : cr) {
             sent.removeNominalPreds();
