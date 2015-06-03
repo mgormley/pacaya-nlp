@@ -114,7 +114,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         if (labeledExample) {
             ex = new LabeledFgExample(fg, vc, srlFe, fts);
         } else {
-            ex = new UnlabeledFgExample(fg, vc, srlFe, fts);
+            ex = new UnlabeledFgExample(fg, srlFe, fts);
         }
         dpFe.init(ex);
         relFe.init(ex, fts);

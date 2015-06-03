@@ -68,7 +68,7 @@ public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
         if (labeledExample) {
             return new LabeledFgExample(fg, goldConfig, fe);
         } else {
-            return new UnlabeledFgExample(fg, goldConfig, fe);
+            return new UnlabeledFgExample(fg, fe);
         }
     }
     

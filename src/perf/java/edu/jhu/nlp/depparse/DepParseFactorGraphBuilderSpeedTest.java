@@ -13,7 +13,6 @@ import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.prim.util.Timer;
 
 public class DepParseFactorGraphBuilderSpeedTest {
@@ -60,7 +59,7 @@ public class DepParseFactorGraphBuilderSpeedTest {
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
         builder.build(sent, fe, fg);
         
-        UnlabeledFgExample ex = new UnlabeledFgExample(fg, new VarConfig());
+        UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;
     }
     

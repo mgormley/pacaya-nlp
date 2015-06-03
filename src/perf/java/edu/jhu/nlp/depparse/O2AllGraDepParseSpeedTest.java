@@ -18,7 +18,6 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
@@ -144,7 +143,7 @@ public class O2AllGraDepParseSpeedTest {
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
         builder.build(sent, fe, fg);
         
-        UnlabeledFgExample ex = new UnlabeledFgExample(fg, new VarConfig());
+        UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;
     }
     

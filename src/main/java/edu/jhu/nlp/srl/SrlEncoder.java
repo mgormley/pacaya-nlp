@@ -76,7 +76,7 @@ public class SrlEncoder implements Encoder<AnnoSentence, SrlGraph> {
         if (labeledExample) {
             return new LabeledFgExample(fg, goldConfig, obsFe, fts);
         } else {
-            return new UnlabeledFgExample(fg, goldConfig, obsFe, fts);
+            return new UnlabeledFgExample(fg, obsFe, fts);
         }
     }
     

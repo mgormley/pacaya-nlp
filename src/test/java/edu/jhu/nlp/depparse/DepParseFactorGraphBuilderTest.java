@@ -17,7 +17,6 @@ import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
@@ -156,7 +155,7 @@ public class DepParseFactorGraphBuilderTest {
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(prm);
         builder.build(words, depEdgeMask, fe, fg);
         
-        fe.init(new UnlabeledFgExample(fg, new VarConfig()));
+        fe.init(new UnlabeledFgExample(fg));
         return fg;
     }
     

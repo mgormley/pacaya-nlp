@@ -66,7 +66,7 @@ public class RelationsEncoder implements Encoder<AnnoSentence, List<String>> {
         if (labeledExample) {
             return new LabeledFgExample(fg, vc);
         } else {
-            return new UnlabeledFgExample(fg, vc);
+            return new UnlabeledFgExample(fg);
         }
     }
 

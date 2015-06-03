@@ -34,7 +34,6 @@ import edu.jhu.pacaya.gm.model.FactorGraph.FgNode;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
@@ -362,7 +361,7 @@ public class JointNlpFactorGraphTest {
         
         JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe, null);
         
-        fe.init(new UnlabeledFgExample(fg, new VarConfig()));
+        fe.init(new UnlabeledFgExample(fg));
         return fg;
     }
     

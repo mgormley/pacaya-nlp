@@ -33,7 +33,6 @@ import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
@@ -239,7 +238,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
         builder.build(sent, fe, fg);
         
-        UnlabeledFgExample ex = new UnlabeledFgExample(fg, new VarConfig());
+        UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;
     }
     
@@ -348,7 +347,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
         builder.build(sent, fe, fg);
         
-        UnlabeledFgExample ex = new UnlabeledFgExample(fg, new VarConfig());
+        UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;
     }
     

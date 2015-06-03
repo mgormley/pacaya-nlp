@@ -18,7 +18,6 @@ import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
@@ -99,7 +98,7 @@ public class DepParseDecoderTest {
         DepParseDecoder dp = new DepParseDecoder();
         AnnoSentence sent = new AnnoSentence();
         sent.setWords(Lists.getList("a", "b", "c"));
-        int[] parents = dp.decode(inf, new UnlabeledFgExample(fg, new VarConfig()), sent);
+        int[] parents = dp.decode(inf, new UnlabeledFgExample(fg), sent);
         System.out.println(Arrays.toString(parents));
         Assert.assertArrayEquals(new int[]{1, -1, 1}, parents);
     }
