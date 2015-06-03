@@ -53,7 +53,6 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
     
     private SrlFeatureExtractorPrm prm;
     private FactorTemplateList fts;
-    private VarConfig obsConfig;
     private SentFeatureExtractor sentFeatExt;
     
     public SrlFeatureExtractor(SrlFeatureExtractorPrm prm, AnnoSentence sent, CorpusStatistics cs) {
@@ -66,13 +65,11 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
 
     @Override
     public void init(UFgExample ex, FactorTemplateList fts) {
-        this.obsConfig = ex.getObsConfig();
         this.fts = fts;
     }
 
     // For testing only.
-    void init(VarConfig obsConfig, FactorTemplateList fts) {
-        this.obsConfig = obsConfig;
+    void init(FactorTemplateList fts) {
         this.fts = fts;
     }
     
@@ -114,10 +111,7 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
             throw new RuntimeException("Unsupported template: " + ft);
         }
         alphabet = fts.getTemplate(f).getAlphabet();
-        
-        // Create prefix containing the states of the observed variables.
-        String prefix = getObsVarsStates(f) + "_";
-        
+                
         if (log.isTraceEnabled()) {
             log.trace("Num obs features in factor: " + obsFeats.size());
         }
@@ -125,43 +119,15 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
         // The bias features are used to ensure that at least one feature fires for each variable configuration.
         ArrayList<String> biasFeats = new ArrayList<String>();
         biasFeats.add("BIAS_FEATURE");
-        if (!"_".equals(prefix)) {
-            biasFeats.add(prefix + "BIAS_FEATURE");
-        }
         
         // Add the bias features.
         FeatureVector fv = new FeatureVector(biasFeats.size() + obsFeats.size());
         FeatureUtils.addFeatures(biasFeats, alphabet, fv, true, prm.featureHashMod);
         
         // Add the other features.
-        FeatureUtils.addPrefix(obsFeats, prefix);
         FeatureUtils.addFeatures(obsFeats, alphabet, fv, false, prm.featureHashMod);
         
         return fv;
-    }
-
-    /**
-     * Gets a string representation of the states of the observed variables for
-     * this factor.
-     */
-    private String getObsVarsStates(Factor f) {
-        if (prm.humanReadable) {
-            StringBuilder sb = new StringBuilder();
-            int i=0;
-            for (Var v : f.getVars()) {
-                if (v.getType() == VarType.OBSERVED) {
-                    if (i > 0) {
-                        sb.append("_");
-                    }
-                    sb.append(obsConfig.getStateName(v));
-                    i++;
-                }
-            }
-            return sb.toString();
-        } else {
-            throw new RuntimeException("This is probably a bug. We should only be considering OBSERVED variables.");
-            //return Integer.toString(goldConfig.getConfigIndexOfSubset(f.getVars()));
-        }
     }
     
 }

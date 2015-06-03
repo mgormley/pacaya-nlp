@@ -9,7 +9,6 @@ import org.junit.Test;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;

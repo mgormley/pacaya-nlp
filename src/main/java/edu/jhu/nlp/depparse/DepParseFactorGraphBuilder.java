@@ -132,7 +132,7 @@ public class DepParseFactorGraphBuilder implements Serializable {
         this.n = words.size();
         
         // Create the Link variables.
-        if (prm.useProjDepTreeFactor && prm.linkVarType != VarType.OBSERVED) {
+        if (prm.useProjDepTreeFactor) {
             log.trace("Adding projective dependency tree global factor.");
             ProjDepTreeFactor treeFactor = new ProjDepTreeFactor(n, prm.linkVarType);
             rootVars = treeFactor.getRootVars();
@@ -159,11 +159,6 @@ public class DepParseFactorGraphBuilder implements Serializable {
         if (!prm.pruneEdges || depEdgeMask == null) {
             // Keep all edges
             depEdgeMask = new DepEdgeMask(words.size(), true);
-        }
-        
-        // Don't include factors on observed variables.
-        if (prm.linkVarType == VarType.OBSERVED) {
-            return;
         }
         
         addClampFactors(fg, depEdgeMask, fe);

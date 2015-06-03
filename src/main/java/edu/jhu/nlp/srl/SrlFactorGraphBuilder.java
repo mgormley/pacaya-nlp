@@ -252,7 +252,7 @@ public class SrlFactorGraphBuilder implements Serializable {
                 }
             }
             // Add the unary factors for the sense variables.
-            if (i >= 0 && senseVars[i] != null && senseVars[i].getType() != VarType.OBSERVED) {
+            if (i >= 0 && senseVars[i] != null) {
                 String templateKey = SrlFactorTemplate.SENSE_UNARY + "_" + lemmaForTk;
                 fg.addFactor(new ObsFeTypedFactor(new VarSet(senseVars[i]), SrlFactorTemplate.SENSE_UNARY, templateKey, ofc, obsFe));
             }

@@ -28,7 +28,7 @@ import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.GlobalFactor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
-import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
+import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
@@ -99,7 +99,6 @@ public class O2AllGraFgInferencerTest {
 
         FeatureNames alphabet = new FeatureNames();
         LinkVarFe fe = new LinkVarFe(alphabet);
-        fe.obsConfig = new VarConfig();
         builder.build(sent, fe, fg);
         
         FgModel model = new FgModel(1000);

@@ -51,7 +51,7 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
     }
 
     private AnnoSentence decode(UFgExample ex, MbrDecoder mbrDecoder, FgInferencer inf, AnnoSentence sent) {
-        JointNlpFactorGraph fg = (JointNlpFactorGraph) ex.getOriginalFactorGraph();
+        JointNlpFactorGraph fg = (JointNlpFactorGraph) ex.getFgLatPred();
         int n = fg.getSentenceLength();
         VarConfig mbrVarConfig = mbrDecoder.getMbrVarConfig();
 

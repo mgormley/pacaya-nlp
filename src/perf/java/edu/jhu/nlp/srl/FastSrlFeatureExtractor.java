@@ -37,9 +37,6 @@ public class FastSrlFeatureExtractor implements ObsFeatureExtractor {
 
     @Override
     public void init(UFgExample ex, FactorTemplateList fts) {
-        if (ex.getObsConfig().size() > 0) {
-            throw new IllegalStateException("This feature extractor does not support observed variables.");
-        }
         this.fts = fts;
     }
     

@@ -74,11 +74,7 @@ public class BitshiftDepParseFeatureExtractor implements FeatureExtractor {
     }
 
     @Override
-    public void init(UFgExample ex) {
-        if (ex.getObsConfig().size() > 0) {
-            throw new IllegalStateException("This feature extractor does not support observed variables.");
-        }
-    }
+    public void init(UFgExample ex) { }
     
     @Override
     public FeatureVector calcFeatureVector(FeExpFamFactor factor, int configId) {        

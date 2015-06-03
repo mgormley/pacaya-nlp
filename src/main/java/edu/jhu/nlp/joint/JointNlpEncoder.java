@@ -95,9 +95,6 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         if (prm.fgPrm.includeDp) {
             if (gold != null && gold.getParents() != null) {
                 DepParseEncoder.addDepParseTrainAssignment(gold.getParents(), fg.getDpBuilder(), vc);
-            } else if (sent.getParents() != null && prm.fgPrm.includeDp && prm.fgPrm.dpPrm.linkVarType == VarType.OBSERVED) {
-                // If the dependency tree is given in the input sentence, we might have added OBSERVED variables for it.
-                DepParseEncoder.addDepParseTrainAssignment(sent.getParents(), fg.getDpBuilder(), vc);
             }
         }
         if (prm.fgPrm.includeSrl) {

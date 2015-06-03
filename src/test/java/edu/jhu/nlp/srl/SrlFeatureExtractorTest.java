@@ -35,8 +35,8 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
-import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCFeatureExtractor;
-import edu.jhu.pacaya.gm.train.CrfTrainerTest.SimpleVCObsFeatureExtractor;
+import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
+import edu.jhu.pacaya.gm.train.SimpleVCObsFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.set.IntHashSet;
@@ -70,7 +70,7 @@ public class SrlFeatureExtractorTest {
         prm.fePrm.biasOnly = true;
         prm.featureHashMod = -1; // Disable feature hashing.
         SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, sents.get(0), cs);
-        featExt.init(new VarConfig(), fts);
+        featExt.init(fts);
         for (int a=0; a<sfg.getNumFactors(); a++) {
             Factor f = sfg.getFactor(a);
             if (f instanceof ObsFeExpFamFactor) {
@@ -106,7 +106,7 @@ public class SrlFeatureExtractorTest {
         prm.fePrm.srlFePrm.featureHashMod = -1;
         
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
-        prm.fgPrm.dpPrm.linkVarType = VarType.OBSERVED;
+        prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
         prm.fgPrm.includeRel = false;
 
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
@@ -120,10 +120,7 @@ public class SrlFeatureExtractorTest {
         // For biasOnly=true: 
         //assertEquals(17, model.getAlphabet().size());
         
-        // For useNaradFeats=true: 
-        // Correct number of obs feats 358, and seeing 358 after bad commit.
-        // Correct number is 972, but seeing 932 after bad commit.
-        assertEquals(665, ofc.getNumParams());
+        assertEquals(2920, ofc.getNumParams());
     }
     
     @Test
@@ -151,7 +148,7 @@ public class SrlFeatureExtractorTest {
         prm.fePrm.srlFePrm.featureHashMod = -1;
         
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
-        prm.fgPrm.dpPrm.linkVarType = VarType.OBSERVED;
+        prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
         prm.fgPrm.includeRel = false;
         
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
@@ -166,7 +163,7 @@ public class SrlFeatureExtractorTest {
         
         // For useNaradFeats=true: 
         // Correct number is 72, and seeing 72 after bad commit.
-        assertEquals(92, ofc.getNumParams());
+        assertEquals(170, ofc.getNumParams());
     }
     
     @Test
@@ -205,7 +202,7 @@ public class SrlFeatureExtractorTest {
         prm.fePrm = fePrm;
         prm.featureHashMod = 2; // Enable feature hashing
         SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, simpleSents.get(0), cs);
-        featExt.init(new VarConfig(), fts);
+        featExt.init(fts);
         for (int a=0; a<sfg.getNumFactors(); a++) {
             Factor f = sfg.getFactor(a);
             if (f instanceof ObsFeExpFamFactor) {
