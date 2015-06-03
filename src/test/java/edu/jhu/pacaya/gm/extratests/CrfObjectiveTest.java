@@ -61,11 +61,11 @@ public class CrfObjectiveTest {
 
     @Test
     public void testSrlLogLikelihood() throws Exception {
-        checkSrlLogLikelihoodCorrect(false);
-        checkSrlLogLikelihoodCorrect(true);
+        checkSrlLogLikelihoodCorrect(RealAlgebra.REAL_ALGEBRA);
+        checkSrlLogLikelihoodCorrect(LogSemiring.LOG_SEMIRING);
     }
     
-    public void checkSrlLogLikelihoodCorrect(boolean logDomain) {
+    public void checkSrlLogLikelihoodCorrect(Algebra s) {
         List<CoNLL09Token> tokens = new ArrayList<CoNLL09Token>();
         //tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", new ArrayList<String>()));
         //tokens.add(new CoNLL09Token(id, form, lemma, plemma, pos, ppos, feat, pfeat, head, phead, deprel, pdeprel, fillpred, pred, apreds));
@@ -96,7 +96,7 @@ public class CrfObjectiveTest {
         System.out.println("Num features: " + fts.getNumObsFeats());
         FgModel model = new FgModel(ofc.getNumParams());
 
-        FgInferencerFactory infFactory = getInfFactory(logDomain);        
+        FgInferencerFactory infFactory = getInfFactory(s);        
         LFgExample ex = data.get(0);
         
         FactorGraph fgLat = ex.getFgLat();
@@ -134,7 +134,7 @@ public class CrfObjectiveTest {
         for (Var v : fgLatPred.getVars()) {
             double partition = ((BeliefPropagation)infLatPred).getPartitionBeliefAtVarNode(fgLatPred.getNode(v));
             System.out.format("Var=%s partition=%.4f\n", v.toString(), partition);
-            assertEquals(2*3, logDomain ? FastMath.exp(partition) : partition, 1e-3);
+            assertEquals(2*3, s == LogSemiring.LOG_SEMIRING ? FastMath.exp(partition) : partition, 1e-3);
         }
         
         Function obj = getCrfObj(model, data, infFactory);
@@ -146,11 +146,11 @@ public class CrfObjectiveTest {
     
     @Test
     public void testDp1stOrderLogLikelihoodLessThanZero() throws Exception {
-        checkDp1stOrderLogLikelihoodLessThanZero(false);
-        checkDp1stOrderLogLikelihoodLessThanZero(true);
+        checkDp1stOrderLogLikelihoodLessThanZero(RealAlgebra.REAL_ALGEBRA);
+        checkDp1stOrderLogLikelihoodLessThanZero(LogSemiring.LOG_SEMIRING);
     }
     
-    public void checkDp1stOrderLogLikelihoodLessThanZero(boolean logDomain) throws Exception {
+    public void checkDp1stOrderLogLikelihoodLessThanZero(Algebra s) throws Exception {
         Prng.seed(123456789101112l);
         FactorTemplateList fts = new FactorTemplateList();
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
@@ -162,7 +162,7 @@ public class CrfObjectiveTest {
         model.setRandomStandardNormal();
         System.out.println("Model L2 norm: " + model.l2Norm());
         
-        FgInferencerFactory infFactory = getInfFactory(logDomain); 
+        FgInferencerFactory infFactory = getInfFactory(s); 
         Function obj = getCrfObj(model, data, infFactory);
         double ll = obj.getValue(model.getParams());        
         assertTrue(ll < 0d);
@@ -334,9 +334,9 @@ public class CrfObjectiveTest {
         return new AvgBatchObjective(exObj, model, 1);
     }
 
-    public static FgInferencerFactory getInfFactory(boolean logDomain) {
+    public static FgInferencerFactory getInfFactory(Algebra s) {
         BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
-        bpPrm.logDomain = logDomain;
+        bpPrm.s = s;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.normalizeMessages = false;

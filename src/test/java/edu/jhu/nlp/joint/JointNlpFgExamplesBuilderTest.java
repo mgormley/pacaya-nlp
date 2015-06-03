@@ -40,6 +40,7 @@ import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
 import edu.jhu.pacaya.gm.train.CrfTrainer;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 
 /**
  * Unit tests for {@link JointNlpFgExamplesBuilderTest}.
@@ -273,7 +274,7 @@ public class JointNlpFgExamplesBuilderTest {
     
     private static FgModel train(FgModel model, FgExampleList data) {
         BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
-        bpPrm.logDomain = true;
+        bpPrm.s = LogSemiring.LOG_SEMIRING;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.normalizeMessages = false;
