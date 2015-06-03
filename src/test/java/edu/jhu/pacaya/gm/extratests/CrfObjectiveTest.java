@@ -99,9 +99,9 @@ public class CrfObjectiveTest {
         FgInferencerFactory infFactory = getInfFactory(s);        
         LFgExample ex = data.get(0);
         
-        FactorGraph fgLat = ex.getFgLat();
+        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFgLatPred(), ex.getGoldConfig());
         fgLat.updateFromModel(model);
-        FgInferencer infLat = infFactory.getInferencer(ex.getFgLat());
+        FgInferencer infLat = infFactory.getInferencer(fgLat);
         infLat.run();        
         assertEquals(2, infLat.getPartition(), 2);
         // Check that the partition function is computed identically for each variable.
