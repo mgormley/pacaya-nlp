@@ -3,90 +3,10 @@ package edu.jhu.nlp.features;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Test;
-
-import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
-import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.features.SentFeatureExtractor.SentFeatureExtractorPrm;
-import edu.jhu.pacaya.util.collections.Lists;
 
-public class SentFeatureExtractorTest {
-
-    @Test
-    public void testAddZhaoFeatures() {
-        CoNLL09Sentence sent = getSpanishConll09Sentence2();
-        CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
-        csPrm.useGoldSyntax = true;
-        CorpusStatistics cs = new CorpusStatistics(csPrm);
-        AnnoSentence simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
-        cs.init(Lists.getList(simpleSent));
-        SentFeatureExtractorPrm fePrm = new SentFeatureExtractorPrm();
-        fePrm.withSupervision = false;
-        SentFeatureExtractor fe = new SentFeatureExtractor(fePrm, simpleSent, cs);
-
-        ArrayList<String> allFeats = new ArrayList<String>();
-        for (int i = 0; i < sent.size(); i++) {
-            for (int j = 0; j < sent.size(); j++) {
-                fe.addZhaoPairFeatures(i, j, allFeats);
-            }
-        }
-        for (String f : allFeats) {
-            System.out.println(f);
-        }
-        //Check that POS is not gold POS
-        fePrm.withSupervision = true;
-        fe = new SentFeatureExtractor(fePrm, simpleSent, cs);
-        allFeats = new ArrayList<String>();
-        for (int i = 0; i < sent.size(); i++) {
-            for (int j = 0; j < sent.size(); j++) {
-                fe.addZhaoPairFeatures(i, j, allFeats);
-            }
-        }
-    }
-    
-    @Test
-    public void testAddNaradowskyFeatures() {
-        CoNLL09Sentence sent = getSpanishConll09Sentence1();
-        CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
-        csPrm.useGoldSyntax = true;
-        CorpusStatistics cs = new CorpusStatistics(csPrm);
-        AnnoSentence simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
-        cs.init(Lists.getList(simpleSent));
-        SentFeatureExtractorPrm fePrm = new SentFeatureExtractorPrm();
-        SentFeatureExtractor fe = new SentFeatureExtractor(fePrm, simpleSent, cs);
-
-        ArrayList<String> allFeats = new ArrayList<String>();
-        for (int i = 0; i < sent.size(); i++) {
-            fe.addNaradowskySoloFeatures(i, allFeats);
-            for (int j = 0; j < sent.size(); j++) {
-                fe.addNaradowskyPairFeatures(i, j, allFeats);
-            }
-        }
-        for (String f : allFeats) {
-            System.out.println(f);
-        }
-    }
-    
-    @Test
-    public void testAddBjorkelundPairFeatures() {
-        CoNLL09Sentence sent = getSpanishConll09Sentence1();
-        CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
-        csPrm.useGoldSyntax = true;
-        CorpusStatistics cs = new CorpusStatistics(csPrm);
-        AnnoSentence simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
-        cs.init(Lists.getList(simpleSent));
-        SentFeatureExtractorPrm fePrm = new SentFeatureExtractorPrm();
-        SentFeatureExtractor fe = new SentFeatureExtractor(fePrm, simpleSent, cs);
-
-        ArrayList<String> allFeats = new ArrayList<String>();
-        fe.addBjorkelundPairFeatures(0, 1, allFeats);
-        for (String f : allFeats) {
-            System.out.println(f);
-        }        
-    }
+public class CoNLL09SentencesForTests {
             
     public static CoNLL09Sentence getSpanishConll09Sentence1() {
         List<CoNLL09Token> tokens = new ArrayList<CoNLL09Token>();  

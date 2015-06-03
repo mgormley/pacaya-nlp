@@ -68,7 +68,7 @@ public class JointNlpFgExamplesBuilderTest {
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
         
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
-        prm.fePrm.srlFePrm.fePrm.biasOnly = true;
+        prm.fePrm.srlFePrm.biasOnly = true;
 
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
@@ -95,7 +95,7 @@ public class JointNlpFgExamplesBuilderTest {
         }
         cs.init(simpleSents);        
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.fePrm.biasOnly = true;
+        prm.fePrm.srlFePrm.biasOnly = true;
         //prm.includeUnsupportedFeatures = 
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
 
@@ -137,9 +137,9 @@ public class JointNlpFgExamplesBuilderTest {
 
         cs.init(simpleSents);
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.fePrm.useTemplates = true;
-        prm.fePrm.srlFePrm.fePrm.soloTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
-        prm.fePrm.srlFePrm.fePrm.pairTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
+        prm.fePrm.srlFePrm.useTemplates = true;
+        prm.fePrm.srlFePrm.soloTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
+        prm.fePrm.srlFePrm.pairTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         
         {
@@ -210,7 +210,7 @@ public class JointNlpFgExamplesBuilderTest {
         cs.init(simpleSents);        
         
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.fePrm.biasOnly = true;
+        prm.fePrm.srlFePrm.biasOnly = true;
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
 
@@ -250,7 +250,7 @@ public class JointNlpFgExamplesBuilderTest {
         cs.init(simpleSents);        
         
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.fePrm.biasOnly = true;
+        prm.fePrm.srlFePrm.biasOnly = true;
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.srlPrm.predictSense = true;
         prm.fgPrm.srlPrm.predictPredPos = false;

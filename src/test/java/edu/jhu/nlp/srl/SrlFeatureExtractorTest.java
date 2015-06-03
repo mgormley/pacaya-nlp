@@ -17,7 +17,6 @@ import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.features.SentFeatureExtractor.SentFeatureExtractorPrm;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.JointNlpFactorGraph;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
@@ -34,7 +33,6 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.gm.train.SimpleVCObsFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
@@ -67,7 +65,7 @@ public class SrlFeatureExtractorTest {
         fts.lookupTemplateIds(sfg);
         
         SrlFeatureExtractorPrm prm = new SrlFeatureExtractorPrm();
-        prm.fePrm.biasOnly = true;
+        prm.biasOnly = true;
         prm.featureHashMod = -1; // Disable feature hashing.
         SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, sents.get(0), cs);
         featExt.init(fts);
@@ -190,16 +188,10 @@ public class SrlFeatureExtractorTest {
         
         fts.lookupTemplateIds(sfg);
         
-        SentFeatureExtractorPrm fePrm = new SentFeatureExtractorPrm();
-        fePrm.useNaradFeats = false;
-        fePrm.useSimpleFeats = false;
-        fePrm.useZhaoFeats = false;
-        fePrm.useLexicalDepPathFeats = false;
-        fePrm.useTemplates = true;
-        fePrm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
-        fePrm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
         SrlFeatureExtractorPrm prm = new SrlFeatureExtractorPrm();
-        prm.fePrm = fePrm;
+        prm.useTemplates = true;
+        prm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
+        prm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
         prm.featureHashMod = 2; // Enable feature hashing
         SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, simpleSents.get(0), cs);
         featExt.init(fts);

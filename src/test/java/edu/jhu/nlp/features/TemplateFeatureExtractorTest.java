@@ -196,7 +196,7 @@ public class TemplateFeatureExtractorTest {
     @Test    
     public void testEosProperties() {
         TemplateFeatureExtractor extr = getCoNLLSentenceExtractor1();
-        int n = SentFeatureExtractorTest.getSpanishConll09Sentence1().size();
+        int n = CoNLL09SentencesForTests.getSpanishConll09Sentence1().size();
         assertEquals("END_NO_FORM", extr.getTokProp(TokProperty.WORD, n));
         assertEquals("END_NO_LEMMA", extr.getTokProp(TokProperty.LEMMA, n));
         assertEquals("END_NO_POS", extr.getTokProp(TokProperty.POS, n));
@@ -494,7 +494,7 @@ public class TemplateFeatureExtractorTest {
     }
 
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor1() {
-        AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(SentFeatureExtractorTest.getSpanishConll09Sentence1(), true);
+        AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence1(), true);
         addFakeBrownClusters(sent);
         PrefixAnnotator.addPrefixes(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
@@ -504,7 +504,7 @@ public class TemplateFeatureExtractorTest {
     }
 
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor2() {
-        AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(SentFeatureExtractorTest.getSpanishConll09Sentence2(), true);
+        AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence2(), true);
         addFakeBrownClusters(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(Lists.getList(sent));

@@ -86,7 +86,7 @@ public class CrfObjectiveTest {
         prm.fgPrm.srlPrm.makeUnknownPredRolesLatent = false;
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
-        prm.fePrm.srlFePrm.fePrm.biasOnly = true;
+        prm.fePrm.srlFePrm.biasOnly = true;
         
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);

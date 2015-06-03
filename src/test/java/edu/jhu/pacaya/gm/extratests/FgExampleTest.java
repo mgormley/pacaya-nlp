@@ -52,7 +52,7 @@ public class FgExampleTest {
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
         prm.fgPrm.dpPrm.linkVarType = VarType.LATENT;
 
-        prm.fePrm.srlFePrm.fePrm.biasOnly = true;
+        prm.fePrm.srlFePrm.biasOnly = true;
         
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);

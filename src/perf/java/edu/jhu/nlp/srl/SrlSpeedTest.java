@@ -168,10 +168,10 @@ public class SrlSpeedTest {
     public static LFgExample getSrlFg(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc, int numParams) {        
         SrlEncoderPrm prm = new SrlEncoderPrm();
         prm.srlFePrm.featureHashMod = numParams;
-        prm.srlFePrm.fePrm.useTemplates = true;
-        //prm.srlFePrm.fePrm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();;
-        prm.srlFePrm.fePrm.pairTemplates = TemplateSets.getFromResource("/edu/jhu/nlp/features/coarse1-arg-feats-igconll09en.txt");
-        prm.srlFePrm.fePrm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
+        prm.srlFePrm.useTemplates = true;
+        //prm.srlFePrm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();;
+        prm.srlFePrm.pairTemplates = TemplateSets.getFromResource("/edu/jhu/nlp/features/coarse1-arg-feats-igconll09en.txt");
+        prm.srlFePrm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
         prm.srlPrm.allowPredArgSelfLoops = true;
         prm.srlPrm.binarySenseRoleFactors = true;
         prm.srlPrm.predictPredPos = true;

@@ -6,6 +6,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -63,7 +64,7 @@ public class ConcreteWriterTest {
         ConcreteWriterPrm cwPrm = new ConcreteWriterPrm();
         cwPrm.addAnnoTypes(Arrays.asList(AT.DEP_TREE, AT.SRL, AT.NER, AT.RELATIONS));
         ConcreteWriter cw = new ConcreteWriter(cwPrm);
-        cw.write(asc, tempFile);
+        cw.write(asc, tempFile);        
     }
 
     @Test
@@ -94,7 +95,8 @@ public class ConcreteWriterTest {
 
         // Write Communication to disk
         CompactCommunicationSerializer ser = new CompactCommunicationSerializer();
-        Files.write(Paths.get("simpleFile.concrete"), ser.toBytes(simpleComm));
+        Path opath = Paths.get("simpleFile.concrete");
+        Files.write(opath, ser.toBytes(simpleComm));
 
         // Add SRL graph to AnnoSentence
         SrlGraphTest sgt = new SrlGraphTest();
@@ -108,8 +110,8 @@ public class ConcreteWriterTest {
         cw.addAnnotations(sentences, simpleComm);
 
         // Write annotated Communication to disk
-        final File srlFile = tempFolder.newFile("srlFile.concrete");
-        cw.write(sentences, new File("srlFile.concrete"));
+        cw.write(sentences, opath.toFile());
+        Files.delete(opath);
     }
 
     public static Communication createSimpleCommunication() throws Exception {

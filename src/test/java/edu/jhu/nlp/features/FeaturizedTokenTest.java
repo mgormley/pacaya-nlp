@@ -149,11 +149,11 @@ public class FeaturizedTokenTest {
     }
     
     public static CoNLL09Sentence getSpanishConll09Sentence1() {
-        return SentFeatureExtractorTest.getSpanishConll09Sentence1(); 
+        return CoNLL09SentencesForTests.getSpanishConll09Sentence1(); 
     }
     
     public static CoNLL09Sentence getSpanishConll09Sentence2() {
-        return SentFeatureExtractorTest.getSpanishConll09Sentence2(); 
+        return CoNLL09SentencesForTests.getSpanishConll09Sentence2(); 
     }
     
     public static CoNLL09Sentence getDogConll09Sentence() {

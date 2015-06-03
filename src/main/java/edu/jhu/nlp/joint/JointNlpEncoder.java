@@ -127,10 +127,10 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
             // Check that the first sentence has all the required annotation
             // types for the specified feature templates.
             AnnoSentence sent = sents.get(0);
-            if (prm.fePrm.srlFePrm.fePrm.useTemplates) {
+            if (prm.fePrm.srlFePrm.useTemplates) {
                 if (prm.fgPrm.includeSrl) {
-                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.fePrm.soloTemplates);
-                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.fePrm.pairTemplates);
+                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.soloTemplates);
+                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.pairTemplates);
                 }
             }
             if (prm.fgPrm.includeDp && !prm.fePrm.dpFePrm.onlyFast) {

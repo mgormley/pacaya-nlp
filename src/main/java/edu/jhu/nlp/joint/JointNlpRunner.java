@@ -253,16 +253,6 @@ public class JointNlpRunner {
     public static int featCountCutoff = 4;
     @Opt(hasArg = true, description = "Whether to include unsupported features.")
     public static boolean includeUnsupportedFeatures = false;
-    @Opt(hasArg = true, description = "Whether to add the Simple features.")
-    public static boolean useSimpleFeats = true;
-    @Opt(hasArg = true, description = "Whether to add the Naradowsky features.")
-    public static boolean useNaradFeats = true;
-    @Opt(hasArg = true, description = "Whether to add the Zhao features.")
-    public static boolean useZhaoFeats = true;
-    @Opt(hasArg = true, description = "Whether to add the Bjorkelund features.")
-    public static boolean useBjorkelundFeats = true;
-    @Opt(hasArg = true, description = "Whether to add dependency path features.")
-    public static boolean useLexicalDepPathFeats = false;
     @Opt(hasArg = true, description = "Whether to include pairs of features.")
     public static boolean useTemplates = false;
     @Opt(hasArg = true, description = "Sense feature templates.")
@@ -698,16 +688,11 @@ public class JointNlpRunner {
     private static JointNlpFeatureExtractorPrm getJointNlpFeatureExtractorPrm() {
         // SRL Feature Extraction.
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
-        srlFePrm.fePrm.biasOnly = biasOnly;
-        srlFePrm.fePrm.useSimpleFeats = useSimpleFeats;
-        srlFePrm.fePrm.useNaradFeats = useNaradFeats;
-        srlFePrm.fePrm.useZhaoFeats = useZhaoFeats;
-        srlFePrm.fePrm.useBjorkelundFeats = useBjorkelundFeats;
-        srlFePrm.fePrm.useLexicalDepPathFeats = useLexicalDepPathFeats;
-        srlFePrm.fePrm.useTemplates = useTemplates;
+        srlFePrm.biasOnly = biasOnly;
+        srlFePrm.useTemplates = useTemplates;
         
-        srlFePrm.fePrm.soloTemplates = getFeatTpls(senseFeatTpls);
-        srlFePrm.fePrm.pairTemplates = getFeatTpls(argFeatTpls);
+        srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
+        srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
 
         srlFePrm.featureHashMod = featureHashMod;
                 
