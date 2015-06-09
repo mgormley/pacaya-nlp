@@ -35,7 +35,7 @@ public class JointNlpFgModelTest {
             
             FactorTemplateList fts = ObsFeatureConjoinerTest.getFtl();
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
-            ofc.init();
+            ofc.init(null);
             
             // Just test that no exception is thrown.
             JointNlpFgModel model = new JointNlpFgModel(cs, ofc, new JointNlpFeatureExtractorPrm());
