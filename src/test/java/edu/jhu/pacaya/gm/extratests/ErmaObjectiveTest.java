@@ -47,10 +47,10 @@ public class ErmaObjectiveTest {
     
     @Test
     public void testDpData() throws IOException {
-        helpDpDataErma(new ExpectedRecallFactory(), RealAlgebra.REAL_ALGEBRA);
-        helpDpDataErma(new MeanSquaredErrorFactory(), RealAlgebra.REAL_ALGEBRA);
-        helpDpDataErma(new ExpectedRecallFactory(), LogSignAlgebra.LOG_SIGN_ALGEBRA);
-        helpDpDataErma(new MeanSquaredErrorFactory(), LogSignAlgebra.LOG_SIGN_ALGEBRA);
+        helpDpDataErma(new ExpectedRecallFactory(), RealAlgebra.SINGLETON);
+        helpDpDataErma(new MeanSquaredErrorFactory(), RealAlgebra.SINGLETON);
+        helpDpDataErma(new ExpectedRecallFactory(), LogSignAlgebra.SINGLETON);
+        helpDpDataErma(new MeanSquaredErrorFactory(), LogSignAlgebra.SINGLETON);
     }
 
     private void helpDpDataErma(DlFactory dl, Algebra s) throws IOException {
@@ -94,7 +94,7 @@ public class ErmaObjectiveTest {
         FgModel model = new FgModel(ofc.getNumParams());
         model.setRandomStandardNormal();
 
-        CrfObjective exObj = new CrfObjective(data, getErmaBpPrm(RealAlgebra.REAL_ALGEBRA));
+        CrfObjective exObj = new CrfObjective(data, getErmaBpPrm(RealAlgebra.SINGLETON));
         AvgBatchObjective obj = new AvgBatchObjective(exObj, model, 1);
         
         ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-8);

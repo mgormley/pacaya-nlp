@@ -74,7 +74,7 @@ public class HyperDepParserSpeedTest {
         }
 
         for (int round=0; round<2; round++) {
-            Semiring s = LogViterbiSemiring.LOG_VITERBI_SEMIRING;
+            Semiring s = LogViterbiSemiring.SINGLETON;
             Timer timer = new Timer();
             timer.start();
             for (int t=0; t<trials; t++) {

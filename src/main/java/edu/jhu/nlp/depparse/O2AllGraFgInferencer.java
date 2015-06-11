@@ -143,7 +143,7 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         }
         
         // Convert the scores to the semiring used by this inference method.
-        Algebras.convertAlgebra(scores, LogSemiring.LOG_SEMIRING, s);
+        Algebras.convertAlgebra(scores, LogSemiring.SINGLETON, s);
         
         if (log.isTraceEnabled()) { log.trace("scores: " + Arrays.deepToString(scores)); }
         return new ExplicitDependencyScorer(scores, n);

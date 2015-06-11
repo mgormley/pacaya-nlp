@@ -76,7 +76,7 @@ public class FirstOrderPruner implements Annotator {
         exPrm.fePrm = fePrm;
                 
         final ErmaBpPrm bpPrm = new ErmaBpPrm();
-        bpPrm.s = LogSemiring.LOG_SEMIRING;
+        bpPrm.s = LogSemiring.SINGLETON;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.normalizeMessages = false;

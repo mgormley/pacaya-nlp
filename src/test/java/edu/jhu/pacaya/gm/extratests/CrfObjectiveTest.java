@@ -61,8 +61,8 @@ public class CrfObjectiveTest {
 
     @Test
     public void testSrlLogLikelihood() throws Exception {
-        checkSrlLogLikelihoodCorrect(RealAlgebra.REAL_ALGEBRA);
-        checkSrlLogLikelihoodCorrect(LogSemiring.LOG_SEMIRING);
+        checkSrlLogLikelihoodCorrect(RealAlgebra.SINGLETON);
+        checkSrlLogLikelihoodCorrect(LogSemiring.SINGLETON);
     }
     
     public void checkSrlLogLikelihoodCorrect(Algebra s) {
@@ -134,7 +134,7 @@ public class CrfObjectiveTest {
         for (Var v : fgLatPred.getVars()) {
             double partition = ((BeliefPropagation)infLatPred).getPartitionBeliefAtVarNode(fgLatPred.getNode(v));
             System.out.format("Var=%s partition=%.4f\n", v.toString(), partition);
-            assertEquals(2*3, s == LogSemiring.LOG_SEMIRING ? FastMath.exp(partition) : partition, 1e-3);
+            assertEquals(2*3, s == LogSemiring.SINGLETON ? FastMath.exp(partition) : partition, 1e-3);
         }
         
         Function obj = getCrfObj(model, data, infFactory);
@@ -146,8 +146,8 @@ public class CrfObjectiveTest {
     
     @Test
     public void testDp1stOrderLogLikelihoodLessThanZero() throws Exception {
-        checkDp1stOrderLogLikelihoodLessThanZero(RealAlgebra.REAL_ALGEBRA);
-        checkDp1stOrderLogLikelihoodLessThanZero(LogSemiring.LOG_SEMIRING);
+        checkDp1stOrderLogLikelihoodLessThanZero(RealAlgebra.SINGLETON);
+        checkDp1stOrderLogLikelihoodLessThanZero(LogSemiring.SINGLETON);
     }
     
     public void checkDp1stOrderLogLikelihoodLessThanZero(Algebra s) throws Exception {
@@ -202,13 +202,13 @@ public class CrfObjectiveTest {
     //    10856    INFO  AvgBatchObjective - Average objective for full dataset: -1320.3962741774715
     @Test
     public void testDp2ndOrderBetheFreeEnergy() throws Exception {
-        checkDp2ndOrderBetheFreeEnergy(RealAlgebra.REAL_ALGEBRA);
+        checkDp2ndOrderBetheFreeEnergy(RealAlgebra.SINGLETON);
         // checkDp2ndOrderBetheFreeEnergy(Algebras.SPLIT_ALGEBRA);
         // The shifted real algebra gives invalid BFE, it's still not clear if this is just a
         // precision problem or actually a bug.
         //checkDp2ndOrderBetheFreeEnergy(Algebras.SHIFTED_REAL_ALGEBRA);
-        checkDp2ndOrderBetheFreeEnergy(LogSemiring.LOG_SEMIRING);
-        checkDp2ndOrderBetheFreeEnergy(LogSignAlgebra.LOG_SIGN_ALGEBRA);
+        checkDp2ndOrderBetheFreeEnergy(LogSemiring.SINGLETON);
+        checkDp2ndOrderBetheFreeEnergy(LogSignAlgebra.SINGLETON);
     }
     
     public void checkDp2ndOrderBetheFreeEnergy(Algebra s) throws Exception {
@@ -255,18 +255,18 @@ public class CrfObjectiveTest {
         
         {
             // Take one gradient step.
-            IntDoubleVector gradReal = getGradientDp2ndOrder(model, RealAlgebra.REAL_ALGEBRA, featureHashMod);
+            IntDoubleVector gradReal = getGradientDp2ndOrder(model, RealAlgebra.SINGLETON, featureHashMod);
             gradReal.scale(0.05);
             model.getParams().add(gradReal);
         }
         
         // Get the gradient using different semirings.
-        IntDoubleVector gradReal = getGradientDp2ndOrder(model, RealAlgebra.REAL_ALGEBRA, featureHashMod);
-        IntDoubleVector gradSplit = getGradientDp2ndOrder(model, SplitAlgebra.SPLIT_ALGEBRA, featureHashMod);
+        IntDoubleVector gradReal = getGradientDp2ndOrder(model, RealAlgebra.SINGLETON, featureHashMod);
+        IntDoubleVector gradSplit = getGradientDp2ndOrder(model, SplitAlgebra.SINGLETON, featureHashMod);
         // The shifted algebra sometimes gives invalid gradients but might be due to loss of precision.
-        IntDoubleVector gradShifted = getGradientDp2ndOrder(model, ShiftedRealAlgebra.SHIFTED_REAL_ALGEBRA, featureHashMod);
-        IntDoubleVector gradLog = getGradientDp2ndOrder(model, LogSemiring.LOG_SEMIRING, featureHashMod);
-        IntDoubleVector gradLogSign = getGradientDp2ndOrder(model, LogSignAlgebra.LOG_SIGN_ALGEBRA, featureHashMod);
+        IntDoubleVector gradShifted = getGradientDp2ndOrder(model, ShiftedRealAlgebra.SINGLETON, featureHashMod);
+        IntDoubleVector gradLog = getGradientDp2ndOrder(model, LogSemiring.SINGLETON, featureHashMod);
+        IntDoubleVector gradLogSign = getGradientDp2ndOrder(model, LogSignAlgebra.SINGLETON, featureHashMod);
 
         // Assert that the gradients are all equal.
         for (int i=0; i<featureHashMod; i++) {
