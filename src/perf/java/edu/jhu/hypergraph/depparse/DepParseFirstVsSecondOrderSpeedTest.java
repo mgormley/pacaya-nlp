@@ -85,7 +85,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
             {
                 // First order
                 UFgExample ex = DepParseFactorGraphBuilderSpeedTest.get1stOrderFg(sent, cs, ofc, numParams, onlyFast);
-                fg1 = ex.getFgLatPred();
+                fg1 = ex.getFactorGraph();
                 fg1.updateFromModel(model);
                 bp1 = DepParseInferenceSpeedTest.runBp(fg1);
                 DepParseDecoder decode = new DepParseDecoder();
@@ -94,7 +94,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
             {
                 // Second order
                 UFgExample ex = get2ndOrderFg(sent, cs, ofc, numParams, onlyFast);
-                fg2 = ex.getFgLatPred();
+                fg2 = ex.getFactorGraph();
                 fg2.updateFromModel(model);
                 bp2 = DepParseInferenceSpeedTest.runBp(fg2);
                 DepParseDecoder decode = new DepParseDecoder();
@@ -175,7 +175,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
             {
                 // Second order 5 iters
                 UFgExample ex = get2ndOrderFg(sent, cs, ofc, numParams, onlyFast);
-                fg1 = ex.getFgLatPred();
+                fg1 = ex.getFactorGraph();
                 fg1.updateFromModel(model);
                 bp1 = DepParseInferenceSpeedTest.runBp(fg1, 5);
                 DepParseDecoder decode = new DepParseDecoder();
@@ -184,7 +184,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
             {
                 // Second order 10 iters
                 UFgExample ex = get2ndOrderFg(sent, cs, ofc, numParams, onlyFast);
-                fg2 = ex.getFgLatPred();
+                fg2 = ex.getFactorGraph();
                 fg2.updateFromModel(model);
                 bp2 = DepParseInferenceSpeedTest.runBp(fg2, 10);
                 DepParseDecoder decode = new DepParseDecoder();
@@ -275,7 +275,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
             {
                 // Second order 10 iters
                 UFgExample ex = get2ndOrderGraOnlyFg(sent, cs, ofc, numParams, onlyFast);
-                fg1 = ex.getFgLatPred();
+                fg1 = ex.getFactorGraph();
                 fg1.updateFromModel(model);
                 bp1 = DepParseInferenceSpeedTest.runBp(fg1, 10);
                 //es1 = DepParseDecoder.getEdgeScores(bp1, fg1, sent.size()).get1();
@@ -285,7 +285,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
             {
                 // Second order exact
                 UFgExample ex = get2ndOrderGraOnlyFg(sent, cs, ofc, numParams, onlyFast);
-                fg2 = ex.getFgLatPred();
+                fg2 = ex.getFactorGraph();
                 fg2.updateFromModel(model);
                 bp2 = new O2AllGraFgInferencer(fg2, LogSignAlgebra.LOG_SIGN_ALGEBRA);
                 bp2.run();

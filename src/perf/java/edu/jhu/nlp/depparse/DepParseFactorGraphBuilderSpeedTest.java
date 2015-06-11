@@ -29,7 +29,7 @@ public class DepParseFactorGraphBuilderSpeedTest {
         t.start();
         for (AnnoSentence sent : sents) {
             UFgExample ex = get1stOrderFg(sent);
-            ex.getFgLatPred();
+            ex.getFactorGraph();
         }
         t.stop();
         System.out.println("Tokens / sec: " + (sents.getNumTokens() / t.totSec()));

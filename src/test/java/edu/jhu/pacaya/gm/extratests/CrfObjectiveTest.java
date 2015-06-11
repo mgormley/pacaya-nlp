@@ -99,7 +99,7 @@ public class CrfObjectiveTest {
         FgInferencerFactory infFactory = getInfFactory(s);        
         LFgExample ex = data.get(0);
         
-        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFgLatPred(), ex.getGoldConfig());
+        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());
         fgLat.updateFromModel(model);
         FgInferencer infLat = infFactory.getInferencer(fgLat);
         infLat.run();        
@@ -112,7 +112,7 @@ public class CrfObjectiveTest {
         
         System.out.println("-------- Running LatPred Inference-----------");
         
-        FactorGraph fgLatPred = ex.getFgLatPred();
+        FactorGraph fgLatPred = ex.getFactorGraph();
         fgLatPred.updateFromModel(model);
         FgInferencer infLatPred = infFactory.getInferencer(fgLatPred);
         infLatPred.run();        

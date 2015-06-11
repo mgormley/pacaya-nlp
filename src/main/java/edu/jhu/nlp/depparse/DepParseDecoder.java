@@ -40,7 +40,7 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
      */
     @Override
     public int[] decode(FgInferencer inf, UFgExample ex, AnnoSentence sent) {
-        FactorGraph fg = ex.getFgLatPred();
+        FactorGraph fg = ex.getFactorGraph();
         int n = sent.size();
         
         // Build up the beliefs about the link variables (if present),

@@ -63,12 +63,12 @@ public class FgExampleTest {
         LFgExample ex = data.get(0);
         
         // Global factor should still be there.
-        assertEquals(1 + 3 + 3*2 + 2 + 2, ex.getFgLatPred().getFactors().size());
+        assertEquals(1 + 3 + 3*2 + 2 + 2, ex.getFactorGraph().getFactors().size());
         // Includes an extra 2 ClampFactors
-        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFgLatPred(), ex.getGoldConfig());                
+        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());                
         assertEquals(1 + 3 + 3*2 + 2 + 2 + 2, fgLat.getFactors().size());
 
-        assertEquals(0, getEmpty(ex.getFgLatPred().getFactors()).size());
+        assertEquals(0, getEmpty(ex.getFactorGraph().getFactors()).size());
         // Just the two Role unary factors. The link/role binary factors shouldn't be empty.
         assertEquals(2, getEmpty(fgLat.getFactors()).size());
     }

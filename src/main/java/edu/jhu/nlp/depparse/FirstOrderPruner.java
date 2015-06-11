@@ -103,7 +103,7 @@ public class FirstOrderPruner implements Annotator {
                     
                     // Decode.
                     DepEdgeMaskDecoder decoder = new DepEdgeMaskDecoder(dPrm.maskPrm);
-                    FactorGraph fgLatPred = ex.getFgLatPred();
+                    FactorGraph fgLatPred = ex.getFactorGraph();
                     fgLatPred.updateFromModel(model);
                     FgInferencer infLatPred = bpPrm.getInferencer(fgLatPred);
                     infLatPred.run();

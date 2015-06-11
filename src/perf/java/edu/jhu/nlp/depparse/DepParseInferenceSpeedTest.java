@@ -30,7 +30,7 @@ public class DepParseInferenceSpeedTest {
         int n=0;
         for (AnnoSentence sent : sents) {
             UFgExample ex = DepParseFactorGraphBuilderSpeedTest.get1stOrderFg(sent);
-            FactorGraph fg = ex.getFgLatPred();
+            FactorGraph fg = ex.getFactorGraph();
             
             t.start();
             runBp(fg);

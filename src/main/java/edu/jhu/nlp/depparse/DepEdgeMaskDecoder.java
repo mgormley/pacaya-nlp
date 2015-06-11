@@ -50,7 +50,7 @@ public class DepEdgeMaskDecoder implements Decoder<AnnoSentence, DepEdgeMask> {
      */
     @Override
     public DepEdgeMask decode(FgInferencer inf, UFgExample ex, AnnoSentence sent) {
-        FactorGraph fg = ex.getFgLatPred();
+        FactorGraph fg = ex.getFactorGraph();
         int n = sent.size();
         Pair<EdgeScores, Integer> pair = DepParseDecoder.getEdgeScores(inf, fg, n);
         EdgeScores scores = pair.get1();

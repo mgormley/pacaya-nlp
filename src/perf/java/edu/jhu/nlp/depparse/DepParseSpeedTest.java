@@ -108,7 +108,7 @@ public class DepParseSpeedTest {
                 t1.stop();
                 
                 t2.start();
-                FactorGraph fg = ex.getFgLatPred();
+                FactorGraph fg = ex.getFactorGraph();
                 t2.stop();
                 
                 t3.start(); 
