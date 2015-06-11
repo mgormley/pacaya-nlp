@@ -274,7 +274,7 @@ public class JointNlpFgExamplesBuilderTest {
     
     private static FgModel train(FgModel model, FgExampleList data) {
         BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
-        bpPrm.s = LogSemiring.SINGLETON;
+        bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.normalizeMessages = false;

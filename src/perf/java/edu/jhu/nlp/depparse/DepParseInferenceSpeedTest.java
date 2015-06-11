@@ -54,7 +54,7 @@ public class DepParseInferenceSpeedTest {
         bpPrm.maxIterations = numIters;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
-        bpPrm.s = LogSemiring.SINGLETON;
+        bpPrm.s = LogSemiring.getInstance();
         ErmaBp bp = new ErmaBp(fg, bpPrm);
         bp.run();
         for (Var v : fg.getVars()) {

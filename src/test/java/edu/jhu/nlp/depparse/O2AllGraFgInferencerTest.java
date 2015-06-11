@@ -114,9 +114,9 @@ public class O2AllGraFgInferencerTest {
             System.out.println(f);
         }
         
-        BruteForceInferencer bf = new BruteForceInferencer(fg, RealAlgebra.SINGLETON);
+        BruteForceInferencer bf = new BruteForceInferencer(fg, RealAlgebra.getInstance());
         bf.run();
-        O2AllGraFgInferencer dp = new O2AllGraFgInferencer(fg, RealAlgebra.SINGLETON);
+        O2AllGraFgInferencer dp = new O2AllGraFgInferencer(fg, RealAlgebra.getInstance());
         dp.run();
         
         if (words.size() <= 3) {

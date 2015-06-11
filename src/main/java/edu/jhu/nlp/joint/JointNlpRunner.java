@@ -134,9 +134,9 @@ public class JointNlpRunner {
     public enum RegularizerType { L2, NONE };
     
     public enum AlgebraType {
-        REAL(RealAlgebra.SINGLETON), LOG(LogSemiring.SINGLETON), LOG_SIGN(LogSignAlgebra.SINGLETON),
+        REAL(RealAlgebra.getInstance()), LOG(LogSemiring.getInstance()), LOG_SIGN(LogSignAlgebra.getInstance()),
         // SHIFTED_REAL and SPLIT algebras are for testing only.
-        SHIFTED_REAL(ShiftedRealAlgebra.SINGLETON), SPLIT(SplitAlgebra.SINGLETON);
+        SHIFTED_REAL(ShiftedRealAlgebra.getInstance()), SPLIT(SplitAlgebra.getInstance());
 
         private Algebra s;
         

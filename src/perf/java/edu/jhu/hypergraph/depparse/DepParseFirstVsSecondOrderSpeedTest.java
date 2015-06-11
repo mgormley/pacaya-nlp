@@ -287,7 +287,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
                 UFgExample ex = get2ndOrderGraOnlyFg(sent, cs, ofc, numParams, onlyFast);
                 fg2 = ex.getFactorGraph();
                 fg2.updateFromModel(model);
-                bp2 = new O2AllGraFgInferencer(fg2, LogSignAlgebra.SINGLETON);
+                bp2 = new O2AllGraFgInferencer(fg2, LogSignAlgebra.getInstance());
                 bp2.run();
                 DepParseDecoder decode = new DepParseDecoder();
                 parents2 = decode.decode(bp2, ex, sent);

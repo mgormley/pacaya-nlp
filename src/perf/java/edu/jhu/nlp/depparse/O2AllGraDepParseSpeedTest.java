@@ -90,7 +90,7 @@ public class O2AllGraDepParseSpeedTest {
                 if (true) {
                     bp = DepParseInferenceSpeedTest.runBp(fg, 5);
                 } else {
-                    bp = new O2AllGraFgInferencer(fg, LogSemiring.SINGLETON);
+                    bp = new O2AllGraFgInferencer(fg, LogSemiring.getInstance());
                     bp.run();
                 }
                 //}

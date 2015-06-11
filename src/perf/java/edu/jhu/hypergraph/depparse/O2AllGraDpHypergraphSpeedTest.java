@@ -40,7 +40,7 @@ public class O2AllGraDpHypergraphSpeedTest {
     @Test
     public void testSpeed() {
         final int opt = 2;
-        Algebra a = LogSemiring.SINGLETON;
+        Algebra a = LogSemiring.getInstance();
         AnnoSentenceCollection sents = AnnoSentenceReaderSpeedTest.readPtbYmConllx();
         
         Timer t = new Timer();
