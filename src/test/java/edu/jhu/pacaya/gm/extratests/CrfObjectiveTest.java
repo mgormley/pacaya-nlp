@@ -165,8 +165,8 @@ public class CrfObjectiveTest {
         FgInferencerFactory infFactory = getInfFactory(s); 
         Function obj = getCrfObj(model, data, infFactory);
         double ll = obj.getValue(model.getParams());        
-        assertTrue(ll < 0d);
         assertEquals(-15.006, ll, 1e-3);
+        assertTrue(ll < 0d);
     }
 
     public static FgExampleList getDp1stOrderData(ObsFeatureConjoiner ofc) throws IOException {
@@ -240,9 +240,9 @@ public class CrfObjectiveTest {
             //assertTrue(exll <= 0);
             ll += exll;
         }
-        assertTrue(ll < 0d);
         //Without scaling: assertEquals(-74.29, ll, 1e-2);
         assertEquals(-10.681, ll, 1e-2);
+        assertTrue(ll < 0d);
     }
     
     @Test
