@@ -97,7 +97,7 @@ public class ErmaObjectiveTest {
         CrfObjective exObj = new CrfObjective(data, getErmaBpPrm(RealAlgebra.getInstance()));
         AvgBatchObjective obj = new AvgBatchObjective(exObj, model, 1);
         
-        ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-8);
+        ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-6);
     }
     
     public static FgExampleList getDpData(ObsFeatureConjoiner ofc, int featureHashMod) throws IOException {
