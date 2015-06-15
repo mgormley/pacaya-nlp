@@ -134,8 +134,7 @@ public class CrfObjectiveTest {
         for (Var v : fgLatPred.getVars()) {
             double partition = ((BeliefPropagation)infLatPred).getPartitionBeliefAtVarNode(fgLatPred.getNode(v));
             System.out.format("Var=%s partition=%.4f\n", v.toString(), partition);
-            // Currently failing because we normalize the messages.
-            // TODO: assertEquals(2*3, s == LogSemiring.getInstance() ? FastMath.exp(partition) : partition, 1e-3);
+            assertEquals(2*3, s == LogSemiring.getInstance() ? FastMath.exp(partition) : partition, 1e-3);
         }
         
         Function obj = getCrfObj(model, data, infFactory);
@@ -146,12 +145,12 @@ public class CrfObjectiveTest {
     }
     
     @Test
-    public void testDp1stOrderLogLikelihoodLessThanZero() throws Exception {
-        checkDp1stOrderLogLikelihoodLessThanZero(RealAlgebra.getInstance());
-        checkDp1stOrderLogLikelihoodLessThanZero(LogSemiring.getInstance());
+    public void testDp1stOrderLogLikelihood() throws Exception {
+        checkDp1stOrderLogLikelihood(RealAlgebra.getInstance());
+        checkDp1stOrderLogLikelihood(LogSemiring.getInstance());
     }
     
-    public void checkDp1stOrderLogLikelihoodLessThanZero(Algebra s) throws Exception {
+    public void checkDp1stOrderLogLikelihood(Algebra s) throws Exception {
         Prng.seed(123456789101112l);
         FactorTemplateList fts = new FactorTemplateList();
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);

@@ -68,11 +68,12 @@ public class FgExampleTest {
         FactorGraph fgLat = CrfObjective.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());                
         assertEquals(1 + 3 + 3*2 + 2 + 2 + 2, fgLat.getFactors().size());
 
+        // We no longer use empty factors.
         assertEquals(0, getEmpty(ex.getFactorGraph().getFactors()).size());
-        // Just the two Role unary factors. The link/role binary factors shouldn't be empty.
-        assertEquals(2, getEmpty(fgLat.getFactors()).size());
+        assertEquals(0, getEmpty(fgLat.getFactors()).size());
     }
 
+    /** Gets the factors containing zero variables. */
     private List<Factor> getEmpty(List<Factor> factors) {
         ArrayList<Factor> filt = new ArrayList<Factor>();
         for (Factor f : factors) {
