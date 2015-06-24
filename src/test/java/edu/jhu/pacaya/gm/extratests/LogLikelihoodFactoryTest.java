@@ -43,6 +43,10 @@ import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.CrfObjective;
+import edu.jhu.pacaya.gm.train.LogLikelihoodFactory;
+import edu.jhu.pacaya.gm.train.ModuleObjective;
+import edu.jhu.pacaya.gm.train.MtFactory;
+import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.pacaya.util.semiring.Algebra;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
@@ -55,7 +59,7 @@ import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
 import edu.jhu.prim.vector.IntDoubleVector;
 
-public class CrfObjectiveTest {
+public class LogLikelihoodFactoryTest {
 
     public static final String conllXExample= "/edu/jhu/nlp/data/conll/bulgarian_bultreebank_train.conll";
 
@@ -175,7 +179,7 @@ public class CrfObjectiveTest {
         rPrm.maxSentenceLength = 7;
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
-        r.loadSents(CrfObjectiveTest.class.getResourceAsStream(conllXExample), DatasetType.CONLL_X);
+        r.loadSents(LogLikelihoodFactoryTest.class.getResourceAsStream(conllXExample), DatasetType.CONLL_X);
         
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
@@ -301,7 +305,7 @@ public class CrfObjectiveTest {
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
         try {
-            r.loadSents(CrfObjectiveTest.class.getResourceAsStream(conllXExample), DatasetType.CONLL_X);
+            r.loadSents(LogLikelihoodFactoryTest.class.getResourceAsStream(conllXExample), DatasetType.CONLL_X);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -330,7 +334,8 @@ public class CrfObjectiveTest {
     }
     
     public static AvgBatchObjective getCrfObj(FgModel model, FgExampleList data, FgInferencerFactory infFactory) {
-        CrfObjective exObj = new CrfObjective(data, infFactory);
+        MtFactory mtFactory = new LogLikelihoodFactory(infFactory);
+        ExampleObjective exObj = new ModuleObjective(data, mtFactory);
         return new AvgBatchObjective(exObj, model, 1);
     }
 

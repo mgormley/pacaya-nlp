@@ -16,9 +16,9 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.pacaya.autodiff.ModuleTestUtils;
+import edu.jhu.pacaya.autodiff.erma.DlFactory;
+import edu.jhu.pacaya.autodiff.erma.EmpiricalRisk.EmpiricalRiskFactory;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.pacaya.autodiff.erma.ErmaObjective;
-import edu.jhu.pacaya.autodiff.erma.ErmaObjective.DlFactory;
 import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
 import edu.jhu.pacaya.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleList;
@@ -31,14 +31,18 @@ import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
+import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
 import edu.jhu.pacaya.gm.train.CrfObjective;
+import edu.jhu.pacaya.gm.train.ModuleObjective;
+import edu.jhu.pacaya.gm.train.MtFactory;
+import edu.jhu.pacaya.gm.train.ScaleByWeightFactory;
 import edu.jhu.pacaya.util.semiring.Algebra;
 import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.arrays.DoubleArrays;
 import edu.jhu.prim.util.random.Prng;
 
-public class ErmaObjectiveTest {
+public class EmpiricalRiskTest {
     
     @Before
     public void setUp() {
@@ -63,7 +67,8 @@ public class ErmaObjectiveTest {
         FgModel model = new FgModel(ofc.getNumParams());
         model.zero();
         
-        ErmaObjective exObj = new ErmaObjective(data, getErmaBpPrm(s), dl);
+        MtFactory mtFactory = new EmpiricalRiskFactory(getErmaBpPrm(s), dl);
+        ExampleObjective exObj = new ModuleObjective(data, mtFactory);
         AvgBatchObjective obj = new AvgBatchObjective(exObj, model, 1);
 
         System.out.println(DoubleArrays.toString(obj.getGradient(model.getParams()).toNativeArray(), "%.4g"));
@@ -106,7 +111,7 @@ public class ErmaObjectiveTest {
         rPrm.maxSentenceLength = 7;
         rPrm.useCoNLLXPhead = true;
         AnnoSentenceReader r = new AnnoSentenceReader(rPrm);
-        r.loadSents(ErmaObjectiveTest.class.getResourceAsStream(CrfObjectiveTest.conllXExample), DatasetType.CONLL_X);        
+        r.loadSents(EmpiricalRiskTest.class.getResourceAsStream(LogLikelihoodFactoryTest.conllXExample), DatasetType.CONLL_X);        
         
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
