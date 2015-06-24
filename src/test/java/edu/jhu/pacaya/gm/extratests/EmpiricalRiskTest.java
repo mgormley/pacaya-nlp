@@ -20,7 +20,7 @@ import edu.jhu.pacaya.autodiff.erma.DlFactory;
 import edu.jhu.pacaya.autodiff.erma.EmpiricalRisk.EmpiricalRiskFactory;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;

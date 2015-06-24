@@ -88,7 +88,7 @@ import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.pacaya.autodiff.erma.DepParseDecodeLoss.DepParseDecodeLossFactory;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
@@ -350,8 +350,6 @@ public class JointNlpRunner {
     public static Date stopTrainingBy = null;
     
     // Options for training.
-    @Opt(hasArg=true, description="Whether to use the mean squared error instead of conditional log-likelihood when evaluating training quality.")
-    public static boolean useMseForValue = false;
     @Opt(hasArg=true, description="The type of trainer to use (e.g. conditional log-likelihood, ERMA).")
     public static Trainer trainer = Trainer.CLL;
     
@@ -840,8 +838,7 @@ public class JointNlpRunner {
         } else {
             throw new ParseException("Unsupported regularizer: " + regularizer);
         }
-        prm.numThreads = threads;
-        prm.useMseForValue = useMseForValue;        
+        prm.numThreads = threads;     
         prm.trainer = trainer;                
         
         // TODO: add options for other loss functions.

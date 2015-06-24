@@ -76,7 +76,7 @@ import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.pacaya.autodiff.erma.DepParseDecodeLoss.DepParseDecodeLossFactory;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
