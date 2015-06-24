@@ -22,6 +22,7 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.pacaya.autodiff.ModuleTestUtils;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
@@ -44,6 +45,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.CrfObjective;
 import edu.jhu.pacaya.gm.train.LogLikelihoodFactory;
+import edu.jhu.pacaya.gm.train.MarginalLogLikelihood;
 import edu.jhu.pacaya.gm.train.ModuleObjective;
 import edu.jhu.pacaya.gm.train.MtFactory;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
@@ -63,6 +65,23 @@ public class LogLikelihoodFactoryTest {
 
     public static final String conllXExample= "/edu/jhu/nlp/data/conll/bulgarian_bultreebank_train.conll";
 
+    // TODO: Is this redundant with tests in CrfTrainerTest?
+    @Test
+    public void testDpDataOnCrfObjective() throws IOException {
+        FactorTemplateList fts = new FactorTemplateList();
+        ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
+
+        FgExampleList data = EmpiricalRiskTest.getDpData(ofc, 10);
+        
+        System.out.println("Num features: " + ofc.getNumParams());
+        FgModel model = new FgModel(ofc.getNumParams());
+        model.setRandomStandardNormal();
+        
+        AvgBatchObjective obj = getCrfObj(model, data, EmpiricalRiskTest.getErmaBpPrm(RealAlgebra.getInstance()));
+        
+        ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-8);
+    }
+    
     @Test
     public void testSrlLogLikelihood() throws Exception {
         checkSrlLogLikelihoodCorrect(RealAlgebra.getInstance());
@@ -103,7 +122,7 @@ public class LogLikelihoodFactoryTest {
         FgInferencerFactory infFactory = getInfFactory(s);        
         LFgExample ex = data.get(0);
         
-        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());
+        FactorGraph fgLat = MarginalLogLikelihood.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());
         fgLat.updateFromModel(model);
         FgInferencer infLat = infFactory.getInferencer(fgLat);
         infLat.run();        

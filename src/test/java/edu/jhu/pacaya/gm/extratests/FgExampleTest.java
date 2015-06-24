@@ -24,7 +24,7 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.train.CrfObjective;
+import edu.jhu.pacaya.gm.train.MarginalLogLikelihood;
 import edu.jhu.pacaya.util.collections.Lists;
 
 public class FgExampleTest {
@@ -65,7 +65,7 @@ public class FgExampleTest {
         // Global factor should still be there.
         assertEquals(1 + 3 + 3*2 + 2 + 2, ex.getFactorGraph().getFactors().size());
         // Includes an extra 2 ClampFactors
-        FactorGraph fgLat = CrfObjective.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());                
+        FactorGraph fgLat = MarginalLogLikelihood.getFgLat(ex.getFactorGraph(), ex.getGoldConfig());                
         assertEquals(1 + 3 + 3*2 + 2 + 2 + 2, fgLat.getFactors().size());
 
         // We no longer use empty factors.

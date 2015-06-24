@@ -86,24 +86,6 @@ public class EmpiricalRiskTest {
         bpPrm.maxIterations = 1;        
         return bpPrm;
     }    
-
-    // TODO: Is this redundant with tests in CrfTrainerTest?
-    @Test
-    public void testDpDataOnCrfObjective() throws IOException {
-        FactorTemplateList fts = new FactorTemplateList();
-        ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
-
-        FgExampleList data = getDpData(ofc, 10);
-        
-        System.out.println("Num features: " + ofc.getNumParams());
-        FgModel model = new FgModel(ofc.getNumParams());
-        model.setRandomStandardNormal();
-
-        CrfObjective exObj = new CrfObjective(data, getErmaBpPrm(RealAlgebra.getInstance()));
-        AvgBatchObjective obj = new AvgBatchObjective(exObj, model, 1);
-        
-        ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-8);
-    }
     
     public static FgExampleList getDpData(ObsFeatureConjoiner ofc, int featureHashMod) throws IOException {
         AnnoSentenceReaderPrm rPrm = new AnnoSentenceReaderPrm();
