@@ -28,12 +28,12 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate0;
 import edu.jhu.nlp.features.TemplateLanguage.OtherFeat;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.pacaya.util.hash.MurmurHash3;
 import edu.jhu.prim.arrays.DoubleArrays;
 import edu.jhu.prim.arrays.IntArrays;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.matrix.DenseDoubleMatrix;
 import edu.jhu.prim.sort.IntDoubleSort;
 import edu.jhu.prim.tuple.Pair;
@@ -231,7 +231,7 @@ public class IGFeatureTemplateSelector {
         FeatTemplate tpl = allTpls.get(t);
 
         final IntDoubleDenseVector[][] counts = getCountsArray(valExts);
-        Alphabet<String> alphabet = new Alphabet<String>();
+        IntObjectBimap<String> alphabet = new IntObjectBimap<String>();
         for (int i=0; i<goldSents.size(); i++) {                
             AnnoSentence goldSent = goldSents.get(i);
             AnnoSentence inputSent = inputSents.get(i);
@@ -376,7 +376,7 @@ public class IGFeatureTemplateSelector {
     
     public static abstract class AbtractValExtractor implements ValExtractor {
         
-        private Alphabet<Object> valAlphabet = new Alphabet<Object>();
+        private IntObjectBimap<Object> valAlphabet = new IntObjectBimap<Object>();
         private int valueHashMod = -1;
         
         @Override

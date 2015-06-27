@@ -1,14 +1,14 @@
 package edu.jhu.nlp.tag;
 
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 public class OovTagReducer extends AbstractTagReducer {
     
     private static final long serialVersionUID = 1L;
-    private Alphabet<String> alphabet;
+    private IntObjectBimap<String> alphabet;
     private String unk;
     
-    public OovTagReducer(Alphabet<String> alphabet, String unk) {
+    public OovTagReducer(IntObjectBimap<String> alphabet, String unk) {
         super();
         this.alphabet = alphabet;
         this.unk = unk;

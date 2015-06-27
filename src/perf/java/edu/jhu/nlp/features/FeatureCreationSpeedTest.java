@@ -18,9 +18,9 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.hash.MurmurHash3;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.list.ShortArrayList;
 import edu.jhu.prim.map.IntIntHashMap;
 import edu.jhu.prim.tuple.Pair;
@@ -86,8 +86,8 @@ public class FeatureCreationSpeedTest {
             lookupTimer = new Timer();
             hashTimer = new Timer();
             extTimer = new Timer();
-            Alphabet<String> wordAlphabet = new Alphabet<>();
-            Alphabet<String> tagAlphabet = new Alphabet<>();
+            IntObjectBimap<String> wordAlphabet = new IntObjectBimap<>();
+            IntObjectBimap<String> tagAlphabet = new IntObjectBimap<>();
             
             try {
                 for (int i=0; i<sents.size(); i++) {

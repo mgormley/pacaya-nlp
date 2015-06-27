@@ -18,10 +18,10 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.pacaya.nlp.data.LabelSequence;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.collections.Sets;
 import edu.jhu.prim.arrays.IntArrays;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
 
 /**
@@ -41,7 +41,7 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
     private int wallTagIdx = -1;
     public static final int LEFT = 0;
     public static final int RIGHT = 1;    
-    private Alphabet<String> alphabet = new Alphabet<String>();
+    private IntObjectBimap<String> alphabet = new IntObjectBimap<String>();
     private int[][][] mat;
     
     // Whether to always keep a right branching tree, to ensure that we don't prune all trees.

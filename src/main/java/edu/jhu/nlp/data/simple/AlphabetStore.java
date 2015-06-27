@@ -7,9 +7,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.pacaya.util.Alphabet;
-import edu.jhu.pacaya.util.CountingAlphabet;
 import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.prim.bimap.CountingIntObjectBimap;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 public class AlphabetStore implements Serializable {
 
@@ -29,18 +29,18 @@ public class AlphabetStore implements Serializable {
     public static final int TOK_WALL_INT = 3;
     public static String[] specialTokenStrs = new String[] { TOK_UNK_STR, TOK_START_STR, TOK_END_STR, TOK_WALL_STR};
     
-    Alphabet<String> words;
-    Alphabet<String> prefixes;
-    Alphabet<String> lemmas;
-    Alphabet<String> posTags;
-    Alphabet<String> cposTags;
-    Alphabet<String> clusters;
-    Alphabet<String> feats;
-    Alphabet<String> deprels;
+    IntObjectBimap<String> words;
+    IntObjectBimap<String> prefixes;
+    IntObjectBimap<String> lemmas;
+    IntObjectBimap<String> posTags;
+    IntObjectBimap<String> cposTags;
+    IntObjectBimap<String> clusters;
+    IntObjectBimap<String> feats;
+    IntObjectBimap<String> deprels;
     // TODO: 
     //Alphabet<String> lexAlphabet;
     //Alphabet<String> ntAlphabet;    
-    private List<Alphabet<String>> as;
+    private List<IntObjectBimap<String>> as;
     
     public AlphabetStore(Iterable<AnnoSentence> sents) {
         words = getInitAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
@@ -56,8 +56,8 @@ public class AlphabetStore implements Serializable {
         this.stopGrowth();
     }
 
-    private static Alphabet<String> getInitAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
-        CountingAlphabet<String> counter = new CountingAlphabet<>();
+    private static IntObjectBimap<String> getInitAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
+        CountingIntObjectBimap<String> counter = new CountingIntObjectBimap<>();
         for (AnnoSentence sent : sents) {
             List<String> strs = sg.getStrs(sent);
             if (strs != null) {
@@ -66,7 +66,7 @@ public class AlphabetStore implements Serializable {
                 }
             }
         }
-        Alphabet<String> alphabet;
+        IntObjectBimap<String> alphabet;
         for (int cutoff = 1; ; cutoff++) {
             alphabet = getInitAlphabet();
             for (int idx=0; idx<counter.size(); idx++) {
@@ -85,8 +85,8 @@ public class AlphabetStore implements Serializable {
         return alphabet;
     }
     
-    private static Alphabet<String> getInitAlphabet() {
-        Alphabet<String> alphabet = new Alphabet<String>();
+    private static IntObjectBimap<String> getInitAlphabet() {
+        IntObjectBimap<String> alphabet = new IntObjectBimap<String>();
         //for (SpecialToken tok : SpecialToken.values()) {
         for (int i=0; i<NUM_SPECIAL_TOKS; i++) {
             int idx = alphabet.lookupIndex(specialTokenStrs[i]);
@@ -98,18 +98,18 @@ public class AlphabetStore implements Serializable {
     }
 
     public void startGrowth() {
-        for (Alphabet<String> a : as) {
+        for (IntObjectBimap<String> a : as) {
             a.startGrowth();
         }
     }
     
     public void stopGrowth() {
-        for (Alphabet<String> a : as) {
+        for (IntObjectBimap<String> a : as) {
             a.stopGrowth();
         }
     }
     
-    static int safeLookup(Alphabet<String> alphabet, String tokStr) {
+    static int safeLookup(IntObjectBimap<String> alphabet, String tokStr) {
         int idx = alphabet.lookupIndex(tokStr);
         if (idx == -1) {
             idx = TOK_UNK_INT;

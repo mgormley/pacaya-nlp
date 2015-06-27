@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 
 /**
@@ -20,10 +20,10 @@ import edu.jhu.pacaya.util.Alphabet;
 public class SrlBerkeleySignatureBuilder implements Serializable {
 
     private static final long serialVersionUID = 7489745353488039306L;
-    private Alphabet<String> lexAlphabet;
+    private IntObjectBimap<String> lexAlphabet;
 
-    public SrlBerkeleySignatureBuilder(Alphabet<String> lexAlphabet) {
-        this.lexAlphabet = new Alphabet<String>(lexAlphabet);
+    public SrlBerkeleySignatureBuilder(IntObjectBimap<String> lexAlphabet) {
+        this.lexAlphabet = new IntObjectBimap<String>(lexAlphabet);
         this.lexAlphabet.stopGrowth();
     }
 

@@ -28,10 +28,10 @@ import edu.jhu.pacaya.parse.cky.data.BinaryTreebank;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.parse.cky.data.NaryTreebank;
 import edu.jhu.pacaya.parse.cky.data.NaryTree.NaryTreeNodeFilter;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnO1ToVoid;
@@ -172,7 +172,7 @@ public class RunCkyParser {
     private void useSignaturesForUnknownWords(NaryTreebank naryTrees,
             final CnfGrammar grammar) {
         FnO1ToVoid<NaryTree> ftRemover = new FnO1ToVoid<NaryTree>() {
-            private final Alphabet<String> emptySet = Alphabet.getEmptyStoppedAlphabet();
+            private final IntObjectBimap<String> emptySet = IntObjectBimap.getEmptyStoppedAlphabet();
             @Override
             public void call(NaryTree node) {
                 if (node.isLexical()) {
@@ -195,7 +195,7 @@ public class RunCkyParser {
     // TODO: This should live in GrammarConstants, but was moved here to take it out of pacaya.
     //
     // Hard-coded to Berkeley OOV signatures.
-    public static String getSignature(String word, int loc, Alphabet<String> lexAlphabet) {
+    public static String getSignature(String word, int loc, IntObjectBimap<String> lexAlphabet) {
         BerkeleySignatureBuilder bsb = new BerkeleySignatureBuilder(lexAlphabet);
         String signature = bsb.getSignature(word, loc, GrammarConstants.unknownLevel);
         return signature;

@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.prim.arrays.DoubleArrays;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 /**
  * Storage for a set of word embeddings. Also contains a method to load embeddings from a text file. 
@@ -29,11 +29,11 @@ public class Embeddings implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(Embeddings.class);
     private static final Pattern DIGITS = Pattern.compile("[0-9]");
     private Map<String,double[]> word2embed;
-    private Alphabet<String> alphabet;
+    private IntObjectBimap<String> alphabet;
     
     public Embeddings() {
         word2embed = new HashMap<String,double[]>();
-        alphabet = new Alphabet<String>();
+        alphabet = new IntObjectBimap<String>();
     }
     
     /**
@@ -81,7 +81,7 @@ public class Embeddings implements Serializable {
         return word2embed.get(word);
     }
     
-    public Alphabet<String> getAlphabet() {
+    public IntObjectBimap<String> getAlphabet() {
         return alphabet;
     }
 

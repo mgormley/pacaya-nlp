@@ -2,7 +2,7 @@ package edu.jhu.nlp.data.conll;
 
 import edu.jhu.nlp.data.DepTree;
 import edu.jhu.pacaya.nlp.data.Sentence;
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 /**
  * Dependency tree that carries the original CoNLL-X sentence as metadata.
@@ -14,7 +14,7 @@ public class CoNLLXDepTree extends DepTree {
 
     private CoNLLXSentence sent;
     
-    public CoNLLXDepTree(CoNLLXSentence sent, Alphabet<String> alphabet) {
+    public CoNLLXDepTree(CoNLLXSentence sent, IntObjectBimap<String> alphabet) {
         // TODO: filter out punctuation.
         super(new CXWrappedSentence(sent, alphabet), sent.getParentsFromHead(), false);
         this.sent = sent;
@@ -29,7 +29,7 @@ public class CoNLLXDepTree extends DepTree {
 
         private static final long serialVersionUID = 1L;
 
-        public CXWrappedSentence(CoNLLXSentence sent, Alphabet<String> alphabet) {
+        public CXWrappedSentence(CoNLLXSentence sent, IntObjectBimap<String> alphabet) {
             super(alphabet);
             for (CoNLLXToken token : sent) {
                 // TODO: Here we just add the tags.

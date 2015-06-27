@@ -22,9 +22,9 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationMunger;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.Primitives.MutableInt;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
 
@@ -86,7 +86,7 @@ public class CorpusStatistics implements Serializable {
     public CorpusStatistics(CorpusStatisticsPrm prm) {
         this.prm = prm;
         this.normalize = new Normalizer(prm.normalizeWords);
-        this.sig = new SrlBerkeleySignatureBuilder(new Alphabet<String>());
+        this.sig = new SrlBerkeleySignatureBuilder(new IntObjectBimap<String>());
         initialized = false;
     }
 

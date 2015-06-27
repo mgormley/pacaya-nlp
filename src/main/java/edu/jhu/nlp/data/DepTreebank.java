@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.nlp.data.SentenceCollection;
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 public class DepTreebank implements Iterable<DepTree> {
 
@@ -19,10 +19,10 @@ public class DepTreebank implements Iterable<DepTree> {
     private static final Logger log = LoggerFactory.getLogger(DepTreebank.class);
 
     private SentenceCollection sentences = null;
-    private Alphabet<String> alphabet;
+    private IntObjectBimap<String> alphabet;
     private ArrayList<DepTree> trees;
             
-    public DepTreebank(Alphabet<String> alphabet) {
+    public DepTreebank(IntObjectBimap<String> alphabet) {
         this.alphabet = alphabet;
         this.trees = new ArrayList<DepTree>();
     }
@@ -95,7 +95,7 @@ public class DepTreebank implements Iterable<DepTree> {
         return trees.size();
     }
 
-    public Alphabet<String> getAlphabet() {
+    public IntObjectBimap<String> getAlphabet() {
         return alphabet;
     }
 

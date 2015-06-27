@@ -35,8 +35,8 @@ import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.parse.cky.Rule;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.util.math.FastMath;
 
 /**
@@ -303,8 +303,8 @@ public class TemplateFeatureExtractorTest {
     }
 
     private Rule getRule(String pStr, String lcStr, String rcStr, int type) {
-        Alphabet<String> lexAlphabet = new Alphabet<String>();
-        Alphabet<String> ntAlphabet = new Alphabet<String>();
+        IntObjectBimap<String> lexAlphabet = new IntObjectBimap<String>();
+        IntObjectBimap<String> ntAlphabet = new IntObjectBimap<String>();
         int parent = ntAlphabet.lookupIndex(pStr);        
         int leftChild;
         int rightChild;

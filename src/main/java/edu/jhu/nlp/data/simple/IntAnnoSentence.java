@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.list.ByteArrayList;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.list.ShortArrayList;
@@ -71,7 +71,7 @@ public class IntAnnoSentence {
         this.numConjsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.CONJ);
     }
     
-    private static IntArrayList getInts(List<String> tokens, Alphabet<String> alphabet) {
+    private static IntArrayList getInts(List<String> tokens, IntObjectBimap<String> alphabet) {
         if (tokens == null) { return null; }
         IntArrayList arr = new IntArrayList(tokens.size());
         for (int i=0; i<tokens.size(); i++) {
@@ -81,7 +81,7 @@ public class IntAnnoSentence {
         return arr;
     }
     
-    private static ShortArrayList getShorts(List<String> tokens, Alphabet<String> alphabet) {
+    private static ShortArrayList getShorts(List<String> tokens, IntObjectBimap<String> alphabet) {
         if (tokens == null) { return null; }
         ShortArrayList arr = new ShortArrayList(tokens.size());
         for (int i=0; i<tokens.size(); i++) {
@@ -91,7 +91,7 @@ public class IntAnnoSentence {
         return arr;
     }
     
-    private static ByteArrayList getBytes(List<String> tokens, Alphabet<String> alphabet) {
+    private static ByteArrayList getBytes(List<String> tokens, IntObjectBimap<String> alphabet) {
         if (tokens == null) { return null; }
         ByteArrayList arr = new ByteArrayList(tokens.size());
         for (int i=0; i<tokens.size(); i++) {
