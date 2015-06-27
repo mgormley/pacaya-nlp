@@ -5,32 +5,31 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.AbstractFgInferencer;
-import edu.jhu.autodiff.erma.InsideOutsideDepParse;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.inf.FgInferencerFactory;
-import edu.jhu.gm.model.ClampFactor;
-import edu.jhu.gm.model.Factor;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.VarSet;
-import edu.jhu.gm.model.VarTensor;
-import edu.jhu.gm.model.globalfac.LinkVar;
-import edu.jhu.gm.model.globalfac.ProjDepTreeFactor;
-import edu.jhu.gm.model.globalfac.SimpleProjDepTreeFactor;
-import edu.jhu.hypergraph.Hyperalgo;
-import edu.jhu.hypergraph.Hyperalgo.Scores;
-import edu.jhu.hypergraph.Hypernode;
-import edu.jhu.hypergraph.depparse.O2AllGraDpHypergraph;
-import edu.jhu.hypergraph.depparse.O2AllGraDpHypergraph.DependencyScorer;
-import edu.jhu.hypergraph.depparse.O2AllGraDpHypergraphTest.ExplicitDependencyScorer;
-import edu.jhu.nlp.FeTypedFactor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorTemplate;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.GraFeTypedFactor;
-import edu.jhu.parse.dep.EdgeScores;
+import edu.jhu.pacaya.autodiff.erma.AbstractFgInferencer;
+import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
+import edu.jhu.pacaya.gm.model.Factor;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
+import edu.jhu.pacaya.gm.model.globalfac.SimpleProjDepTreeFactor;
+import edu.jhu.pacaya.hypergraph.Hyperalgo;
+import edu.jhu.pacaya.hypergraph.Hyperalgo.Scores;
+import edu.jhu.pacaya.hypergraph.Hypernode;
+import edu.jhu.pacaya.hypergraph.depparse.DependencyScorer;
+import edu.jhu.pacaya.hypergraph.depparse.ExplicitDependencyScorer;
+import edu.jhu.pacaya.hypergraph.depparse.O2AllGraDpHypergraph;
+import edu.jhu.pacaya.parse.dep.EdgeScores;
+import edu.jhu.pacaya.util.semiring.Algebra;
+import edu.jhu.pacaya.util.semiring.Algebras;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.arrays.DoubleArrays;
-import edu.jhu.util.semiring.Algebra;
-import edu.jhu.util.semiring.Algebras;
 
 public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInferencer {
 
@@ -144,7 +143,7 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         }
         
         // Convert the scores to the semiring used by this inference method.
-        Algebras.convertAlgebra(scores, Algebras.LOG_SEMIRING, s);
+        Algebras.convertAlgebra(scores, LogSemiring.getInstance(), s);
         
         if (log.isTraceEnabled()) { log.trace("scores: " + Arrays.deepToString(scores)); }
         return new ExplicitDependencyScorer(scores, n);

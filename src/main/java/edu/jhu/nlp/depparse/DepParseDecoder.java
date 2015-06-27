@@ -6,20 +6,20 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.InsideOutsideDepParse;
-import edu.jhu.gm.app.Decoder;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.VarTensor;
-import edu.jhu.gm.model.globalfac.LinkVar;
-import edu.jhu.nlp.data.DepTree;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.parse.dep.EdgeScores;
-import edu.jhu.parse.dep.ProjectiveDependencyParser;
+import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.gm.app.Decoder;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.parse.dep.EdgeScores;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ProjectiveDependencyParser;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -40,7 +40,7 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
      */
     @Override
     public int[] decode(FgInferencer inf, UFgExample ex, AnnoSentence sent) {
-        FactorGraph fg = ex.getFgLatPred();
+        FactorGraph fg = ex.getFactorGraph();
         int n = sent.size();
         
         // Build up the beliefs about the link variables (if present),
@@ -61,7 +61,7 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
         // score of a tree as the sum of the edge scores.
         int n = scores.root.length;
         int[] parents = new int[n];
-        Arrays.fill(parents, DepTree.EMPTY_POSITION);
+        Arrays.fill(parents, ParentsArray.EMPTY_POSITION);
         if (InsideOutsideDepParse.singleRoot) {
             ProjectiveDependencyParser.parseSingleRoot(scores.root, scores.child, parents);
         } else {

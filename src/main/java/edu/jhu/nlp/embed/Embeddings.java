@@ -14,8 +14,8 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.prim.arrays.DoubleArrays;
-import edu.jhu.util.Alphabet;
 
 /**
  * Storage for a set of word embeddings. Also contains a method to load embeddings from a text file. 

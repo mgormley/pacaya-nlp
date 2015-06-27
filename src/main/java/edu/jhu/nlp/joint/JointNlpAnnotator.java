@@ -14,13 +14,6 @@ import java.util.zip.GZIPOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.data.FgExampleList;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.train.CrfTrainer;
-import edu.jhu.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.hlt.optimize.function.Function;
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
@@ -39,14 +32,21 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.train.CrfTrainer;
+import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.Threads;
+import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
 import edu.jhu.prim.vector.IntDoubleVector;
-import edu.jhu.util.Prm;
-import edu.jhu.util.Threads;
-import edu.jhu.util.Timer;
-import edu.jhu.util.collections.Lists;
-import edu.jhu.util.collections.Sets;
-import edu.jhu.util.files.Files;
 
 /**
  * Joint annotator for SRL and syntactic dependency parsing.

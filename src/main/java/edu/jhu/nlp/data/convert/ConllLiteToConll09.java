@@ -15,8 +15,8 @@ import edu.jhu.nlp.data.conll.ConllLiteFileReader;
 import edu.jhu.nlp.data.conll.ConllLiteSentence;
 import edu.jhu.nlp.data.conll.ConllLiteToken;
 import edu.jhu.nlp.data.conll.SrlGraph;
-import edu.jhu.util.cli.ArgParser;
-import edu.jhu.util.cli.Opt;
+import edu.jhu.pacaya.util.cli.ArgParser;
+import edu.jhu.pacaya.util.cli.Opt;
 
 /**
  * Converts CoNLL Lite format to CoNLL-2009.

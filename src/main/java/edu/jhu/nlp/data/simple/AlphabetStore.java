@@ -7,9 +7,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.CountingAlphabet;
-import edu.jhu.util.collections.Lists;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.CountingAlphabet;
+import edu.jhu.pacaya.util.collections.Lists;
 
 public class AlphabetStore implements Serializable {
 

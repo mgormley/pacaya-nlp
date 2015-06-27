@@ -8,15 +8,6 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.gm.data.FgExampleList;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.gm.inf.FgInferencer;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var.VarType;
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics;
@@ -30,14 +21,23 @@ import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.joint.JointNlpFgModel;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.Threads;
+import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.Primitives.MutableInt;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
-import edu.jhu.util.Prm;
-import edu.jhu.util.Threads;
-import edu.jhu.util.Timer;
-import edu.jhu.util.collections.Sets;
-import edu.jhu.util.files.Files;
-import edu.jhu.util.semiring.Algebras;
 
 public class FirstOrderPruner implements Annotator {
 
@@ -76,7 +76,7 @@ public class FirstOrderPruner implements Annotator {
         exPrm.fePrm = fePrm;
                 
         final ErmaBpPrm bpPrm = new ErmaBpPrm();
-        bpPrm.s = Algebras.LOG_SEMIRING;
+        bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.normalizeMessages = false;
@@ -103,7 +103,7 @@ public class FirstOrderPruner implements Annotator {
                     
                     // Decode.
                     DepEdgeMaskDecoder decoder = new DepEdgeMaskDecoder(dPrm.maskPrm);
-                    FactorGraph fgLatPred = ex.getFgLatPred();
+                    FactorGraph fgLatPred = ex.getFactorGraph();
                     fgLatPred.updateFromModel(model);
                     FgInferencer infLatPred = bpPrm.getInferencer(fgLatPred);
                     infLatPred.run();

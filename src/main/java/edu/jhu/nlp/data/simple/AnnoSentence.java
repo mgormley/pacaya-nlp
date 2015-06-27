@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.List;
 
 import edu.jhu.nlp.data.DepEdgeMask;
-import edu.jhu.nlp.data.DepTree;
-import edu.jhu.nlp.data.DepTree.Dir;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
 import edu.jhu.nlp.data.RelationMentions;
@@ -15,11 +13,13 @@ import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
-import edu.jhu.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 /**
  * Simple representation of a single sentence with many annotations.
@@ -542,8 +542,8 @@ public class AnnoSentence {
      *         direction of the edge, inclusive of the start position and
      *         exclusive of the end.
      */
-    public List<Pair<Integer, Dir>> getDependencyPath(int start, int end) {
-        return DepTree.getDependencyPath(start, end, parents);
+    public List<Pair<Integer, ParentsArray.Dir>> getDependencyPath(int start, int end) {
+        return ParentsArray.getDependencyPath(start, end, parents);
     }
     
     public int size() {

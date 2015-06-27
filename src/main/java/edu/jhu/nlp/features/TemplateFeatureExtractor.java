@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
 import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.data.DepTree.Dir;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.features.TemplateLanguage.EdgeProperty;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
@@ -30,9 +29,11 @@ import edu.jhu.nlp.features.TemplateLanguage.RulePiece;
 import edu.jhu.nlp.features.TemplateLanguage.SymbolProperty;
 import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
-import edu.jhu.parse.cky.Rule;
+import edu.jhu.pacaya.parse.cky.Rule;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.collections.Lists;
 
 /**
  * Defines a feature template extractor for templates based on a 'little
@@ -242,7 +243,7 @@ public class TemplateFeatureExtractor {
             listAndPathHelper(vals, lmod, tpl, feats);
             return;
         case PATH_P_C: case PATH_C_LCA: case PATH_P_LCA: case PATH_LCA_ROOT: 
-            List<Pair<Integer, Dir>> path = getPath(pl, local);
+            List<Pair<Integer, ParentsArray.Dir>> path = getPath(pl, local);
             if (path != null) {
                 vals = getTokPropsForPath(prop, eprop, path);
                 listAndPathHelper(vals, lmod, tpl, feats);
@@ -300,7 +301,7 @@ public class TemplateFeatureExtractor {
         OtherFeat template = tpl.feat;  
         switch (template) {
         case PATH_GRAMS:
-            List<Pair<Integer,Dir>> path = getPath(PositionList.PATH_P_C, local);  
+            List<Pair<Integer,ParentsArray.Dir>> path = getPath(PositionList.PATH_P_C, local);  
             if (path != null) {
                 addPathGrams(tpl, path, feats);
             } else {
@@ -315,12 +316,12 @@ public class TemplateFeatureExtractor {
     }
 
     // TODO: This is a lot of logic...and should probably live elsewhere.
-    private void addPathGrams(FeatTemplate0 tpl, List<Pair<Integer, Dir>> path, List<String> feats) {
+    private void addPathGrams(FeatTemplate0 tpl, List<Pair<Integer, ParentsArray.Dir>> path, List<String> feats) {
         // For each path n-gram, for n in {1,2,3}:
         for (int n=1; n<=3; n++) {
             for (int start = 0; start <= path.size() - n; start++) {
                 int end = start + n;
-                List<Pair<Integer,Dir>> ngram = path.subList(start, end);
+                List<Pair<Integer,ParentsArray.Dir>> ngram = path.subList(start, end);
                 // For each pattern of length n, comprised of WORD and POS.
                 TokProperty[] props = new TokProperty[] { TokProperty.WORD, TokProperty.POS };
                 int max = (int) Math.pow(2, n);
@@ -354,7 +355,7 @@ public class TemplateFeatureExtractor {
         case CONTINUITY:
             return Integer.toString(pair.getCountOfNonConsecutivesInPath());
         case PATH_LEN:            
-            List<Pair<Integer, Dir>> depPath = pair.getDependencyPath();
+            List<Pair<Integer, ParentsArray.Dir>> depPath = pair.getDependencyPath();
             int pathLen = depPath == null ? 0 : depPath.size();
             return Integer.toString(binInt(pathLen, 0, 2, 5, 10, 20, 30, 40));
         case SENT_LEN:            
@@ -425,7 +426,7 @@ public class TemplateFeatureExtractor {
     }
     
     /** Gets the desired path or null if it doesn't exist. */
-    private List<Pair<Integer, Dir>> getPath(PositionList pl, LocalObservations local) {        
+    private List<Pair<Integer, ParentsArray.Dir>> getPath(PositionList pl, LocalObservations local) {        
         FeaturizedTokenPair pair = getFeatTokPair(local.getPidx(), local.getCidx());
         switch (pl) {
         case PATH_P_C:
@@ -487,10 +488,10 @@ public class TemplateFeatureExtractor {
         }
     }
     
-    public List<String> getTokPropsForPath(TokProperty prop, EdgeProperty eprop, List<Pair<Integer,Dir>> path) {
+    public List<String> getTokPropsForPath(TokProperty prop, EdgeProperty eprop, List<Pair<Integer,ParentsArray.Dir>> path) {
         List<String> props = new ArrayList<String>(path.size());
         for (int i=0; i<path.size(); i++) {
-            Pair<Integer,Dir> edge = path.get(i);
+            Pair<Integer,ParentsArray.Dir> edge = path.get(i);
             if (prop != null) {
                 String val = getTokProp(prop, edge.get1());
                 if (val != null) {
@@ -503,8 +504,8 @@ public class TemplateFeatureExtractor {
                 case EDGEREL:
                     int idx1 = path.get(i).get1();
                     int idx2 = path.get(i+1).get1();
-                    Dir d = path.get(i).get2();
-                    int idx = (d == Dir.UP) ? idx1 : idx2;
+                    ParentsArray.Dir d = path.get(i).get2();
+                    int idx = (d == ParentsArray.Dir.UP) ? idx1 : idx2;
                     props.add(getTokProp(TokProperty.DEPREL, idx));                    
                     break;
                 default: throw new IllegalStateException();

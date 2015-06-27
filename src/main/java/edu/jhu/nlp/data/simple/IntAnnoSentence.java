@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
+import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.prim.list.ByteArrayList;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.list.ShortArrayList;
 import edu.jhu.prim.util.SafeCast;
-import edu.jhu.util.Alphabet;
 
 public class IntAnnoSentence {
 

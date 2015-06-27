@@ -9,8 +9,8 @@ import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.util.collections.Lists;
-import edu.jhu.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Sets;
 
 /**
  * Adds the 5-character prefix of each word to the sentence. These prefixes are used as features in

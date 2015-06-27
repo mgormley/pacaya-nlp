@@ -1,6 +1,6 @@
 package edu.berkeley.nlp.PCFGLA.smoothing;
 
-import edu.jhu.util.Alphabet;
+import edu.jhu.pacaya.util.Alphabet;
 
 
 /**

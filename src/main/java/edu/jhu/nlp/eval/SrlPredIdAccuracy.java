@@ -6,7 +6,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.util.report.Reporter;
+import edu.jhu.pacaya.util.report.Reporter;
 
 /**
  * Evaluates the accuracy of predicate identification for SRL.

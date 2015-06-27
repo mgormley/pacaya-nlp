@@ -1,22 +1,22 @@
 package edu.jhu.nlp.depparse;
 
-import edu.jhu.gm.app.Encoder;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.data.LabeledFgExample;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FeatureCache;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
-import edu.jhu.gm.model.globalfac.LinkVar;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
+import edu.jhu.pacaya.gm.app.Encoder;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LabeledFgExample;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FeatureCache;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 
 /**
  * Encodes a dependency tree factor graph and variable assignment from the words and pruning mask
@@ -68,7 +68,7 @@ public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
         if (labeledExample) {
             return new LabeledFgExample(fg, goldConfig, fe);
         } else {
-            return new UnlabeledFgExample(fg, goldConfig, fe);
+            return new UnlabeledFgExample(fg, fe);
         }
     }
     

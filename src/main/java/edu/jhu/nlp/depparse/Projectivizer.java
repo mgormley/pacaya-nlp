@@ -5,11 +5,11 @@ import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.parse.dep.EdgeScores;
-import edu.jhu.parse.dep.ProjectiveDependencyParser;
+import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.parse.dep.EdgeScores;
+import edu.jhu.pacaya.parse.dep.ProjectiveDependencyParser;
 
 /**
  * Projectivizes non-projective trees by running a first order parser where the edges scores are 1.0

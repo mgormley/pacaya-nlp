@@ -10,9 +10,9 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.joint.JointNlpRunner;
+import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.prim.map.IntIntEntry;
 import edu.jhu.prim.map.IntIntHashMap;
-import edu.jhu.util.cli.ArgParser;
 
 /**
  * Prints stats about a dependency tree corpus.

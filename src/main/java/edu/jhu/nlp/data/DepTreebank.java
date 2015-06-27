@@ -8,7 +8,9 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.util.Alphabet;
+import edu.jhu.pacaya.nlp.data.Sentence;
+import edu.jhu.pacaya.nlp.data.SentenceCollection;
+import edu.jhu.pacaya.util.Alphabet;
 
 public class DepTreebank implements Iterable<DepTree> {
 
@@ -27,7 +29,11 @@ public class DepTreebank implements Iterable<DepTree> {
     
     public SentenceCollection getSentences() {
         if (sentences == null) {
-            sentences = new SentenceCollection(this);
+            sentences = new SentenceCollection(this.getAlphabet());
+            for (DepTree tree : this) {
+                Sentence sentence = tree.getSentence(this.getAlphabet());
+                sentences.add(sentence);
+            }
         }
         return sentences;
     }

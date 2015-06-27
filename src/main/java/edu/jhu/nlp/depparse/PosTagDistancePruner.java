@@ -9,20 +9,20 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.DepEdgeMask;
-import edu.jhu.nlp.data.LabelSequence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.nlp.data.LabelSequence;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.Threads;
+import edu.jhu.pacaya.util.collections.Sets;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.Threads;
-import edu.jhu.util.collections.Sets;
 
 /**
  * Distance-based pruning method from Rush & Petrov (2012).
@@ -44,7 +44,14 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
     private Alphabet<String> alphabet = new Alphabet<String>();
     private int[][][] mat;
     
-    public PosTagDistancePruner() { }
+    // Whether to always keep a right branching tree, to ensure that we don't prune all trees.
+    private boolean alwaysKeepRightBranching; 
+    
+    public PosTagDistancePruner() { this(true); }
+    
+    public PosTagDistancePruner(boolean alwaysKeepRightBranching) { 
+        this.alwaysKeepRightBranching = alwaysKeepRightBranching;
+    }
     
     @Override
     public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold, 
@@ -126,9 +133,12 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
                             }
                         }
                     }
-                    // Always keep a right-branching tree, so that we never prune all trees.
-                    for (int c = 0; c < tags.length; c++) {
-                        mask.setIsPruned(c-1, c, false);
+                    
+                    if (alwaysKeepRightBranching) {
+                        // Always keep a right-branching tree, so that we never prune all trees.
+                        for (int c = 0; c < tags.length; c++) {
+                            mask.setIsPruned(c-1, c, false);
+                        }
                     }
                     
                     // Check that there still exists some singly-rooted spanning tree that wasn't pruned.

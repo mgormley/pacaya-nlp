@@ -11,13 +11,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.FeatureVector;
-import edu.jhu.gm.feat.ObsFeExpFamFactor;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.nlp.data.DepTree;
-import edu.jhu.nlp.data.DepTree.Dir;
 import edu.jhu.nlp.data.LabeledSpan;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
@@ -31,14 +24,21 @@ import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.BrownClusterTagger;
-import edu.jhu.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
+import edu.jhu.pacaya.util.FeatureNames;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Lambda.FnObjDoubleToVoid;
-import edu.jhu.util.FeatureNames;
-import edu.jhu.util.Prm;
-import edu.jhu.util.cli.Opt;
 
 /**
  * Feature extraction for relations.
@@ -433,7 +433,7 @@ public class RelObsFe implements ObsFeatureExtractor {
         // 3) the shortest dependency path between the two mentions in a dependency tree as adopted
         // by Bunescu and Mooney (2005a).    
         TemplateFeatureExtractor tfe = new TemplateFeatureExtractor(fsent, null);        
-        List<Pair<Integer, Dir>> path = fsent.getFeatTokPair(m1.getHead(), m2.getHead()).getDependencyPath();
+        List<Pair<Integer, ParentsArray.Dir>> path = fsent.getFeatTokPair(m1.getHead(), m2.getHead()).getDependencyPath();
         if (path != null) {
             List<String> posPath = tfe.getTokPropsForPath(TokProperty.POS, EdgeProperty.DIR, path);
             List<String> wordPath = tfe.getTokPropsForPath(TokProperty.WORD, EdgeProperty.DIR, path);
@@ -706,9 +706,9 @@ public class RelObsFe implements ObsFeatureExtractor {
             //     - on_path+ne2 if on_path = T
             //     - on_path+ne1+ne2 if on_path = T
             FeaturizedTokenPair ftp = fsent.getFeatTokPair(m1.getHead(), m2.getHead());        
-            List<Pair<Integer, Dir>> depPath = ftp.getDependencyPath();
+            List<Pair<Integer, ParentsArray.Dir>> depPath = ftp.getDependencyPath();
             if (depPath != null) {
-                for (Pair<Integer,DepTree.Dir> pair : depPath) {
+                for (Pair<Integer,ParentsArray.Dir> pair : depPath) {
                     int i = pair.get1();
                     addEmbFeat("on_path", i, fv);
                     addEmbFeat("on_path-t1"+ne1, i, fv);

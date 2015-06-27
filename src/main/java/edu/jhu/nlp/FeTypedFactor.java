@@ -1,8 +1,8 @@
 package edu.jhu.nlp;
 
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.model.FeExpFamFactor;
-import edu.jhu.gm.model.VarSet;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.model.FeExpFamFactor;
+import edu.jhu.pacaya.gm.model.VarSet;
 
 /**
  * A factor which includes its type (i.e. template).

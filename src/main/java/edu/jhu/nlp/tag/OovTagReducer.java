@@ -1,6 +1,6 @@
 package edu.jhu.nlp.tag;
 
-import edu.jhu.util.Alphabet;
+import edu.jhu.pacaya.util.Alphabet;
 
 public class OovTagReducer extends AbstractTagReducer {
     

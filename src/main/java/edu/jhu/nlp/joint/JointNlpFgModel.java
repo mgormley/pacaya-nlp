@@ -1,9 +1,9 @@
 package edu.jhu.nlp.joint;
 
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.model.FgModel;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.FgModel;
 
 public class JointNlpFgModel extends FgModel {
 

@@ -23,11 +23,11 @@ import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.Sets;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.Prm;
-import edu.jhu.util.cli.Opt;
-import edu.jhu.util.collections.Lists;
-import edu.jhu.util.collections.Sets;
 
 /**
  * Munging of relations and named entity pairs in order to facilitate relation extraction
@@ -71,8 +71,10 @@ public class RelationMunger implements Serializable {
     public RelationDataPreproc getDataPreproc() { return new RelationDataPreproc(); }
     public RelationDataPostproc getDataPostproc() { return new RelationDataPostproc(); }
 
+    // TODO: This should not be a static method. It is currently hard coded so that it works fine
+    // for ACE 2005 and SemEval, but that should be fixed.
     public static boolean isNoRelationLabel(String relation) {
-        return relation.startsWith(NO_RELATION_LABEL);
+        return relation.startsWith("NO_RELATION") || relation.startsWith("Other");
     }
     
     String getNoRelationLabel() {

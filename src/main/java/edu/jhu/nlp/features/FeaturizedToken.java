@@ -7,10 +7,10 @@ import java.util.List;
 import org.apache.commons.lang3.StringUtils;
 
 import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.data.DepTree;
-import edu.jhu.nlp.data.DepTree.Dir;
 import edu.jhu.nlp.data.conll.LanguageConstants;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -53,7 +53,7 @@ public class FeaturizedToken {
     private Integer farLeftChild;
     private Integer nearLeftChild;
     private Integer nearRightChild;
-    private List<Pair<Integer, Dir>> rootPath;
+    private List<Pair<Integer, ParentsArray.Dir>> rootPath;
     private boolean cachedSupports = false;
     private int lowSupportNoun;
     private int highSupportNoun;
@@ -66,7 +66,7 @@ public class FeaturizedToken {
     private boolean cachedSiblings = false;
     private int nearLeftSibling;
     private int nearRightSibling;
-    private Dir direction = null; // null indicates no direction
+    private ParentsArray.Dir direction = null; // null indicates no direction
         
     // The CorpusStatistics parameter is only needed if getHighSupportNoun/Verb is used.
     public FeaturizedToken(int idx, AnnoSentence sent) {
@@ -108,7 +108,7 @@ public class FeaturizedToken {
             feat.add(NO_MORPH);
         } else {
             List<String> coNLLFeats = sent.getFeats(idx);
-            if (coNLLFeats == null) {
+            if (coNLLFeats == null || coNLLFeats.size() == 0) {
                 feat = new ArrayList<String>(1);
                 feat.add(NO_MORPH);
             } else {
@@ -228,7 +228,7 @@ public class FeaturizedToken {
         return sent.getParent(idx);
     }
     
-    public List<Pair<Integer, Dir>> getRootPath() {
+    public List<Pair<Integer, ParentsArray.Dir>> getRootPath() {
         ensureRootPath();
         return rootPath;
     }
@@ -238,10 +238,10 @@ public class FeaturizedToken {
             return;
         }
         if (idx < 0 || idx >= sent.size()) {
-            this.rootPath =  new ArrayList<Pair<Integer,Dir>>();
-            this.rootPath.add(new Pair<Integer, Dir>(-1,Dir.UP));
+            this.rootPath =  new ArrayList<Pair<Integer,ParentsArray.Dir>>();
+            this.rootPath.add(new Pair<Integer, ParentsArray.Dir>(-1,ParentsArray.Dir.UP));
         } else {
-            this.rootPath = DepTree.getDependencyPath(idx, -1, parents);
+            this.rootPath = ParentsArray.getDependencyPath(idx, -1, parents);
         }
     }
     
@@ -254,7 +254,7 @@ public class FeaturizedToken {
         if (children != null) {
             return;
         }
-        this.children = DepTree.getChildrenOf(parents, idx);
+        this.children = ParentsArray.getChildrenOf(parents, idx);
     }
     
     public int getFarLeftChild() {
@@ -391,7 +391,7 @@ public class FeaturizedToken {
         this.lowSupportVerb = -1;
         this.highSupportVerb = -1;
         if (rootPath != null) {
-            for (Pair<Integer,Dir> a : rootPath) {
+            for (Pair<Integer,ParentsArray.Dir> a : rootPath) {
                 i = a.get1();
                 if (i == -1) {
                     break;
@@ -434,7 +434,7 @@ public class FeaturizedToken {
             return;
         }
         if (idx >= 0 && idx < sent.size()) {
-            ArrayList<Integer> siblingsList = DepTree.getSiblingsOf(this.parents, idx);
+            ArrayList<Integer> siblingsList = ParentsArray.getSiblingsOf(this.parents, idx);
             Collections.sort(siblingsList);
             int wantedIndex = siblingsList.indexOf(idx);
             int rightSiblingIdx = wantedIndex + 1;
@@ -449,13 +449,13 @@ public class FeaturizedToken {
         cachedSiblings = true;
     }
 
-    public Dir getDirection() {
+    public ParentsArray.Dir getDirection() {
         return direction;
     }
 
     // TODO: Remove this when possible.
     @Deprecated
-    public void setDirection(Dir dir) {
+    public void setDirection(ParentsArray.Dir dir) {
         this.direction = dir;
     }
 

@@ -19,11 +19,11 @@ import edu.jhu.nlp.data.concrete.ConcreteWriter;
 import edu.jhu.nlp.data.concrete.ConcreteWriter.ConcreteWriterPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.util.Prm;
-import edu.jhu.util.Prng;
-import edu.jhu.util.Threads;
-import edu.jhu.util.files.Files;
-import edu.jhu.util.report.ReporterManager;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.Threads;
+import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.report.ReporterManager;
+import edu.jhu.prim.util.random.Prng;
 
 /**
  * Annotator of communication that takes a serialized AnnoPipeline and annotates communications.

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import edu.jhu.nlp.data.DepTree;
-import edu.jhu.nlp.data.DepTree.Dir;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -43,10 +43,10 @@ public class FeaturizedTokenPair {
     private int[] parents;
     
     private ArrayList<Integer> linePath;
-    private List<Pair<Integer, Dir>> dependencyPath;
-    private ArrayList<Pair<Integer, Dir>> dpPathShare;
-    private List<Pair<Integer, Dir>> dpPathPred;
-    private List<Pair<Integer, Dir>> dpPathArg;
+    private List<Pair<Integer, ParentsArray.Dir>> dependencyPath;
+    private ArrayList<Pair<Integer, ParentsArray.Dir>> dpPathShare;
+    private List<Pair<Integer, ParentsArray.Dir>> dpPathPred;
+    private List<Pair<Integer, ParentsArray.Dir>> dpPathArg;
     
     public FeaturizedTokenPair(int pidx, int aidx, FeaturizedToken pTok, FeaturizedToken aTok, AnnoSentence sent) {
         assert pTok.getSent() == aTok.getSent();
@@ -64,24 +64,24 @@ public class FeaturizedTokenPair {
     
     // ------------------------ Getters and Caching Methods ------------------------ //
         
-    public List<Pair<Integer,Dir>> getDependencyPath() {
+    public List<Pair<Integer,ParentsArray.Dir>> getDependencyPath() {
         if (dependencyPath == null) {
-            this.dependencyPath = DepTree.getDependencyPath(pidx, aidx, parents);
+            this.dependencyPath = ParentsArray.getDependencyPath(pidx, aidx, parents);
         }
         return dependencyPath;
     }
     
-    public List<Pair<Integer, Dir>> getDpPathPred() {
+    public List<Pair<Integer, ParentsArray.Dir>> getDpPathPred() {
         ensureDpPathShare();
         return dpPathPred;
     }
     
-    public List<Pair<Integer, Dir>> getDpPathArg() {
+    public List<Pair<Integer, ParentsArray.Dir>> getDpPathArg() {
         ensureDpPathShare();
         return this.dpPathArg;
     }
     
-    public List<Pair<Integer, Dir>> getDpPathShare() {
+    public List<Pair<Integer, ParentsArray.Dir>> getDpPathShare() {
         ensureDpPathShare();
         return dpPathShare;
     }
@@ -90,16 +90,16 @@ public class FeaturizedTokenPair {
         if (dpPathShare != null) {
             return;
         }        
-        this.dpPathShare = new ArrayList<Pair<Integer,DepTree.Dir>>();
+        this.dpPathShare = new ArrayList<Pair<Integer,ParentsArray.Dir>>();
         /* ZHAO:  Leading two paths to the root from the predicate and the argument, respectively, 
          * the common part of these two paths will be dpPathShare. */
-        List<Pair<Integer, Dir>> argRootPath = aTok.getRootPath();
-        List<Pair<Integer, Dir>> predRootPath = pTok.getRootPath();
+        List<Pair<Integer, ParentsArray.Dir>> argRootPath = aTok.getRootPath();
+        List<Pair<Integer, ParentsArray.Dir>> predRootPath = pTok.getRootPath();
         if (argRootPath != null && predRootPath != null) {
             int i = argRootPath.size() - 1;
             int j = predRootPath.size() - 1;
-            Pair<Integer,DepTree.Dir> argP = argRootPath.get(i);
-            Pair<Integer,DepTree.Dir> predP = predRootPath.get(j);
+            Pair<Integer,ParentsArray.Dir> argP = argRootPath.get(i);
+            Pair<Integer,ParentsArray.Dir> predP = predRootPath.get(j);
             while (argP.equals(predP)) {
                 this.dpPathShare.add(argP);
                 if (i == 0 || j == 0) {
@@ -118,12 +118,12 @@ public class FeaturizedTokenPair {
         int r;
         if (this.dpPathShare.isEmpty()) {
             r = -1;
-            this.dpPathPred = new ArrayList<Pair<Integer, Dir>>();
-            this.dpPathArg = new ArrayList<Pair<Integer, Dir>>();
+            this.dpPathPred = new ArrayList<Pair<Integer, ParentsArray.Dir>>();
+            this.dpPathArg = new ArrayList<Pair<Integer, ParentsArray.Dir>>();
         } else {
             r = this.dpPathShare.get(0).get1();
-            this.dpPathPred = DepTree.getDependencyPath(pidx, r, parents);
-            this.dpPathArg = DepTree.getDependencyPath(aidx, r, parents);
+            this.dpPathPred = ParentsArray.getDependencyPath(pidx, r, parents);
+            this.dpPathArg = ParentsArray.getDependencyPath(aidx, r, parents);
             assert this.dpPathPred != null;
             assert this.dpPathArg != null;
         }
@@ -162,9 +162,9 @@ public class FeaturizedTokenPair {
             return "ancestor";     // Short circuit to avoid ArrayIndexOutOfBounds.
         } else if (aidx == -1) {
             return "descendent";   // Short circuit to avoid ArrayIndexOutOfBounds.
-        } else if (DepTree.isAncestor(pidx, aidx, parents)) {
+        } else if (ParentsArray.isAncestor(pidx, aidx, parents)) {
             return "ancestor";
-        } else if (DepTree.isAncestor(aidx, pidx, parents)) {
+        } else if (ParentsArray.isAncestor(aidx, pidx, parents)) {
             return "descendent";
         } else {
             return "cousin";
@@ -186,7 +186,7 @@ public class FeaturizedTokenPair {
     }
 
     public int getCountOfNonConsecutivesInPath() {
-        List<Pair<Integer,Dir>> path = getDependencyPath();
+        List<Pair<Integer,ParentsArray.Dir>> path = getDependencyPath();
         int count = 0;
         if (path != null && path.size() > 0) {
             for (int i=1; i<path.size(); i++) {

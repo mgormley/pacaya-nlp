@@ -8,8 +8,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.util.files.FileListIterator;
-import edu.jhu.util.files.Files;
+import edu.jhu.pacaya.util.files.FileListIterator;
+import edu.jhu.pacaya.util.files.Files;
 
 /**
  * Reads a file or directory of CoNLL-2009 files.

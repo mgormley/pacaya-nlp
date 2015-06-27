@@ -48,13 +48,13 @@ import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.map.IntIntHashMap;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Lambda.FnO1ToVoid;
-import edu.jhu.util.Prm;
 
 /**
  * Reader of Concrete protocol buffer files.
@@ -107,7 +107,7 @@ public class ConcreteReader {
 
     public AnnoSentenceCollection sentsFromDir(File inDir) throws IOException {
         try {
-            List<File> commFiles = edu.jhu.util.files.Files.getMatchingFiles(inDir, ".+\\.comm$");
+            List<File> commFiles = edu.jhu.pacaya.util.files.Files.getMatchingFiles(inDir, ".+\\.comm$");
             AnnoSentenceCollection annoSents = new AnnoSentenceCollection();
             for (File commFile : commFiles) {
                 Communication comm = ser.fromPathString(commFile.getAbsolutePath());
@@ -154,6 +154,16 @@ public class ConcreteReader {
     public AnnoSentenceCollection sentsFromCommFile(File concreteFile) throws IOException {
         try {
             Communication communication = ser.fromPathString(concreteFile.getAbsolutePath());
+            AnnoSentenceCollection sents = sentsFromComm(communication);
+            return sents;
+        } catch (ConcreteException e) {
+            throw new RuntimeException(e);
+        }
+    }    
+
+    public AnnoSentenceCollection sentsFromCommInputStream(InputStream is) throws IOException {
+        try {
+            Communication communication = ser.fromInputStream(is);
             AnnoSentenceCollection sents = sentsFromComm(communication);
             return sents;
         } catch (ConcreteException e) {
@@ -218,6 +228,14 @@ public class ConcreteReader {
             int sentIdx = toksUuid2SentIdx.get(cEmToks.getTokenizationId().getUuidString());
             String entityType = cEm.getEntityType();
             String entitySubtype = null;
+            // TODO: Remove this SemEval-2010 Task 8 specific logic.
+            if (entityType != null) {
+                if (entityType.startsWith("I-") || entityType.startsWith("B-")) {
+                    entityType = entityType.substring(2);
+                    entityType = entityType.replace(':', '_');
+                }
+            }
+            // TODO: Remove this ACE 2005-specific logic.
             if (entityType != null && entityType.contains(":")) {
                 String[] splits = entityType.split(":");
                 entityType = splits[0];
@@ -257,12 +275,11 @@ public class ConcreteReader {
         Map<String, Integer> emId2SentIdx = getUuid2SentIdxMap(tmpSents);
 
         for (SituationMention cSm : cSms.getMentionList()) {
-            if (!"STATE".equals(cSm.getSituationType())) {
-                throw new IllegalStateException("Expecting situations of type STATE. " + cSm.getSituationType());
-            }
-            
             // Type / subtype.
             String type = cSm.getSituationKind();
+            if (type == null) { // For SemEval data.
+                type = cSm.getSituationType();
+            }
             String subtype = null;
             if (type.contains(":")) {
                 String[] splits = type.split(":");

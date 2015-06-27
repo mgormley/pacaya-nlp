@@ -15,7 +15,6 @@ import java.util.concurrent.Callable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.feat.FeatureVector;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -28,6 +27,11 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate0;
 import edu.jhu.nlp.features.TemplateLanguage.OtherFeat;
 import edu.jhu.nlp.features.TemplateSets;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.pacaya.util.Threads;
+import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.hash.MurmurHash3;
 import edu.jhu.prim.arrays.DoubleArrays;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.matrix.DenseDoubleMatrix;
@@ -35,10 +39,6 @@ import edu.jhu.prim.sort.IntDoubleSort;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.vector.IntDoubleDenseVector;
-import edu.jhu.util.Alphabet;
-import edu.jhu.util.Threads;
-import edu.jhu.util.collections.Lists;
-import edu.jhu.util.hash.MurmurHash3;
 
 /**
  * Feature template selector for SRL that picks templates with high information gain.

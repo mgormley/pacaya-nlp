@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
-import edu.jhu.util.cli.ArgParser;
-import edu.jhu.util.cli.Opt;
+import edu.jhu.pacaya.util.cli.ArgParser;
+import edu.jhu.pacaya.util.cli.Opt;
 
 public class CoNLL09BrownTagger {
 

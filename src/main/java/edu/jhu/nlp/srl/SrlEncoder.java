@@ -1,18 +1,5 @@
 package edu.jhu.nlp.srl;
 
-import edu.jhu.gm.app.Encoder;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.data.LabeledFgExample;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.ObsFeatureCache;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.Var;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -21,6 +8,19 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
+import edu.jhu.pacaya.gm.app.Encoder;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LabeledFgExample;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.prim.set.IntHashSet;
 
 /**
@@ -76,7 +76,7 @@ public class SrlEncoder implements Encoder<AnnoSentence, SrlGraph> {
         if (labeledExample) {
             return new LabeledFgExample(fg, goldConfig, obsFe, fts);
         } else {
-            return new UnlabeledFgExample(fg, goldConfig, obsFe, fts);
+            return new UnlabeledFgExample(fg, obsFe, fts);
         }
     }
     

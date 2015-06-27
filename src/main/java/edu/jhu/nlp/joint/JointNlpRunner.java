@@ -15,23 +15,6 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.autodiff.erma.DepParseDecodeLoss.DepParseDecodeLossFactory;
-import edu.jhu.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.autodiff.erma.ErmaObjective.BeliefsModuleFactory;
-import edu.jhu.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.autodiff.erma.InsideOutsideDepParse;
-import edu.jhu.autodiff.erma.MeanSquaredError.MeanSquaredErrorFactory;
-import edu.jhu.gm.data.FgExampleListBuilder.CacheType;
-import edu.jhu.gm.decode.MbrDecoder.Loss;
-import edu.jhu.gm.decode.MbrDecoder.MbrDecoderPrm;
-import edu.jhu.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
-import edu.jhu.gm.inf.FgInferencerFactory;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.train.CrfTrainer.CrfTrainerPrm;
-import edu.jhu.gm.train.CrfTrainer.Trainer;
 import edu.jhu.hlt.optimize.AdaDelta;
 import edu.jhu.hlt.optimize.AdaDelta.AdaDeltaPrm;
 import edu.jhu.hlt.optimize.AdaGradComidL2;
@@ -100,19 +83,40 @@ import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
+import edu.jhu.pacaya.autodiff.erma.BeliefsModuleFactory;
+import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.autodiff.erma.DepParseDecodeLoss.DepParseDecodeLossFactory;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
+import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
+import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
+import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
+import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.Threads;
+import edu.jhu.pacaya.util.cli.ArgParser;
+import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.report.Reporter;
+import edu.jhu.pacaya.util.report.ReporterManager;
+import edu.jhu.pacaya.util.semiring.Algebra;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
+import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
+import edu.jhu.pacaya.util.semiring.ShiftedRealAlgebra;
+import edu.jhu.pacaya.util.semiring.SplitAlgebra;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
-import edu.jhu.util.Prm;
-import edu.jhu.util.Prng;
-import edu.jhu.util.Threads;
-import edu.jhu.util.Timer;
-import edu.jhu.util.cli.ArgParser;
-import edu.jhu.util.cli.Opt;
-import edu.jhu.util.collections.Sets;
-import edu.jhu.util.files.Files;
-import edu.jhu.util.report.Reporter;
-import edu.jhu.util.report.ReporterManager;
-import edu.jhu.util.semiring.Algebra;
-import edu.jhu.util.semiring.Algebras;
+import edu.jhu.prim.util.random.Prng;
 
 /**
  * Pipeline runner for SRL experiments.
@@ -130,9 +134,9 @@ public class JointNlpRunner {
     public enum RegularizerType { L2, NONE };
     
     public enum AlgebraType {
-        REAL(Algebras.REAL_ALGEBRA), LOG(Algebras.LOG_SEMIRING), LOG_SIGN(Algebras.LOG_SIGN_ALGEBRA),
+        REAL(RealAlgebra.getInstance()), LOG(LogSemiring.getInstance()), LOG_SIGN(LogSignAlgebra.getInstance()),
         // SHIFTED_REAL and SPLIT algebras are for testing only.
-        SHIFTED_REAL(Algebras.SHIFTED_REAL_ALGEBRA), SPLIT(Algebras.SPLIT_ALGEBRA);
+        SHIFTED_REAL(ShiftedRealAlgebra.getInstance()), SPLIT(SplitAlgebra.getInstance());
 
         private Algebra s;
         
@@ -249,16 +253,6 @@ public class JointNlpRunner {
     public static int featCountCutoff = 4;
     @Opt(hasArg = true, description = "Whether to include unsupported features.")
     public static boolean includeUnsupportedFeatures = false;
-    @Opt(hasArg = true, description = "Whether to add the Simple features.")
-    public static boolean useSimpleFeats = true;
-    @Opt(hasArg = true, description = "Whether to add the Naradowsky features.")
-    public static boolean useNaradFeats = true;
-    @Opt(hasArg = true, description = "Whether to add the Zhao features.")
-    public static boolean useZhaoFeats = true;
-    @Opt(hasArg = true, description = "Whether to add the Bjorkelund features.")
-    public static boolean useBjorkelundFeats = true;
-    @Opt(hasArg = true, description = "Whether to add dependency path features.")
-    public static boolean useLexicalDepPathFeats = false;
     @Opt(hasArg = true, description = "Whether to include pairs of features.")
     public static boolean useTemplates = false;
     @Opt(hasArg = true, description = "Sense feature templates.")
@@ -356,8 +350,6 @@ public class JointNlpRunner {
     public static Date stopTrainingBy = null;
     
     // Options for training.
-    @Opt(hasArg=true, description="Whether to use the mean squared error instead of conditional log-likelihood when evaluating training quality.")
-    public static boolean useMseForValue = false;
     @Opt(hasArg=true, description="The type of trainer to use (e.g. conditional log-likelihood, ERMA).")
     public static Trainer trainer = Trainer.CLL;
     
@@ -694,16 +686,11 @@ public class JointNlpRunner {
     private static JointNlpFeatureExtractorPrm getJointNlpFeatureExtractorPrm() {
         // SRL Feature Extraction.
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
-        srlFePrm.fePrm.biasOnly = biasOnly;
-        srlFePrm.fePrm.useSimpleFeats = useSimpleFeats;
-        srlFePrm.fePrm.useNaradFeats = useNaradFeats;
-        srlFePrm.fePrm.useZhaoFeats = useZhaoFeats;
-        srlFePrm.fePrm.useBjorkelundFeats = useBjorkelundFeats;
-        srlFePrm.fePrm.useLexicalDepPathFeats = useLexicalDepPathFeats;
-        srlFePrm.fePrm.useTemplates = useTemplates;
+        srlFePrm.biasOnly = biasOnly;
+        srlFePrm.useTemplates = useTemplates;
         
-        srlFePrm.fePrm.soloTemplates = getFeatTpls(senseFeatTpls);
-        srlFePrm.fePrm.pairTemplates = getFeatTpls(argFeatTpls);
+        srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
+        srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
 
         srlFePrm.featureHashMod = featureHashMod;
                 
@@ -851,8 +838,7 @@ public class JointNlpRunner {
         } else {
             throw new ParseException("Unsupported regularizer: " + regularizer);
         }
-        prm.numThreads = threads;
-        prm.useMseForValue = useMseForValue;        
+        prm.numThreads = threads;     
         prm.trainer = trainer;                
         
         // TODO: add options for other loss functions.

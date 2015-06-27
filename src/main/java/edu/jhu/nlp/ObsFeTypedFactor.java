@@ -1,9 +1,9 @@
 package edu.jhu.nlp;
 
-import edu.jhu.gm.feat.ObsFeExpFamFactor;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.model.VarSet;
+import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.VarSet;
 
 /**
  * A factor which includes its type (i.e. template).

@@ -19,9 +19,9 @@ import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
-import edu.jhu.util.Prng;
-import edu.jhu.util.cli.ArgParser;
-import edu.jhu.util.cli.Opt;
+import edu.jhu.pacaya.util.cli.ArgParser;
+import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.prim.util.random.Prng;
 
 /**
  * Converts CoNLL-2009 format to CoNLL Lite (with a few extra columns).

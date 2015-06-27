@@ -3,19 +3,6 @@ package edu.jhu.nlp.joint;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.app.Encoder;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.data.LabeledFgExample;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.FactorTemplateList;
-import edu.jhu.gm.feat.FeatureCache;
-import edu.jhu.gm.feat.FeatureExtractor;
-import edu.jhu.gm.feat.ObsFeatureCache;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.model.Var.VarType;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -31,7 +18,20 @@ import edu.jhu.nlp.relations.RelationsEncoder;
 import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.nlp.srl.SrlFeatureExtractor;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
-import edu.jhu.util.Prm;
+import edu.jhu.pacaya.gm.app.Encoder;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LabeledFgExample;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.FactorTemplateList;
+import edu.jhu.pacaya.gm.feat.FeatureCache;
+import edu.jhu.pacaya.gm.feat.FeatureExtractor;
+import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.util.Prm;
 
 /**
  * Encodes a joint NLP factor graph and its variable assignment.
@@ -95,9 +95,6 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         if (prm.fgPrm.includeDp) {
             if (gold != null && gold.getParents() != null) {
                 DepParseEncoder.addDepParseTrainAssignment(gold.getParents(), fg.getDpBuilder(), vc);
-            } else if (sent.getParents() != null && prm.fgPrm.includeDp && prm.fgPrm.dpPrm.linkVarType == VarType.OBSERVED) {
-                // If the dependency tree is given in the input sentence, we might have added OBSERVED variables for it.
-                DepParseEncoder.addDepParseTrainAssignment(sent.getParents(), fg.getDpBuilder(), vc);
             }
         }
         if (prm.fgPrm.includeSrl) {
@@ -117,7 +114,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         if (labeledExample) {
             ex = new LabeledFgExample(fg, vc, srlFe, fts);
         } else {
-            ex = new UnlabeledFgExample(fg, vc, srlFe, fts);
+            ex = new UnlabeledFgExample(fg, srlFe, fts);
         }
         dpFe.init(ex);
         relFe.init(ex, fts);
@@ -130,10 +127,10 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
             // Check that the first sentence has all the required annotation
             // types for the specified feature templates.
             AnnoSentence sent = sents.get(0);
-            if (prm.fePrm.srlFePrm.fePrm.useTemplates) {
+            if (prm.fePrm.srlFePrm.useTemplates) {
                 if (prm.fgPrm.includeSrl) {
-                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.fePrm.soloTemplates);
-                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.fePrm.pairTemplates);
+                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.soloTemplates);
+                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fePrm.srlFePrm.pairTemplates);
                 }
             }
             if (prm.fgPrm.includeDp && !prm.fePrm.dpFePrm.onlyFast) {

@@ -4,16 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import edu.jhu.gm.app.Encoder;
-import edu.jhu.gm.data.LFgExample;
-import edu.jhu.gm.data.LabeledFgExample;
-import edu.jhu.gm.data.UFgExample;
-import edu.jhu.gm.data.UnlabeledFgExample;
-import edu.jhu.gm.feat.ObsFeatureCache;
-import edu.jhu.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.gm.feat.ObsFeatureExtractor;
-import edu.jhu.gm.model.FactorGraph;
-import edu.jhu.gm.model.VarConfig;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
@@ -24,10 +14,20 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
+import edu.jhu.pacaya.gm.app.Encoder;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LabeledFgExample;
+import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
+import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.util.Prm;
-import edu.jhu.util.cli.Opt;
-import edu.jhu.util.collections.Lists;
 
 public class RelationsEncoder implements Encoder<AnnoSentence, List<String>> {
     
@@ -66,7 +66,7 @@ public class RelationsEncoder implements Encoder<AnnoSentence, List<String>> {
         if (labeledExample) {
             return new LabeledFgExample(fg, vc);
         } else {
-            return new UnlabeledFgExample(fg, vc);
+            return new UnlabeledFgExample(fg);
         }
     }
 
