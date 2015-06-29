@@ -15,7 +15,7 @@ import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 
 /**
  * Unit tests for {@link CorpusStatisticsTest}.
@@ -41,11 +41,11 @@ public class CorpusStatisticsTest {
         CorpusStatistics cs = new CorpusStatistics(csPrm);
         cs.init(simpleSents);
 
-        assertEquals(Sets.getSet("de", ",", "."), new HashSet<String>(cs.knownWords));
-        assertEquals(Sets.getSet("de"), new HashSet<String>(cs.topNWords));
-        assertEquals(Sets.getSet("UNK-CAPS", "UNK", "UNK-LC", "UNK-LC-s"), new HashSet<String>(cs.knownUnks));
-        assertEquals(Sets.getSet("True", "False"), new HashSet<String>(cs.linkStateNames));
-        assertEquals(Sets.getSet("argUNK", "arg2", "arg1", "arg0", "argm", "_"), new HashSet<String>(cs.roleStateNames));
+        assertEquals(QSets.getSet("de", ",", "."), new HashSet<String>(cs.knownWords));
+        assertEquals(QSets.getSet("de"), new HashSet<String>(cs.topNWords));
+        assertEquals(QSets.getSet("UNK-CAPS", "UNK", "UNK-LC", "UNK-LC-s"), new HashSet<String>(cs.knownUnks));
+        assertEquals(QSets.getSet("True", "False"), new HashSet<String>(cs.linkStateNames));
+        assertEquals(QSets.getSet("argUNK", "arg2", "arg1", "arg0", "argm", "_"), new HashSet<String>(cs.roleStateNames));
         assertEquals(30, cs.maxSentLength);        
     }
 

@@ -8,7 +8,7 @@ import edu.jhu.nlp.data.NerMentions;
 import edu.jhu.nlp.data.RelationMention;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;
 
 public class SemEval2010Sentence {
@@ -26,7 +26,7 @@ public class SemEval2010Sentence {
     
     public void intern() {
         id = id.intern();
-        Lists.intern(words);
+        QLists.intern(words);
         e1.intern();
         e2.intern();
         relation = relation.intern();
@@ -57,9 +57,9 @@ public class SemEval2010Sentence {
     public AnnoSentence toAnnoSentence() {
         AnnoSentence sent = new AnnoSentence();
         sent.setWords(this.words);
-        sent.setNamedEntities(new NerMentions(this.words.size(), Lists.getList(e1, e2)));
+        sent.setNamedEntities(new NerMentions(this.words.size(), QLists.getList(e1, e2)));
         RelationMentions rms = new RelationMentions();        
-        rms.add(new RelationMention(this.relation, null, Lists.getList(
+        rms.add(new RelationMention(this.relation, null, QLists.getList(
                 new Pair<String, NerMention>("e1", this.e1),
                 new Pair<String, NerMention>("e2", this.e2)), 
                 null));

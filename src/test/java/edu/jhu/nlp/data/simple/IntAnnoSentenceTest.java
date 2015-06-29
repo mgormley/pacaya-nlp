@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class IntAnnoSentenceTest {
     
@@ -17,14 +17,14 @@ public class IntAnnoSentenceTest {
         // Test known words.
         int i = 0;
         AnnoSentence s = new AnnoSentence();
-        s.setWords(Lists.getList("word"+i));
-        s.setPrefixes(Lists.getList("prefix"+i));
-        s.setLemmas(Lists.getList("lemma"+i));
-        s.setPosTags(Lists.getList("pos"+i));
-        s.setCposTags(Lists.getList("cpos"+i));
-        s.setClusters(Lists.getList("cluster"+i));
-        s.setFeats(Lists.getList(Lists.getList("feat"+i)));
-        s.setDeprels(Lists.getList("deprel"+i));
+        s.setWords(QLists.getList("word"+i));
+        s.setPrefixes(QLists.getList("prefix"+i));
+        s.setLemmas(QLists.getList("lemma"+i));
+        s.setPosTags(QLists.getList("pos"+i));
+        s.setCposTags(QLists.getList("cpos"+i));
+        s.setClusters(QLists.getList("cluster"+i));
+        s.setFeats(QLists.getList(QLists.getList("feat"+i)));
+        s.setDeprels(QLists.getList("deprel"+i));
         sents.add(s);
         
         IntAnnoSentence isent = new IntAnnoSentence(s, store);
@@ -46,14 +46,14 @@ public class IntAnnoSentenceTest {
         // Test unknown words.
         String i = "-unseen-suffix";
         AnnoSentence s = new AnnoSentence();
-        s.setWords(Lists.getList("word"+i));
-        s.setPrefixes(Lists.getList("prefix"+i));
-        s.setLemmas(Lists.getList("lemma"+i));
-        s.setPosTags(Lists.getList("pos"+i));
-        s.setCposTags(Lists.getList("cpos"+i));
-        s.setClusters(Lists.getList("cluster"+i));
-        s.setFeats(Lists.getList(Lists.getList("feat"+i)));
-        s.setDeprels(Lists.getList("deprel"+i));
+        s.setWords(QLists.getList("word"+i));
+        s.setPrefixes(QLists.getList("prefix"+i));
+        s.setLemmas(QLists.getList("lemma"+i));
+        s.setPosTags(QLists.getList("pos"+i));
+        s.setCposTags(QLists.getList("cpos"+i));
+        s.setClusters(QLists.getList("cluster"+i));
+        s.setFeats(QLists.getList(QLists.getList("feat"+i)));
+        s.setDeprels(QLists.getList("deprel"+i));
         sents.add(s);
         
         IntAnnoSentence isent = new IntAnnoSentence(s, store);
@@ -70,8 +70,8 @@ public class IntAnnoSentenceTest {
     @Test
     public void testNumInBetween() {
         AnnoSentence sent = new AnnoSentence();
-        sent.setWords(Lists.getList(   "0",     "1",    "2",    "3", "4",    "5",    "6",    "7"));
-        sent.setCposTags(Lists.getList("VERB", "VERB", "NOUN", ".", "CONJ", "NOUN", "VERB", "VERB"));
+        sent.setWords(QLists.getList(   "0",     "1",    "2",    "3", "4",    "5",    "6",    "7"));
+        sent.setCposTags(QLists.getList("VERB", "VERB", "NOUN", ".", "CONJ", "NOUN", "VERB", "VERB"));
         AnnoSentenceCollection sents = new AnnoSentenceCollection();
         sents.add(sent);
         AlphabetStore store = new AlphabetStore(sents);

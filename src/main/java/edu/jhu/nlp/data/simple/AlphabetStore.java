@@ -7,7 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.bimap.CountingIntObjectBimap;
 import edu.jhu.prim.bimap.IntObjectBimap;
 
@@ -52,7 +52,7 @@ public class AlphabetStore implements Serializable {
         feats = getInitAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
         deprels= getInitAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
         
-        as = Lists.getList(words, prefixes, lemmas, posTags, cposTags, clusters, feats, deprels);
+        as = QLists.getList(words, prefixes, lemmas, posTags, cposTags, clusters, feats, deprels);
         this.stopGrowth();
     }
 

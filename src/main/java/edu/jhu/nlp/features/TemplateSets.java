@@ -23,7 +23,7 @@ import edu.jhu.nlp.features.TemplateLanguage.RulePiece;
 import edu.jhu.nlp.features.TemplateLanguage.SymbolProperty;
 import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class TemplateSets {
 
@@ -67,8 +67,8 @@ public class TemplateSets {
         }
         for (PositionList pl : PositionList.values()) {
             for (ListModifier lmod : ListModifier.values()) {
-                for (EdgeProperty eprop : Lists.cons(null, EdgeProperty.values())) {                    
-                    for (TokProperty prop : Lists.cons(null, TokProperty.values())) {
+                for (EdgeProperty eprop : QLists.cons(null, EdgeProperty.values())) {                    
+                    for (TokProperty prop : QLists.cons(null, TokProperty.values())) {
                         if (isValidFeatTemplate3(pl, prop, eprop, lmod)) {
                             tpls.add(new FeatTemplate3(pl, prop, eprop, lmod));
                         }
@@ -231,7 +231,7 @@ public class TemplateSets {
         }
         for (PositionList pl : simplePosLists) {
             for (ListModifier lmod : listModifiers) {
-                for (EdgeProperty eprop : Lists.getList(null, EdgeProperty.DIR)) {
+                for (EdgeProperty eprop : QLists.getList(null, EdgeProperty.DIR)) {
                     for (TokProperty prop : coarseTokProps) {
                         if (isValidFeatTemplate3(pl, prop, eprop, lmod)) {
                             tpls.add(new FeatTemplate3(pl, prop, eprop, lmod));

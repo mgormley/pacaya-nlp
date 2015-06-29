@@ -26,7 +26,7 @@ import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;
 
 public class RelationsEncoder implements Encoder<AnnoSentence, List<String>> {

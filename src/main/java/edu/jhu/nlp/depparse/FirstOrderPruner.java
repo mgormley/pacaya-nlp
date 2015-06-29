@@ -32,7 +32,7 @@ import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.pacaya.util.files.Files;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.Primitives.MutableInt;
@@ -134,7 +134,7 @@ public class FirstOrderPruner implements Annotator {
 
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.DEP_EDGE_MASK);
+        return QSets.getSet(AT.DEP_EDGE_MASK);
     }
     
 }

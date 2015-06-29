@@ -104,7 +104,7 @@ import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.pacaya.util.files.Files;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;
@@ -843,7 +843,7 @@ public class JointNlpRunner {
         
         // TODO: add options for other loss functions.
         if (prm.trainer == Trainer.ERMA && 
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.DEP_TREE))) {
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
             if (dpLoss == ErmaLoss.DP_DECODE_LOSS) {
                 DepParseDecodeLossFactory lossPrm = new DepParseDecodeLossFactory();
                 lossPrm.annealMse = dpAnnealMse;
@@ -909,7 +909,7 @@ public class JointNlpRunner {
             }
             return bpPrm;
         } else if (inference == Inference.DP) {
-            if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.DEP_TREE))
+            if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))
                     && grandparentFactors && !arbitrarySiblingFactors && !headBigramFactors) { 
                 return new O2AllGraFgInferencerFactory(algebra.getAlgebra());
             } else {

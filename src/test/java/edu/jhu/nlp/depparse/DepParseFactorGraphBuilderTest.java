@@ -21,7 +21,7 @@ import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives;
 
 
@@ -144,7 +144,7 @@ public class DepParseFactorGraphBuilderTest {
         // --- These won't even be used in these tests ---
         FeatureExtractor fe = new SimpleVCFeatureExtractor(new FeatureNames()); 
         // ---                                         ---
-        List<String> words = Lists.getList("w1", "w2", "w3");
+        List<String> words = QLists.getList("w1", "w2", "w3");
         // Prune all but a left branching tree.
         DepEdgeMask depEdgeMask = new DepEdgeMask(words.size(), false);
         for (int c=0; c<words.size(); c++) {

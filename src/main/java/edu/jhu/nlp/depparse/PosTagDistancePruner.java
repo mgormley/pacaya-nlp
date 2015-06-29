@@ -19,7 +19,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.pacaya.nlp.data.LabelSequence;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
@@ -164,7 +164,7 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
     
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.DEP_EDGE_MASK);
+        return QSets.getSet(AT.DEP_EDGE_MASK);
     }
     
 }

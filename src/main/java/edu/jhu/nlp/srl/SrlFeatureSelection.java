@@ -21,7 +21,7 @@ import edu.jhu.nlp.joint.JointNlpEncoder;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpRunner;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 
 /**
  * Train-time only "annotator" for feature selection. This modifies the feature templates on the
@@ -85,7 +85,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
     }
 
     private static void removeAts(JointNlpEncoder.JointNlpFeatureExtractorPrm fePrm) {
-        Set<AT> ats = Sets.union(CorpusHandler.getRemoveAts(), CorpusHandler.getPredAts());
+        Set<AT> ats = QSets.union(CorpusHandler.getRemoveAts(), CorpusHandler.getPredAts());
         if (JointNlpRunner.brownClusters == null) {
             // Filter out the Brown cluster features.
             log.warn("Filtering out Brown cluster features.");

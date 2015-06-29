@@ -9,7 +9,7 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class SrlDecoderTest {
 
@@ -17,12 +17,12 @@ public class SrlDecoderTest {
     public void testGetSrlGraph() {
         int n = 3;
         VarConfig vc = new VarConfig();
-        vc.put(new SenseVar(VarType.PREDICTED, 2, "s-1", Lists.getList("false","true"), 1), 1);
-        vc.put(new RoleVar(VarType.PREDICTED, 2, "r-1_0", Lists.getList("false","true"), 1, 0), 1);
-        vc.put(new RoleVar(VarType.PREDICTED, 2, "r-1_2", Lists.getList("false","true"), 1, 2), 0);
+        vc.put(new SenseVar(VarType.PREDICTED, 2, "s-1", QLists.getList("false","true"), 1), 1);
+        vc.put(new RoleVar(VarType.PREDICTED, 2, "r-1_0", QLists.getList("false","true"), 1, 0), 1);
+        vc.put(new RoleVar(VarType.PREDICTED, 2, "r-1_2", QLists.getList("false","true"), 1, 2), 0);
         // Self-loop
-        vc.put(new SenseVar(VarType.PREDICTED, 2, "s-2", Lists.getList("false","true"), 2), 1);
-        vc.put(new RoleVar(VarType.PREDICTED, 2, "r-2_2", Lists.getList("false","true"), 2, 2), 1);
+        vc.put(new SenseVar(VarType.PREDICTED, 2, "s-2", QLists.getList("false","true"), 2), 1);
+        vc.put(new RoleVar(VarType.PREDICTED, 2, "r-2_2", QLists.getList("false","true"), 2, 2), 1);
         SrlGraph g = SrlDecoder.getSrlGraphFromVarConfig(vc, n);
         
         System.out.println(g);

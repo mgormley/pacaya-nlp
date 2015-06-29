@@ -40,7 +40,7 @@ import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.gm.train.SimpleVCObsFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives;
 import edu.jhu.prim.set.IntHashSet;
 
@@ -219,8 +219,8 @@ public class JointNlpFactorGraphTest {
         assertEquals(0, sfg.getSenseVar(0).getParent());
         assertEquals(2, sfg.getSenseVar(2).getParent());
         
-        assertEquals(Lists.getList("w1.01", "w1.02", "_"), sfg.getSenseVar(0).getStateNames());
-        assertEquals(Lists.getList("w3.01", "w3.02", "_"), sfg.getSenseVar(2).getStateNames());
+        assertEquals(QLists.getList("w1.01", "w1.02", "_"), sfg.getSenseVar(0).getStateNames());
+        assertEquals(QLists.getList("w3.01", "w3.02", "_"), sfg.getSenseVar(2).getStateNames());
         
         // Assertions about the Sense factors.
         int numSenseFactors = 0;
@@ -337,12 +337,12 @@ public class JointNlpFactorGraphTest {
 
             @Override
             public List<String> get(Object predicate) {
-                return Lists.getList(predicate + ".01", predicate + ".02");
+                return QLists.getList(predicate + ".01", predicate + ".02");
             }
             
         };
         IntHashSet knownPreds = IntHashSet.fromArray(0, 2);
-        List<String> words = Lists.getList("w1", "w2", "w3");        
+        List<String> words = QLists.getList("w1", "w2", "w3");        
         // Prune all but a left branching tree.
         DepEdgeMask depEdgeMask = new DepEdgeMask(words.size(), false);
         for (int c=0; c<words.size(); c++) {
@@ -356,7 +356,7 @@ public class JointNlpFactorGraphTest {
         sent.setDepEdgeMask(depEdgeMask);
         
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
-        cs.roleStateNames = Lists.getList("A1", "A2", "A3");
+        cs.roleStateNames = QLists.getList("A1", "A2", "A3");
         cs.predSenseListMap = psMap;
         
         JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe, null);

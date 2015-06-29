@@ -8,7 +8,7 @@ import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 
 /**
  * Converts the POS tags or coarse POS tags to a very small enumerated (strict) POS tag set.
@@ -91,7 +91,7 @@ public class StrictPosTagAnnotator extends AbstractParallelAnnotator implements 
 
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.STRICT_POS);
+        return QSets.getSet(AT.STRICT_POS);
     }
 
 }

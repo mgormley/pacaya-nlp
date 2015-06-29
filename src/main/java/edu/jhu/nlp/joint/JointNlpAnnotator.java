@@ -41,8 +41,8 @@ import edu.jhu.pacaya.gm.train.CrfTrainer;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.pacaya.util.files.Files;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
@@ -129,19 +129,19 @@ public class JointNlpAnnotator implements Trainable, Annotator {
         if (devInput == null || devGold == null) { return null; }
         final JointNlpAnnotator anno = this;
         final Evaluator eval;
-        if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.DEP_TREE))) {
+        if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
             eval = new DepParseAccuracy(prm.dpSkipPunctuation);
-        } else if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.SRL)) || 
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.SRL_PRED_IDX, AT.SRL))
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) || 
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
             SrlEvaluatorPrm evalPrm = new SrlEvaluatorPrm();
             evalPrm.evalSense = prm.buPrm.fgPrm.srlPrm.predictSense;
             evalPrm.evalPredicatePosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
             evalPrm.evalRoles = (prm.buPrm.fgPrm.srlPrm.roleStructure != RoleStructure.NO_ROLES);
             eval = new SrlEvaluator(evalPrm);
-        } else if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.REL_LABELS)) ||
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.RELATIONS)) ||
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.REL_LABELS, AT.RELATIONS))
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS)) ||
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.RELATIONS)) ||
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS, AT.RELATIONS))
                 ) {
             eval = new RelationEvaluator();
         } else {

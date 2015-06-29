@@ -25,8 +25,8 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -244,8 +244,8 @@ public class RelationMunger implements Serializable {
                 AnnoSentence sent = sents.get(i);
                 for (int k=0; k<sent.getRelLabels().size(); k++) {
                     AnnoSentence single = sent.getShallowCopy();
-                    single.setNePairs(Lists.getList(sent.getNePairs().get(k)));
-                    single.setRelLabels(Lists.getList(sent.getRelLabels().get(k)));
+                    single.setNePairs(QLists.getList(sent.getNePairs().get(k)));
+                    single.setRelLabels(QLists.getList(sent.getRelLabels().get(k)));
                     singles.add(single);
                 }
             }
@@ -283,7 +283,7 @@ public class RelationMunger implements Serializable {
             
             if (dataType == DatasetType.ACE2005) {
                 // This is valid whether or not subtypes are used.
-                List<String> asymmtricTypes = Lists.getList("ART", "GEN-AFF", "ORG-AFF", "PART-WHOLE");
+                List<String> asymmtricTypes = QLists.getList("ART", "GEN-AFF", "ORG-AFF", "PART-WHOLE");
                 return asymmtricTypes.contains(relType);
 //            } else if (dataType == DatasetType.ACE2004 && !useRelationSubtype) {
 //                // Following prior work, only PER-SOC (and NONE) are the fully symmetric types.
@@ -308,7 +308,7 @@ public class RelationMunger implements Serializable {
 
         @Override
         public Set<AT> getAnnoTypes() {
-            return Sets.getSet(AT.RELATIONS);
+            return QSets.getSet(AT.RELATIONS);
         }
 
         @Override

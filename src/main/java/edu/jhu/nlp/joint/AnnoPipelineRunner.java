@@ -91,7 +91,7 @@ import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.files.Files;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;

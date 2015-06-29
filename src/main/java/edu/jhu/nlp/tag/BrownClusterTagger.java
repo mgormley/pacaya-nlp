@@ -23,7 +23,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.nlp.data.SentenceCollection;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.bimap.IntObjectBimap;
 
 /**
@@ -179,7 +179,7 @@ public class BrownClusterTagger extends AbstractParallelAnnotator implements Ann
 
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.BROWN);
+        return QSets.getSet(AT.BROWN);
     }
     
 }

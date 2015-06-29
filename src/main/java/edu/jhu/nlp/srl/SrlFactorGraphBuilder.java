@@ -16,7 +16,7 @@ import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.iter.IntIter;
 import edu.jhu.prim.set.IntSet;
 
@@ -230,7 +230,7 @@ public class SrlFactorGraphBuilder implements Serializable {
                     senseStateNames = CorpusStatistics.PRED_POSITION_STATE_NAMES;
                 } else {
                     // Include the state of "no predicate".
-                    senseStateNames = Lists.cons("_", senseStateNames);
+                    senseStateNames = QLists.cons("_", senseStateNames);
                 }
                 senseVars[i] = createSenseVar(i, senseStateNames);
             }

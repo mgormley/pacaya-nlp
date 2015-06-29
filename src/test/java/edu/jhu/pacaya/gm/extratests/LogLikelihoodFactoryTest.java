@@ -48,7 +48,7 @@ import edu.jhu.pacaya.gm.train.LogLikelihoodFactory;
 import edu.jhu.pacaya.gm.train.MarginalLogLikelihood;
 import edu.jhu.pacaya.gm.train.ModuleObjective;
 import edu.jhu.pacaya.gm.train.MtFactory;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.semiring.Algebra;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
@@ -92,8 +92,8 @@ public class LogLikelihoodFactoryTest {
         //tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", new ArrayList<String>()));
         //tokens.add(new CoNLL09Token(id, form, lemma, plemma, pos, ppos, feat, pfeat, head, phead, deprel, pdeprel, fillpred, pred, apreds));
 //        tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", getList("_")));
-        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", Lists.getList("feat"), Lists.getList("feat") , 2, 2, "subj", "_", false, "_", Lists.getList("arg0")));
-        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", Lists.getList("feat"), Lists.getList("feat") , 0, 0, "v", "_", true, "ate.1", Lists.getList("_")));
+        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", QLists.getList("feat"), QLists.getList("feat") , 2, 2, "subj", "_", false, "_", QLists.getList("arg0")));
+        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", QLists.getList("feat"), QLists.getList("feat") , 0, 0, "v", "_", true, "ate.1", QLists.getList("_")));
         //tokens.add(new CoNLL09Token(4, "food", "_", "_", "N", "_", getList("feat"), getList("feat") , 2, 2, "obj", "_", false, "_", getList("arg1")));
         CoNLL09Sentence sent = new CoNLL09Sentence(tokens);
                 

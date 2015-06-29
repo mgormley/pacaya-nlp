@@ -29,7 +29,7 @@ import edu.jhu.nlp.features.TemplateLanguage.OtherFeat;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.hash.MurmurHash3;
 import edu.jhu.prim.arrays.DoubleArrays;
 import edu.jhu.prim.arrays.IntArrays;
@@ -99,7 +99,7 @@ public class IGFeatureTemplateSelector {
             AnnoSentenceCollection goldSents, CorpusStatisticsPrm csPrm, List<FeatTemplate> unigrams,
             ValExtractor valExt) {
         int numUni = 45;
-        List<FeatTemplate> selUnigrams = selectFeatureTemplates(unigrams, Lists.getList(valExt), inputSents, goldSents,
+        List<FeatTemplate> selUnigrams = selectFeatureTemplates(unigrams, QLists.getList(valExt), inputSents, goldSents,
                 csPrm, numUni).get(0);
         // Don't include PathGrams feature.
         boolean removedPathGrams = selUnigrams.remove(new FeatTemplate0(OtherFeat.PATH_GRAMS));
@@ -109,7 +109,7 @@ public class IGFeatureTemplateSelector {
         assert selUnigrams.size() <= numUni : "selUnigrams.size(): " + selUnigrams.size();
         List<FeatTemplate> bigrams = TemplateSets.getBigramFeatureTemplates(selUnigrams);
         assert bigrams.size() <= numUni * (numUni - 1.0) / 2.0;
-        bigrams = selectFeatureTemplates(bigrams, Lists.getList(valExt), inputSents, goldSents, csPrm, prm.numToSelect)
+        bigrams = selectFeatureTemplates(bigrams, QLists.getList(valExt), inputSents, goldSents, csPrm, prm.numToSelect)
                 .get(0);
         // Add ALL unigrams and the selected bigrams.
         List<FeatTemplate> all = new ArrayList<FeatTemplate>();
@@ -242,7 +242,7 @@ public class IGFeatureTemplateSelector {
                     
                     // Feature Extraction.
                     List<String> feats = new ArrayList<String>();
-                    featExt.addFeatures(Lists.getList(tpl), LocalObservations.newPidxCidx(pidx, cidx), feats);
+                    featExt.addFeatures(QLists.getList(tpl), LocalObservations.newPidxCidx(pidx, cidx), feats);
                     if (feats.size() == 0) {
                         if (!tplsWithNoFeats.contains(tpl)) {
                             log.warn("No features extracted for template: " + tpl.getName());

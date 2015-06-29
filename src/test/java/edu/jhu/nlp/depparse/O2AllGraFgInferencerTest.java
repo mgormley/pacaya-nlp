@@ -30,7 +30,7 @@ import edu.jhu.pacaya.gm.model.globalfac.GlobalFactor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 
 public class O2AllGraFgInferencerTest {
@@ -50,37 +50,37 @@ public class O2AllGraFgInferencerTest {
     @Test
     public void testZeroModelSingleRoot() {
         InsideOutsideDepParse.singleRoot = true;
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a"));
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a", "b"));
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a", "b", "c"));
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a", "b", "c", "d"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a", "b"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a", "b", "c"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a", "b", "c", "d"));
     }
     
     @Test
     public void testZeroModelMultiRoot() {
         InsideOutsideDepParse.singleRoot = false;
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a"));
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a", "b"));
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a", "b", "c"));
-        checkBruteForceEqualsDynamicProgramming(true, Lists.getList("a", "b", "c", "d"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a", "b"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a", "b", "c"));
+        checkBruteForceEqualsDynamicProgramming(true, QLists.getList("a", "b", "c", "d"));
     }
     
     @Test
     public void testNonzeroModelSingleRoot() {
         InsideOutsideDepParse.singleRoot = true;
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a"));
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a", "b"));
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a", "b", "c"));
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a", "b", "c", "d"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a", "b"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a", "b", "c"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a", "b", "c", "d"));
     }
     
     @Test
     public void testNonzeroModelMultiRoot() {
         InsideOutsideDepParse.singleRoot = false;
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a"));
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a", "b"));
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a", "b", "c"));
-        checkBruteForceEqualsDynamicProgramming(false, Lists.getList("a", "b", "c", "d"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a", "b"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a", "b", "c"));
+        checkBruteForceEqualsDynamicProgramming(false, QLists.getList("a", "b", "c", "d"));
     }
     
     private static void checkBruteForceEqualsDynamicProgramming(boolean zeroModel, List<String> words) {

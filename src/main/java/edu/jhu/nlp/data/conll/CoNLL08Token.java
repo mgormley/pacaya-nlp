@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * One token from a CoNNL-2008 formatted file.
@@ -137,7 +137,7 @@ public class CoNLL08Token {
         if (splitPpos != null) { splitPpos = splitPpos.intern(); }
         if (deprel != null) { deprel = deprel.intern(); }
         if (pred != null) { pred = pred.intern(); }
-        if (apreds != null) { apreds = Lists.getInternedList(apreds); }
+        if (apreds != null) { apreds = QLists.getInternedList(apreds); }
     }
 
     /**

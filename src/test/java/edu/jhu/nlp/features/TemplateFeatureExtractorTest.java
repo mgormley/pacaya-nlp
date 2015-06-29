@@ -35,7 +35,7 @@ import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.parse.cky.Rule;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.util.math.FastMath;
 
@@ -72,7 +72,7 @@ public class TemplateFeatureExtractorTest {
         sent.setCposTags(sent.getPosTags());
         
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
-        cs.init(Lists.getList(sent));
+        cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);  
         
         List<FeatTemplate> tpls = TemplateSets.getAllUnigramFeatureTemplates();
@@ -488,7 +488,7 @@ public class TemplateFeatureExtractorTest {
     private static TemplateFeatureExtractor getDogSentenceExtractor() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(AnnoSentenceTest.getDogConll09Sentence(), true);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
-        cs.init(Lists.getList(sent));
+        cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;
     }
@@ -498,7 +498,7 @@ public class TemplateFeatureExtractorTest {
         addFakeBrownClusters(sent);
         PrefixAnnotator.addPrefixes(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
-        cs.init(Lists.getList(sent));
+        cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;
     }
@@ -507,7 +507,7 @@ public class TemplateFeatureExtractorTest {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence2(), true);
         addFakeBrownClusters(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
-        cs.init(Lists.getList(sent));
+        cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;
     }

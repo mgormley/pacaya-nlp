@@ -13,7 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.NerMention;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * Writes a single CoNLL-X format file.
@@ -63,7 +63,7 @@ public class SemEval2010Writer implements Closeable {
 
     public String sentStr(SemEval2010Sentence sent) {
         List<String> words = sent.words;
-        List<NerMention> ments = Lists.getList(sent.e1, sent.e2);
+        List<NerMention> ments = QLists.getList(sent.e1, sent.e2);
         
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < words.size(); i++) {

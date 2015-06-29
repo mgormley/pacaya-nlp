@@ -25,7 +25,7 @@ import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.MarginalLogLikelihood;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class FgExampleTest {
 
@@ -34,9 +34,9 @@ public class FgExampleTest {
         List<CoNLL09Token> tokens = new ArrayList<CoNLL09Token>();
         //tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", new ArrayList<String>()));
         //tokens.add(new CoNLL09Token(id, form, lemma, plemma, pos, ppos, feat, pfeat, head, phead, deprel, pdeprel, fillpred, pred, apreds));
-        tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", Lists.getList("feat"), Lists.getList("feat") , 2, 2, "det", "_", false, "_", Lists.getList("_")));
-        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", Lists.getList("feat"), Lists.getList("feat") , 2, 2, "subj", "_", false, "_", Lists.getList("arg0")));
-        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", Lists.getList("feat"), Lists.getList("feat") , 2, 2, "v", "_", true, "ate.1", Lists.getList("_")));
+        tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", QLists.getList("feat"), QLists.getList("feat") , 2, 2, "det", "_", false, "_", QLists.getList("_")));
+        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", QLists.getList("feat"), QLists.getList("feat") , 2, 2, "subj", "_", false, "_", QLists.getList("arg0")));
+        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", QLists.getList("feat"), QLists.getList("feat") , 2, 2, "v", "_", true, "ate.1", QLists.getList("_")));
         //tokens.add(new CoNLL09Token(4, "food", "_", "_", "N", "_", getList("feat"), getList("feat") , 2, 2, "obj", "_", false, "_", getList("arg1")));
         CoNLL09Sentence sent = new CoNLL09Sentence(tokens);
         

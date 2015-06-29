@@ -34,7 +34,7 @@ import edu.jhu.hlt.concrete.uuid.UUIDFactory;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class ConcreteReaderTest {
 
@@ -155,9 +155,9 @@ public class ConcreteReaderTest {
             sm.setText("sm text");
             TokenRefSequence tref = new TokenRefSequence();
             tref.setTokenizationId(tokenization.getUuid());
-            tref.setTokenIndexList(Lists.getList(i, i+1));
+            tref.setTokenIndexList(QLists.getList(i, i+1));
             sm.setTokens(tref);
-            for (EntityMention em : Lists.getList(em1, em2)) {
+            for (EntityMention em : QLists.getList(em1, em2)) {
                 MentionArgument ma = new MentionArgument();
                 ma.setEntityMentionId(em.getUuid());
                 ma.setRole("role");
@@ -182,7 +182,7 @@ public class ConcreteReaderTest {
             em.setText("em text");
             TokenRefSequence tref = new TokenRefSequence();
             tref.setTokenizationId(tokenization.getUuid());
-            tref.setTokenIndexList(Lists.getList(i, i+1));
+            tref.setTokenIndexList(QLists.getList(i, i+1));
             em.setTokens(tref);
             emList.add(em);
         }
@@ -201,7 +201,7 @@ public class ConcreteReaderTest {
             c.setStart(i);
             c.setEnding(n);
             if (i < n-1) {
-                c.setChildList(Lists.getList(i+1));
+                c.setChildList(QLists.getList(i+1));
             } else {
                 c.setChildList(new ArrayList<Integer>());
             }

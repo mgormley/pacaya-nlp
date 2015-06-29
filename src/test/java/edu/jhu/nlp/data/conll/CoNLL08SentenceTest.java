@@ -14,7 +14,7 @@ import java.util.List;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import edu.jhu.pacaya.util.collections.Maps;
+import edu.jhu.pacaya.util.collections.QMaps;
 
 public class CoNLL08SentenceTest {
 
@@ -83,7 +83,7 @@ public class CoNLL08SentenceTest {
                     if (gpos != null && gpos.equals("NNPS"))
                         System.out.println(sent);
                     set.add(gpos);
-                    Maps.increment(count, gpos, 1);
+                    QMaps.increment(count, gpos, 1);
                     numPreds++;
                 }
             }

@@ -22,8 +22,8 @@ import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
-import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.pacaya.util.collections.Maps;
+import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.pacaya.util.collections.QMaps;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.tuple.Pair;
 
@@ -97,7 +97,7 @@ public class DepParseDecoderTest {
     public void testDecoder() {
         DepParseDecoder dp = new DepParseDecoder();
         AnnoSentence sent = new AnnoSentence();
-        sent.setWords(Lists.getList("a", "b", "c"));
+        sent.setWords(QLists.getList("a", "b", "c"));
         int[] parents = dp.decode(inf, new UnlabeledFgExample(fg), sent);
         System.out.println(Arrays.toString(parents));
         Assert.assertArrayEquals(new int[]{1, -1, 1}, parents);
@@ -110,7 +110,7 @@ public class DepParseDecoderTest {
         
         public MockFgInf(List<Var> vars, List<VarTensor> margs) {
             this.margs = margs;
-            this.var2marg = Maps.zip(vars, margs);
+            this.var2marg = QMaps.zip(vars, margs);
         }
 
         @Override

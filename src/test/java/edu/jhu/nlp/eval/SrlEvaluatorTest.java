@@ -11,7 +11,7 @@ import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class SrlEvaluatorTest {
 
@@ -28,7 +28,7 @@ public class SrlEvaluatorTest {
         AnnoSentence pred = new AnnoSentence();
         AnnoSentence gold = new AnnoSentence();
         int n = 5;
-        List<String> words = Lists.getList("cats", "like", "eating", "food");
+        List<String> words = QLists.getList("cats", "like", "eating", "food");
         pred.setWords(words);
         gold.setWords(words);
         
