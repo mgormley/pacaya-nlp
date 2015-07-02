@@ -1,5 +1,7 @@
 package edu.jhu.nlp.depparse;
 
+import java.nio.file.Paths;
+
 import edu.jhu.hypergraph.depparse.DepParseFirstVsSecondOrderSpeedTest;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
@@ -9,6 +11,7 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.gm.data.LibDaiFgIo;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
@@ -65,6 +68,7 @@ public class DepParseSpeedTest {
     public void testSpeed() {
         FastMath.useLogAddTable = true;
         boolean firstOrder = false;
+        boolean writeLibDaiFgFiles = true;
         for (int trial = 0; trial < 2; trial++) {
             Timer t = new Timer();
             Timer t0 = new Timer();
@@ -84,13 +88,16 @@ public class DepParseSpeedTest {
 
             // Don't time this stuff since it's "training".
             t.stop();
-            PosTagDistancePruner pruner = new PosTagDistancePruner();
-            pruner.train(sents, sents, null, null);
-            pruner.annotate(sents);
+            if (!writeLibDaiFgFiles) {
+                PosTagDistancePruner pruner = new PosTagDistancePruner();
+                pruner.train(sents, sents, null, null);
+                pruner.annotate(sents);
+            }
             
             int numParams = 100000;
             FgModel model = new FgModel(numParams);
             model.setRandomStandardNormal();
+            model.scale(0.1);
             CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
             cs.init(sents);
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), new FactorTemplateList());
@@ -114,6 +121,11 @@ public class DepParseSpeedTest {
                 t3.start(); 
                 fg.updateFromModel(model);
                 t3.stop();
+                
+                if (writeLibDaiFgFiles) {
+                    LibDaiFgIo.write(fg, Paths.get("/Users/mgormley/research/easy-pacaya/temp/dp"+s+".fg"));
+                    continue;
+                }
                 
                 t4.start(); 
                 ErmaBp bp = firstOrder ?
