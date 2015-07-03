@@ -126,11 +126,6 @@ public class LogLikelihoodFactoryTest {
         FgInferencer infLat = infFactory.getInferencer(fgLat);
         infLat.run();        
         assertEquals(2, infLat.getPartition(), 2);
-        // Check that the partition function is computed identically for each variable.
-        for (Var v : fgLat.getVars()) {
-            double partition = ((BeliefPropagation)infLat).getPartitionBeliefAtVarNode(fgLat.getNode(v));
-            //TODO: assertEquals(2, logDomain ? FastMath.exp(partition) : partition, 1e-3);
-        }
         
         System.out.println("-------- Running LatPred Inference-----------");
         
@@ -151,12 +146,6 @@ public class LogLikelihoodFactoryTest {
         // Print factors
         for (Factor f : fgLatPred.getFactors()) {
             System.out.println(f);
-        }
-        // Check that the partition function is computed identically for each variable.
-        for (Var v : fgLatPred.getVars()) {
-            double partition = ((BeliefPropagation)infLatPred).getPartitionBeliefAtVarNode(fgLatPred.getNode(v));
-            System.out.format("Var=%s partition=%.4f\n", v.toString(), partition);
-            assertEquals(2*3, s == LogSemiring.getInstance() ? FastMath.exp(partition) : partition, 1e-3);
         }
         
         Function obj = getCrfObj(model, data, infFactory);

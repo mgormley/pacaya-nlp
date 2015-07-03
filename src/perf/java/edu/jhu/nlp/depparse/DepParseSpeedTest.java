@@ -68,7 +68,7 @@ public class DepParseSpeedTest {
     public void testSpeed() {
         FastMath.useLogAddTable = true;
         boolean firstOrder = false;
-        boolean writeLibDaiFgFiles = true;
+        boolean writeLibDaiFgFiles = false;
         for (int trial = 0; trial < 2; trial++) {
             Timer t = new Timer();
             Timer t0 = new Timer();

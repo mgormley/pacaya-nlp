@@ -1,6 +1,7 @@
 package edu.jhu.nlp.joint;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +31,6 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.Factor;
-import edu.jhu.pacaya.gm.model.FactorGraph.FgNode;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -39,6 +39,7 @@ import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.gm.train.SimpleVCObsFeatureExtractor;
+import edu.jhu.pacaya.gm.util.BipartiteGraph;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives;
@@ -93,14 +94,9 @@ public class JointNlpFactorGraphTest {
         prm.srlPrm.predictSense = true;
         prm.srlPrm.binarySenseRoleFactors = true;
         JointNlpFactorGraph sfg = getJointNlpFg(prm);
-        
-        for (FgNode node : sfg.getConnectedComponents()) {
-            if (!sfg.isUndirectedTree(node)) {
-                System.out.println(sfg);
-                System.out.println(node);
-            }
-            assertTrue(sfg.isUndirectedTree(node));
-        }
+                
+        BipartiteGraph<Var,Factor> bg = sfg.getBipgraph();
+        assertTrue(bg.isAcyclic());
     }
     
     @Test
@@ -247,7 +243,7 @@ public class JointNlpFactorGraphTest {
         JointNlpFactorGraph sfg = getJointNlpFg(prm);
         
         assertEquals(9, sfg.getFactors().size());
-        assertTrue(sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertTrue(sfg.getBipgraph().isAcyclic());
     }
 
     @Test
@@ -263,14 +259,14 @@ public class JointNlpFactorGraphTest {
         prm.dpPrm.arbitrarySiblingFactors = false;
         sfg = getJointNlpFg(prm);        
         assertEquals(9 + 10, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
 
         // Siblings only 
         prm.dpPrm.grandparentFactors = false;
         prm.dpPrm.arbitrarySiblingFactors = true;
         sfg = getJointNlpFg(prm);        
         assertEquals(9 + 6, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
         
         // Siblings and Grandparents 
         prm.dpPrm.excludeNonprojectiveGrandparents = false;
@@ -278,7 +274,7 @@ public class JointNlpFactorGraphTest {
         prm.dpPrm.arbitrarySiblingFactors = true;
         sfg = getJointNlpFg(prm);     
         assertEquals(9 + 12 + 6, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
     }
     
     @Test
@@ -298,7 +294,7 @@ public class JointNlpFactorGraphTest {
         assertEquals(11, sfg.getFactors().size());
         System.out.println(sfg.getFactors());
         // This pruned version is a tree.
-        assertTrue(sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertTrue(sfg.getBipgraph().isAcyclic());
         
         sfg.updateFromModel(new FgModel(1000));
         
