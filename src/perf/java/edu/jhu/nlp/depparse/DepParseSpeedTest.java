@@ -146,15 +146,23 @@ public class DepParseSpeedTest {
                 n+=sent.size();
                 if (s++%100 == 0) {
                     t.stop();
-                    System.out.println(String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
+                    String tokPerSec = String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
                             (n/t.totSec()), 
                             (n/t0.totSec()),
                             (n/t1.totSec()),
                             (n/t2.totSec()),
                             (n/t3.totSec()),
                             (n/t4.totSec()),
-                            (n/t5.totSec()))
-                            );
+                            (n/t5.totSec()));
+                    String secPerTok = String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
+                            (t.totMs()/n), 
+                            (t0.totMs()/n),
+                            (t1.totMs()/n),
+                            (t2.totMs()/n),
+                            (t3.totMs()/n),
+                            (t4.totMs()/n),
+                            (t5.totMs()/n));
+                    System.out.println(secPerTok);
                     t.start();
                 }
             }
