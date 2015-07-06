@@ -238,7 +238,7 @@ public class LogLikelihoodFactoryTest {
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;
-        bpPrm.maxIterations = 50;    
+        bpPrm.maxIterations = 50;
         // Uncomment to enable dumping of beliefs.
         // bpPrm.dumpDir = Paths.get("./tmp/dump" + s.toString());
         // Files.deleteRecursively(bpPrm.dumpDir.toFile());

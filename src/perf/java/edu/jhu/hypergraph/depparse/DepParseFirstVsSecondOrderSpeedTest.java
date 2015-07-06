@@ -226,6 +226,8 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         fePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
         BitshiftDepParseFeatureExtractorPrm bsFePrm = new BitshiftDepParseFeatureExtractorPrm();
         bsFePrm.featureHashMod = numParams;
+        bsFePrm.useMstFeats = true;
+        bsFePrm.useCarerrasFeats = true;
         FeatureExtractor fe = onlyFast?
                 new BitshiftDepParseFeatureExtractor(bsFePrm, sent, cs, ofc) :
                 new DepParseFeatureExtractor(fePrm, sent, cs, ofc.getFeAlphabet());

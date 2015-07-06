@@ -3,6 +3,8 @@ package edu.jhu.nlp.depparse;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
+import edu.jhu.nlp.tag.StrictPosTagAnnotator;
+import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.UFgExample;
@@ -11,6 +13,7 @@ import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.util.Timer;
 
 public class DepParseInferenceSpeedTest {
@@ -24,6 +27,8 @@ public class DepParseInferenceSpeedTest {
     //@Test
     public void testSpeed() {
         AnnoSentenceCollection sents = AnnoSentenceReaderSpeedTest.readPtbYmConllx();
+        PrefixAnnotator.addPrefixes(sents);
+        StrictPosTagAnnotator.addStrictPosTags(sents);           
         
         Timer t = new Timer();
         int s=0;
