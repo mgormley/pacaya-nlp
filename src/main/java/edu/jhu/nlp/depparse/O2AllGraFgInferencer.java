@@ -18,7 +18,6 @@ import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
-import edu.jhu.pacaya.gm.model.globalfac.SimpleProjDepTreeFactor;
 import edu.jhu.pacaya.hypergraph.Hyperalgo;
 import edu.jhu.pacaya.hypergraph.Hyperalgo.Scores;
 import edu.jhu.pacaya.hypergraph.Hypernode;
@@ -118,7 +117,7 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         DoubleArrays.fill(scores, 0.0);
         boolean containsProjDepTreeConstraint = false;
         for (Factor f : fg.getFactors()) {
-            if (f instanceof ProjDepTreeFactor || f instanceof SimpleProjDepTreeFactor) {
+            if (f instanceof ProjDepTreeFactor) {
                 containsProjDepTreeConstraint = true;
             } else if (f instanceof GraFeTypedFactor && ((GraFeTypedFactor) f).getFactorType() == DepParseFactorTemplate.GRANDPARENT) {
                 GraFeTypedFactor ff = (GraFeTypedFactor) f;
