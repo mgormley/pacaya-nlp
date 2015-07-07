@@ -19,7 +19,7 @@ import edu.jhu.nlp.data.concrete.ConcreteWriter.ConcreteWriterPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.prim.util.random.Prng;
 
@@ -71,10 +71,10 @@ public class CommunicationAnnotator {
         Threads.initDefaultPool(prm.threads);
         if (prm.inputType == InputType.FILE) { 
             log.info("Reading the annotation pipeline from file: " + prm.pipeIn);
-            this.anno = (AnnoPipeline) Files.deserialize(prm.pipeIn);
+            this.anno = (AnnoPipeline) QFiles.deserialize(prm.pipeIn);
         } else { // inputType == InputType.RESOURCE
             log.info("Reading the annotation pipeline from resource: " + prm.pipeIn);
-            this.anno = (AnnoPipeline) Files.deserializeResource(prm.pipeIn);
+            this.anno = (AnnoPipeline) QFiles.deserializeResource(prm.pipeIn);
         }
     }
 

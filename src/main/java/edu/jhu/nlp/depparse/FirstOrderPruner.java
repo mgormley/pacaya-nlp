@@ -32,7 +32,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.collections.QSets;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
 import edu.jhu.prim.util.Timer;
@@ -55,7 +55,7 @@ public class FirstOrderPruner implements Annotator {
     public void annotate(final AnnoSentenceCollection inputSents) {
         // Read a model from a file.
         log.info("Reading pruning model from file: " + pruneModel);
-        final JointNlpFgModel model = (JointNlpFgModel) Files.deserialize(pruneModel);
+        final JointNlpFgModel model = (JointNlpFgModel) QFiles.deserialize(pruneModel);
         
         ObsFeatureConjoiner ofc = model.getOfc();
         CorpusStatistics cs = model.getCs();

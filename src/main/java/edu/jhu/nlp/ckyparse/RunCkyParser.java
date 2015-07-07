@@ -30,7 +30,7 @@ import edu.jhu.pacaya.parse.cky.data.NaryTree.NaryTreeNodeFilter;
 import edu.jhu.pacaya.parse.cky.data.NaryTreebank;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Lambda.FnO1ToVoid;
@@ -249,7 +249,7 @@ public class RunCkyParser {
     private NaryTreebank readPtbTrees() throws FileNotFoundException,
             IOException {
         NaryTreebank naryTrees = new NaryTreebank();
-        List<File> mrgFiles = Files.getMatchingFiles(train, ".*\\.mrg");
+        List<File> mrgFiles = QFiles.getMatchingFiles(train, ".*\\.mrg");
         for (File mrgFile : mrgFiles) {
             BufferedReader reader = new BufferedReader(new FileReader(mrgFile));
             NaryTreebank tmpTrees = NaryTreebank.readTreesInPtbFormat(reader);

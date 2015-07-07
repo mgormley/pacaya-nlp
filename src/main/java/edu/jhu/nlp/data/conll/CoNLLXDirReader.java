@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.pacaya.util.files.FileListIterator;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 
 /**
  * Reads a file or directory of CoNLL-X files.
@@ -24,7 +24,7 @@ public class CoNLLXDirReader implements Iterable<CoNLLXSentence> {
     private List<File> files;
     
     public CoNLLXDirReader(File path) {
-        files = Files.getMatchingFiles(path, ".*\\.conll");
+        files = QFiles.getMatchingFiles(path, ".*\\.conll");
     }
     
     public CoNLLXDirReader(String path) {

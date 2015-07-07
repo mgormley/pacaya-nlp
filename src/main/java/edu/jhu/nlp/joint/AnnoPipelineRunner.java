@@ -14,7 +14,7 @@ import edu.jhu.nlp.eval.ProportionAnnotated;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.prim.util.Timer;
@@ -54,7 +54,7 @@ public class AnnoPipelineRunner {
         if (pipeIn == null) {
             throw new ParseException("pipeIn must not be null");
         }
-        AnnoPipeline anno = (AnnoPipeline) Files.deserialize(pipeIn);
+        AnnoPipeline anno = (AnnoPipeline) QFiles.deserialize(pipeIn);
         if (corpus.hasTest()) {
             // Decode test data.
             AnnoSentenceCollection testInput = corpus.getTestInput();

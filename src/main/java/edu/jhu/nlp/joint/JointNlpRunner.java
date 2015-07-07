@@ -105,7 +105,7 @@ import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.collections.QSets;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.pacaya.util.semiring.Algebra;
@@ -546,7 +546,7 @@ public class JointNlpRunner {
                 }
                 if (pipeOut != null) {
                     log.info("Serializing pipeline to file: " + pipeOut);
-                    Files.serialize(anno, pipeOut);
+                    QFiles.serialize(anno, pipeOut);
                 }
             } else if (corpus.hasDev()) { // but not train
                 anno.annotate(devInput);
