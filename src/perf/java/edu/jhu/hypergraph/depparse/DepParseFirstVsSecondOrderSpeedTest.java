@@ -28,7 +28,7 @@ import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.ErmaBp;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
@@ -80,7 +80,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         for (AnnoSentence sent : sents) {
             if (sent.size() > 10) { continue; }            
             FactorGraph fg1, fg2;
-            ErmaBp bp1, bp2;
+            BeliefPropagation bp1, bp2;
             int[] parents1, parents2;            
             {
                 // First order
@@ -170,7 +170,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         for (AnnoSentence sent : sents) {
             if (sent.size() > 10) { continue; }
             FactorGraph fg1, fg2;
-            ErmaBp bp1, bp2;
+            BeliefPropagation bp1, bp2;
             int[] parents1, parents2;            
             {
                 // Second order 5 iters

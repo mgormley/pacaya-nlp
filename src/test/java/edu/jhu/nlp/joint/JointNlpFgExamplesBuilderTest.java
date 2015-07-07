@@ -29,9 +29,9 @@ import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -273,7 +273,7 @@ public class JointNlpFgExamplesBuilderTest {
    
     
     private static FgModel train(FgModel model, FgExampleList data) {
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

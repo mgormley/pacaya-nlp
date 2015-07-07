@@ -30,9 +30,9 @@ import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.inf.BfsMpSchedule;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
@@ -231,7 +231,7 @@ public class LogLikelihoodFactoryTest {
         model.scale(0.1);
         System.out.println("Model L2 norm: " + model.l2Norm());
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;
@@ -292,7 +292,7 @@ public class LogLikelihoodFactoryTest {
         FgExampleList data = pair.get1();
         ObsFeatureConjoiner ofc = pair.get2();
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;
@@ -344,7 +344,7 @@ public class LogLikelihoodFactoryTest {
     }
 
     public static FgInferencerFactory getInfFactory(Algebra s) {
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

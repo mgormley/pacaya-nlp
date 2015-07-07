@@ -12,8 +12,8 @@ import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
-import edu.jhu.pacaya.gm.inf.ErmaBp;
-import edu.jhu.pacaya.gm.inf.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
@@ -116,8 +116,8 @@ public class DepParseFactorGraphBuilderTest {
         
         sfg.updateFromModel(new FgModel(1000));
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
-        ErmaBp bp = new ErmaBp(sfg, bpPrm);
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
+        BeliefPropagation bp = new BeliefPropagation(sfg, bpPrm);
         bp.run();
         
         // Marginals should yield a left-branching tree.        

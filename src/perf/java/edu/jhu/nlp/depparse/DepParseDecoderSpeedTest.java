@@ -4,7 +4,7 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.pacaya.gm.data.UFgExample;
-import edu.jhu.pacaya.gm.inf.ErmaBp;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.prim.util.Timer;
 
@@ -27,7 +27,7 @@ public class DepParseDecoderSpeedTest {
         for (AnnoSentence sent : sents) {
             UFgExample ex = DepParseFactorGraphBuilderSpeedTest.get1stOrderFg(sent);
             FactorGraph fg = ex.getFactorGraph();
-            ErmaBp bp = DepParseInferenceSpeedTest.runBp(fg);
+            BeliefPropagation bp = DepParseInferenceSpeedTest.runBp(fg);
             
             t.start();
             DepParseDecoder decode = new DepParseDecoder();

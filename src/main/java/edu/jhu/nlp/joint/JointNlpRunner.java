@@ -89,9 +89,9 @@ import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
 import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
@@ -896,7 +896,7 @@ public class JointNlpRunner {
             BruteForceInferencerPrm prm = new BruteForceInferencerPrm(algebra.getAlgebra());
             return prm;
         } else if (inference == Inference.BP) {
-            ErmaBpPrm bpPrm = new ErmaBpPrm();
+            BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
             bpPrm.s = algebra.getAlgebra();
             bpPrm.schedule = bpSchedule;
             bpPrm.updateOrder = bpUpdateOrder;

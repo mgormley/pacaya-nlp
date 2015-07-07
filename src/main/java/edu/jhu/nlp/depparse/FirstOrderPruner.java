@@ -23,9 +23,9 @@ import edu.jhu.nlp.joint.JointNlpFgModel;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -73,7 +73,7 @@ public class FirstOrderPruner implements Annotator {
         exPrm.fgPrm.dpPrm.pruneEdges = true;
         exPrm.fePrm = fePrm;
                 
-        final ErmaBpPrm bpPrm = new ErmaBpPrm();
+        final BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

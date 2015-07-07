@@ -21,9 +21,9 @@ import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.ErmaBp.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.ErmaBp.ErmaBpPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
@@ -75,8 +75,8 @@ public class EmpiricalRiskTest {
         ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-7);
     }
 
-    public static ErmaBpPrm getErmaBpPrm(Algebra s) {
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+    public static BeliefPropagationPrm getErmaBpPrm(Algebra s) {
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

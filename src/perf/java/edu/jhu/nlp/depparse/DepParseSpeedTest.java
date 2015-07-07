@@ -15,7 +15,7 @@ import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.ErmaBp;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.prim.util.Timer;
@@ -131,7 +131,7 @@ public class DepParseSpeedTest {
                 }
                 
                 t4.start(); 
-                ErmaBp bp = firstOrder ?
+                BeliefPropagation bp = firstOrder ?
                         DepParseInferenceSpeedTest.runBp(fg, 1) :
                         DepParseInferenceSpeedTest.runBp(fg, 4);
                 t4.stop();
