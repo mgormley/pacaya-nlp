@@ -195,6 +195,9 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
             int p = ff.p+1;
             int c = ff.c+1;                        
             VarTensor b = new VarTensor(s, f.getVars());
+            // TODO: By filling the non TRUE_TRUE entries with zero, we are making
+            // the STRONG assumption that there are no features associated with
+            // these entries. 
             b.fill(s.zero());
             int id = graph.getChart()[p][c][g][O2AllGraDpHypergraph.INCOMPLETE].getId();            
             b.setValue(LinkVar.TRUE_TRUE, sc.marginal[id]);
