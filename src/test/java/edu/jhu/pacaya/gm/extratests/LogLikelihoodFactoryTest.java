@@ -23,6 +23,8 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.autodiff.ModuleTestUtils;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.BpScheduleType;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.BpUpdateOrder;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
@@ -30,17 +32,12 @@ import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
 import edu.jhu.pacaya.gm.inf.BfsMpSchedule;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
-import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
@@ -347,7 +344,7 @@ public class LogLikelihoodFactoryTest {
     }
 
     public static FgInferencerFactory getInfFactory(Algebra s) {
-        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
+        ErmaBpPrm bpPrm = new ErmaBpPrm();
         bpPrm.s = s;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

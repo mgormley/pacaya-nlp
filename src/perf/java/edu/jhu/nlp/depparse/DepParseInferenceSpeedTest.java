@@ -6,14 +6,13 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.BpScheduleType;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.BpUpdateOrder;
 import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.UFgExample;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
-import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.util.Timer;
 
 public class DepParseInferenceSpeedTest {

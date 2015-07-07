@@ -24,14 +24,14 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlDecoder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.BpScheduleType;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.BpUpdateOrder;
+import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -273,7 +273,7 @@ public class JointNlpFgExamplesBuilderTest {
    
     
     private static FgModel train(FgModel model, FgExampleList data) {
-        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
+        ErmaBpPrm bpPrm = new ErmaBpPrm();
         bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
