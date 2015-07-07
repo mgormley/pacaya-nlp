@@ -15,7 +15,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
-import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
 import edu.jhu.nlp.data.RelationMention;

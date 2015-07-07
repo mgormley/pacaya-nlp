@@ -13,7 +13,6 @@ import edu.jhu.nlp.data.DepTree;
 import edu.jhu.nlp.data.DepTreeNode;
 import edu.jhu.nlp.data.DepTreebank;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.collections.QSets;
 

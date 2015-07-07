@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorTemplate;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.GraFeTypedFactor;
-import edu.jhu.pacaya.autodiff.erma.AbstractFgInferencer;
-import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.gm.inf.AbstractFgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
@@ -23,6 +22,7 @@ import edu.jhu.pacaya.hypergraph.Hyperalgo.Scores;
 import edu.jhu.pacaya.hypergraph.Hypernode;
 import edu.jhu.pacaya.hypergraph.depparse.DependencyScorer;
 import edu.jhu.pacaya.hypergraph.depparse.ExplicitDependencyScorer;
+import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.hypergraph.depparse.O2AllGraDpHypergraph;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.util.semiring.Algebra;

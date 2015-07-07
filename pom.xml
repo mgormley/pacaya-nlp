@@ -296,6 +296,16 @@
       <version>${pacaya.version}</version>
       <optional>true</optional>      
     </dependency>
+    <dependency>    
+      <groupId>edu.jhu.hlt</groupId>
+      <artifactId>concrete-core</artifactId>
+      <version>4.4</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.jhu.hlt</groupId>
+      <artifactId>concrete-util</artifactId>
+      <version>4.4.4</version>
+    </dependency>
   </dependencies>
 
 </project>

@@ -41,11 +41,10 @@ import edu.jhu.pacaya.gm.train.CrfTrainer;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.pacaya.util.files.Files;
-import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.vector.IntDoubleVector;
 
 /**

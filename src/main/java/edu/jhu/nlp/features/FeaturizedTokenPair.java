@@ -6,7 +6,6 @@ import java.util.List;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
 import edu.jhu.prim.tuple.Pair;
 
 /**

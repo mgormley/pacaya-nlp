@@ -3,8 +3,8 @@ package edu.jhu.nlp.depparse;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp;
 import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.inf.ErmaBp;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.prim.util.Timer;
 
