@@ -195,13 +195,16 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
             int p = ff.p+1;
             int c = ff.c+1;                        
             VarTensor b = new VarTensor(s, f.getVars());
-            // TODO: By filling the non TRUE_TRUE entries with zero, we are making
-            // the STRONG assumption that there are no features associated with
-            // these entries. 
-            b.fill(s.zero());
             int id = graph.getChart()[p][c][g][O2AllGraDpHypergraph.INCOMPLETE].getId();            
-            b.setValue(LinkVar.TRUE_TRUE, sc.marginal[id]);
-            log.trace(String.format("p=%d c=%d g=%d b=%s", p, c, g, b.toString()));
+            b.set(sc.marginal[id], LinkVar.TRUE, LinkVar.TRUE);
+            // Compute the other marginals using the variable marginals. Consider the 2x2 table of 
+            // probabilities. We have the marginals for all rows and columns, plus one entry.
+            VarTensor be0 = getVarBeliefs(f.getVars().get(0));
+            VarTensor be1 = getVarBeliefs(f.getVars().get(1));
+            b.set(carefulMinus(s, be1.get(LinkVar.TRUE), b.get(LinkVar.TRUE, LinkVar.TRUE)), LinkVar.FALSE, LinkVar.TRUE);
+            b.set(carefulMinus(s, be0.get(LinkVar.TRUE), b.get(LinkVar.TRUE, LinkVar.TRUE)), LinkVar.TRUE, LinkVar.FALSE);
+            b.set(carefulMinus(s, be0.get(LinkVar.FALSE), b.get(LinkVar.FALSE, LinkVar.TRUE)), LinkVar.FALSE, LinkVar.FALSE);
+            log.debug(String.format("p=%d c=%d g=%d b=%s", p, c, g, b.toString()));
             return b;
         } else if (f.getVars().size() == 1 && f.getVars().get(0) instanceof LinkVar) {
             return getVarBeliefs(f.getVars().get(0));
@@ -210,6 +213,14 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         //} else if (f instanceof ProjDepTreeFactor || f instanceof SimpleProjDepTreeFactor) {
         } else {
             throw new RuntimeException("Unsupported factor type: " + f.getClass());
+        }
+    }
+
+    private double carefulMinus(Algebra s, double a, double b) {
+        if (s.gt(b, a)) {
+            return s.zero();
+        } else {
+            return s.minus(a, b);
         }
     }
 
