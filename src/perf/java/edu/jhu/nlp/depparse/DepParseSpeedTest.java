@@ -1,5 +1,7 @@
 package edu.jhu.nlp.depparse;
 
+import java.nio.file.Paths;
+
 import edu.jhu.hypergraph.depparse.DepParseFirstVsSecondOrderSpeedTest;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
@@ -8,11 +10,12 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp;
+import edu.jhu.pacaya.gm.data.LibDaiFgIo;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.prim.util.Timer;
@@ -51,20 +54,24 @@ public class DepParseSpeedTest {
      * ex,L,co,MST,hp     s=2401 n=56427 tot= 696.26 t0=160303.98 t1=5468.79 t2=56427000.00 t3=2425.51 t4=1263.79 t5=23211.44
      * ta,L,co,MST,nh     s=2401 n=56427 tot=1092.15 t0=184401.96 t1=5446.10 t2=11285400.00 t3=2997.61 t4=2764.00 t5=32392.08
      * ta,S,co,MST,hp     s=2401 n=56427 tot=1131.05 t0=136627.12 t1=5934.06 t2=11285400.00 t3=3409.69 t4=2623.29 t5=29950.64
-     *
-     *
+     * st(e-11),L,co,MST,hp 2401 n=56427 tot= 898.48 t0=177443.40 t1=6391.82 t2=5642700.00 t3=3193.02 t4=1606.10 t5=67984.34
+     * ta,L,co,MST,hp     s=2401 n=56427 tot=1209.25 t0=170474.32 t1=6385.31 t2=56427000.00 t3=3316.31 t4=2871.16 t5=70533.75
+     * 
      * ============
      * 2nd-order
      * ============
+     * st(e-11),L,co,MST+CAR?
      * 
      * gr,as,i4            s=701 n=16862 tot=  69.35 t0=16794.82 t1=2199.58 t2=3372400.00 t3=2782.51 t4=  74.11 t5=19493.64
      * (same no inference) s=701 n=16862 tot=1069.65 t0=16794.82 t1=2066.67 t2=Infinity t3=2557.56 t4=Infinity t5=Infinity
      * (same elemMultiply) s=701 n=16862 tot=  87.08 t0=15329.09 t1=2286.99 t2=2810333.33 t3=2695.76 t4=  94.69 t5=20791.62
+     * (BipartiteGraph)    s=701 n=16862 tot=  69.03 t0=14134.12 t1=3966.60 t2=8431000.00 t3= 383.67 t4=  86.76 t5=34133.60
      */
     //@Test
     public void testSpeed() {
         FastMath.useLogAddTable = true;
         boolean firstOrder = false;
+        boolean writeLibDaiFgFiles = false;
         for (int trial = 0; trial < 2; trial++) {
             Timer t = new Timer();
             Timer t0 = new Timer();
@@ -84,13 +91,16 @@ public class DepParseSpeedTest {
 
             // Don't time this stuff since it's "training".
             t.stop();
-            PosTagDistancePruner pruner = new PosTagDistancePruner();
-            pruner.train(sents, sents, null, null);
-            pruner.annotate(sents);
+            if (!writeLibDaiFgFiles) {
+                PosTagDistancePruner pruner = new PosTagDistancePruner();
+                pruner.train(sents, sents, null, null);
+                pruner.annotate(sents);
+            }
             
             int numParams = 100000;
             FgModel model = new FgModel(numParams);
             model.setRandomStandardNormal();
+            model.scale(0.1);
             CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
             cs.init(sents);
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), new FactorTemplateList());
@@ -115,8 +125,13 @@ public class DepParseSpeedTest {
                 fg.updateFromModel(model);
                 t3.stop();
                 
+                if (writeLibDaiFgFiles) {
+                    LibDaiFgIo.write(fg, Paths.get("/Users/mgormley/research/easy-pacaya/temp/dp"+s+".fg"));
+                    continue;
+                }
+                
                 t4.start(); 
-                ErmaBp bp = firstOrder ?
+                BeliefPropagation bp = firstOrder ?
                         DepParseInferenceSpeedTest.runBp(fg, 1) :
                         DepParseInferenceSpeedTest.runBp(fg, 4);
                 t4.stop();
@@ -131,15 +146,23 @@ public class DepParseSpeedTest {
                 n+=sent.size();
                 if (s++%100 == 0) {
                     t.stop();
-                    System.out.println(String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
+                    String tokPerSec = String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
                             (n/t.totSec()), 
                             (n/t0.totSec()),
                             (n/t1.totSec()),
                             (n/t2.totSec()),
                             (n/t3.totSec()),
                             (n/t4.totSec()),
-                            (n/t5.totSec()))
-                            );
+                            (n/t5.totSec()));
+                    String secPerTok = String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
+                            (t.totMs()/n), 
+                            (t0.totMs()/n),
+                            (t1.totMs()/n),
+                            (t2.totMs()/n),
+                            (t3.totMs()/n),
+                            (t4.totMs()/n),
+                            (t5.totMs()/n));
+                    System.out.println(secPerTok);
                     t.start();
                 }
             }

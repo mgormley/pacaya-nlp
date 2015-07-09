@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * One token from a CoNNL-2009 formatted file.
@@ -152,12 +152,12 @@ public class CoNLL09Token {
         if (plemma != null) { plemma = plemma.intern(); }
         if (pos != null) { pos = pos.intern(); }
         if (ppos != null) { ppos = ppos.intern(); }
-        if (feat != null) { Lists.intern(feat); }
-        if (pfeat != null) { Lists.intern(pfeat); }
+        if (feat != null) { QLists.intern(feat); }
+        if (pfeat != null) { QLists.intern(pfeat); }
         if (deprel != null) { deprel = deprel.intern(); }
         if (pdeprel != null) { pdeprel = pdeprel.intern(); }
         if (pred != null) { pred = pred.intern(); }
-        if (apreds != null) { Lists.intern(apreds); }
+        if (apreds != null) { QLists.intern(apreds); }
     }
 
     /**

@@ -15,7 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * Defines a 'little language' for structured feature templates.
@@ -407,7 +407,7 @@ public class TemplateLanguage {
             this.prop = prop;
         }
         public List<Enum<?>> getStructure() {
-            return Lists.getList(prop, mod, pos);
+            return QLists.getList(prop, mod, pos);
         }
     }
     
@@ -433,7 +433,7 @@ public class TemplateLanguage {
             this.prop = prop;
         }
         public List<Enum<?>> getStructure() {
-            return Lists.getList(prop, mod, pos);
+            return QLists.getList(prop, mod, pos);
         }
     }
 
@@ -463,7 +463,7 @@ public class TemplateLanguage {
             this.lmod = lmod;
         }
         public List<Enum<?>> getStructure() {
-            return Lists.getList(prop, eprop, lmod, pl);
+            return QLists.getList(prop, eprop, lmod, pl);
         }
     }
     
@@ -486,7 +486,7 @@ public class TemplateLanguage {
             this.prop = prop;
         }
         public List<Enum<?>> getStructure() {
-            return Lists.getList(prop, piece);
+            return QLists.getList(prop, piece);
         }
     }
     
@@ -610,7 +610,7 @@ public class TemplateLanguage {
     public static List<FeatTemplate> filterOutRequiring(List<FeatTemplate> tpls, AT type) {
         ArrayList<FeatTemplate> tpls2 = new ArrayList<FeatTemplate>();
         for (FeatTemplate tpl : tpls) {
-            if (!TemplateLanguage.getRequiredAnnotationTypes(Lists.getList(tpl)).contains(type)) {
+            if (!TemplateLanguage.getRequiredAnnotationTypes(QLists.getList(tpl)).contains(type)) {
                 tpls2.add(tpl);
             }
         }

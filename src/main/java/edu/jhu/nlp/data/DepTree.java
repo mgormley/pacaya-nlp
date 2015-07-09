@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 public class DepTree implements Iterable<DepTreeNode> {
 
@@ -145,7 +145,7 @@ public class DepTree implements Iterable<DepTreeNode> {
         return parents.length;
     }
 
-    public Sentence getSentence(Alphabet<String> alphabet) {
+    public Sentence getSentence(IntObjectBimap<String> alphabet) {
         return new DTWrappedSentence(alphabet, this);
     }
     
@@ -154,7 +154,7 @@ public class DepTree implements Iterable<DepTreeNode> {
         
         private static final long serialVersionUID = 1L;
 
-        public DTWrappedSentence(Alphabet<String> alphabet, DepTree tree) {
+        public DTWrappedSentence(IntObjectBimap<String> alphabet, DepTree tree) {
             super(alphabet);
             for (DepTreeNode node : tree.getNodes()) {
                 if (!node.isWall()) {

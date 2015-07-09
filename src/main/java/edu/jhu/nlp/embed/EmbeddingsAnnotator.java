@@ -17,7 +17,7 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.embed.Embeddings.Scaling;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 
 public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements Annotator {
 
@@ -75,7 +75,7 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
     
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.EMBED);
+        return QSets.getSet(AT.EMBED);
     }
 
 }

@@ -22,9 +22,9 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.nlp.data.SentenceCollection;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 /**
  * Reads a brown clusters file and tags a sentence, by replacing each word with
@@ -157,7 +157,7 @@ public class BrownClusterTagger extends AbstractParallelAnnotator implements Ann
     }
     
     @Deprecated
-    public SentenceCollection getTagged(SentenceCollection sents, Alphabet<String> alphabet) {
+    public SentenceCollection getTagged(SentenceCollection sents, IntObjectBimap<String> alphabet) {
         SentenceCollection newSents = new SentenceCollection(alphabet);
         for (Sentence s : sents) {
             newSents.add(getTagged(s, alphabet));
@@ -166,7 +166,7 @@ public class BrownClusterTagger extends AbstractParallelAnnotator implements Ann
     }
     
     @Deprecated
-    public Sentence getTagged(Sentence sent, Alphabet<String> alphabet) {
+    public Sentence getTagged(Sentence sent, IntObjectBimap<String> alphabet) {
         int[] labelIds = new int[sent.size()];
         int i=0; 
         for (String word : sent) {
@@ -179,7 +179,7 @@ public class BrownClusterTagger extends AbstractParallelAnnotator implements Ann
 
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.BROWN);
+        return QSets.getSet(AT.BROWN);
     }
     
 }

@@ -12,7 +12,7 @@ import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceTest;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class FeaturizedTokenTest {
 
@@ -102,7 +102,7 @@ public class FeaturizedTokenTest {
         csPrm.useGoldSyntax = true;
         AnnoSentence simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
         CorpusStatistics cs = new CorpusStatistics(csPrm);
-        cs.init(Lists.getList(simpleSent));
+        cs.init(QLists.getList(simpleSent));
         
         FeaturizedToken zhaoObj = new FeaturizedToken(3, simpleSent, cs);
         assertEquals(zhaoObj.getParent(), 5);

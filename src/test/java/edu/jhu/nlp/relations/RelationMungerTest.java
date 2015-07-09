@@ -20,7 +20,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;
 
 public class RelationMungerTest {
@@ -110,21 +110,21 @@ public class RelationMungerTest {
         expRelations.add(new RelationMention(
                 "ART", // Asymmetric type. 
                 "SUBART", 
-                Lists.getList(
+                QLists.getList(
                         new Pair<>("Arg-2", ner.get(2)), // Swapped order tests nePairs ordering.
                         new Pair<>("Arg-1", ner.get(1))),
                 null));
         expRelations.add(new RelationMention(
                 "SEE", // Symmetric type. 
                 "SUBSEE", 
-                Lists.getList(
+                QLists.getList(
                         new Pair<>("Arg-1", ner.get(0)), 
                         new Pair<>("Arg-1", ner.get(1))), // Note the symmetry here.
                 null));
         expRelations.add(new RelationMention(
                 "SELF", // Symmetric type.
                 "SUBSELF", 
-                Lists.getList(new Pair<>("Arg-1", ner.get(0)), new Pair<>("Arg-1", ner.get(0))),
+                QLists.getList(new Pair<>("Arg-1", ner.get(0)), new Pair<>("Arg-1", ner.get(0))),
                 null));
         
         RelationMentions actRelations = sent.getRelations();
@@ -143,11 +143,11 @@ public class RelationMungerTest {
         // Create Sentence with RELATIONS and NER.
         AnnoSentence sent = new AnnoSentence();
         int n = 5;
-        sent.setWords(Lists.getList("dog","spied", "the", "cat", "from", "MD"));
+        sent.setWords(QLists.getList("dog","spied", "the", "cat", "from", "MD"));
         
         // Named Entities.
         NerMentions ner = new NerMentions(n, 
-                Lists.getList(
+                QLists.getList(
                         new NerMention(new Span(0, 1), "MAMMAL", "DOG", "noun", 0, "uuid1"),
                         new NerMention(new Span(2, 6), "MAMMAL", "CAT", "noun", 3, "uuid2"),
                         new NerMention(new Span(5, 6), "LOCATION", "STATE", "noun", 5, "uuid3")));
@@ -158,21 +158,21 @@ public class RelationMungerTest {
         relations.add(new RelationMention(
                 "ART", // Asymmetric type. 
                 "SUBART", 
-                Lists.getList(
+                QLists.getList(
                         new Pair<>("Arg-2", ner.get(2)), // Swapped order tests nePairs ordering.
                         new Pair<>("Arg-1", ner.get(1))),
                 null));
         relations.add(new RelationMention(
                 "SEE", // Symmetric type. 
                 "SUBSEE", 
-                Lists.getList(
+                QLists.getList(
                         new Pair<>("Arg-1", ner.get(0)), 
                         new Pair<>("Arg-2", ner.get(1))),
                 null));
         relations.add(new RelationMention(
                 "SELF", // Symmetric type.
                 "SUBSELF", 
-                Lists.getList(new Pair<>("Arg-1", ner.get(0)), new Pair<>("Arg-1", ner.get(0))),
+                QLists.getList(new Pair<>("Arg-1", ner.get(0)), new Pair<>("Arg-1", ner.get(0))),
                 null));
         sent.setRelations(relations);
 
@@ -250,10 +250,10 @@ public class RelationMungerTest {
         // Create Sentence with RELATIONS and NER.
         AnnoSentence sent = new AnnoSentence();
         int n = 5;
-        sent.setWords(Lists.getList("dog","spied", "the", "cat", "from", "MD"));        
+        sent.setWords(QLists.getList("dog","spied", "the", "cat", "from", "MD"));        
         // Named Entities.
         NerMentions ner = new NerMentions(n, 
-                Lists.getList(
+                QLists.getList(
                         new NerMention(new Span(0, 1), "MAMMAL", "DOG", "noun", 0, "uuid1"),
                         new NerMention(new Span(2, 6), "MAMMAL", "CAT", "noun", 3, "uuid2"),
                         new NerMention(new Span(5, 6), "LOCATION", "STATE", "noun", 5, "uuid3")));

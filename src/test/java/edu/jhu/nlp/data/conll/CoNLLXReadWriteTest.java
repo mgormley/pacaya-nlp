@@ -7,7 +7,7 @@ import java.io.StringWriter;
 import org.junit.Assert;
 import org.junit.Test;
 
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 
 public class CoNLLXReadWriteTest {
 
@@ -26,7 +26,7 @@ public class CoNLLXReadWriteTest {
         cw.close();
         cr.close();
         
-        String readSentsStr = Files.getResourceAsString(conllXExample);
+        String readSentsStr = QFiles.getResourceAsString(conllXExample);
         String writeSentsStr = writer.getBuffer().toString();
         String[] readSplits = readSentsStr.split("\n");
         String[] writeSplits = writeSentsStr.split("\n");

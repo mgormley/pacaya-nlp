@@ -31,8 +31,7 @@ import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.pacaya.parse.cky.Rule;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -383,7 +382,7 @@ public class TemplateFeatureExtractor {
         case BAG:
             return bag(props);
         case NO_DUP:
-            return Lists.getUniq(props);
+            return QLists.getUniq(props);
         default:
             throw new IllegalStateException();
         }

@@ -13,7 +13,7 @@ import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class DepEdgeMaskDecoderTest {
 
@@ -63,7 +63,7 @@ public class DepEdgeMaskDecoderTest {
         prm.pruneMargProp = 0;                
         DepEdgeMaskDecoder dp = new DepEdgeMaskDecoder(prm);
         AnnoSentence sent = new AnnoSentence();
-        sent.setWords(Lists.getList("a", "b", "c"));
+        sent.setWords(QLists.getList("a", "b", "c"));
         DepEdgeMask mask = dp.decode(inf, new UnlabeledFgExample(fg), sent);
         assertNoneArePruned(mask);
     }

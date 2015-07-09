@@ -16,7 +16,7 @@ import edu.jhu.nlp.data.simple.AnnoSentenceWriter.AnnoSentenceWriterPrm;
 import edu.jhu.nlp.depparse.Projectivizer;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.sample.Sample;
 
 public class CorpusHandler {
@@ -401,7 +401,7 @@ public class CorpusHandler {
 
     /** Gets predicated and latent annotations (included only in the gold data). */
     public static Set<AT> getGoldOnlyAts() {
-        return Sets.union(getPredAts(), getLatAts());
+        return QSets.union(getPredAts(), getLatAts());
     }
     
     public static Set<AT> getAts(String atsStr) {

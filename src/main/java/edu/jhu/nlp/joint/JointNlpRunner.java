@@ -83,29 +83,29 @@ import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
-import edu.jhu.pacaya.autodiff.erma.BeliefsModuleFactory;
-import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
-import edu.jhu.pacaya.autodiff.erma.DepParseDecodeLoss.DepParseDecodeLossFactory;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
+import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
+import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
+import edu.jhu.pacaya.gm.train.DepParseDecodeLoss.DepParseDecodeLossFactory;
+import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
+import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Sets;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.collections.QSets;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.pacaya.util.semiring.Algebra;
@@ -546,7 +546,7 @@ public class JointNlpRunner {
                 }
                 if (pipeOut != null) {
                     log.info("Serializing pipeline to file: " + pipeOut);
-                    Files.serialize(anno, pipeOut);
+                    QFiles.serialize(anno, pipeOut);
                 }
             } else if (corpus.hasDev()) { // but not train
                 anno.annotate(devInput);
@@ -843,7 +843,7 @@ public class JointNlpRunner {
         
         // TODO: add options for other loss functions.
         if (prm.trainer == Trainer.ERMA && 
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.DEP_TREE))) {
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
             if (dpLoss == ErmaLoss.DP_DECODE_LOSS) {
                 DepParseDecodeLossFactory lossPrm = new DepParseDecodeLossFactory();
                 lossPrm.annealMse = dpAnnealMse;
@@ -896,7 +896,7 @@ public class JointNlpRunner {
             BruteForceInferencerPrm prm = new BruteForceInferencerPrm(algebra.getAlgebra());
             return prm;
         } else if (inference == Inference.BP) {
-            ErmaBpPrm bpPrm = new ErmaBpPrm();
+            BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
             bpPrm.s = algebra.getAlgebra();
             bpPrm.schedule = bpSchedule;
             bpPrm.updateOrder = bpUpdateOrder;
@@ -909,7 +909,7 @@ public class JointNlpRunner {
             }
             return bpPrm;
         } else if (inference == Inference.DP) {
-            if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.DEP_TREE))
+            if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))
                     && grandparentFactors && !arbitrarySiblingFactors && !headBigramFactors) { 
                 return new O2AllGraFgInferencerFactory(algebra.getAlgebra());
             } else {

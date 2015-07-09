@@ -1,6 +1,6 @@
 package edu.berkeley.nlp.PCFGLA.smoothing;
 
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 
 /**
@@ -13,10 +13,10 @@ import edu.jhu.pacaya.util.Alphabet;
  */
 public class BerkeleySignatureBuilder {
 
-    private Alphabet<String> lexAlphabet;
+    private IntObjectBimap<String> lexAlphabet;
 
-    public BerkeleySignatureBuilder(Alphabet<String> lexAlphabet) {
-        this.lexAlphabet = new Alphabet<String>(lexAlphabet);
+    public BerkeleySignatureBuilder(IntObjectBimap<String> lexAlphabet) {
+        this.lexAlphabet = new IntObjectBimap<String>(lexAlphabet);
         this.lexAlphabet.stopGrowth();
     }
 

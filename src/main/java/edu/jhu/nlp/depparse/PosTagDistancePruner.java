@@ -5,7 +5,6 @@ import java.util.Arrays;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,12 +15,12 @@ import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.nlp.data.LabelSequence;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.arrays.IntArrays;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
 
 /**
@@ -41,7 +40,7 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
     private int wallTagIdx = -1;
     public static final int LEFT = 0;
     public static final int RIGHT = 1;    
-    private Alphabet<String> alphabet = new Alphabet<String>();
+    private IntObjectBimap<String> alphabet = new IntObjectBimap<String>();
     private int[][][] mat;
     
     // Whether to always keep a right branching tree, to ensure that we don't prune all trees.
@@ -164,7 +163,7 @@ public class PosTagDistancePruner implements Trainable, Annotator, Serializable 
     
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.DEP_EDGE_MASK);
+        return QSets.getSet(AT.DEP_EDGE_MASK);
     }
     
 }

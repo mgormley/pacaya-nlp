@@ -12,8 +12,8 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.model.ClampFactor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
-import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
 

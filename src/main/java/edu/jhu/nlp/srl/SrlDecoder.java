@@ -13,8 +13,8 @@ import edu.jhu.pacaya.gm.decode.MbrDecoder;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 
 /**
  * Decoder from the marginals of a semantic role labeling to an {@link SrlGraph}.

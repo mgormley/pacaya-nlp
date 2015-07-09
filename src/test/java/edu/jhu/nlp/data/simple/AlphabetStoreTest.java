@@ -10,7 +10,7 @@ import org.junit.Test;
 
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class AlphabetStoreTest {
 
@@ -72,7 +72,7 @@ public class AlphabetStoreTest {
     public void testRemovedAt() {
         AnnoSentenceCollection orig = getSents(false);
         for (AT at : AT.values()) {
-            AnnoSentenceCollection sents = orig.getWithAtsRemoved(Lists.getList(at));
+            AnnoSentenceCollection sents = orig.getWithAtsRemoved(QLists.getList(at));
             AlphabetStore store = new AlphabetStore(sents);
             
             // Check alphabet sizes.
@@ -107,14 +107,14 @@ public class AlphabetStoreTest {
         for (int j=0; j<3; j++) {
             for (int i=0; i<100; i++) {
                 AnnoSentence s = new AnnoSentence();
-                s.setWords(Lists.getList("word"+i));
-                s.setPrefixes(Lists.getList("prefix"+i));
-                s.setLemmas(Lists.getList("lemma"+i));
-                s.setPosTags(Lists.getList("pos"+i));
-                s.setCposTags(Lists.getList("cpos"+i));
-                s.setClusters(Lists.getList("cluster"+i));
-                s.setFeats(Lists.getList(Lists.getList("feat"+i)));
-                s.setDeprels(Lists.getList("deprel"+i));
+                s.setWords(QLists.getList("word"+i));
+                s.setPrefixes(QLists.getList("prefix"+i));
+                s.setLemmas(QLists.getList("lemma"+i));
+                s.setPosTags(QLists.getList("pos"+i));
+                s.setCposTags(QLists.getList("cpos"+i));
+                s.setClusters(QLists.getList("cluster"+i));
+                s.setFeats(QLists.getList(QLists.getList("feat"+i)));
+                s.setDeprels(QLists.getList("deprel"+i));
                 sents.add(s);
             }
         }

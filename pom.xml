@@ -4,7 +4,7 @@
 
   <groupId>edu.jhu.pacaya-nlp</groupId>
   <artifactId>pacaya-nlp</artifactId>
-  <version>3.0.12</version>
+  <version>3.1.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -13,7 +13,7 @@
 
   <properties>
     <!-- The version for the Pacaya dependencies. -->
-    <pacaya.version>3.0.12</pacaya.version>
+    <pacaya.version>3.1.0-SNAPSHOT</pacaya.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
@@ -295,6 +295,16 @@
       <artifactId>optimize-wrappers</artifactId>
       <version>${pacaya.version}</version>
       <optional>true</optional>      
+    </dependency>
+    <dependency>    
+      <groupId>edu.jhu.hlt</groupId>
+      <artifactId>concrete-core</artifactId>
+      <version>4.4</version>
+    </dependency>
+    <dependency>
+      <groupId>edu.jhu.hlt</groupId>
+      <artifactId>concrete-util</artifactId>
+      <version>4.4.4</version>
     </dependency>
   </dependencies>
 

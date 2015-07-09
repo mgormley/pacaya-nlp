@@ -23,24 +23,21 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.autodiff.ModuleTestUtils;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.BfsMpSchedule;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BfsMpSchedule;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
-import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
@@ -48,7 +45,7 @@ import edu.jhu.pacaya.gm.train.LogLikelihoodFactory;
 import edu.jhu.pacaya.gm.train.MarginalLogLikelihood;
 import edu.jhu.pacaya.gm.train.ModuleObjective;
 import edu.jhu.pacaya.gm.train.MtFactory;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.semiring.Algebra;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
 import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
@@ -92,8 +89,8 @@ public class LogLikelihoodFactoryTest {
         //tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", new ArrayList<String>()));
         //tokens.add(new CoNLL09Token(id, form, lemma, plemma, pos, ppos, feat, pfeat, head, phead, deprel, pdeprel, fillpred, pred, apreds));
 //        tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", getList("_")));
-        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", Lists.getList("feat"), Lists.getList("feat") , 2, 2, "subj", "_", false, "_", Lists.getList("arg0")));
-        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", Lists.getList("feat"), Lists.getList("feat") , 0, 0, "v", "_", true, "ate.1", Lists.getList("_")));
+        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", QLists.getList("feat"), QLists.getList("feat") , 2, 2, "subj", "_", false, "_", QLists.getList("arg0")));
+        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", QLists.getList("feat"), QLists.getList("feat") , 0, 0, "v", "_", true, "ate.1", QLists.getList("_")));
         //tokens.add(new CoNLL09Token(4, "food", "_", "_", "N", "_", getList("feat"), getList("feat") , 2, 2, "obj", "_", false, "_", getList("arg1")));
         CoNLL09Sentence sent = new CoNLL09Sentence(tokens);
                 
@@ -126,11 +123,6 @@ public class LogLikelihoodFactoryTest {
         FgInferencer infLat = infFactory.getInferencer(fgLat);
         infLat.run();        
         assertEquals(2, infLat.getPartition(), 2);
-        // Check that the partition function is computed identically for each variable.
-        for (Var v : fgLat.getVars()) {
-            double partition = ((BeliefPropagation)infLat).getPartitionBeliefAtVarNode(fgLat.getNode(v));
-            //TODO: assertEquals(2, logDomain ? FastMath.exp(partition) : partition, 1e-3);
-        }
         
         System.out.println("-------- Running LatPred Inference-----------");
         
@@ -151,12 +143,6 @@ public class LogLikelihoodFactoryTest {
         // Print factors
         for (Factor f : fgLatPred.getFactors()) {
             System.out.println(f);
-        }
-        // Check that the partition function is computed identically for each variable.
-        for (Var v : fgLatPred.getVars()) {
-            double partition = ((BeliefPropagation)infLatPred).getPartitionBeliefAtVarNode(fgLatPred.getNode(v));
-            System.out.format("Var=%s partition=%.4f\n", v.toString(), partition);
-            assertEquals(2*3, s == LogSemiring.getInstance() ? FastMath.exp(partition) : partition, 1e-3);
         }
         
         Function obj = getCrfObj(model, data, infFactory);
@@ -245,11 +231,11 @@ public class LogLikelihoodFactoryTest {
         model.scale(0.1);
         System.out.println("Model L2 norm: " + model.l2Norm());
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;
-        bpPrm.maxIterations = 50;    
+        bpPrm.maxIterations = 50;
         // Uncomment to enable dumping of beliefs.
         // bpPrm.dumpDir = Paths.get("./tmp/dump" + s.toString());
         // Files.deleteRecursively(bpPrm.dumpDir.toFile());
@@ -306,7 +292,7 @@ public class LogLikelihoodFactoryTest {
         FgExampleList data = pair.get1();
         ObsFeatureConjoiner ofc = pair.get2();
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;

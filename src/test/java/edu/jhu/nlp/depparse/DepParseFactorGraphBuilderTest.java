@@ -1,6 +1,7 @@
 package edu.jhu.nlp.depparse;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.List;
@@ -21,7 +22,7 @@ import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives;
 
 
@@ -32,7 +33,7 @@ public class DepParseFactorGraphBuilderTest {
         DepParseFactorGraphBuilderPrm prm = getDefaultDepParseFactorGraphBuilderPrm();
         FactorGraph sfg = getJointNlpFg(prm);        
         assertEquals(9, sfg.getFactors().size());
-        assertTrue(sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertTrue(sfg.getBipgraph().isAcyclic());
     }
 
     protected DepParseFactorGraphBuilderPrm getDefaultDepParseFactorGraphBuilderPrm() {
@@ -55,12 +56,12 @@ public class DepParseFactorGraphBuilderTest {
         prm.excludeNonprojectiveGrandparents = true;
         FactorGraph sfg = getJointNlpFg(prm);        
         assertEquals(9 + 10, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
         }{
         prm.excludeNonprojectiveGrandparents = false;
         FactorGraph sfg = getJointNlpFg(prm);        
         assertEquals(9 + 12, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
         }
     }
     
@@ -71,7 +72,7 @@ public class DepParseFactorGraphBuilderTest {
         prm.arbitrarySiblingFactors = true;
         FactorGraph sfg = getJointNlpFg(prm);        
         assertEquals(9 + 6, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
     }
     
     @Test
@@ -81,7 +82,7 @@ public class DepParseFactorGraphBuilderTest {
         prm.headBigramFactors = true;
         FactorGraph sfg = getJointNlpFg(prm);        
         assertEquals(9 + 18, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
     }
 
     @Test
@@ -94,7 +95,7 @@ public class DepParseFactorGraphBuilderTest {
         prm.arbitrarySiblingFactors = true;
         sfg = getJointNlpFg(prm);     
         assertEquals(9 + 12 + 6, sfg.getFactors().size());
-        assertTrue(!sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertFalse(sfg.getBipgraph().isAcyclic());
     }
     
     @Test
@@ -111,7 +112,7 @@ public class DepParseFactorGraphBuilderTest {
         assertEquals(11, sfg.getFactors().size());
         System.out.println(sfg.getFactors());
         // This pruned version is a tree.
-        assertTrue(sfg.isUndirectedTree(sfg.getFactorNode(0)));
+        assertTrue(sfg.getBipgraph().isAcyclic());
         
         sfg.updateFromModel(new FgModel(1000));
         
@@ -144,7 +145,7 @@ public class DepParseFactorGraphBuilderTest {
         // --- These won't even be used in these tests ---
         FeatureExtractor fe = new SimpleVCFeatureExtractor(new FeatureNames()); 
         // ---                                         ---
-        List<String> words = Lists.getList("w1", "w2", "w3");
+        List<String> words = QLists.getList("w1", "w2", "w3");
         // Prune all but a left branching tree.
         DepEdgeMask depEdgeMask = new DepEdgeMask(words.size(), false);
         for (int c=0; c<words.size(); c++) {

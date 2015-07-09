@@ -11,7 +11,7 @@ import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatures.ArcTs;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.set.LongHashSet;
 import edu.jhu.prim.util.SafeCast;
 import edu.jhu.prim.vector.LongDoubleUnsortedVector;
@@ -173,7 +173,7 @@ public class BitshiftDepParseFeaturesTest {
 
     protected IntAnnoSentence getIntAnnoSentence() {
         AnnoSentence sent = AlphabetStoreTest.getAnnoSentenceForRange(0, 4);
-        AlphabetStore store = new AlphabetStore(Lists.getList(sent));
+        AlphabetStore store = new AlphabetStore(QLists.getList(sent));
         IntAnnoSentence isent = new IntAnnoSentence(sent, store);
         return isent;
     }

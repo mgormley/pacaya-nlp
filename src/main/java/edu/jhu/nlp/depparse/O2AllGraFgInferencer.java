@@ -7,8 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorTemplate;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.GraFeTypedFactor;
-import edu.jhu.pacaya.autodiff.erma.AbstractFgInferencer;
-import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
+import edu.jhu.pacaya.gm.inf.AbstractFgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
@@ -18,12 +17,12 @@ import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.gm.model.globalfac.ProjDepTreeFactor;
-import edu.jhu.pacaya.gm.model.globalfac.SimpleProjDepTreeFactor;
 import edu.jhu.pacaya.hypergraph.Hyperalgo;
 import edu.jhu.pacaya.hypergraph.Hyperalgo.Scores;
 import edu.jhu.pacaya.hypergraph.Hypernode;
 import edu.jhu.pacaya.hypergraph.depparse.DependencyScorer;
 import edu.jhu.pacaya.hypergraph.depparse.ExplicitDependencyScorer;
+import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.hypergraph.depparse.O2AllGraDpHypergraph;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.util.semiring.Algebra;
@@ -118,7 +117,7 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         DoubleArrays.fill(scores, 0.0);
         boolean containsProjDepTreeConstraint = false;
         for (Factor f : fg.getFactors()) {
-            if (f instanceof ProjDepTreeFactor || f instanceof SimpleProjDepTreeFactor) {
+            if (f instanceof ProjDepTreeFactor) {
                 containsProjDepTreeConstraint = true;
             } else if (f instanceof GraFeTypedFactor && ((GraFeTypedFactor) f).getFactorType() == DepParseFactorTemplate.GRANDPARENT) {
                 GraFeTypedFactor ff = (GraFeTypedFactor) f;
@@ -196,10 +195,16 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
             int p = ff.p+1;
             int c = ff.c+1;                        
             VarTensor b = new VarTensor(s, f.getVars());
-            b.fill(s.zero());
             int id = graph.getChart()[p][c][g][O2AllGraDpHypergraph.INCOMPLETE].getId();            
-            b.setValue(LinkVar.TRUE_TRUE, sc.marginal[id]);
-            log.trace(String.format("p=%d c=%d g=%d b=%s", p, c, g, b.toString()));
+            b.set(sc.marginal[id], LinkVar.TRUE, LinkVar.TRUE);
+            // Compute the other marginals using the variable marginals. Consider the 2x2 table of 
+            // probabilities. We have the marginals for all rows and columns, plus one entry.
+            VarTensor be0 = getVarBeliefs(f.getVars().get(0));
+            VarTensor be1 = getVarBeliefs(f.getVars().get(1));
+            b.set(carefulMinus(s, be1.get(LinkVar.TRUE), b.get(LinkVar.TRUE, LinkVar.TRUE)), LinkVar.FALSE, LinkVar.TRUE);
+            b.set(carefulMinus(s, be0.get(LinkVar.TRUE), b.get(LinkVar.TRUE, LinkVar.TRUE)), LinkVar.TRUE, LinkVar.FALSE);
+            b.set(carefulMinus(s, be0.get(LinkVar.FALSE), b.get(LinkVar.FALSE, LinkVar.TRUE)), LinkVar.FALSE, LinkVar.FALSE);
+            log.debug(String.format("p=%d c=%d g=%d b=%s", p, c, g, b.toString()));
             return b;
         } else if (f.getVars().size() == 1 && f.getVars().get(0) instanceof LinkVar) {
             return getVarBeliefs(f.getVars().get(0));
@@ -208,6 +213,14 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements FgInfe
         //} else if (f instanceof ProjDepTreeFactor || f instanceof SimpleProjDepTreeFactor) {
         } else {
             throw new RuntimeException("Unsupported factor type: " + f.getClass());
+        }
+    }
+
+    private double carefulMinus(Algebra s, double a, double b) {
+        if (s.gt(b, a)) {
+            return s.zero();
+        } else {
+            return s.minus(a, b);
         }
     }
 

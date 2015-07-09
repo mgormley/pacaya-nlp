@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 public class PosTagDistancePrunerTest {
 
@@ -46,15 +46,15 @@ public class PosTagDistancePrunerTest {
     public void testTwoSents() {
         AnnoSentenceCollection sents1 = new AnnoSentenceCollection();        
         AnnoSentence sent1 = new AnnoSentence();
-        sent1.setWords(  Lists.getList("0", "1", "2", "3", "4", "5", "6"));
-        sent1.setPosTags(Lists.getList("N", "N", "V", "D", "N", "P", "N"));
+        sent1.setWords(  QLists.getList("0", "1", "2", "3", "4", "5", "6"));
+        sent1.setPosTags(QLists.getList("N", "N", "V", "D", "N", "P", "N"));
         sent1.setParents(new int[]    {  1,   2,  -1,   4,   2,   2,  5 });
         sents1.add(sent1);
         
         AnnoSentenceCollection sents2 = new AnnoSentenceCollection();        
         AnnoSentence sent2 = new AnnoSentence();
-        sent2.setWords(  Lists.getList("0", "1", "2", "3", "4", "5", "6"));
-        sent2.setPosTags(Lists.getList("N", "V", "P", "D", "P", "P", "N"));
+        sent2.setWords(  QLists.getList("0", "1", "2", "3", "4", "5", "6"));
+        sent2.setPosTags(QLists.getList("N", "V", "P", "D", "P", "P", "N"));
         sent2.setParents(new int[]    { -1,   0,   1,   2,   3,   4,  5 });
         sents2.add(sent2);
         
@@ -78,15 +78,15 @@ public class PosTagDistancePrunerTest {
     public void testDirection() {
         AnnoSentenceCollection sents1 = new AnnoSentenceCollection();        
         AnnoSentence sent1 = new AnnoSentence();
-        sent1.setWords(  Lists.getList("0", "1", "2", "3"));
-        sent1.setPosTags(Lists.getList("N", "N", "V", "V"));
+        sent1.setWords(  QLists.getList("0", "1", "2", "3"));
+        sent1.setPosTags(QLists.getList("N", "N", "V", "V"));
         sent1.setParents(new int[]    {  3,   3,  3,   -1});
         sents1.add(sent1);
         
         AnnoSentenceCollection sents2 = new AnnoSentenceCollection();        
         AnnoSentence sent2 = new AnnoSentence();
-        sent2.setWords(  Lists.getList("0", "1", "2", "3", "4"));
-        sent2.setPosTags(Lists.getList("V", "V", "N", "N", "V"));
+        sent2.setWords(  QLists.getList("0", "1", "2", "3", "4"));
+        sent2.setPosTags(QLists.getList("V", "V", "N", "N", "V"));
         sents2.add(sent2);
         
         PosTagDistancePruner pruner = getDefaultPosTagDistancePruner();
@@ -108,15 +108,15 @@ public class PosTagDistancePrunerTest {
     public void testUnknownTag() {
         AnnoSentenceCollection sents1 = new AnnoSentenceCollection();        
         AnnoSentence sent1 = new AnnoSentence();
-        sent1.setWords(  Lists.getList("0", "1"));
-        sent1.setPosTags(Lists.getList("N", "N"));
+        sent1.setWords(  QLists.getList("0", "1"));
+        sent1.setPosTags(QLists.getList("N", "N"));
         sent1.setParents(new int[]    {  -1,   0 } );
         sents1.add(sent1);
         
         AnnoSentenceCollection sents2 = new AnnoSentenceCollection();        
         AnnoSentence sent2 = new AnnoSentence();
-        sent2.setWords(  Lists.getList("0", "1"));
-        sent2.setPosTags(Lists.getList("N", "NEW_TAG"));
+        sent2.setWords(  QLists.getList("0", "1"));
+        sent2.setPosTags(QLists.getList("N", "NEW_TAG"));
         sent2.setParents(new int[]    { -1,   0 });
         sents2.add(sent2);
         

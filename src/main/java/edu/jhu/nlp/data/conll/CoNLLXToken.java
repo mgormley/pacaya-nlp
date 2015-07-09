@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * One token from a CoNNL-X formatted file.
@@ -121,7 +121,7 @@ public class CoNLLXToken {
         if (lemma != null) { lemma = lemma.intern(); }
         if (cpostag != null) { cpostag = cpostag.intern(); }
         if (postag != null) { postag = postag.intern(); }
-        if (feats != null) { Lists.intern(feats); }
+        if (feats != null) { QLists.intern(feats); }
         if (deprel != null) { deprel = deprel.intern(); }
         if (pdeprel != null) { pdeprel = pdeprel.intern(); }
     }

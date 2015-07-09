@@ -15,8 +15,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
@@ -83,26 +82,26 @@ public class AnnoSentence {
     @Deprecated
     public AnnoSentence getFairlyDeepCopy() {
         AnnoSentence newSent = new AnnoSentence();
-        newSent.words = Lists.copyOf(this.words);
-        newSent.prefixes = Lists.copyOf(this.prefixes);
-        newSent.lemmas = Lists.copyOf(this.lemmas);
-        newSent.posTags = Lists.copyOf(this.posTags);
-        newSent.cposTags = Lists.copyOf(this.cposTags);
-        newSent.strictPosTags = Lists.copyOf(this.strictPosTags);
-        newSent.clusters = Lists.copyOf(this.clusters);
-        newSent.embeds = Lists.copyOf(this.embeds);
-        newSent.chunks = Lists.copyOf(this.chunks);
-        newSent.deprels = Lists.copyOf(this.deprels);
+        newSent.words = QLists.copyOf(this.words);
+        newSent.prefixes = QLists.copyOf(this.prefixes);
+        newSent.lemmas = QLists.copyOf(this.lemmas);
+        newSent.posTags = QLists.copyOf(this.posTags);
+        newSent.cposTags = QLists.copyOf(this.cposTags);
+        newSent.strictPosTags = QLists.copyOf(this.strictPosTags);
+        newSent.clusters = QLists.copyOf(this.clusters);
+        newSent.embeds = QLists.copyOf(this.embeds);
+        newSent.chunks = QLists.copyOf(this.chunks);
+        newSent.deprels = QLists.copyOf(this.deprels);
         newSent.parents = IntArrays.copyOf(this.parents);
         newSent.depEdgeMask = (this.depEdgeMask == null) ? null : new DepEdgeMask(this.depEdgeMask);
         newSent.knownPreds = (this.knownPreds == null) ? null : new IntHashSet(this.knownPreds);
         newSent.namedEntities = new NerMentions(this.namedEntities);
-        newSent.nePairs = Lists.copyOf(nePairs);
-        newSent.relLabels = Lists.copyOf(relLabels);
+        newSent.nePairs = QLists.copyOf(nePairs);
+        newSent.relLabels = QLists.copyOf(relLabels);
         newSent.relations = new RelationMentions(this.relations);
         newSent.sourceSent = this.sourceSent;
         // TODO: this should be a deep copy.
-        newSent.feats = Lists.copyOf(this.feats);
+        newSent.feats = QLists.copyOf(this.feats);
         // TODO: this should be a deep copy.
         newSent.srlGraph = this.srlGraph;
         // TODO: this should be a deep copy.
@@ -203,20 +202,20 @@ public class AnnoSentence {
     }
     
     public void intern() {
-        Lists.intern(words);
-        Lists.intern(prefixes);
-        Lists.intern(lemmas);
-        Lists.intern(posTags);
-        Lists.intern(cposTags);
+        QLists.intern(words);
+        QLists.intern(prefixes);
+        QLists.intern(lemmas);
+        QLists.intern(posTags);
+        QLists.intern(cposTags);
         // Not needed since these are enums. Lists.intern(strictPosTags);
-        Lists.intern(clusters);
+        QLists.intern(clusters);
         if (feats != null) {
             for (int i=0; i<feats.size(); i++) {
-                Lists.intern(feats.get(i));
+                QLists.intern(feats.get(i));
             }
         }
-        Lists.intern(chunks);
-        Lists.intern(deprels);        
+        QLists.intern(chunks);
+        QLists.intern(deprels);        
         if (naryTree != null) {
             naryTree.intern();
         }
@@ -224,7 +223,7 @@ public class AnnoSentence {
             namedEntities.intern();
         }
         // TODO: Lists.intern(nePairs);
-        Lists.intern(relLabels);
+        QLists.intern(relLabels);
         if (relations != null) {
             relations.intern();
         }

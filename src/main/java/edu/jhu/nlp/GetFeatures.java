@@ -23,10 +23,10 @@ import edu.jhu.nlp.data.conll.CoNLL09FileReader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
-import edu.jhu.pacaya.util.Alphabet;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.Primitives.MutableInt;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 /**
  * Converts CoNLL 2009 input files to featurized "ERMA" train/test files with a feature template.
@@ -78,7 +78,7 @@ public class GetFeatures {
     private Map<String,MutableInt> unks = new HashMap<String,MutableInt>();
     private Map<Set<String>,MutableInt> bigrams = new HashMap<Set<String>,MutableInt>();
     
-    private static Alphabet<String> lexAlphabet = new Alphabet<String>();
+    private static IntObjectBimap<String> lexAlphabet = new IntObjectBimap<String>();
     private static SrlBerkeleySignatureBuilder sig = new SrlBerkeleySignatureBuilder(lexAlphabet);
     
     private String trainingOut = new String();

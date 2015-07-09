@@ -36,7 +36,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
 import edu.jhu.pacaya.gm.train.SimpleVCObsFeatureExtractor;
 import edu.jhu.pacaya.util.FeatureNames;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.set.IntHashSet;
 
 /**
@@ -127,12 +127,12 @@ public class SrlFeatureExtractorTest {
         List<CoNLL09Token> tokens = new ArrayList<CoNLL09Token>();
         //tokens.add(new CoNLL09Token(id, form, lemma, plemma, pos, ppos, feat, pfeat, head, phead, deprel, pdeprel, fillpred, pred, apreds));
         //tokens.add(new CoNLL09Token(1, "the", "_", "_", "Det", "_", getList("feat"), getList("feat") , 2, 2, "det", "_", false, "_", getList("_")));
-        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", Lists.getList("feat"), Lists.getList("feat") , 3, 3, "subj", "_", false, "_", Lists.getList("arg0")));
-        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", Lists.getList("feat"), Lists.getList("feat") , 0, 0, "v", "_", true, "ate.1", Lists.getList("_")));
-        tokens.add(new CoNLL09Token(4, "food", "_", "_", "N", "_", Lists.getList("feat"), Lists.getList("feat") , 2, 2, "obj", "_", false, "_", Lists.getList("arg1")));
+        tokens.add(new CoNLL09Token(2, "dog", "_", "_", "N", "_", QLists.getList("feat"), QLists.getList("feat") , 3, 3, "subj", "_", false, "_", QLists.getList("arg0")));
+        tokens.add(new CoNLL09Token(3, "ate", "_", "_", "V", "_", QLists.getList("feat"), QLists.getList("feat") , 0, 0, "v", "_", true, "ate.1", QLists.getList("_")));
+        tokens.add(new CoNLL09Token(4, "food", "_", "_", "N", "_", QLists.getList("feat"), QLists.getList("feat") , 2, 2, "obj", "_", false, "_", QLists.getList("arg1")));
         CoNLL09Sentence sent = new CoNLL09Sentence(tokens);
         
-        List<CoNLL09Sentence> sents = Lists.getList(sent);
+        List<CoNLL09Sentence> sents = QLists.getList(sent);
         AnnoSentenceCollection simpleSents = new AnnoSentenceCollection();
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
@@ -216,7 +216,7 @@ public class SrlFeatureExtractorTest {
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         // ---        
         IntHashSet knownPreds = IntHashSet.fromArray(0, 2);
-        List<String> words = Lists.getList("w1", "w2", "w3");
+        List<String> words = QLists.getList("w1", "w2", "w3");
         DepEdgeMask depEdgeMask = new DepEdgeMask(words.size(), true);
         
         AnnoSentence sent = new AnnoSentence();
@@ -226,7 +226,7 @@ public class SrlFeatureExtractorTest {
         sent.setDepEdgeMask(depEdgeMask);
         
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
-        cs.roleStateNames = Lists.getList("A1", "A2", "A3");
+        cs.roleStateNames = QLists.getList("A1", "A2", "A3");
         
         return new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe, null);
     }

@@ -41,11 +41,10 @@ import edu.jhu.pacaya.gm.train.CrfTrainer;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.pacaya.util.collections.Sets;
-import edu.jhu.pacaya.util.files.Files;
-import edu.jhu.prim.util.Timer;
+import edu.jhu.pacaya.util.collections.QSets;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.vector.IntDoubleVector;
 
 /**
@@ -129,19 +128,19 @@ public class JointNlpAnnotator implements Trainable, Annotator {
         if (devInput == null || devGold == null) { return null; }
         final JointNlpAnnotator anno = this;
         final Evaluator eval;
-        if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.DEP_TREE))) {
+        if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
             eval = new DepParseAccuracy(prm.dpSkipPunctuation);
-        } else if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.SRL)) || 
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.SRL_PRED_IDX, AT.SRL))
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) || 
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
             SrlEvaluatorPrm evalPrm = new SrlEvaluatorPrm();
             evalPrm.evalSense = prm.buPrm.fgPrm.srlPrm.predictSense;
             evalPrm.evalPredicatePosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
             evalPrm.evalRoles = (prm.buPrm.fgPrm.srlPrm.roleStructure != RoleStructure.NO_ROLES);
             eval = new SrlEvaluator(evalPrm);
-        } else if (CorpusHandler.getPredAts().equals(Sets.getSet(AT.REL_LABELS)) ||
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.RELATIONS)) ||
-                CorpusHandler.getPredAts().equals(Sets.getSet(AT.REL_LABELS, AT.RELATIONS))
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS)) ||
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.RELATIONS)) ||
+                CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS, AT.RELATIONS))
                 ) {
             eval = new RelationEvaluator();
         } else {
@@ -204,7 +203,7 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     public void loadModel(File modelIn) {
         // Read a model from a file.
         log.info("Reading model from file: " + modelIn);
-        loadModel((JointNlpFgModel) Files.deserialize(modelIn));
+        loadModel((JointNlpFgModel) QFiles.deserialize(modelIn));
     }
     
     public void loadModel(JointNlpFgModel model) {
@@ -216,7 +215,7 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     public void saveModel(File modelOut) {
         // Write the model to a file.
         log.info("Serializing model to file: " + modelOut);
-        Files.serialize(model, modelOut);
+        QFiles.serialize(model, modelOut);
     }
 
     public void printModel(File printModel) throws IOException {

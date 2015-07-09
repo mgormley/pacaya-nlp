@@ -22,9 +22,9 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationMunger;
-import edu.jhu.pacaya.util.Alphabet;
-import edu.jhu.pacaya.util.collections.Lists;
+import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives.MutableInt;
+import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
 
@@ -60,7 +60,7 @@ public class CorpusStatistics implements Serializable {
     
     public static final String UNKNOWN_ROLE = "argUNK";
     public static final String UNKNOWN_SENSE = "senseUNK";
-    public static final List<String> PRED_POSITION_STATE_NAMES = Lists.getList("_", UNKNOWN_SENSE);
+    public static final List<String> PRED_POSITION_STATE_NAMES = QLists.getList("_", UNKNOWN_SENSE);
 
     public Set<String> knownWords = new HashSet<String>();
     public Set<String> knownUnks = new HashSet<String>();
@@ -86,7 +86,7 @@ public class CorpusStatistics implements Serializable {
     public CorpusStatistics(CorpusStatisticsPrm prm) {
         this.prm = prm;
         this.normalize = new Normalizer(prm.normalizeWords);
-        this.sig = new SrlBerkeleySignatureBuilder(new Alphabet<String>());
+        this.sig = new SrlBerkeleySignatureBuilder(new IntObjectBimap<String>());
         initialized = false;
     }
 

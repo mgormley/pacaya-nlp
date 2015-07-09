@@ -1,17 +1,10 @@
 package edu.jhu.nlp.relations;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.NerMention;
-import edu.jhu.nlp.data.NerMentions;
-import edu.jhu.nlp.data.RelationMention;
-import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
 import edu.jhu.pacaya.gm.app.Encoder;
@@ -24,9 +17,6 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.VarConfig;
-import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.collections.Lists;
 import edu.jhu.prim.tuple.Pair;
 
 public class RelationsEncoder implements Encoder<AnnoSentence, List<String>> {

@@ -4,7 +4,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,7 +106,7 @@ public class ConcreteReader {
 
     public AnnoSentenceCollection sentsFromDir(File inDir) throws IOException {
         try {
-            List<File> commFiles = edu.jhu.pacaya.util.files.Files.getMatchingFiles(inDir, ".+\\.comm$");
+            List<File> commFiles = edu.jhu.pacaya.util.files.QFiles.getMatchingFiles(inDir, ".+\\.comm$");
             AnnoSentenceCollection annoSents = new AnnoSentenceCollection();
             for (File commFile : commFiles) {
                 Communication comm = ser.fromPathString(commFile.getAbsolutePath());

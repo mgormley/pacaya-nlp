@@ -5,12 +5,11 @@ import java.util.Set;
 
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
-import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.pacaya.util.collections.Lists;
-import edu.jhu.pacaya.util.collections.Sets;
+import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.pacaya.util.collections.QSets;
 
 /**
  * Adds the 5-character prefix of each word to the sentence. These prefixes are used as features in
@@ -43,13 +42,13 @@ public class PrefixAnnotator extends AbstractParallelAnnotator implements Annota
                 prefixes.add(word);
             }
         }
-        Lists.intern(prefixes);
+        QLists.intern(prefixes);
         sent.setPrefixes(prefixes);
     }
 
     @Override
     public Set<AT> getAnnoTypes() {
-        return Sets.getSet(AT.PREFIX);
+        return QSets.getSet(AT.PREFIX);
     }
 
 }

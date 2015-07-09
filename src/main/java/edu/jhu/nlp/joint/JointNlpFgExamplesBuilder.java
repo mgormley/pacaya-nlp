@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AlphabetStore;
-import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpEncoderPrm;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
@@ -16,14 +15,14 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder;
-import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.FgExamplesBuilderPrm;
+import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplate;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.Prm;
 

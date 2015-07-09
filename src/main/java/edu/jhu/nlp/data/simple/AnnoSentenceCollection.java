@@ -10,7 +10,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.nlp.data.SentenceCollection;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.util.Alphabet;
+import edu.jhu.prim.bimap.IntObjectBimap;
 
 public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
 
@@ -36,7 +36,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         return col;
     }
 
-    public SentenceCollection getWordsAsSentenceCollection(Alphabet<String> alphabet) {
+    public SentenceCollection getWordsAsSentenceCollection(IntObjectBimap<String> alphabet) {
         SentenceCollection sents = new SentenceCollection(alphabet);
         for (AnnoSentence sent : this) {
             List<String> labels = new ArrayList<String>();
@@ -48,7 +48,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         return sents;
     }
     
-    public SentenceCollection getLemmasAsSentenceCollection(Alphabet<String> alphabet) {
+    public SentenceCollection getLemmasAsSentenceCollection(IntObjectBimap<String> alphabet) {
         SentenceCollection sents = new SentenceCollection(alphabet);
         for (AnnoSentence sent : this) {
             List<String> labels = new ArrayList<String>();
@@ -60,7 +60,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         return sents;
     }
     
-    public SentenceCollection getPosTagsAsSentenceCollection(Alphabet<String> alphabet) {
+    public SentenceCollection getPosTagsAsSentenceCollection(IntObjectBimap<String> alphabet) {
         SentenceCollection sents = new SentenceCollection(alphabet);
         for (AnnoSentence sent : this) {
             List<String> labels = new ArrayList<String>();
@@ -72,7 +72,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         return sents;
     }
     
-    public DepTreebank getPosTagsAndParentsAsDepTreebank(Alphabet<String> alphabet) {
+    public DepTreebank getPosTagsAndParentsAsDepTreebank(IntObjectBimap<String> alphabet) {
         DepTreebank trees = new DepTreebank(alphabet);
         for (AnnoSentence sent : this) {
             List<String> labels = new ArrayList<String>();
