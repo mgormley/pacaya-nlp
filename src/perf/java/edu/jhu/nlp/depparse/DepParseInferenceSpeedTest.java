@@ -59,6 +59,8 @@ public class DepParseInferenceSpeedTest {
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.s = LogSemiring.getInstance();
+        bpPrm.normalizeMessages = false;
+        bpPrm.keepTape = false;
         BeliefPropagation bp = new BeliefPropagation(fg, bpPrm);
         bp.run();
         for (Var v : fg.getVars()) {
