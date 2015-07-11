@@ -767,7 +767,7 @@ public class JointNlpRunner {
         CrfTrainerPrm prm = new CrfTrainerPrm();
         prm.infFactory = infPrm;
         if (infPrm instanceof BeliefsModuleFactory) {
-            // TODO: This is a temporary hack to which assumes we always use ErmaBp.
+            // TODO: This cast is a temporary hack.
             prm.bFactory = (BeliefsModuleFactory) infPrm;
         }
         if (optimizer == Optimizer.LBFGS) {
