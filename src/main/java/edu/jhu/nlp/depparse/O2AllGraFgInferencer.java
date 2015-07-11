@@ -16,6 +16,7 @@ import edu.jhu.pacaya.autodiff.Module;
 import edu.jhu.pacaya.autodiff.Tensor;
 import edu.jhu.pacaya.gm.inf.AbstractFgInferencer;
 import edu.jhu.pacaya.gm.inf.Beliefs;
+import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
@@ -45,7 +46,7 @@ import edu.jhu.prim.arrays.IntArrays;
 
 public class O2AllGraFgInferencer extends AbstractFgInferencer implements Module<Beliefs>, FgInferencer {
 
-    public static class O2AllGraFgInferencerFactory implements FgInferencerFactory {
+    public static class O2AllGraFgInferencerFactory implements FgInferencerFactory, BeliefsModuleFactory {
 
         private Algebra s;
         public O2AllGraFgInferencerFactory(Algebra s) {
@@ -60,6 +61,11 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements Module
         @Override
         public Algebra getAlgebra() {
             return s;
+        }
+
+        @Override
+        public Module<Beliefs> getBeliefsModule(Module<Factors> fm, FactorGraph fg) {
+            return new O2AllGraFgInferencer(fg, fm);
         }
         
     }
