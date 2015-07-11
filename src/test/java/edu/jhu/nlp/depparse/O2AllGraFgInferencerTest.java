@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import edu.jhu.nlp.FeTypedFactor;
@@ -28,7 +29,6 @@ import edu.jhu.pacaya.gm.model.FactorsModule;
 import edu.jhu.pacaya.gm.model.FeExpFamFactor;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.FgModelIdentity;
-import edu.jhu.pacaya.gm.model.MVecFgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
@@ -186,8 +186,13 @@ public class O2AllGraFgInferencerTest {
     }
     
     @Test
+    public void testGradByFiniteDiffsAllSemiringsFast() {
+          helpGradByFiniteDiffsAllSemirings(false, QLists.getList("a", "b"));
+    }
+    
+    @Ignore("Useful test, but too slow to be included normally.")
+    @Test
     public void testGradByFiniteDiffsAllSemirings() {
-        //Pair<FactorGraph,FgModel> pair = getO2AllGraFgAndModel(false, QLists.getList("a", "b", "c", "d"));
         helpGradByFiniteDiffsAllSemirings(true, QLists.getList("a"));
         helpGradByFiniteDiffsAllSemirings(true, QLists.getList("a", "b"));
         helpGradByFiniteDiffsAllSemirings(true, QLists.getList("a", "b", "c"));

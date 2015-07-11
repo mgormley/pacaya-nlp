@@ -283,10 +283,10 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements Module
     }
 
     // Factor Marginals:
-    // p(x_{ijk} = TT) = p(e_{ijk})
-    // p(x_{ijk} = FT) = p(x_{ij} = T) - p(e_{ijk})
-    // p(x_{ijk} = TF) = p(x_{ki} = T) - p(e_{ijk})
-    // p(x_{ijk} = FF) = p(x_{ki} = T) - p(x_{ijk} = FT)
+    // 1. p(x_{ijk} = TT) = p(e_{ijk})
+    // 2. p(x_{ijk} = TF) = p(x_{ki} = T) - p(e_{ijk})
+    // 3. p(x_{ijk} = FT) = p(x_{ij} = T) - p(e_{ijk})
+    // 4. p(x_{ijk} = FF) = p(x_{ki} = F) - p(x_{ijk} = FT)
     private VarTensor calcFactorBeliefs(Factor f) {
         if (f instanceof GraFeTypedFactor && ((GraFeTypedFactor) f).getFactorType() == DepParseFactorTemplate.GRANDPARENT) {
             GraFeTypedFactor ff = (GraFeTypedFactor) f;
@@ -300,8 +300,8 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements Module
             // probabilities. We have the marginals for all rows and columns, plus one entry.
             VarTensor be0 = getVarBeliefs(f.getVars().get(0));
             VarTensor be1 = getVarBeliefs(f.getVars().get(1));
-            b.set(carefulMinus(s, be1.get(TRUE), b.get(TRUE, TRUE)), FALSE, TRUE);
             b.set(carefulMinus(s, be0.get(TRUE), b.get(TRUE, TRUE)), TRUE, FALSE);
+            b.set(carefulMinus(s, be1.get(TRUE), b.get(TRUE, TRUE)), FALSE, TRUE);
             b.set(carefulMinus(s, be0.get(FALSE), b.get(FALSE, TRUE)), FALSE, FALSE);
             log.trace(String.format("p=%d c=%d g=%d b=%s", i, j, k, b.toString()));
             return b;
@@ -315,19 +315,19 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements Module
     }
 
     // Factor Marginal Adjoints:
-    // 1. p(x_{ijk} = FF) = p(x_{ki} = T) - p(x_{ijk} = FT)        
+    // 4. p(x_{ijk} = FF) = p(x_{ki} = F) - p(x_{ijk} = FT)        
     // \adj{p(x_{ijk} = FT)} += \adj{p(x_{ijk} = FF)} * -1.0
-    // \adj{p(x_{ki} = T)} += \adj{p(x_{ijk} = FF)}
-    //
-    // 2. p(x_{ijk} = TF) = p(x_{ki} = T) - p(e_{ijk})
-    // \adj{p(e_{ijk})} += \adj{p(x_{ijk} = TF)} * -1.0
-    // \adj{p(x_{ki} = T)} += \adj{p(x_{ijk} = TF)}
+    // \adj{p(x_{ki} = F)} += \adj{p(x_{ijk} = FF)}
     //
     // 3. p(x_{ijk} = FT) = p(x_{ij} = T) - p(e_{ijk})
     // \adj{p(e_{ijk})} += \adj{p(x_{ijk} = FT)} * -1.0
     // \adj{p(x_{ij} = T)} += \adj{p(x_{ijk} = FT)}
     //
-    // 4. p(x_{ijk} = TT) = p(e_{ijk})
+    // 2. p(x_{ijk} = TF) = p(x_{ki} = T) - p(e_{ijk})
+    // \adj{p(e_{ijk})} += \adj{p(x_{ijk} = TF)} * -1.0
+    // \adj{p(x_{ki} = T)} += \adj{p(x_{ijk} = TF)}
+    //
+    // 1. p(x_{ijk} = TT) = p(e_{ijk})
     // \adj{p(e_{ijk})} += \adj{p(x_{ijk} = TT)}
     private void backwardFactorBeliefs(Factor f) {
         if (f instanceof GraFeTypedFactor && ((GraFeTypedFactor) f).getFactorType() == DepParseFactorTemplate.GRANDPARENT) {
@@ -337,23 +337,26 @@ public class O2AllGraFgInferencer extends AbstractFgInferencer implements Module
             int j = ff.c+1;                        
             LinkVar v0 = (LinkVar) ff.getVars().get(0);
             LinkVar v1 = (LinkVar) ff.getVars().get(1);
-            int v_ij = (v0.getParent() == ff.p && v0.getChild() == ff.c) ? v0.getId() : v1.getId();
-            int v_ki = (v0.getParent() == ff.p && v0.getChild() == ff.c) ? v1.getId() : v0.getId();
-            VarTensor adj_px_ij = bAdj.varBeliefs[v_ij];
+            int v_ki = v0.getId();
+            int v_ij = v1.getId();
+            //int v_ij = (v0.getParent() == ff.p && v0.getChild() == ff.c) ? v0.getId() : v1.getId();
+            //int v_ki = (v0.getParent() == ff.p && v0.getChild() == ff.c) ? v1.getId() : v0.getId();
+            assert v_ij != v_ki;
             VarTensor adj_px_ki = bAdj.varBeliefs[v_ki];
+            VarTensor adj_px_ij = bAdj.varBeliefs[v_ij];
             VarTensor adj_px_ijk = bAdj.facBeliefs[ff.getId()];
             int id = graph.getChart()[i][j][k][O2AllGraDpHypergraph.INCOMPLETE].getId();
 
-            // 1. 
-            adj_px_ijk.add(s.negate(adj_px_ijk.get(FALSE, TRUE)), FALSE, TRUE);
-            adj_px_ki.add(adj_px_ijk.get(FALSE, FALSE));            
+            // 4. 
+            adj_px_ijk.add(s.negate(adj_px_ijk.get(FALSE, FALSE)), FALSE, TRUE);
+            adj_px_ki.add(adj_px_ijk.get(FALSE, FALSE), FALSE);   
+            // 3.
+            sc.marginalAdj[id] = s.plus(sc.marginalAdj[id], s.negate(adj_px_ijk.get(FALSE, TRUE)));
+            adj_px_ij.add(adj_px_ijk.get(FALSE, TRUE), TRUE);         
             // 2.
             sc.marginalAdj[id] = s.plus(sc.marginalAdj[id], s.negate(adj_px_ijk.get(TRUE, FALSE)));
             adj_px_ki.add(adj_px_ijk.get(TRUE, FALSE), TRUE);
-            // 3.
-            sc.marginalAdj[id] = s.plus(sc.marginalAdj[id], s.negate(adj_px_ijk.get(FALSE, TRUE)));
-            adj_px_ij.add(adj_px_ijk.get(FALSE, TRUE), TRUE);
-            // 4.
+            // 1.
             sc.marginalAdj[id] = s.plus(sc.marginalAdj[id], adj_px_ijk.get(TRUE, TRUE));
 
         } else if (f.getVars().size() == 1 && f.getVars().get(0) instanceof LinkVar) {
