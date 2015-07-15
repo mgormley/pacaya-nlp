@@ -96,7 +96,7 @@ import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
-import edu.jhu.pacaya.gm.train.DepParseDecodeLoss.DepParseDecodeLossFactory;
+import edu.jhu.pacaya.gm.train.DepParseSoftmaxMbr.DepParseSoftmaxMbrFactory;
 import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
 import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
@@ -127,7 +127,7 @@ public class JointNlpRunner {
 
     public static enum Optimizer { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD };
 
-    public enum ErmaLoss { MSE, EXPECTED_RECALL, DP_DECODE_LOSS };
+    public enum ErmaLoss { MSE, EXPECTED_RECALL, SOFTMAX_MBR };
 
     public enum Inference { BRUTE_FORCE, BP, DP };
     
@@ -363,7 +363,7 @@ public class JointNlpRunner {
     @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
     public static boolean dpAnnealMse = true;
     @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
-    public static ErmaLoss dpLoss = ErmaLoss.DP_DECODE_LOSS;
+    public static ErmaLoss dpLoss = ErmaLoss.SOFTMAX_MBR;
     
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
@@ -844,8 +844,8 @@ public class JointNlpRunner {
         // TODO: add options for other loss functions.
         if (prm.trainer == Trainer.ERMA && 
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
-            if (dpLoss == ErmaLoss.DP_DECODE_LOSS) {
-                DepParseDecodeLossFactory lossPrm = new DepParseDecodeLossFactory();
+            if (dpLoss == ErmaLoss.SOFTMAX_MBR) {
+                DepParseSoftmaxMbrFactory lossPrm = new DepParseSoftmaxMbrFactory();
                 lossPrm.annealMse = dpAnnealMse;
                 lossPrm.startTemp = dpStartTemp;
                 lossPrm.useLogScale = dpUseLogScale;
