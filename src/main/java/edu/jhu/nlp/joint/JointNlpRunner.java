@@ -69,7 +69,6 @@ import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
-import edu.jhu.nlp.relations.EntityMentionMunger;
 import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
@@ -215,7 +214,7 @@ public class JointNlpRunner {
     @Opt(hasArg=true, description="Amount to scale embeddings after normalization.")
     public static double embScalar = 15.0;
     @Opt(hasArg=true, description="Whether to use entity mention specific embeddings.")
-    public boolean entitySpecificEmbeddings = false;
+    public static boolean entitySpecificEmbeddings = false;
     
     // Options for SRL factor graph structure.
     @Opt(hasArg = true, description = "The structure of the Role variables.")
@@ -417,11 +416,6 @@ public class JointNlpRunner {
                 RelationDataPreproc dataPreproc = relMunger.getDataPreproc();
                 anno.add(dataPreproc);
                 prep.add(dataPreproc);
-            }
-            if (entitySpecificEmbeddings) {
-                EntityMentionMunger emm = new EntityMentionMunger();
-                anno.add(emm);
-                prep.add(emm);
             }
             // Annotation pipeline.
             anno.add(new EnsureStaticOptionsAreSet());
@@ -949,6 +943,7 @@ public class JointNlpRunner {
         prm.embeddingsFile = embeddingsFile;
         prm.embNorm = embNorm;
         prm.embScalar= embScalar;
+        prm.entitySpecificEmbeddings = entitySpecificEmbeddings;
         return prm;
     }
     
