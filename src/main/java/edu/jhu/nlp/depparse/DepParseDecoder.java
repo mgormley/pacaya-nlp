@@ -7,16 +7,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
 import edu.jhu.pacaya.gm.app.Decoder;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
-import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.parse.dep.ProjectiveDependencyParser;

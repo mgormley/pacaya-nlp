@@ -3,11 +3,13 @@ package edu.jhu.nlp.depparse;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
+import edu.jhu.nlp.tag.StrictPosTagAnnotator;
+import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
@@ -24,6 +26,8 @@ public class DepParseInferenceSpeedTest {
     //@Test
     public void testSpeed() {
         AnnoSentenceCollection sents = AnnoSentenceReaderSpeedTest.readPtbYmConllx();
+        PrefixAnnotator.addPrefixes(sents);
+        StrictPosTagAnnotator.addStrictPosTags(sents);           
         
         Timer t = new Timer();
         int s=0;
@@ -45,17 +49,19 @@ public class DepParseInferenceSpeedTest {
         System.out.println("Tokens / sec: " + (sents.getNumTokens() / t.totSec()));
     }
 
-    public static ErmaBp runBp(FactorGraph fg) {
+    public static BeliefPropagation runBp(FactorGraph fg) {
         return runBp(fg, 1);
     }
 
-    public static ErmaBp runBp(FactorGraph fg, int numIters) {
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+    public static BeliefPropagation runBp(FactorGraph fg, int numIters) {
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.maxIterations = numIters;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.s = LogSemiring.getInstance();
-        ErmaBp bp = new ErmaBp(fg, bpPrm);
+        bpPrm.normalizeMessages = false;
+        bpPrm.keepTape = false;
+        BeliefPropagation bp = new BeliefPropagation(fg, bpPrm);
         bp.run();
         for (Var v : fg.getVars()) {
             bp.getMarginals(v);

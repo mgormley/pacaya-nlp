@@ -19,8 +19,8 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.prim.set.IntHashSet;
 
 /**

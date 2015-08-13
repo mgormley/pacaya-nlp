@@ -48,6 +48,7 @@ public class DepParseFactorGraphBuilderSpeedTest {
         BitshiftDepParseFeatureExtractorPrm bsFePrm = new BitshiftDepParseFeatureExtractorPrm();
         bsFePrm.featureHashMod = numParams;
         bsFePrm.useCoarseTags = true;
+        bsFePrm.useMstFeats = true;
         FeatureExtractor fe = onlyFast?
                 new BitshiftDepParseFeatureExtractor(bsFePrm, sent, cs, ofc) :
                 new DepParseFeatureExtractor(fePrm, sent, cs, ofc.getFeAlphabet());

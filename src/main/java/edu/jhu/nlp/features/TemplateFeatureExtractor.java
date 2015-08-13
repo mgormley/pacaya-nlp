@@ -31,7 +31,6 @@ import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.pacaya.parse.cky.Rule;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
-import edu.jhu.pacaya.parse.dep.ParentsArray.Dir;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;
 

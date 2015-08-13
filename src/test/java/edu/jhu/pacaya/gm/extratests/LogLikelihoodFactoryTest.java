@@ -23,24 +23,21 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.autodiff.ModuleTestUtils;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.BfsMpSchedule;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BfsMpSchedule;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
-import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
@@ -126,11 +123,6 @@ public class LogLikelihoodFactoryTest {
         FgInferencer infLat = infFactory.getInferencer(fgLat);
         infLat.run();        
         assertEquals(2, infLat.getPartition(), 2);
-        // Check that the partition function is computed identically for each variable.
-        for (Var v : fgLat.getVars()) {
-            double partition = ((BeliefPropagation)infLat).getPartitionBeliefAtVarNode(fgLat.getNode(v));
-            //TODO: assertEquals(2, logDomain ? FastMath.exp(partition) : partition, 1e-3);
-        }
         
         System.out.println("-------- Running LatPred Inference-----------");
         
@@ -151,12 +143,6 @@ public class LogLikelihoodFactoryTest {
         // Print factors
         for (Factor f : fgLatPred.getFactors()) {
             System.out.println(f);
-        }
-        // Check that the partition function is computed identically for each variable.
-        for (Var v : fgLatPred.getVars()) {
-            double partition = ((BeliefPropagation)infLatPred).getPartitionBeliefAtVarNode(fgLatPred.getNode(v));
-            System.out.format("Var=%s partition=%.4f\n", v.toString(), partition);
-            assertEquals(2*3, s == LogSemiring.getInstance() ? FastMath.exp(partition) : partition, 1e-3);
         }
         
         Function obj = getCrfObj(model, data, infFactory);
@@ -245,11 +231,11 @@ public class LogLikelihoodFactoryTest {
         model.scale(0.1);
         System.out.println("Model L2 norm: " + model.l2Norm());
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;
-        bpPrm.maxIterations = 50;    
+        bpPrm.maxIterations = 50;
         // Uncomment to enable dumping of beliefs.
         // bpPrm.dumpDir = Paths.get("./tmp/dump" + s.toString());
         // Files.deleteRecursively(bpPrm.dumpDir.toFile());
@@ -306,7 +292,7 @@ public class LogLikelihoodFactoryTest {
         FgExampleList data = pair.get1();
         ObsFeatureConjoiner ofc = pair.get2();
         
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.updateOrder = BpUpdateOrder.PARALLEL;
         bpPrm.normalizeMessages = true;

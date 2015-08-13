@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,23 +20,22 @@ import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.joint.JointNlpFgModel;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.collections.QSets;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.semiring.LogSemiring;
-import edu.jhu.prim.Primitives.MutableInt;
-import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
+import edu.jhu.prim.util.Timer;
 
 public class FirstOrderPruner implements Annotator {
 
@@ -57,7 +55,7 @@ public class FirstOrderPruner implements Annotator {
     public void annotate(final AnnoSentenceCollection inputSents) {
         // Read a model from a file.
         log.info("Reading pruning model from file: " + pruneModel);
-        final JointNlpFgModel model = (JointNlpFgModel) Files.deserialize(pruneModel);
+        final JointNlpFgModel model = (JointNlpFgModel) QFiles.deserialize(pruneModel);
         
         ObsFeatureConjoiner ofc = model.getOfc();
         CorpusStatistics cs = model.getCs();
@@ -75,7 +73,7 @@ public class FirstOrderPruner implements Annotator {
         exPrm.fgPrm.dpPrm.pruneEdges = true;
         exPrm.fePrm = fePrm;
                 
-        final ErmaBpPrm bpPrm = new ErmaBpPrm();
+        final BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

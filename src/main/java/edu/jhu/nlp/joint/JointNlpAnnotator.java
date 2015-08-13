@@ -41,11 +41,10 @@ import edu.jhu.pacaya.gm.train.CrfTrainer;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
-import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.collections.QSets;
-import edu.jhu.pacaya.util.files.Files;
-import edu.jhu.prim.util.Timer;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.prim.util.Lambda.FnIntToVoid;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.vector.IntDoubleVector;
 
 /**
@@ -204,7 +203,7 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     public void loadModel(File modelIn) {
         // Read a model from a file.
         log.info("Reading model from file: " + modelIn);
-        loadModel((JointNlpFgModel) Files.deserialize(modelIn));
+        loadModel((JointNlpFgModel) QFiles.deserialize(modelIn));
     }
     
     public void loadModel(JointNlpFgModel model) {
@@ -216,7 +215,7 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     public void saveModel(File modelOut) {
         // Write the model to a file.
         log.info("Serializing model to file: " + modelOut);
-        Files.serialize(model, modelOut);
+        QFiles.serialize(model, modelOut);
     }
 
     public void printModel(File printModel) throws IOException {

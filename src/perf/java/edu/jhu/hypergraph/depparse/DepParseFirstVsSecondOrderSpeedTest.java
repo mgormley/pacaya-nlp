@@ -22,13 +22,13 @@ import edu.jhu.nlp.depparse.DepParseInferenceSpeedTest;
 import edu.jhu.nlp.depparse.O2AllGraFgInferencer;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.pacaya.autodiff.Tensor;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
@@ -80,7 +80,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         for (AnnoSentence sent : sents) {
             if (sent.size() > 10) { continue; }            
             FactorGraph fg1, fg2;
-            ErmaBp bp1, bp2;
+            BeliefPropagation bp1, bp2;
             int[] parents1, parents2;            
             {
                 // First order
@@ -170,7 +170,7 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         for (AnnoSentence sent : sents) {
             if (sent.size() > 10) { continue; }
             FactorGraph fg1, fg2;
-            ErmaBp bp1, bp2;
+            BeliefPropagation bp1, bp2;
             int[] parents1, parents2;            
             {
                 // Second order 5 iters
@@ -226,6 +226,8 @@ public class DepParseFirstVsSecondOrderSpeedTest {
         fePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
         BitshiftDepParseFeatureExtractorPrm bsFePrm = new BitshiftDepParseFeatureExtractorPrm();
         bsFePrm.featureHashMod = numParams;
+        bsFePrm.useMstFeats = true;
+        bsFePrm.useCarerrasFeats = true;
         FeatureExtractor fe = onlyFast?
                 new BitshiftDepParseFeatureExtractor(bsFePrm, sent, cs, ofc) :
                 new DepParseFeatureExtractor(fePrm, sent, cs, ofc.getFeAlphabet());

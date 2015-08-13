@@ -14,27 +14,27 @@ import org.slf4j.LoggerFactory;
 import edu.berkeley.nlp.PCFGLA.smoothing.BerkeleySignatureBuilder;
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.parse.cky.CkyPcfgParser;
+import edu.jhu.pacaya.parse.cky.CkyPcfgParser.CkyPcfgParserPrm;
+import edu.jhu.pacaya.parse.cky.CkyPcfgParser.LoopOrder;
 import edu.jhu.pacaya.parse.cky.CnfGrammar;
 import edu.jhu.pacaya.parse.cky.CnfGrammarReader;
 import edu.jhu.pacaya.parse.cky.Evalb;
 import edu.jhu.pacaya.parse.cky.GrammarConstants;
-import edu.jhu.pacaya.parse.cky.CkyPcfgParser.CkyPcfgParserPrm;
-import edu.jhu.pacaya.parse.cky.CkyPcfgParser.LoopOrder;
 import edu.jhu.pacaya.parse.cky.chart.Chart;
 import edu.jhu.pacaya.parse.cky.chart.Chart.ChartCellType;
 import edu.jhu.pacaya.parse.cky.chart.Chart.ParseType;
 import edu.jhu.pacaya.parse.cky.data.BinaryTree;
 import edu.jhu.pacaya.parse.cky.data.BinaryTreebank;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
-import edu.jhu.pacaya.parse.cky.data.NaryTreebank;
 import edu.jhu.pacaya.parse.cky.data.NaryTree.NaryTreeNodeFilter;
+import edu.jhu.pacaya.parse.cky.data.NaryTreebank;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.Lambda.FnO1ToVoid;
+import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.random.Prng;
 
 public class RunCkyParser {
@@ -249,7 +249,7 @@ public class RunCkyParser {
     private NaryTreebank readPtbTrees() throws FileNotFoundException,
             IOException {
         NaryTreebank naryTrees = new NaryTreebank();
-        List<File> mrgFiles = Files.getMatchingFiles(train, ".*\\.mrg");
+        List<File> mrgFiles = QFiles.getMatchingFiles(train, ".*\\.mrg");
         for (File mrgFile : mrgFiles) {
             BufferedReader reader = new BufferedReader(new FileReader(mrgFile));
             NaryTreebank tmpTrees = NaryTreebank.readTreesInPtbFormat(reader);

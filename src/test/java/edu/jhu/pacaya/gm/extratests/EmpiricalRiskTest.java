@@ -16,11 +16,6 @@ import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.pacaya.autodiff.ModuleTestUtils;
-import edu.jhu.pacaya.autodiff.erma.DlFactory;
-import edu.jhu.pacaya.autodiff.erma.EmpiricalRisk.EmpiricalRiskFactory;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
@@ -28,10 +23,15 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
+import edu.jhu.pacaya.gm.train.DlFactory;
+import edu.jhu.pacaya.gm.train.EmpiricalRisk.EmpiricalRiskFactory;
+import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
+import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.train.ModuleObjective;
 import edu.jhu.pacaya.gm.train.MtFactory;
 import edu.jhu.pacaya.util.semiring.Algebra;
@@ -75,8 +75,8 @@ public class EmpiricalRiskTest {
         ModuleTestUtils.assertGradientCorrectByFd(obj, model.getParams(), 1e-5, 1e-7);
     }
 
-    public static ErmaBpPrm getErmaBpPrm(Algebra s) {
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+    public static BeliefPropagationPrm getErmaBpPrm(Algebra s) {
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = s;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;

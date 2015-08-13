@@ -16,16 +16,16 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.words.PrefixAnnotator;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
 import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
@@ -130,8 +130,8 @@ public class SrlSpeedTest {
                 t3.stop();
                 
                 t4.start(); 
-                Pair<ErmaBp, ErmaBpPrm> pair = runBp(fg, 1);
-                ErmaBp bp = pair.get1();
+                Pair<BeliefPropagation, BeliefPropagationPrm> pair = runBp(fg, 1);
+                BeliefPropagation bp = pair.get1();
                 t4.stop();
                 
                 t5.start(); 
@@ -182,18 +182,18 @@ public class SrlSpeedTest {
         return encode.encode(sent, sent.getSrlGraph());
     }
     
-    public static Pair<ErmaBp, ErmaBpPrm> runBp(FactorGraph fg, int numIters) {
-        ErmaBpPrm bpPrm = new ErmaBpPrm();
+    public static Pair<BeliefPropagation, BeliefPropagationPrm> runBp(FactorGraph fg, int numIters) {
+        BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.maxIterations = numIters;
         bpPrm.updateOrder = BpUpdateOrder.SEQUENTIAL;
         bpPrm.schedule = BpScheduleType.TREE_LIKE;
         //bpPrm.s = Algebras.REAL_ALGEBRA;
-        ErmaBp bp = new ErmaBp(fg, bpPrm);
+        BeliefPropagation bp = new BeliefPropagation(fg, bpPrm);
         bp.run();
         for (Var v : fg.getVars()) {
             bp.getMarginals(v);
         }
-        return new Pair<ErmaBp, ErmaBpPrm>(bp, bpPrm);
+        return new Pair<BeliefPropagation, BeliefPropagationPrm>(bp, bpPrm);
     }
     
 //    private static class SrlFgExampleList extends AbstractFgExampleList {

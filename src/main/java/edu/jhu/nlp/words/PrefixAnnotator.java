@@ -5,7 +5,6 @@ import java.util.Set;
 
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
-import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;

@@ -83,29 +83,29 @@ import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
-import edu.jhu.pacaya.autodiff.erma.BeliefsModuleFactory;
-import edu.jhu.pacaya.autodiff.erma.InsideOutsideDepParse;
-import edu.jhu.pacaya.autodiff.erma.DepParseDecodeLoss.DepParseDecodeLossFactory;
-import edu.jhu.pacaya.autodiff.erma.ErmaBp.ErmaBpPrm;
-import edu.jhu.pacaya.autodiff.erma.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.autodiff.erma.L2Distance.MeanSquaredErrorFactory;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
 import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
+import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
+import edu.jhu.pacaya.gm.train.DepParseSoftmaxMbr.DepParseSoftmaxMbrFactory;
+import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
+import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.collections.QSets;
-import edu.jhu.pacaya.util.files.Files;
+import edu.jhu.pacaya.util.files.QFiles;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.pacaya.util.semiring.Algebra;
@@ -127,7 +127,7 @@ public class JointNlpRunner {
 
     public static enum Optimizer { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD };
 
-    public enum ErmaLoss { MSE, EXPECTED_RECALL, DP_DECODE_LOSS };
+    public enum ErmaLoss { MSE, EXPECTED_RECALL, SOFTMAX_MBR };
 
     public enum Inference { BRUTE_FORCE, BP, DP };
     
@@ -213,6 +213,8 @@ public class JointNlpRunner {
     public static Scaling embNorm = Scaling.L2_NORM;
     @Opt(hasArg=true, description="Amount to scale embeddings after normalization.")
     public static double embScalar = 15.0;
+    @Opt(hasArg=true, description="Whether to use entity mention specific embeddings.")
+    public static boolean entitySpecificEmbeddings = false;
     
     // Options for SRL factor graph structure.
     @Opt(hasArg = true, description = "The structure of the Role variables.")
@@ -363,7 +365,7 @@ public class JointNlpRunner {
     @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
     public static boolean dpAnnealMse = true;
     @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
-    public static ErmaLoss dpLoss = ErmaLoss.DP_DECODE_LOSS;
+    public static ErmaLoss dpLoss = ErmaLoss.SOFTMAX_MBR;
     
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
@@ -546,7 +548,7 @@ public class JointNlpRunner {
                 }
                 if (pipeOut != null) {
                     log.info("Serializing pipeline to file: " + pipeOut);
-                    Files.serialize(anno, pipeOut);
+                    QFiles.serialize(anno, pipeOut);
                 }
             } else if (corpus.hasDev()) { // but not train
                 anno.annotate(devInput);
@@ -767,7 +769,7 @@ public class JointNlpRunner {
         CrfTrainerPrm prm = new CrfTrainerPrm();
         prm.infFactory = infPrm;
         if (infPrm instanceof BeliefsModuleFactory) {
-            // TODO: This is a temporary hack to which assumes we always use ErmaBp.
+            // TODO: This cast is a temporary hack.
             prm.bFactory = (BeliefsModuleFactory) infPrm;
         }
         if (optimizer == Optimizer.LBFGS) {
@@ -844,8 +846,8 @@ public class JointNlpRunner {
         // TODO: add options for other loss functions.
         if (prm.trainer == Trainer.ERMA && 
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
-            if (dpLoss == ErmaLoss.DP_DECODE_LOSS) {
-                DepParseDecodeLossFactory lossPrm = new DepParseDecodeLossFactory();
+            if (dpLoss == ErmaLoss.SOFTMAX_MBR) {
+                DepParseSoftmaxMbrFactory lossPrm = new DepParseSoftmaxMbrFactory();
                 lossPrm.annealMse = dpAnnealMse;
                 lossPrm.startTemp = dpStartTemp;
                 lossPrm.useLogScale = dpUseLogScale;
@@ -896,7 +898,7 @@ public class JointNlpRunner {
             BruteForceInferencerPrm prm = new BruteForceInferencerPrm(algebra.getAlgebra());
             return prm;
         } else if (inference == Inference.BP) {
-            ErmaBpPrm bpPrm = new ErmaBpPrm();
+            BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
             bpPrm.s = algebra.getAlgebra();
             bpPrm.schedule = bpSchedule;
             bpPrm.updateOrder = bpUpdateOrder;
@@ -941,6 +943,7 @@ public class JointNlpRunner {
         prm.embeddingsFile = embeddingsFile;
         prm.embNorm = embNorm;
         prm.embScalar= embScalar;
+        prm.entitySpecificEmbeddings = entitySpecificEmbeddings;
         return prm;
     }
     
