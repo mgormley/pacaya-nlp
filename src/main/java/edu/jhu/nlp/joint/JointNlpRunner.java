@@ -69,6 +69,7 @@ import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
+import edu.jhu.nlp.relations.EntityMentionMunger;
 import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
@@ -87,11 +88,11 @@ import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
-import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
+import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
@@ -213,6 +214,8 @@ public class JointNlpRunner {
     public static Scaling embNorm = Scaling.L2_NORM;
     @Opt(hasArg=true, description="Amount to scale embeddings after normalization.")
     public static double embScalar = 15.0;
+    @Opt(hasArg=true, description="Whether to use entity mention specific embeddings.")
+    public boolean entitySpecificEmbeddings = false;
     
     // Options for SRL factor graph structure.
     @Opt(hasArg = true, description = "The structure of the Role variables.")
@@ -414,6 +417,11 @@ public class JointNlpRunner {
                 RelationDataPreproc dataPreproc = relMunger.getDataPreproc();
                 anno.add(dataPreproc);
                 prep.add(dataPreproc);
+            }
+            if (entitySpecificEmbeddings) {
+                EntityMentionMunger emm = new EntityMentionMunger();
+                anno.add(emm);
+                prep.add(emm);
             }
             // Annotation pipeline.
             anno.add(new EnsureStaticOptionsAreSet());
