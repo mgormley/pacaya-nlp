@@ -131,6 +131,7 @@ public class RelationsFactorGraphBuilder {
                 fg.addFactor(new FcmFactor(vars, sent, (Embeddings)ofc.embeddings, ofc, prm.fcmFineTuning, wordFe));
             }
         }
+        ((ObsFeatureCache)relFe).init(fg);
     }
     
     public List<RelVar> getRelVars() {
