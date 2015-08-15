@@ -2,98 +2,205 @@ package edu.jhu.nlp.fcm;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.pacaya.autodiff.AbstractModule;
 import edu.jhu.pacaya.autodiff.MVec;
 import edu.jhu.pacaya.autodiff.Module;
-import edu.jhu.pacaya.autodiff.Tensor;
-import edu.jhu.pacaya.autodiff.erma.MVecFgModel;
+import edu.jhu.pacaya.autodiff.VTensor;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.MVecFgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
+import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.semiring.Algebra;
-import edu.jhu.prim.util.Lambda.FnIntDoubleToVoid;
+import edu.jhu.pacaya.util.semiring.RealAlgebra;
+import edu.jhu.prim.util.math.FastMath;
+import edu.jhu.prim.vector.IntDoubleVector;
 
+/**
+ * Computes the score given by the FCM without exponentiating.
+ * 
+ * The input parameters consist of: 
+ * (1) The FCM model parameters, T, a KxDxY Tensor, 
+ * (2) The word embeddings, e, a VxD Tensor.
+ * 
+ * The output values are a vector (length Y) of scores (one per label). 
+ * These are intended to be the log-scores for a factor.
+ * 
+ * @author mgormley
+ */
 public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTensor> {
+    private static final Logger log = LoggerFactory.getLogger(ObsFeatureConjoiner.class);
 
-    private IntAnnoSentence isent;
-    private Embeddings embeddings;
     private Module<MVecFgModel> modIn;
-    private Var var;
+    private List<FeatureVector> feats;
+    private AnnoSentence sent;
+    private Embeddings embeddings;
+    private VarSet vars;
     private boolean fineTuning;
     
-    public FcmModule(Module<MVecFgModel> modIn, Algebra s) {
+    private VarTensor scores;
+    // Model dimensions.
+    private final int numFeats;
+    private final int embedDim;
+    private final int numWordTypes;
+    private final int numLabels;
+    // Model parameter offset.
+    private final int paramOffset;
+    
+    public FcmModule(Module<MVecFgModel> modIn, Algebra s, List<FeatureVector> feats, FeatureNames featAlphabet, 
+            VarSet vars, AnnoSentence sent, Embeddings embeddings, int paramOffset, boolean fineTuning) {
         super(s);
+        assert modIn.getAlgebra().equals(RealAlgebra.getInstance());
         this.modIn = modIn;
+        this.vars = vars;
+        this.sent = sent;
+        this.embeddings = embeddings;
+        this.fineTuning = fineTuning;
+        this.feats = feats;
+        
+        // Model dimensions.
+        this.numLabels = vars.calcNumConfigs();
+        this.numWordTypes = embeddings.getEmbeddings().getDim(0);
+        this.embedDim = embeddings.getEmbeddings().getDim(1);
+        this.numFeats = featAlphabet.size(); // K
+        
+        // Model parameter offset.
+        this.paramOffset = paramOffset;
     }
 
+    /** Gets the number of model parameters required by this FCM. */
+    public int getNumParams() { return numLabels * embedDim * numFeats + numWordTypes + embedDim; }
+    
+    /**
+     * Forward pass:
+     * <pre>
+     * s_y = \sum_{i=1}^N \sum_{d=1}^D \sum_{k=1}^K T_{y,k,d} f_{i,k} e_{w_i,d} \forall y
+     * \psi_{FCM}(y) = exp(s_y)
+     * </pre>
+     */
     @Override
     public VarTensor forward() {
-        Tensor param = null; // TODO: get from a module
-        Tensor embed = null; // TODO: get from a module
-        int embedDim = -1; // TODO:
-        int numFeats = -1; // TODO:
+        IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
+        VTensor param = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
+        VTensor embed = new VTensor(modIn.getAlgebra(), param.size() + paramOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
         
-        VarTensor fac = new VarTensor(s, new VarSet(var));
-        for (int i=0; i<isent.size(); i++) {
-            int w_i = isent.getWord(i);
-            FeatureVector f_i = getFeatures(i);
-            for (int y=0; y<fac.size(); y++) {
-                for (int m=0; m<embedDim; m++) {
-                    // Sparse loop over features.
+        scores = new VarTensor(RealAlgebra.getInstance(), vars);
+        assert scores.size() == numLabels;
+
+        // Loop over tokens.
+        for (int i=0; i<sent.size(); i++) {
+            String word = sent.getWord(i);
+            int w_i = embeddings.findEmbedding(word); // TODO: cache this for speed: isent.getEmbedIdx(i);
+            FeatureVector f_i = feats.get(i);
+            // Loop over labels.
+            for (int y=0; y<numLabels; y++) {
+                // Loop over embedding dimensions.
+                for (int d=0; d<embedDim; d++) {
+                    // Loop over (sparse) features.
                     for(int j=0; j<f_i.getUsed(); j++) {
                         int k = f_i.getInternalIndices()[j];
                         double f_ik = f_i.getInternalValues()[j];
                         assert 0 <= k && k < numFeats;
                         // Add to the factor score.
-                        double score = param.get(y, m, k) * embed.get(w_i, m) * f_ik;
-                        fac.add(score, y);
+                        // s_y += T_{y,k,d} f_{i,k} e_{w_i,d} \forall y
+                        double score = param.get(y, d, k) * embed.get(w_i, d) * f_ik;
+                        log.debug("i={} y={} d={} k={} s_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
+                                i, y, d, k, score, param.get(y, d, k), embed.get(w_i, d), f_ik);
+                        scores.add(score, y);
                     }
                 }
             }
         }
-        return fac;
+        
+        // TODO: This special case code should move to Exp.java -- i.e. support conversion of the Algebra there.
+        //
+        // Convert scores, s_y, to factor values, exp(s_y).
+        // \psi_{FCM}(y) = exp(s_y)
+        VarTensor fac = new VarTensor(s, scores.getVars());
+        for (int y=0; y<scores.size(); y++) {
+            fac.setValue(y, s.fromLogProb(scores.getValue(y)));
+        }
+        return y = fac;
     }
 
+    /**
+     * Backward pass:
+     * <pre>
+     * dG/s_y = dG/d\psi_{FCM}(y) exp(s_y)
+     * dG/dT_{y,k,d} = dG/ds_y ds_y/dT_{y,k,d} 
+     *               = dG/ds_y (\sum_{i=1}^N f_{i,k} e_{w_i,d}) \forall y,k,d
+     * dG/de_{w_i,d} = \sum_y dG/ds_y ds_y/dT_{y,k,d} 
+     *               = \sum_y dG/ds_y (\sum_{k=1}^K T_{y,k,d} f_{i,k}) \forall i,d
+     * </pre>
+     */
     @Override
     public void backward() {
-        Tensor param = null; // TODO: get from a module
-        Tensor embed = null; // TODO: get from a module
-        Tensor paramAdj = null; // TODO: Get from a module.
-        Tensor embedAdj = null; // TODO: Get from a module.
-        int embedDim = -1; // TODO:
-        int numFeats = -1; // TODO:
+        IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
+        VTensor param = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
+        VTensor embed = new VTensor(modIn.getAlgebra(), param.size() + paramOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
+        IntDoubleVector modelParamsAdj = modIn.getOutputAdj().getModel().getParams();
+        VTensor paramAdj = new VTensor(modIn.getAlgebra(), paramOffset, modelParamsAdj, numLabels, embedDim, numFeats); // T_{y,k,d}
+        VTensor embedAdj = new VTensor(modIn.getAlgebra(), param.size() + paramOffset, modelParamsAdj, numWordTypes, embedDim); // e_{w_i,d}
         
-        // Backprop to tensor parameters.
-//        for (int i=0; i<isent.size(); i++) {
-//            FeatureVector f_i = getFeatures(i);
-//            for (int y=0; y<fac.size(); y++) {
-//                for (int m=0; m<embedDim; m++) {
-//                    // Sparse loop over features.
-//                    for(int j=0; j<f_i.getUsed(); j++) {
-//                        
-//                    }
-//                }
-//            }
-//        }
+        // Backprop to scores.
+        // dG/s_y = dG/d\psi_{FCM}(y) exp(s_y)
+        VarTensor facAdj = getOutputAdj();
+        assert facAdj.size() == numLabels;
+        VarTensor scoresAdj = new VarTensor(RealAlgebra.getInstance(), facAdj.getVars());
+        for (int y=0; y<scoresAdj.size(); y++) {
+            // Compute in the output semiring.
+            double adj_psi_y = facAdj.getValue(y);
+            double adj_s_y = s.times(adj_psi_y, s.fromLogProb(scores.getValue(y)));
+            scoresAdj.setValue(y, s.toReal(adj_s_y));
+        }
         
-        if (fineTuning) {
-            // Backprop to embedding parameters.
-            
+        // Backprop to tensor parameters, T, and (optionally) embedding parameters, e.
+
+        // Loop over tokens.
+        for (int i=0; i<sent.size(); i++) {
+            String word = sent.getWord(i);
+            int w_i = embeddings.findEmbedding(word); // TODO: cache this for speed: isent.getEmbedIdx(i);
+            FeatureVector f_i = feats.get(i);
+            // Loop over labels.
+            for (int y=0; y<numLabels; y++) {
+                // Loop over embedding dimensions.
+                for (int d=0; d<embedDim; d++) {
+                    // Loop over (sparse) features.
+                    for(int j=0; j<f_i.getUsed(); j++) {
+                        int k = f_i.getInternalIndices()[j];
+                        double f_ik = f_i.getInternalValues()[j];
+                        assert 0 <= k && k < numFeats;
+
+                        // Backprop
+                        // dG/dT_{y,k,d} = dG/ds_y ds_y/dT_{y,k,d} 
+                        //               = dG/ds_y (\sum_{i=1}^N f_{i,k} e_{w_i,d}) \forall y,k,d
+                        double tadd = scoresAdj.get(y) * f_ik * embed.get(w_i, d);
+                        paramAdj.add(tadd, y, d, k);
+                        if (fineTuning) {
+                            // dG/de_{w_i,d} = \sum_y dG/ds_y ds_y/dT_{y,k,d} 
+                            //               = \sum_y dG/ds_y (\sum_{k=1}^K T_{y,k,d} f_{i,k}) \forall i,d
+                            double eadd = scoresAdj.get(y) * param.get(y, d, k) * f_ik;
+                            embedAdj.add(eadd, w_i, d);
+                        }
+                        log.debug("tadd={} dG/ds_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", tadd, scoresAdj.get(y), param.get(y, d, k), embed.get(w_i, d), f_ik);
+                    }
+                }
+            }
         }
     }
 
     @Override
     public List<? extends Module<? extends MVec>> getInputs() {
         return QLists.getList(modIn);
-    }
-
-    private FeatureVector getFeatures(int i) {
-        // TODO Auto-generated method stub
-        return null;
     }
 
 }
