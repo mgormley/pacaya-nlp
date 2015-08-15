@@ -53,7 +53,7 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
             throw new RuntimeException(e);
         }
         embeddings.normPerWord(prm.embNorm);
-        embeddings.scalePerWord(prm.embScalar);
+        embeddings.scaleAll(prm.embScalar);
         if (prm.entitySpecificEmbeddings) {
             log.info("Entity-specific embeddings enabled");
         }
@@ -70,7 +70,7 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
         List<String> words = getWords(sent);
         for (int i=0; i<sent.size(); i++) {
             String word = words.get(i);
-            embeds.add(embeddings.getEmbedding(word));
+            embeds.add(embeddings.findEmbedding(word));
             if (embeds.get(i) == null) {
                 log.trace("Word not found: {}", word);
                 numMisses.incrementAndGet();
