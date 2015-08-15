@@ -15,6 +15,7 @@ import edu.jhu.nlp.data.LabeledSpan;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.fcm.FcmModule;
 import edu.jhu.nlp.features.FeaturizedSentence;
 import edu.jhu.nlp.features.FeaturizedTokenPair;
 import edu.jhu.nlp.features.LocalObservations;
@@ -44,18 +45,12 @@ import edu.jhu.prim.util.Lambda.FnObjDoubleToVoid;
  */
 public class RelObsFe implements ObsFeatureExtractor {
 
-
-    public enum EmbFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, FULL }
     public enum EntityTypeRepl { BROWN, NONE };
 
     public static class RelObsFePrm extends Prm {
         private static final long serialVersionUID = 1L;
         @Opt(hasArg=true, description="Whether to use the standard binary features.")
-        public boolean useZhou05Features = true;
-        @Opt(hasArg=true, description="Whether to use the embedding features.")
-        public boolean useEmbeddingFeatures = true;
-        @Opt(hasArg=true, description="The feature set for embeddings.")
-        public EmbFeatType embFeatType = EmbFeatType.FULL;        
+        public boolean useZhou05Features = true;        
         @Opt(hasArg=true, description="What to replace removed entity types with.")
         public EntityTypeRepl entityTypeRepl = EntityTypeRepl.NONE;
     }
@@ -80,7 +75,12 @@ public class RelObsFe implements ObsFeatureExtractor {
     @Override
     public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
         final FeatureNames alphabet = fts.getTemplate(factor).getAlphabet();
-        ObjFeatVec<String> obsFeats = calcObsFeatureVectorStrs(factor);
+        RelVar rv = (RelVar) factor.getVars().get(0);        
+        return calcObsFeatureVector(alphabet, rv);
+    }
+
+    public FeatureVector calcObsFeatureVector(final FeatureNames alphabet, RelVar rv) {
+        ObjFeatVec<String> obsFeats = calcObsFeatureVectorStrs(rv);
         final FeatureVector fv = new FeatureVector();
         obsFeats.iterate(new FnObjDoubleToVoid<String>() {            
             @Override
@@ -94,22 +94,17 @@ public class RelObsFe implements ObsFeatureExtractor {
         return fv;
     }
     
-    public ObjFeatVec<String> calcObsFeatureVectorStrs(ObsFeExpFamFactor factor) {
-        RelVar rv = (RelVar) factor.getVars().get(0);
+    public ObjFeatVec<String> calcObsFeatureVectorStrs(RelVar rv) {
         LocalObservations local = LocalObservations.newNe1Ne2(rv.ment1, rv.ment2);
         ObjFeatVec<String> fv = new ObjFeatVec<String>();
         
         // The bias features are used to ensure that at least one feature fires for each variable configuration.
         fv.add("BIAS_FEATURE", 1.0);
         
-        maybeSetEntityTypesAndSubTypes(local);
+        maybeSetEntityTypesAndSubTypes(sent, local, prm.entityTypeRepl);
         
         if (prm.useZhou05Features) {
             addZhou05Features(local, fv);
-        }
-        
-        if (prm.useEmbeddingFeatures) {
-            addEmbeddingFeatures(local, fv);
         }
         
         // TODO: Add template features. 
@@ -119,13 +114,13 @@ public class RelObsFe implements ObsFeatureExtractor {
         return fv;
     }
 
-    protected void maybeSetEntityTypesAndSubTypes(LocalObservations local) {
+    public static void maybeSetEntityTypesAndSubTypes(AnnoSentence sent, LocalObservations local, EntityTypeRepl entityTypeRepl) {
         // Set entity types to be Brown cluster tags if missing.
         NerMention ne1 = local.getNe1();        
         final int typeMaxLength = 6;
         final int subTypeMaxLength = 8;
         if (ne1.getEntityType() == null) {
-            if (prm.entityTypeRepl == EntityTypeRepl.BROWN) {
+            if (entityTypeRepl == EntityTypeRepl.BROWN) {
                 ne1.setEntityType(BrownClusterTagger.cutCluster(sent.getCluster(ne1.getHead()), typeMaxLength));
                 ne1.setEntitySubType(BrownClusterTagger.cutCluster(sent.getCluster(ne1.getHead()), subTypeMaxLength));
             } else {
@@ -135,7 +130,7 @@ public class RelObsFe implements ObsFeatureExtractor {
         }
         NerMention ne2 = local.getNe2();
         if (ne2.getEntityType() == null) {
-            if (prm.entityTypeRepl == EntityTypeRepl.BROWN) {
+            if (entityTypeRepl == EntityTypeRepl.BROWN) {
                 ne2.setEntityType(BrownClusterTagger.cutCluster(sent.getCluster(ne2.getHead()), typeMaxLength));
                 ne2.setEntitySubType(BrownClusterTagger.cutCluster(sent.getCluster(ne2.getHead()), subTypeMaxLength));
             } else {
@@ -456,7 +451,7 @@ public class RelObsFe implements ObsFeatureExtractor {
     }
 
     // TODO: Move this somewhere else.
-    private static int[] getHeadsOfSpans(List<? extends Span> spans, int[] parents) {
+    public static int[] getHeadsOfSpans(List<? extends Span> spans, int[] parents) {
         int[] heads = new int[spans.size()];
         for (int i=0; i<spans.size(); i++) {
             heads[i] = getHeadOfSpan(spans.get(i), parents);
@@ -635,143 +630,8 @@ public class RelObsFe implements ObsFeatureExtractor {
         return words;
     }
 
-    private void addEmbeddingFeatures(LocalObservations local, ObjFeatVec<String> fv) {
-        //  - Per word, we have various features, such as whether a word is in between
-        //    the entities or on the dependency path between them.
-        //    - For each of the above features, if the feature fires, set the
-        //      values to the embedding for that word.
-        //    - For each of the above features, if the feature fires, set the
-        //      values to the embedding for the word's super sense tag.
-        NerMention m1 = local.getNe1();
-        NerMention m2 = local.getNe2();
-        Span m1span = m1.getSpan();
-        Span m2span = m2.getSpan();
-        
-        FeaturizedSentence fsent = new FeaturizedSentence(sent, null);
-        
-        String ne1 = m1.getEntityType();
-        String ne2 = m2.getEntityType();
-        String sne1 = m1.getEntitySubType();
-        String sne2 = m2.getEntitySubType();
-        String ne1ne2 = ne1 + ne2;
-                
-        switch (prm.embFeatType) {
-        case FULL:            
-            //     - chunk_head
-            //     - chunk_head+ne1
-            //     - chunk_head+ne2
-            //     - chunk_head+ne1+ne2
-            Pair<List<LabeledSpan>, IntArrayList> chunkPair = getSpansFromBIO(sent.getChunks(), true);
-            List<LabeledSpan> chunks = chunkPair.get1();
-            IntArrayList tokIdxToChunkIdx = chunkPair.get2();
-            int c1 = tokIdxToChunkIdx.get(m1.getHead());
-            int c2 = tokIdxToChunkIdx.get(m2.getHead());
-            int[] chunkHeads = getHeadsOfSpans(chunks, sent.getParents());
-            for (int b=c1+1; b<=c2-1; b++) {
-                int i = chunkHeads[b];
-                addEmbFeat("chunk_head", i, fv);
-                addEmbFeat("chunk_head-t1"+ne1, i, fv);
-                addEmbFeat("chunk_head-t2"+ne2, i, fv);
-                addEmbFeat("chunk_head-t1t2"+ne1ne2, i, fv);
-            }
-            
-        case HEAD_TYPE_LOC_ST:
-            //     - ne1_head+sne1
-            //     - ne1_head+sne2
-            addEmbFeat("ne1_head-st1"+sne1,    m1.getHead(), fv);
-            addEmbFeat("ne1_head-st2"+sne2,    m1.getHead(), fv);
-            
-            //     - ne2_head+sne1
-            //     - ne2_head+sne2
-            addEmbFeat("ne2_head-st1"+sne1,    m2.getHead(), fv);
-            addEmbFeat("ne2_head-st2"+sne2,    m2.getHead(), fv);
-                        
-        case HEAD_TYPE_LOC:
-            //     - in_between: is the word in between entities
-            //     - in_between+ne1 if in_between = T: ne1 is the entity type
-            //     - in_between+ne2 if in_between = T
-            //     - in_between+ne1+ne2 if in_between = T
-            Span btwn = new Span(m1.getHead()+1, m2.getHead());
-            for (int i=btwn.start(); i<btwn.end(); i++) {
-                addEmbFeat("in_between", i, fv);
-                addEmbFeat("in_between-t1"+ne1, i, fv);
-                addEmbFeat("in_between-t2"+ne2, i, fv);
-                addEmbFeat("in_between-t1t2"+ne1ne2, i, fv);
-            }
-    
-            //     - on_path
-            //     - on_path+ne1 if on_path = T
-            //     - on_path+ne2 if on_path = T
-            //     - on_path+ne1+ne2 if on_path = T
-            FeaturizedTokenPair ftp = fsent.getFeatTokPair(m1.getHead(), m2.getHead());        
-            List<Pair<Integer, ParentsArray.Dir>> depPath = ftp.getDependencyPath();
-            if (depPath != null) {
-                for (Pair<Integer,ParentsArray.Dir> pair : depPath) {
-                    int i = pair.get1();
-                    addEmbFeat("on_path", i, fv);
-                    addEmbFeat("on_path-t1"+ne1, i, fv);
-                    addEmbFeat("on_path-t2"+ne2, i, fv);
-                    addEmbFeat("on_path-t1t2"+ne1ne2, i, fv);
-                }
-            } else {
-                log.trace("No dependency path between mention heads");
-            }
-            
-            //     - -1_ne1: immediately to the left of the ne1 head
-            //     - +1_ne1: immediately to the right of the ne1 head
-            //     - -2_ne1: two to the left of the ne1 head
-            //     - +2_ne1: two to the right of the ne1 head
-            addEmbFeat("-1_ne1", m1.getHead()-1, fv);
-            addEmbFeat("+1_ne1", m1.getHead()+1, fv);
-            addEmbFeat("-2_ne1", m1.getHead()-2, fv);
-            addEmbFeat("+2_ne1", m1.getHead()+2, fv);
-            
-            //     - -1_ne2: immediately to the left of the ne2 head
-            //     - +1_ne2: immediately to the right of the ne2 head
-            //     - -2_ne2: two to the left of the ne2 head
-            //     - +2_ne2: two to the right of the ne2 head
-            addEmbFeat("-1_ne2", m2.getHead()-1, fv);
-            addEmbFeat("+1_ne2", m2.getHead()+1, fv);
-            addEmbFeat("-2_ne2", m2.getHead()-2, fv);
-            addEmbFeat("+2_ne2", m2.getHead()+2, fv);
-                    
-        case HEAD_TYPE:
-            //     - ne1_head+ne1
-            //     - ne1_head+ne2
-            //     - ne1_head+ne1+ne2
-            addEmbFeat("ne1_head-t1"+ne1,    m1.getHead(), fv);
-            addEmbFeat("ne1_head-t2"+ne2,    m1.getHead(), fv);
-            addEmbFeat("ne1_head-t1t2"+ne1ne2, m1.getHead(), fv);
-            
-            //     - ne2_head+ne1
-            //     - ne2_head+ne2
-            //     - ne2_head+ne1+ne2
-            addEmbFeat("ne2_head-t1"+ne1,    m2.getHead(), fv);
-            addEmbFeat("ne2_head-t2"+ne2,    m2.getHead(), fv);
-            addEmbFeat("ne2_head-t1t2"+ne1ne2, m2.getHead(), fv);
-            
-        case HEAD_ONLY:
-            //     - ne1_head: true if is the head of the first entity
-            addEmbFeat("ne1_head",        m1.getHead(), fv);
-            //     - ne2_head: true if is the head of the second entity
-            addEmbFeat("ne2_head",        m2.getHead(), fv);
-        }
-    }
-
     private void addBinFeat(ObjFeatVec<String> fv, String fname) {
         fv.add(fname, 1.0);
-    }
-    
-    private void addEmbFeat(String fname, int i, ObjFeatVec<String> fv) {
-        if (i < 0 || sent.size() <= i) {
-            return;
-        }
-        double[] embed = sent.getEmbed(i);
-        if (embed != null) {
-            for (int d=0; d<embed.length; d++) {
-                fv.add(fname+"_"+d, embed[d]);
-            }
-        }
     }
     
 }

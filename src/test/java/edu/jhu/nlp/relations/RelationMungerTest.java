@@ -139,7 +139,7 @@ public class RelationMungerTest {
         }
     }
 
-    private static AnnoSentence getSentWithRelationsAndNer() {
+    public static AnnoSentence getSentWithRelationsAndNer() {
         // Create Sentence with RELATIONS and NER.
         AnnoSentence sent = new AnnoSentence();
         int n = 5;
