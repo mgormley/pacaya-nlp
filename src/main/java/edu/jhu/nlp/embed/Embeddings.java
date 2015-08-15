@@ -39,6 +39,7 @@ public class Embeddings implements Serializable {
     }
     
     public Embeddings(File txtFile) {
+        log.info("Reading word embeddings from file: " + txtFile);
         // Count the number of words and length of the embeddings.
         final MutableInt numWords = new MutableInt(0);
         final MutableInt dim = new MutableInt(-1);
@@ -84,7 +85,6 @@ public class Embeddings implements Serializable {
      * @throws IOException
      */
     public static void parseEmbFile(File txtFile, EmbeddingHandler handler) {
-        log.info("Reading word embeddings from file: " + txtFile);
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(txtFile), "UTF-8"))) {
             String line;
             Pattern tab = Pattern.compile("\t");

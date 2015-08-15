@@ -960,7 +960,7 @@ public class JointNlpRunner {
             parser.registerClass(JointNlpRunner.class);
             parser.registerClass(CorpusHandler.class);
             parser.registerClass(RelationMungerPrm.class);
-            parser.registerClass(RelObsFePrm.class);
+            parser.registerClass(RelationsFactorGraphBuilderPrm.class);
             parser.registerClass(InsideOutsideDepParse.class);      
             parser.registerClass(ReporterManager.class);
             parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);
