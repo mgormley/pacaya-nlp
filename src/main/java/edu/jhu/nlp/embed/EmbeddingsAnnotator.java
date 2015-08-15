@@ -1,7 +1,6 @@
 package edu.jhu.nlp.embed;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -19,7 +18,7 @@ import edu.jhu.nlp.embed.Embeddings.Scaling;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QSets;
-import edu.jhu.prim.iter.IntIter;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.set.IntHashSet;
 
 public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements Annotator {
@@ -46,12 +45,7 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
     
     public EmbeddingsAnnotator(EmbeddingsAnnotatorPrm prm) {
         this.prm = prm;
-        this.embeddings = new Embeddings();
-        try {
-            embeddings.loadFromFile(prm.embeddingsFile);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        this.embeddings = new Embeddings(prm.embeddingsFile);
         embeddings.normPerWord(prm.embNorm);
         embeddings.scaleAll(prm.embScalar);
         if (prm.entitySpecificEmbeddings) {
@@ -66,12 +60,12 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
     }
     
     public void annotate(AnnoSentence sent) {
-        List<double[]> embeds = new ArrayList<>(sent.size());
+        IntArrayList embeds = new IntArrayList(sent.size());
         List<String> words = getWords(sent);
         for (int i=0; i<sent.size(); i++) {
             String word = words.get(i);
             embeds.add(embeddings.findEmbedding(word));
-            if (embeds.get(i) == null) {
+            if (embeds.get(i) == -1) {
                 log.trace("Word not found: {}", word);
                 numMisses.incrementAndGet();
             }

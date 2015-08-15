@@ -98,8 +98,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
 
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
-            String word = sent.getWord(i);
-            int w_i = embeddings.findEmbedding(word); // TODO: cache this for speed: isent.getEmbedIdx(i);
+            int w_i = sent.getEmbed(i);
             FeatureVector f_i = feats.get(i);
             // Loop over labels.
             for (int y=0; y<numLabels; y++) {
@@ -167,8 +166,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
 
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
-            String word = sent.getWord(i);
-            int w_i = embeddings.findEmbedding(word); // TODO: cache this for speed: isent.getEmbedIdx(i);
+            int w_i = sent.getEmbed(i);
             FeatureVector f_i = feats.get(i);
             // Loop over labels.
             for (int y=0; y<numLabels; y++) {

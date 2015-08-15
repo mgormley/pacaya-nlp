@@ -17,6 +17,7 @@ import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.arrays.IntArrays;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 
@@ -41,7 +42,7 @@ public class AnnoSentence {
     private List<String> cposTags;
     private List<StrictPosTag> strictPosTags;
     private List<String> clusters;
-    private List<double[]> embeds;
+    private IntArrayList embeds; // TODO: This should be called embedIndices.
     private List<List<String>> feats;
     private List<String> chunks;
     private List<String> deprels;
@@ -89,7 +90,7 @@ public class AnnoSentence {
         newSent.cposTags = QLists.copyOf(this.cposTags);
         newSent.strictPosTags = QLists.copyOf(this.strictPosTags);
         newSent.clusters = QLists.copyOf(this.clusters);
-        newSent.embeds = QLists.copyOf(this.embeds);
+        newSent.embeds = new IntArrayList(this.embeds);
         newSent.chunks = QLists.copyOf(this.chunks);
         newSent.deprels = QLists.copyOf(this.deprels);
         newSent.parents = IntArrays.copyOf(this.parents);
@@ -306,7 +307,7 @@ public class AnnoSentence {
         return clusters.get(i);
     }
     
-    public double[] getEmbed(int i) {
+    public int getEmbed(int i) {
         return embeds.get(i);
     }
     
@@ -389,13 +390,6 @@ public class AnnoSentence {
      */
     public List<String> getClusters(Span span) {
         return getSpan(clusters, span);
-    }
-    
-    /**
-     * Gets a list of word embeddings corresponding to a token span.
-     */
-    public List<double[]> getEmbeds(Span span) {
-        return getSpan(embeds, span);
     }
 
     /**
@@ -618,11 +612,11 @@ public class AnnoSentence {
         this.clusters = clusters;
     }
         
-    public List<double[]> getEmbeds() {
+    public IntArrayList getEmbeds() {
         return embeds;
     }
 
-    public void setEmbeds(List<double[]> embeds) {
+    public void setEmbeds(IntArrayList embeds) {
         this.embeds = embeds;
     }
     
