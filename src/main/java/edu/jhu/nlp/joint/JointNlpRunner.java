@@ -45,6 +45,7 @@ import edu.jhu.nlp.depparse.FirstOrderPruner;
 import edu.jhu.nlp.depparse.GoldDepParseUnpruner;
 import edu.jhu.nlp.depparse.O2AllGraFgInferencer.O2AllGraFgInferencerFactory;
 import edu.jhu.nlp.depparse.PosTagDistancePruner;
+import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.embed.Embeddings.Scaling;
 import edu.jhu.nlp.embed.EmbeddingsAnnotator;
 import edu.jhu.nlp.embed.EmbeddingsAnnotator.EmbeddingsAnnotatorPrm;
@@ -69,7 +70,6 @@ import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
-import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
@@ -408,7 +408,7 @@ public class JointNlpRunner {
         JointNlpAnnotatorPrm prm = getJointNlpAnnotatorPrm();
         // Optional annotators.
         JointNlpAnnotator jointAnno = null;
-        EmbeddingsAnnotator embedAnno  = null;
+        Embeddings embeds  = null;
         {
             // Pre-processing.
             RelationMunger relMunger = new RelationMunger(parser.getInstanceFromParsedArgs(RelationMungerPrm.class));
@@ -438,7 +438,10 @@ public class JointNlpRunner {
             }
             // Add word embeddings.
             if (embeddingsFile != null) {
-                embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm());
+                EmbeddingsAnnotator embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm());               
+                if (parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class).useEmbeddingFeatures == true) {
+                    embeds = embedAnno.getEmbeddings();
+                }
                 anno.add(embedAnno);
             } else {
                 log.debug("No embeddings file specified.");
@@ -476,14 +479,14 @@ public class JointNlpRunner {
                 srlPrm.predictPredPos = true;
                 srlPrm.predictSense = false;
                 srlPrm.roleStructure = RoleStructure.NO_ROLES;
-                anno.add(new JointNlpAnnotator(prm2, embedAnno.getEmbeddings()));
+                anno.add(new JointNlpAnnotator(prm2, embeds));
                 // Don't predict SRL predicate position in the main jointAnno below.
                 prm.buPrm.fgPrm.srlPrm.predictPredPos = false;
                 prm.buPrm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
             }
             if (jointModel) {
                 // Various NLP annotations.
-                jointAnno = new JointNlpAnnotator(prm, embedAnno.getEmbeddings());
+                jointAnno = new JointNlpAnnotator(prm, embeds);
                 if (modelIn != null) {
                     jointAnno.loadModel(modelIn);
                 }
