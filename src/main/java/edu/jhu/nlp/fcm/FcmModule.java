@@ -40,7 +40,8 @@ import edu.jhu.prim.vector.IntDoubleVector;
  * @author mgormley
  */
 public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTensor> {
-    private static final Logger log = LoggerFactory.getLogger(ObsFeatureConjoiner.class);
+    
+    private static final Logger log = LoggerFactory.getLogger(FcmModule.class);
 
     private Module<MVecFgModel> modIn;
     private List<FeatureVector> feats;
@@ -59,10 +60,12 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     private final int embedOffset;
     private final int paramOffset;
     
+    private VarTensor toUpdate; // TODO: Remove this hack.
+    
     public FcmModule(Module<MVecFgModel> modIn, Algebra s, List<FeatureVector> feats, FeatureNames featAlphabet, 
-            VarSet vars, AnnoSentence sent, Embeddings embeddings, int paramOffset, boolean fineTuning) {
+            VarSet vars, AnnoSentence sent, Embeddings embeddings, int paramOffset, boolean fineTuning,
+            VarTensor toUpdate) {
         super(s);
-        assert modIn.getAlgebra().equals(RealAlgebra.getInstance());
         this.modIn = modIn;
         this.vars = vars;
         this.sent = sent;
@@ -79,10 +82,12 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         // Model parameter offset.
         this.embedOffset = paramOffset;
         this.paramOffset = numWordTypes * embedDim + embedOffset;
+        
+        this.toUpdate = toUpdate;
     }
 
     /** Gets the number of model parameters required by this FCM. */
-    public int getNumParams() { return numLabels * embedDim * numFeats + numWordTypes + embedDim; }
+    public int getNumParams() { return numLabels * embedDim * numFeats + numWordTypes * embedDim; }
     
     /**
      * Forward pass:
@@ -93,6 +98,8 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
      */
     @Override
     public VarTensor forward() {
+        assert modIn.getAlgebra().equals(RealAlgebra.getInstance());
+
         IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
         // The embeddings must always come first because of how we initialize.
         VTensor embed = new VTensor(modIn.getAlgebra(), embedOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
@@ -104,6 +111,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
             int w_i = sent.getEmbed(i);
+            if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
             // Loop over labels.
             for (int y=0; y<numLabels; y++) {
@@ -118,9 +126,11 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
                         // Add to the factor score.
                         // s_y += T_{y,k,d} f_{i,k} e_{w_i,d} \forall y
                         double score = param.get(y, d, k) * e_wi_d * f_ik;
-                        log.debug("i={} y={} d={} k={} s_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
-                                i, y, d, k, score, param.get(y, d, k), e_wi_d, f_ik);
                         scores.add(score, y);
+                        if (log.isTraceEnabled()) {
+                            log.trace("i={} y={} d={} k={} s_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
+                                    i, y, d, k, score, param.get(y, d, k), e_wi_d, f_ik);
+                        }
                     }
                 }
             }
@@ -133,6 +143,13 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         VarTensor fac = new VarTensor(s, scores.getVars());
         for (int y=0; y<scores.size(); y++) {
             fac.setValue(y, s.fromLogProb(scores.getValue(y)));
+        }
+        
+        if (toUpdate != null) {
+            // Hack to update the containing FcmFactor for this FcmModule.
+            for (int c=0; c<fac.size(); c++) {
+                toUpdate.setValue(c, scores.getValue(c)); //fac.getAlgebra().toLogProb(fac.getValue(c)));
+            }
         }
         return y = fac;
     }
@@ -173,6 +190,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
             int w_i = sent.getEmbed(i);
+            if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
             // Loop over labels.
             for (int y=0; y<numLabels; y++) {
@@ -196,7 +214,10 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
                             double eadd = scoresAdj.get(y) * param.get(y, d, k) * f_ik;
                             embedAdj.add(eadd, w_i, d);
                         }
-                        log.debug("tadd={} dG/ds_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", tadd, scoresAdj.get(y), param.get(y, d, k), e_wi_d, f_ik);
+                        if (log.isTraceEnabled()) {
+                            log.trace("tadd={} dG/ds_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
+                                    tadd, scoresAdj.get(y), param.get(y, d, k), e_wi_d, f_ik);
+                        }
                     }
                 }
             }
@@ -212,9 +233,13 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     public static void initModelWithEmbeds(Embeddings embeddings, FgModel model, ObsFeatureConjoiner ofc) {
         int offset = ofc.getReservedOffset();
         Tensor e = embeddings.getEmbeddings();
-        for (int i=0; i<e.size(); i++) {
+        for (int i=0; i<e.getDim(0); i++) {
+            if (offset + i >= model.getNumParams()) { 
+                throw new RuntimeException("Invalid model parameter index: " + (offset + i));
+            }
             model.getParams().set(offset + i, e.getValue(i));
         }
+        log.debug("Initialized model parameters in range [{}, {}]", offset, offset+e.getDim(0));
     }
     
 }

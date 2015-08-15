@@ -46,9 +46,8 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
 
     @Override
     public void updateFromModel(FgModel model) {
-        // Set the values on the ExplicitFactor.
+        // Set the values on the ExplicitFactor. This is done automatically by the call to forward().
         VarTensor fac = getFactorModule(new FgModelIdentity(model), LogSemiring.getInstance()).forward();
-        this.setValuesOnly(fac);
     }
 
     @Override
@@ -67,7 +66,8 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
             wordFeats = wf.getFeatures((RelVar)getVars().get(0));
         }
         return new FcmModule(modIn, s, wordFeats, wf.getAlphabet(), 
-                getVars(), sent, embeddings, ofc.getReservedOffset(), fineTuning);
+                getVars(), sent, embeddings, ofc.getReservedOffset(), fineTuning,
+                this);
     }
 
 }

@@ -103,7 +103,7 @@ public class FcmModuleTest {
         e.fill(2); // ignored
         Embeddings embeds = new Embeddings(e, map);
         
-        FcmModule fcm = new FcmModule(id1, s, feats, alphabet, vars, sent, embeds, 1, true);
+        FcmModule fcm = new FcmModule(id1, s, feats, alphabet, vars, sent, embeds, 1, true, null);
         return new Pair<>(id1, fcm);
     }
     
@@ -174,7 +174,7 @@ public class FcmModuleTest {
         e.fill(2); // ignored
         Embeddings embeds = new Embeddings(e, map);
         
-        FcmModule fcm = new FcmModule(id1, s, feats, alphabet, vars, sent, embeds, 1, true);
+        FcmModule fcm = new FcmModule(id1, s, feats, alphabet, vars, sent, embeds, 1, true, null);
         return new Pair<>(id1, fcm);
     }
     
