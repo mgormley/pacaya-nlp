@@ -355,7 +355,7 @@ public class JointNlpFactorGraphTest {
         cs.roleStateNames = QLists.getList("A1", "A2", "A3");
         cs.predSenseListMap = psMap;
         
-        JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe, null);
+        JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe);
         
         fe.init(new UnlabeledFgExample(fg));
         return fg;

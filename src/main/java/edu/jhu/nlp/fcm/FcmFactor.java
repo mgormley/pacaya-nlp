@@ -1,65 +1,73 @@
 package edu.jhu.nlp.fcm;
 
+import java.util.List;
+
+import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.embed.Embeddings;
+import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
+import edu.jhu.nlp.relations.WordFeatures;
 import edu.jhu.pacaya.autodiff.Module;
-import edu.jhu.pacaya.autodiff.erma.AutodiffFactor;
-import edu.jhu.pacaya.autodiff.erma.MVecFgModel;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.AutodiffFactor;
+import edu.jhu.pacaya.gm.model.ExplicitFactor;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.FgModel;
+import edu.jhu.pacaya.gm.model.FgModelIdentity;
 import edu.jhu.pacaya.gm.model.IFgModel;
-import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.MVecFgModel;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.util.semiring.Algebra;
+import edu.jhu.pacaya.util.semiring.LogSemiring;
 
-public class FcmFactor implements Factor, AutodiffFactor {
+public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor {
 
+    private static final long serialVersionUID = 1L;
+    private AnnoSentence sent;
+    private ObsFeatureConjoiner ofc;
+    private Embeddings embeddings;
+    private boolean fineTuning;
+    private WordFeatures wf;
+    // This will be cached.
+    private List<FeatureVector> wordFeats;
 
-    @Override
-    public VarSet getVars() {
-        // TODO Auto-generated method stub
-        return null;
+    public FcmFactor(VarSet vars, AnnoSentence sent, Embeddings embeddings, ObsFeatureConjoiner ofc, boolean fineTuning, WordFeatures wf) {
+        super(vars);
+        if (vars.size() != 1 || !(vars.get(0) instanceof RelVar)) {
+            throw new IllegalArgumentException("Expected one var of type " + RelVar.class);
+        }
+        this.sent = sent;
+        this.embeddings = embeddings;
+        this.ofc = ofc;
+        this.fineTuning = fineTuning;
+        this.wf = wf;
     }
 
     @Override
     public void updateFromModel(FgModel model) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public double getLogUnormalizedScore(VarConfig goldConfig) {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public double getLogUnormalizedScore(int goldConfig) {
-        // TODO Auto-generated method stub
-        return 0;
+        // Set the values on the ExplicitFactor.
+        VarTensor fac = getFactorModule(new FgModelIdentity(model), LogSemiring.getInstance()).forward();
+        this.setValuesOnly(fac);
     }
 
     @Override
     public void addExpectedPartials(IFgModel counts, VarTensor factorMarginal, double multiplier) {
-        // TODO Auto-generated method stub
-        
-    }
-
-    @Override
-    public int getId() {
-        // TODO Auto-generated method stub
-        return 0;
-    }
-
-    @Override
-    public void setId(int id) {
-        // TODO Auto-generated method stub
-        
+        if (multiplier != 0) {
+            throw new RuntimeException("addExpectedPartials is only implemented for feature counting");
+        }
+        // Do feature extraction to populate the alphabet.
+        FcmModule fcm = getFactorModule(null, s);
+        ofc.requestReserved(fcm.getNumParams());
     }
     
     @Override
-    public Module<?> getFactorModule(Module<MVecFgModel> modIn, Algebra s) {
-        // TODO Auto-generated method stub
-        return null;
+    public FcmModule getFactorModule(Module<MVecFgModel> modIn, Algebra s) {
+        if (wordFeats == null) {
+            wordFeats = wf.getFeatures((RelVar)getVars().get(0));
+        }
+        return new FcmModule(modIn, s, wordFeats, wf.getAlphabet(), 
+                getVars(), sent, embeddings, ofc.getReservedOffset(), fineTuning);
     }
 
 }

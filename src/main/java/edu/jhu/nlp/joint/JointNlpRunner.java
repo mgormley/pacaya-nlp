@@ -74,6 +74,7 @@ import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
+import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
@@ -660,7 +661,7 @@ public class JointNlpRunner {
         
         // Relation Feature extraction.
         if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
-            prm.fgPrm.relPrm.fePrm = parser.getInstanceFromParsedArgs(RelObsFePrm.class);
+            prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
         
         prm.fgPrm.includeDp = CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE);

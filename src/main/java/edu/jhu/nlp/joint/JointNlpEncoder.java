@@ -82,11 +82,9 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
                 new BitshiftDepParseFeatureExtractor(prm.fePrm.bsDpFePrm, sent, cs, ofc) :
                 new DepParseFeatureExtractor(prm.fePrm.dpFePrm, sent, cs, ofc.getFeAlphabet());
         dpFe = new FeatureCache(dpFe);
-        ObsFeatureExtractor relFe = new RelObsFe(prm.fgPrm.relPrm.fePrm, sent, ofc.getTemplates());
-        relFe = new ObsFeatureCache(relFe);
         
         // Construct the factor graph.
-        JointNlpFactorGraph fg = new JointNlpFactorGraph(prm.fgPrm, sent, cs, srlFe, ofc, dpFe, relFe);
+        JointNlpFactorGraph fg = new JointNlpFactorGraph(prm.fgPrm, sent, cs, srlFe, ofc, dpFe);
         log.trace("Number of variables: " + fg.getNumVars() + " Number of factors: " + fg.getNumFactors() + " Number of edges: " + fg.getNumEdges());
 
         // Get the variable assignments given in the training data.
@@ -116,7 +114,6 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
             ex = new UnlabeledFgExample(fg, srlFe, fts);
         }
         dpFe.init(ex);
-        relFe.init(ex, fts);
         return ex;
     }
 

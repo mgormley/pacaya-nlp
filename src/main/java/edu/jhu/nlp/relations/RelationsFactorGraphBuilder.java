@@ -11,14 +11,21 @@ import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.fcm.FcmFactor;
+import edu.jhu.nlp.relations.WordFeatures.EmbFeatType;
+import edu.jhu.nlp.relations.WordFeatures.WordFeaturesPrm;
+import edu.jhu.nlp.relations.RelObsFe.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
+import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 
 public class RelationsFactorGraphBuilder {
@@ -27,7 +34,16 @@ public class RelationsFactorGraphBuilder {
 
     public static class RelationsFactorGraphBuilderPrm extends Prm {
         private static final long serialVersionUID = 1L;
-        public RelObsFePrm fePrm = new RelObsFePrm();
+        @Opt(hasArg=true, description="Whether to use the standard binary features.")
+        public boolean useZhou05Features = true;
+        @Opt(hasArg=true, description="Whether to use the embedding FCM features.")
+        public boolean useEmbeddingFeatures = true;
+        @Opt(hasArg=true, description="Whether to use fine tuning for the FCM.")
+        public boolean fcmFineTuning = false;
+        @Opt(hasArg=true, description="The feature set for embeddings.")
+        public EmbFeatType embFeatType = EmbFeatType.FULL;   
+        @Opt(hasArg=true, description="What to replace removed entity types with.")
+        public EntityTypeRepl entityTypeRepl = EntityTypeRepl.NONE;        
     }
     
     public enum RelationFactorType {
@@ -66,7 +82,7 @@ public class RelationsFactorGraphBuilder {
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, ObsFeatureConjoiner cj, FactorGraph fg, CorpusStatistics cs, ObsFeatureExtractor obsFe) {
+    public void build(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
         relVars = new ArrayList<>();
         
         // Create relation variables.
@@ -86,10 +102,33 @@ public class RelationsFactorGraphBuilder {
             rvs.add(rv);
             relVars.add(rv);
         }
-        
-        // Create a unary factor for each relation variable.
+            	
+        // Exponential family factor's feature extractor.
+        RelObsFePrm relPrm = new RelObsFePrm();
+        relPrm.entityTypeRepl = prm.entityTypeRepl;
+        relPrm.useZhou05Features = prm.useZhou05Features;
+        ObsFeatureExtractor relFe = new RelObsFe(relPrm, sent, ofc.getTemplates());
+    	relFe = new ObsFeatureCache(relFe);
+    	
+    	// FCM's feature extractor.
+    	WordFeatures wordFe = null;
+    	if (prm.useEmbeddingFeatures) {
+    	    WordFeaturesPrm wordPrm = new WordFeaturesPrm();
+            wordPrm.embFeatType = prm.embFeatType;
+            wordPrm.entityTypeRepl = prm.entityTypeRepl;
+            // TODO: Does this work correctly?
+            final FeatureNames alphabet = ofc.fcmAlphabet;
+            wordFe = new WordFeatures(wordPrm, sent, alphabet);
+    	}
+    	
+        // Create unary factors for each relation variable.
         for (RelVar rv : rvs) {
-            fg.addFactor(new ObsFeTypedFactor(new VarSet(rv), RelationFactorType.RELATION, cj, obsFe));
+            VarSet vars = new VarSet(rv);
+            // Even if the interesting features are turned off, we still want the bias feature from this factor.
+            fg.addFactor(new ObsFeTypedFactor(vars, RelationFactorType.RELATION, ofc, relFe));
+            if (prm.useEmbeddingFeatures) {                
+                fg.addFactor(new FcmFactor(vars, sent, embeddings, ofc, prm.fcmFineTuning, wordFe));
+            }
         }
     }
     

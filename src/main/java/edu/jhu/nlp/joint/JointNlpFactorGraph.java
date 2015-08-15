@@ -65,17 +65,17 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
 
-    public JointNlpFactorGraph(JointFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs, ObsFeatureExtractor srlFe, ObsFeatureConjoiner ofc, FeatureExtractor dpFe, ObsFeatureExtractor relFe) {
+    public JointNlpFactorGraph(JointFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs, ObsFeatureExtractor srlFe, 
+            ObsFeatureConjoiner ofc, FeatureExtractor dpFe) {
         this.prm = prm;
-        build(sent, cs, srlFe, ofc, dpFe, relFe, this);
+        build(sent, cs, srlFe, ofc, dpFe, this);
     }
 
     /**
      * Adds factors and variables to the given factor graph.
      */
     public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureExtractor srlFe,
-            ObsFeatureConjoiner ofc, FeatureExtractor dpFe,  ObsFeatureExtractor relFe, 
-            FactorGraph fg) {
+            ObsFeatureConjoiner ofc, FeatureExtractor dpFe, FactorGraph fg) {
         this.n = sent.size();
 
         if (prm.includeDp) {
@@ -88,7 +88,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         }
         if (prm.includeRel ) {
             rel = new RelationsFactorGraphBuilder(prm.relPrm);
-            rel.build(sent, ofc, fg, cs, relFe);
+            rel.build(sent, ofc, fg, cs);
         }
         
         if (prm.includeDp && prm.includeSrl) {

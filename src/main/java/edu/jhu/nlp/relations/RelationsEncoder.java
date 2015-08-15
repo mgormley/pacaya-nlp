@@ -44,9 +44,7 @@ public class RelationsEncoder implements Encoder<AnnoSentence, List<String>> {
     private LFgExample getExample(AnnoSentence sent, List<String> rels, boolean labeledExample) {
         RelationsFactorGraphBuilder rfgb = new RelationsFactorGraphBuilder(prm);
         FactorGraph fg = new FactorGraph();
-        ObsFeatureExtractor relFe = new RelObsFe(prm.fePrm, sent, ofc.getTemplates());
-        relFe = new ObsFeatureCache(relFe);
-        rfgb.build(sent, ofc, fg, cs, relFe);
+        rfgb.build(sent, ofc, fg, cs);
         
         VarConfig vc = new VarConfig();
         if (rels != null) {
