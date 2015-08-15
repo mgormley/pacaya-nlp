@@ -11,11 +11,12 @@ import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.fcm.FcmFactor;
-import edu.jhu.nlp.relations.WordFeatures.EmbFeatType;
-import edu.jhu.nlp.relations.WordFeatures.WordFeaturesPrm;
 import edu.jhu.nlp.relations.RelObsFe.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
+import edu.jhu.nlp.relations.WordFeatures.EmbFeatType;
+import edu.jhu.nlp.relations.WordFeatures.WordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
@@ -127,7 +128,7 @@ public class RelationsFactorGraphBuilder {
             // Even if the interesting features are turned off, we still want the bias feature from this factor.
             fg.addFactor(new ObsFeTypedFactor(vars, RelationFactorType.RELATION, ofc, relFe));
             if (prm.useEmbeddingFeatures) {                
-                fg.addFactor(new FcmFactor(vars, sent, embeddings, ofc, prm.fcmFineTuning, wordFe));
+                fg.addFactor(new FcmFactor(vars, sent, (Embeddings)ofc.embeddings, ofc, prm.fcmFineTuning, wordFe));
             }
         }
     }

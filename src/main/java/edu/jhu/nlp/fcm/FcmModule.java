@@ -11,9 +11,11 @@ import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.pacaya.autodiff.AbstractModule;
 import edu.jhu.pacaya.autodiff.MVec;
 import edu.jhu.pacaya.autodiff.Module;
+import edu.jhu.pacaya.autodiff.Tensor;
 import edu.jhu.pacaya.autodiff.VTensor;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.MVecFgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
@@ -90,8 +92,9 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     @Override
     public VarTensor forward() {
         IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
-        VTensor param = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
-        VTensor embed = new VTensor(modIn.getAlgebra(), param.size() + paramOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
+        // The embeddings must always come first because of how we initialize.
+        VTensor embed = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
+        VTensor param = new VTensor(modIn.getAlgebra(), embed.size() + paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
         
         scores = new VarTensor(RealAlgebra.getInstance(), vars);
         assert scores.size() == numLabels;
@@ -144,11 +147,11 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     @Override
     public void backward() {
         IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
-        VTensor param = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
-        VTensor embed = new VTensor(modIn.getAlgebra(), param.size() + paramOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
+        VTensor embed = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
+        VTensor param = new VTensor(modIn.getAlgebra(), embed.size() + paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
         IntDoubleVector modelParamsAdj = modIn.getOutputAdj().getModel().getParams();
-        VTensor paramAdj = new VTensor(modIn.getAlgebra(), paramOffset, modelParamsAdj, numLabels, embedDim, numFeats); // T_{y,k,d}
-        VTensor embedAdj = new VTensor(modIn.getAlgebra(), param.size() + paramOffset, modelParamsAdj, numWordTypes, embedDim); // e_{w_i,d}
+        VTensor embedAdj = new VTensor(modIn.getAlgebra(), paramOffset, modelParamsAdj, numWordTypes, embedDim); // e_{w_i,d}
+        VTensor paramAdj = new VTensor(modIn.getAlgebra(), embedAdj.size() + paramOffset, modelParamsAdj, numLabels, embedDim, numFeats); // T_{y,k,d}
         
         // Backprop to scores.
         // dG/s_y = dG/d\psi_{FCM}(y) exp(s_y)
@@ -201,4 +204,13 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         return QLists.getList(modIn);
     }
 
+    /** Initializes a model with embeddings. */
+    public static void initModelWithEmbeds(Embeddings embeddings, FgModel model, ObsFeatureConjoiner ofc) {
+        int offset = ofc.getReservedOffset();
+        Tensor e = embeddings.getEmbeddings();
+        for (int i=0; i<e.size(); i++) {
+            model.getParams().set(offset + i, e.getValue(i));
+        }
+    }
+    
 }

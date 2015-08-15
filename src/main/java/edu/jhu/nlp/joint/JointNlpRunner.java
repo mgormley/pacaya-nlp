@@ -406,10 +406,9 @@ public class JointNlpRunner {
         // The pre-processing pipeline for gold data.
         AnnoPipeline prep = new AnnoPipeline();
         JointNlpAnnotatorPrm prm = getJointNlpAnnotatorPrm();
-        JointNlpAnnotator jointAnno = new JointNlpAnnotator(prm);
-        if (modelIn != null) {
-            jointAnno.loadModel(modelIn);
-        }
+        // Optional annotators.
+        JointNlpAnnotator jointAnno = null;
+        EmbeddingsAnnotator embedAnno  = null;
         {
             // Pre-processing.
             RelationMunger relMunger = new RelationMunger(parser.getInstanceFromParsedArgs(RelationMungerPrm.class));
@@ -439,7 +438,8 @@ public class JointNlpRunner {
             }
             // Add word embeddings.
             if (embeddingsFile != null) {
-                anno.add(new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm()));
+                embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm());
+                anno.add(embedAnno);
             } else {
                 log.debug("No embeddings file specified.");
             }
@@ -476,13 +476,17 @@ public class JointNlpRunner {
                 srlPrm.predictPredPos = true;
                 srlPrm.predictSense = false;
                 srlPrm.roleStructure = RoleStructure.NO_ROLES;
-                anno.add(new JointNlpAnnotator(prm2));
+                anno.add(new JointNlpAnnotator(prm2, embedAnno.getEmbeddings()));
                 // Don't predict SRL predicate position in the main jointAnno below.
                 prm.buPrm.fgPrm.srlPrm.predictPredPos = false;
                 prm.buPrm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
             }
             if (jointModel) {
                 // Various NLP annotations.
+                jointAnno = new JointNlpAnnotator(prm, embedAnno.getEmbeddings());
+                if (modelIn != null) {
+                    jointAnno.loadModel(modelIn);
+                }
                 anno.add(jointAnno);
             }
             // Post-processing.
@@ -541,10 +545,10 @@ public class JointNlpRunner {
                 anno.train(trainInput, trainGold, devInput, devGold);
                 
                 // Save the model.
-                if (modelOut != null) {
+                if (jointAnno != null && modelOut != null) {
                     jointAnno.saveModel(modelOut);
                 }
-                if (printModel != null) {
+                if (jointAnno != null && printModel != null) {
                     jointAnno.printModel(printModel);
                 }
                 if (pipeOut != null) {
