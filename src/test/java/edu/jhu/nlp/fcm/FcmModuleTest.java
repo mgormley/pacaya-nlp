@@ -9,6 +9,8 @@ import org.junit.Test;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
+import edu.jhu.nlp.embed.EmbeddingsAnnotator;
+import edu.jhu.nlp.embed.EmbeddingsAnnotator.EmbeddingsAnnotatorPrm;
 import edu.jhu.pacaya.autodiff.ModuleTestUtils;
 import edu.jhu.pacaya.autodiff.Tensor;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
@@ -52,13 +54,13 @@ public class FcmModuleTest {
         FgModel grad = id1.getOutputAdj().getModel();
         System.out.println(grad);
         assertEquals(0, grad.getParams().get(0), 1e-1);
-        assertEquals(0.1493196192412, grad.getParams().get(1), 1e-1);
-        assertEquals(0.2874402670393, grad.getParams().get(2), 1e-1);
-        assertEquals(0.1381206477981, grad.getParams().get(3), 1e-1);
-        assertEquals(0.2732056769633, grad.getParams().get(10), 1e-1);
-        assertEquals(0.1245876796231, grad.getParams().get(20), 1e-1);
-        assertEquals(0.2567501458544, grad.getParams().get(30), 1e-1);
-        assertEquals(2.616507072526, grad.getParams().get(42), 1e-1);
+        assertEquals(9.442323386670, grad.getParams().get(1), 1e-1);
+        assertEquals(2.953415694252, grad.getParams().get(2), 1e-1);
+        assertEquals(1.944146916061, grad.getParams().get(3), 1e-1);
+        assertEquals(0.1381206477981, grad.getParams().get(10), 1e-1);
+        assertEquals(0.2657589895744, grad.getParams().get(20), 1e-1);
+        assertEquals(0.1216213062987, grad.getParams().get(30), 1e-1);
+        assertEquals(0.1205595922969, grad.getParams().get(42), 1e-1);
     }
     
     @Test
@@ -72,10 +74,15 @@ public class FcmModuleTest {
     
     public static Pair<FgModelIdentity,FcmModule> getFcm1(Algebra s) {
         // Model - 1 offset, 4*3*3 tensor, 2*3 embeddings.
-        FgModel model = new FgModel(1 + 4*3*3 + 2*3);
+        int numTParams = 4*3*3;
+        int numEParams = 2*3;
+        FgModel model = new FgModel(1 + numEParams + numTParams);
         model.fill(0.0);
-        for (int i=0; i<model.getNumParams(); i++) {
-            model.getParams().set(i, 1.0 / i);
+        for (int i = 1; i < 1 + numEParams; i++) {
+            model.getParams().set(i, 1.0 / (i + numTParams));
+        }
+        for (int i = 1 + numEParams; i < 1 + numEParams + numTParams; i++) {
+            model.getParams().set(i, 1.0 / (i - numEParams));
         }
         FgModelIdentity id1 = new FgModelIdentity(model);
         // Features
@@ -102,12 +109,15 @@ public class FcmModuleTest {
         Tensor e = new Tensor(RealAlgebra.getInstance(), 2, 3);
         e.fill(2); // ignored
         Embeddings embeds = new Embeddings(e, map);
+        // Annotate sentence w/Embeddings
+        EmbeddingsAnnotatorPrm prm = new EmbeddingsAnnotatorPrm();
+        EmbeddingsAnnotator anno = new EmbeddingsAnnotator(prm, embeds);
+        anno.annotate(sent);
         
         FcmModule fcm = new FcmModule(id1, s, feats, alphabet, vars, sent, embeds, 1, true, null);
         return new Pair<>(id1, fcm);
     }
     
-
     @Test
     public void testSimple2() {
         Algebra s = LogSemiring.getInstance();
@@ -145,10 +155,15 @@ public class FcmModuleTest {
 
     public static Pair<FgModelIdentity,FcmModule> getFcm2(Algebra s) {
         // Model - 1 offset, 2*2*1 tensor, 2*1 embeddings.
-        FgModel model = new FgModel(1 + 2*2*1 + 2*1);
+        int numTParams = 2*2*1;
+        int numEParams = 2*1;
+        FgModel model = new FgModel(1 + numEParams + numTParams);
         model.fill(0.0);
-        for (int i=0; i<model.getNumParams(); i++) {
-            model.getParams().set(i, i);
+        for (int i = 1; i < 1 + numEParams; i++) {
+            model.getParams().set(i, i + numTParams);
+        }
+        for (int i = 1 + numEParams; i < 1 + numEParams + numTParams; i++) {
+            model.getParams().set(i, i - numEParams);
         }
         FgModelIdentity id1 = new FgModelIdentity(model);
         // Features
@@ -173,6 +188,10 @@ public class FcmModuleTest {
         Tensor e = new Tensor(RealAlgebra.getInstance(), 2, 1);
         e.fill(2); // ignored
         Embeddings embeds = new Embeddings(e, map);
+        // Annotate sentence w/Embeddings
+        EmbeddingsAnnotatorPrm prm = new EmbeddingsAnnotatorPrm();
+        EmbeddingsAnnotator anno = new EmbeddingsAnnotator(prm, embeds);
+        anno.annotate(sent);
         
         FcmModule fcm = new FcmModule(id1, s, feats, alphabet, vars, sent, embeds, 1, true, null);
         return new Pair<>(id1, fcm);

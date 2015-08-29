@@ -53,6 +53,14 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
             log.info("Entity-specific embeddings enabled");
         }
     }
+    
+    public EmbeddingsAnnotator(EmbeddingsAnnotatorPrm prm, Embeddings embeddings) {
+        if (prm.embeddingsFile != null) {
+            throw new IllegalArgumentException("Embeddings already provided, so embeddingsFile shouldn't be set.");
+        }
+        this.prm = prm;
+        this.embeddings = embeddings;
+    }
 
     @Override
     public void annotate(AnnoSentenceCollection sents) {
