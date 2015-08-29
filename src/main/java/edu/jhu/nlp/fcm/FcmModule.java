@@ -58,7 +58,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     private final int numLabels;
     // Model parameter offset.
     private final int embedOffset;
-    private final int paramOffset;
+    private final int tparamOffset;
     
     private VarTensor toUpdate; // TODO: Remove this hack.
     
@@ -81,7 +81,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         
         // Model parameter offset.
         this.embedOffset = paramOffset;
-        this.paramOffset = numWordTypes * embedDim + embedOffset;
+        this.tparamOffset = numWordTypes * embedDim + embedOffset;
         
         this.toUpdate = toUpdate;
     }
@@ -103,14 +103,14 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
         // The embeddings must always come first because of how we initialize.
         VTensor embed = new VTensor(modIn.getAlgebra(), embedOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
-        VTensor param = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
+        VTensor tparam = new VTensor(modIn.getAlgebra(), tparamOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
 
         scores = new VarTensor(RealAlgebra.getInstance(), vars);
         assert scores.size() == numLabels;
 
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
-            int w_i = sent.getEmbed(i);
+            int w_i = sent.getEmbedId(i);
             if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
             // Loop over labels.
@@ -125,11 +125,11 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
                         assert 0 <= k && k < numFeats;
                         // Add to the factor score.
                         // s_y += T_{y,k,d} f_{i,k} e_{w_i,d} \forall y
-                        double score = param.get(y, d, k) * e_wi_d * f_ik;
+                        double score = tparam.get(y, d, k) * e_wi_d * f_ik;
                         scores.add(score, y);
                         if (log.isTraceEnabled()) {
                             log.trace("i={} y={} d={} k={} s_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
-                                    i, y, d, k, score, param.get(y, d, k), e_wi_d, f_ik);
+                                    i, y, d, k, score, tparam.get(y, d, k), e_wi_d, f_ik);
                         }
                     }
                 }
@@ -168,10 +168,10 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     public void backward() {
         IntDoubleVector modelParams = modIn.getOutput().getModel().getParams();
         VTensor embed = new VTensor(modIn.getAlgebra(), embedOffset, modelParams, numWordTypes, embedDim); // e_{w_i,d}
-        VTensor param = new VTensor(modIn.getAlgebra(), paramOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
+        VTensor tparam = new VTensor(modIn.getAlgebra(), tparamOffset, modelParams, numLabels, embedDim, numFeats); // T_{y,k,d}
         IntDoubleVector modelParamsAdj = modIn.getOutputAdj().getModel().getParams();
         VTensor embedAdj = fineTuning ? new VTensor(modIn.getAlgebra(), embedOffset, modelParamsAdj, numWordTypes, embedDim) : null; // e_{w_i,d}
-        VTensor paramAdj = new VTensor(modIn.getAlgebra(), paramOffset, modelParamsAdj, numLabels, embedDim, numFeats); // T_{y,k,d}
+        VTensor tparamAdj = new VTensor(modIn.getAlgebra(), tparamOffset, modelParamsAdj, numLabels, embedDim, numFeats); // T_{y,k,d}
         
         // Backprop to scores.
         // dG/s_y = dG/d\psi_{FCM}(y) exp(s_y)
@@ -189,7 +189,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
 
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
-            int w_i = sent.getEmbed(i);
+            int w_i = sent.getEmbedId(i);
             if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
             // Loop over labels.
@@ -207,16 +207,16 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
                         // dG/dT_{y,k,d} = dG/ds_y ds_y/dT_{y,k,d} 
                         //               = dG/ds_y (\sum_{i=1}^N f_{i,k} e_{w_i,d}) \forall y,k,d
                         double tadd = scoresAdj.get(y) * f_ik * e_wi_d;
-                        paramAdj.add(tadd, y, d, k);
+                        tparamAdj.add(tadd, y, d, k);
                         if (fineTuning) {
                             // dG/de_{w_i,d} = \sum_y dG/ds_y ds_y/dT_{y,k,d} 
                             //               = \sum_y dG/ds_y (\sum_{k=1}^K T_{y,k,d} f_{i,k}) \forall i,d
-                            double eadd = scoresAdj.get(y) * param.get(y, d, k) * f_ik;
+                            double eadd = scoresAdj.get(y) * tparam.get(y, d, k) * f_ik;
                             embedAdj.add(eadd, w_i, d);
                         }
                         if (log.isTraceEnabled()) {
                             log.trace("tadd={} dG/ds_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
-                                    tadd, scoresAdj.get(y), param.get(y, d, k), e_wi_d, f_ik);
+                                    tadd, scoresAdj.get(y), tparam.get(y, d, k), e_wi_d, f_ik);
                         }
                     }
                 }

@@ -80,7 +80,7 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
             }
             numLookups.incrementAndGet();
         }
-        sent.setEmbeds(embeds);
+        sent.setEmbedIds(embeds);
     }
 
     protected List<String> getWords(AnnoSentence sent) {
@@ -121,7 +121,7 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
     
     @Override
     public Set<AT> getAnnoTypes() {
-        return QSets.getSet(AT.EMBED);
+        return QSets.getSet(AT.EMBED_IDX);
     }
     
     public Embeddings getEmbeddings() {
