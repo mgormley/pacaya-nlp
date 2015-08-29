@@ -233,13 +233,13 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
     public static void initModelWithEmbeds(Embeddings embeddings, FgModel model, ObsFeatureConjoiner ofc) {
         int offset = ofc.getReservedOffset();
         Tensor e = embeddings.getEmbeddings();
-        for (int i=0; i<e.getDim(0); i++) {
+        for (int i=0; i<e.size(); i++) {
             if (offset + i >= model.getNumParams()) { 
                 throw new RuntimeException("Invalid model parameter index: " + (offset + i));
             }
             model.getParams().set(offset + i, e.getValue(i));
         }
-        log.debug("Initialized model parameters in range [{}, {}]", offset, offset+e.getDim(0));
+        log.debug("Initialized model parameters in range [{}, {}]", offset, offset+e.size());
     }
     
 }
