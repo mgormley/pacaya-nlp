@@ -17,9 +17,7 @@ import edu.jhu.nlp.relations.RelObsFe.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
 import edu.jhu.nlp.relations.WordFeatures.EmbFeatType;
 import edu.jhu.nlp.relations.WordFeatures.WordFeaturesPrm;
-import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -108,8 +106,7 @@ public class RelationsFactorGraphBuilder {
         RelObsFePrm relPrm = new RelObsFePrm();
         relPrm.entityTypeRepl = prm.entityTypeRepl;
         relPrm.useZhou05Features = prm.useZhou05Features;
-        ObsFeatureExtractor relFe = new RelObsFe(relPrm, sent, ofc.getTemplates());
-    	relFe = new ObsFeatureCache(relFe);
+        RelObsFe relFe = new RelObsFe(relPrm, sent, ofc.getTemplates());
     	
     	// FCM's feature extractor.
     	WordFeatures wordFe = null;
@@ -131,7 +128,6 @@ public class RelationsFactorGraphBuilder {
                 fg.addFactor(new FcmFactor(vars, sent, (Embeddings)ofc.embeddings, ofc, prm.fcmFineTuning, wordFe));
             }
         }
-        ((ObsFeatureCache)relFe).init(fg);
     }
     
     public List<RelVar> getRelVars() {

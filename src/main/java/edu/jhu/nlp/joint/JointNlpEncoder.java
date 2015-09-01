@@ -13,7 +13,6 @@ import edu.jhu.nlp.depparse.DepParseFeatureExtractor;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
-import edu.jhu.nlp.relations.RelObsFe;
 import edu.jhu.nlp.relations.RelationsEncoder;
 import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.nlp.srl.SrlFeatureExtractor;
@@ -24,9 +23,7 @@ import edu.jhu.pacaya.gm.data.LabeledFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
-import edu.jhu.pacaya.gm.feat.FeatureCache;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
-import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.VarConfig;
@@ -76,12 +73,10 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
     private LFgExample getExample(AnnoSentence sent, AnnoSentence gold, boolean labeledExample) {
         // Create a feature extractor for this example.
         // TODO: We should only create the feature extractors for parts of the model we're going to instantiate.
-        ObsFeatureExtractor srlFe = new SrlFeatureExtractor(prm.fePrm.srlFePrm, sent, cs);
-        srlFe = new ObsFeatureCache(srlFe);        
+        ObsFeatureExtractor srlFe = new SrlFeatureExtractor(prm.fePrm.srlFePrm, sent, cs, ofc.getTemplates());
         FeatureExtractor dpFe = prm.fePrm.dpFePrm.onlyFast ?
                 new BitshiftDepParseFeatureExtractor(prm.fePrm.bsDpFePrm, sent, cs, ofc) :
                 new DepParseFeatureExtractor(prm.fePrm.dpFePrm, sent, cs, ofc.getFeAlphabet());
-        dpFe = new FeatureCache(dpFe);
         
         // Construct the factor graph.
         JointNlpFactorGraph fg = new JointNlpFactorGraph(prm.fgPrm, sent, cs, srlFe, ofc, dpFe);
@@ -109,11 +104,10 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         LFgExample ex;
         FactorTemplateList fts = ofc.getTemplates();
         if (labeledExample) {
-            ex = new LabeledFgExample(fg, vc, srlFe, fts);
+            ex = new LabeledFgExample(fg, vc, fts);
         } else {
-            ex = new UnlabeledFgExample(fg, srlFe, fts);
+            ex = new UnlabeledFgExample(fg, fts);
         }
-        dpFe.init(ex);
         return ex;
     }
 

@@ -61,9 +61,6 @@ public class DepParseFeatureExtractor implements FeatureExtractor {
         this.alphabet = alphabet;
     }
 
-    @Override
-    public void init(UFgExample ex) { }
-    
     private final FeatureVector emptyFv = new FeatureVector();
 
     @Override

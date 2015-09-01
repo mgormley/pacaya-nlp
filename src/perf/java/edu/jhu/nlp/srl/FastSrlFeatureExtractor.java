@@ -36,11 +36,6 @@ public class FastSrlFeatureExtractor implements ObsFeatureExtractor {
     }
 
     @Override
-    public void init(UFgExample ex, FactorTemplateList fts) {
-        this.fts = fts;
-    }
-    
-    @Override
     public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
         ObsFeTypedFactor f = (ObsFeTypedFactor) factor;
         FeatureNames alphabet = fts.getTemplate(f).getAlphabet();

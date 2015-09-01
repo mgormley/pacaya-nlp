@@ -74,9 +74,6 @@ public class BitshiftDepParseFeatureExtractor implements FeatureExtractor {
     }
 
     @Override
-    public void init(UFgExample ex) { }
-    
-    @Override
     public FeatureVector calcFeatureVector(FeExpFamFactor factor, int configId) {        
         FeTypedFactor f = (FeTypedFactor) factor;
         Enum<?> ft = f.getFactorType();

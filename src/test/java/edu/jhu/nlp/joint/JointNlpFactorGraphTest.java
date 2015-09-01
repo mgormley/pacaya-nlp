@@ -357,7 +357,6 @@ public class JointNlpFactorGraphTest {
         
         JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe);
         
-        fe.init(new UnlabeledFgExample(fg));
         return fg;
     }
     

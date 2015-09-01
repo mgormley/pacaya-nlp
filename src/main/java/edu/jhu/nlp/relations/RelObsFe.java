@@ -68,11 +68,6 @@ public class RelObsFe implements ObsFeatureExtractor {
     }
     
     @Override
-    public void init(UFgExample ex, FactorTemplateList fts) {
-        return;
-    }
-
-    @Override
     public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
         final FeatureNames alphabet = fts.getTemplate(factor).getAlphabet();
         RelVar rv = (RelVar) factor.getVars().get(0);        

@@ -10,7 +10,6 @@ import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.LabeledFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
-import edu.jhu.pacaya.gm.feat.FeatureCache;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
@@ -57,7 +56,6 @@ public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
         FeatureExtractor fe = prm.dpFePrm.onlyFast ?
                 new BitshiftDepParseFeatureExtractor(prm.bsDpFePrm, sent, cs, ofc) :
                 new DepParseFeatureExtractor(prm.dpFePrm, sent, cs, ofc.getFeAlphabet());
-        fe = new FeatureCache(fe);
         
         FactorGraph fg = new FactorGraph();
         DepParseFactorGraphBuilder dp = new DepParseFactorGraphBuilder(prm.dpPrm);
@@ -66,9 +64,9 @@ public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
         VarConfig goldConfig = new VarConfig();
         addDepParseTrainAssignment(parents, dp, goldConfig);
         if (labeledExample) {
-            return new LabeledFgExample(fg, goldConfig, fe);
+            return new LabeledFgExample(fg, goldConfig);
         } else {
-            return new UnlabeledFgExample(fg, fe);
+            return new UnlabeledFgExample(fg);
         }
     }
     

@@ -67,7 +67,7 @@ public class SrlFeatureExtractorTest {
         SrlFeatureExtractorPrm prm = new SrlFeatureExtractorPrm();
         prm.biasOnly = true;
         prm.featureHashMod = -1; // Disable feature hashing.
-        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, sents.get(0), cs);
+        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, sents.get(0), cs, fts);
         featExt.init(fts);
         for (int a=0; a<sfg.getNumFactors(); a++) {
             Factor f = sfg.getFactor(a);
@@ -193,7 +193,7 @@ public class SrlFeatureExtractorTest {
         prm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
         prm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
         prm.featureHashMod = 2; // Enable feature hashing
-        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, simpleSents.get(0), cs);
+        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, simpleSents.get(0), cs, fts);
         featExt.init(fts);
         for (int a=0; a<sfg.getNumFactors(); a++) {
             Factor f = sfg.getFactor(a);

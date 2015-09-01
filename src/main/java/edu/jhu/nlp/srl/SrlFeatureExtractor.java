@@ -61,16 +61,12 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
     private FactorTemplateList fts;
     private TemplateFeatureExtractor ext;
     
-    public SrlFeatureExtractor(SrlFeatureExtractorPrm prm, AnnoSentence sent, CorpusStatistics cs) {
+    public SrlFeatureExtractor(SrlFeatureExtractorPrm prm, AnnoSentence sent, CorpusStatistics cs, FactorTemplateList fts) {
         this.prm = prm;
         if (prm.useTemplates) {
             FeaturizedSentence fSent = new FeaturizedSentence(sent, cs);
             ext = new TemplateFeatureExtractor(fSent, cs);
         }
-    }
-
-    @Override
-    public void init(UFgExample ex, FactorTemplateList fts) {
         this.fts = fts;
     }
 
