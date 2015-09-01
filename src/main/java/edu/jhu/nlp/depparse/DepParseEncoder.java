@@ -53,13 +53,9 @@ public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
     }
 
     private LFgExample getExample(AnnoSentence sent, int[] parents, boolean labeledExample) {
-        FeatureExtractor fe = prm.dpFePrm.onlyFast ?
-                new BitshiftDepParseFeatureExtractor(prm.bsDpFePrm, sent, cs, ofc) :
-                new DepParseFeatureExtractor(prm.dpFePrm, sent, cs, ofc.getFeAlphabet());
-        
         FactorGraph fg = new FactorGraph();
         DepParseFactorGraphBuilder dp = new DepParseFactorGraphBuilder(prm.dpPrm);
-        dp.build(sent.getWords(), sent.getDepEdgeMask(), fe, fg);
+        dp.build(sent, fg, cs, ofc);
         
         VarConfig goldConfig = new VarConfig();
         addDepParseTrainAssignment(parents, dp, goldConfig);

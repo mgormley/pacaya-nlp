@@ -108,7 +108,7 @@ public class JointNlpAnnotator implements Trainable, Annotator {
         FgExampleList data = builder.getData(trainInput, trainGold);
         
         if (model == null) {
-            model = new JointNlpFgModel(cs, ofc, prm.buPrm.fePrm);
+            model = new JointNlpFgModel(cs, ofc, prm.buPrm.fgPrm);
             if (prm.initParams == InitParams.RANDOM) {
                 log.info("Initializing model with zero-one Gaussian.");
                 model.setRandomStandardNormal();
@@ -218,8 +218,8 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     
     public void loadModel(JointNlpFgModel model) {
         this.model = model;
-        // Restore the feature extractor parameters from the serialized model.
-        prm.buPrm.fePrm = model.getFePrm();
+        // Restore the model settings from the serialized model.
+        prm.buPrm.fgPrm = model.getFgPrm();
     }
 
     public void saveModel(File modelOut) {

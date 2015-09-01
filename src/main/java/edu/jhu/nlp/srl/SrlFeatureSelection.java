@@ -12,14 +12,14 @@ import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.features.TemplateWriter;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector.IGFeatureTemplateSelectorPrm;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector.SrlFeatTemplates;
-import edu.jhu.nlp.joint.JointNlpEncoder;
-import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.joint.JointNlpRunner;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 
@@ -35,10 +35,10 @@ public class SrlFeatureSelection implements Annotator, Trainable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(SrlFeatureSelection.class);
-    private transient JointNlpFeatureExtractorPrm fePrm;
+    private transient JointNlpFactorGraphPrm fgPrm;
 
-    public SrlFeatureSelection(JointNlpFeatureExtractorPrm fePrm) {
-        this.fePrm = fePrm;
+    public SrlFeatureSelection(JointNlpFactorGraphPrm fgPrm) {
+        this.fgPrm = fgPrm;
     }
 
     @Override
@@ -49,16 +49,16 @@ public class SrlFeatureSelection implements Annotator, Trainable {
     @Override
     public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold,
             AnnoSentenceCollection devInput, AnnoSentenceCollection devGold) {
-        featureSelection(trainInput, trainGold, fePrm);
+        featureSelection(trainInput, trainGold, fgPrm);
     }
 
     /**
      * Do feature selection and update fePrm with the chosen feature templates.
      */
-    private static void featureSelection(AnnoSentenceCollection inputSents, AnnoSentenceCollection goldSents, JointNlpFeatureExtractorPrm fePrm)  {
-        SrlFeatureExtractorPrm srlFePrm = fePrm.srlFePrm;
+    private static void featureSelection(AnnoSentenceCollection inputSents, AnnoSentenceCollection goldSents, JointNlpFactorGraphPrm fgPrm)  {
+        SrlFeatureExtractorPrm srlFePrm = fgPrm.srlPrm.srlFePrm;
         // Remove annotation types from the features which are explicitly excluded.
-        removeAts(fePrm);
+        removeAts(fgPrm);
         if (JointNlpRunner.useTemplates && JointNlpRunner.featureSelection) {
             CorpusStatisticsPrm csPrm = JointNlpRunner.getCorpusStatisticsPrm();
             
@@ -66,11 +66,13 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             SrlFeatTemplates sft = new SrlFeatTemplates(srlFePrm.soloTemplates, srlFePrm.pairTemplates, null);
             IGFeatureTemplateSelector ig = new IGFeatureTemplateSelector(prm);
             sft = ig.getFeatTemplatesForSrl(inputSents, goldSents, csPrm, sft);
-            fePrm.srlFePrm.soloTemplates = sft.srlSense;
-            fePrm.srlFePrm.pairTemplates = sft.srlArg;
+            // Set the chosen templates for SRL.
+            fgPrm.srlPrm.srlFePrm.soloTemplates = sft.srlSense;
+            fgPrm.srlPrm.srlFePrm.pairTemplates = sft.srlArg;
         }
         if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
-            fePrm.dpFePrm.firstOrderTpls = srlFePrm.pairTemplates;
+            // Set the chosen templates for dependencing parsing.
+            fgPrm.dpPrm.dpFePrm.firstOrderTpls = srlFePrm.pairTemplates;
         }
         if (JointNlpRunner.useTemplates) {
             log.info("Num sense feature templates: " + srlFePrm.soloTemplates.size());
@@ -84,7 +86,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
         }
     }
 
-    private static void removeAts(JointNlpEncoder.JointNlpFeatureExtractorPrm fePrm) {
+    private static void removeAts(JointNlpFactorGraphPrm fgPrm) {
         Set<AT> ats = new HashSet<>();
         ats.addAll(CorpusHandler.getRemoveAts());
         ats.addAll(CorpusHandler.getLatAts()); 
@@ -95,10 +97,12 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             ats.add(AT.BROWN);
         }
         for (AT at : ats) {
-            fePrm.srlFePrm.soloTemplates = TemplateLanguage.filterOutRequiring(fePrm.srlFePrm.soloTemplates, at);
-            fePrm.srlFePrm.pairTemplates   = TemplateLanguage.filterOutRequiring(fePrm.srlFePrm.pairTemplates, at);
-            fePrm.dpFePrm.firstOrderTpls = TemplateLanguage.filterOutRequiring(fePrm.dpFePrm.firstOrderTpls, at);
-            fePrm.dpFePrm.secondOrderTpls   = TemplateLanguage.filterOutRequiring(fePrm.dpFePrm.secondOrderTpls, at);
+            SrlFeatureExtractorPrm srlFePrm = fgPrm.srlPrm.srlFePrm;
+            DepParseFeatureExtractorPrm dpFePrm = fgPrm.dpPrm.dpFePrm;
+            fgPrm.srlPrm.srlFePrm.soloTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.soloTemplates, at);
+            fgPrm.srlPrm.srlFePrm.pairTemplates   = TemplateLanguage.filterOutRequiring(srlFePrm.pairTemplates, at);
+            fgPrm.dpPrm.dpFePrm.firstOrderTpls = TemplateLanguage.filterOutRequiring(dpFePrm.firstOrderTpls, at);
+            fgPrm.dpPrm.dpFePrm.secondOrderTpls   = TemplateLanguage.filterOutRequiring(dpFePrm.secondOrderTpls, at);
         }
     }
     

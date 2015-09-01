@@ -6,7 +6,9 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
+import edu.jhu.nlp.depparse.DepParseFeatureExtractor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
@@ -14,9 +16,7 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
-import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
@@ -37,10 +37,10 @@ public class JointNlpFactorGraph extends FactorGraph {
     private static final Logger log = LoggerFactory.getLogger(JointNlpFactorGraph.class); 
 
     /**
-     * Parameters for the SrlFactorGraph.
+     * Parameters for the {@link JointNlpFactorGraph}.
      * @author mgormley
      */
-    public static class JointFactorGraphPrm extends Prm {
+    public static class JointNlpFactorGraphPrm extends Prm {
         private static final long serialVersionUID = 1L;
         public boolean includeDp = true;
         public DepParseFactorGraphBuilderPrm dpPrm = new DepParseFactorGraphBuilderPrm();
@@ -55,7 +55,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     }
     
     // Parameters for constructing the factor graph.
-    private JointFactorGraphPrm prm;
+    private JointNlpFactorGraphPrm prm;
 
     // The sentence length.
     private int n;
@@ -65,26 +65,25 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
 
-    public JointNlpFactorGraph(JointFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs, ObsFeatureExtractor srlFe, 
-            ObsFeatureConjoiner ofc, FeatureExtractor dpFe) {
+    public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc) {
         this.prm = prm;
-        build(sent, cs, srlFe, ofc, dpFe, this);
+        build(sent, cs, ofc, this);
     }
 
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureExtractor srlFe,
-            ObsFeatureConjoiner ofc, FeatureExtractor dpFe, FactorGraph fg) {
+    public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
+            FactorGraph fg) {
         this.n = sent.size();
-
+        
         if (prm.includeDp) {
             dp = new DepParseFactorGraphBuilder(prm.dpPrm);
-            dp.build(sent, dpFe, fg);
+            dp.build(sent, fg, cs, ofc);
         }
         if (prm.includeSrl) {
             srl = new SrlFactorGraphBuilder(prm.srlPrm); 
-            srl.build(sent, cs, srlFe, ofc, fg);
+            srl.build(sent, cs, ofc, fg);
         }
         if (prm.includeRel ) {
             rel = new RelationsFactorGraphBuilder(prm.relPrm);
@@ -100,7 +99,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                     if (i != -1) {
                         // Add binary factors between Roles and Links.
                         if (roleVars[i][j] != null && childVars[i][j] != null) {
-                            addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), JointFactorTemplate.LINK_ROLE_BINARY, ofc, srlFe));
+                            addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
                         }
                     }
                 }

@@ -75,22 +75,24 @@ public class DepParseFeatureExtractor implements FeatureExtractor {
         }
 
         ArrayList<String> obsFeats = new ArrayList<String>();
-        if (!prm.onlyTrueEdges || !ArrayUtils.contains(vc, LinkVar.FALSE)) {                
-            // Get the observation features.
-            if (ft == DepParseFactorTemplate.UNARY) {
-                // Look at the variables to determine the parent and child.
-                LinkVar var = (LinkVar) vars.get(0);
-                int pidx = var.getParent();
-                int cidx = var.getChild();
-                ext.addFeatures(prm.firstOrderTpls, LocalObservations.newPidxCidx(pidx, cidx), obsFeats);
-            } else if (ft == DepParseFactorTemplate.ARBITRARY_SIBLING) {
-                SibFeTypedFactor f2 = (SibFeTypedFactor)f;
-                ext.addFeatures(prm.secondOrderTpls, LocalObservations.newPidxCidxMidx(f2.p, f2.c, f2.s), obsFeats);
-            } else if (ft == DepParseFactorTemplate.GRANDPARENT) {
-                GraFeTypedFactor f2 = (GraFeTypedFactor)f;
-                ext.addFeatures(prm.secondOrderTpls, LocalObservations.newPidxCidxMidx(f2.p, f2.c, f2.g), obsFeats);
-            } else {
-                throw new RuntimeException("Unsupported template: " + ft);
+        if (!prm.biasOnly) {
+            if (!prm.onlyTrueEdges || !ArrayUtils.contains(vc, LinkVar.FALSE)) {                
+                // Get the observation features.
+                if (ft == DepParseFactorTemplate.UNARY) {
+                    // Look at the variables to determine the parent and child.
+                    LinkVar var = (LinkVar) vars.get(0);
+                    int pidx = var.getParent();
+                    int cidx = var.getChild();
+                    ext.addFeatures(prm.firstOrderTpls, LocalObservations.newPidxCidx(pidx, cidx), obsFeats);
+                } else if (ft == DepParseFactorTemplate.ARBITRARY_SIBLING) {
+                    SibFeTypedFactor f2 = (SibFeTypedFactor)f;
+                    ext.addFeatures(prm.secondOrderTpls, LocalObservations.newPidxCidxMidx(f2.p, f2.c, f2.s), obsFeats);
+                } else if (ft == DepParseFactorTemplate.GRANDPARENT) {
+                    GraFeTypedFactor f2 = (GraFeTypedFactor)f;
+                    ext.addFeatures(prm.secondOrderTpls, LocalObservations.newPidxCidxMidx(f2.p, f2.c, f2.g), obsFeats);
+                } else {
+                    throw new RuntimeException("Unsupported template: " + ft);
+                }
             }
         }
         

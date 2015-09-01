@@ -40,6 +40,7 @@ import edu.jhu.nlp.TransientAnnotator;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
+import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.FirstOrderPruner;
 import edu.jhu.nlp.depparse.GoldDepParseUnpruner;
@@ -68,7 +69,6 @@ import edu.jhu.nlp.joint.IGFeatureTemplateSelector.IGFeatureTemplateSelectorPrm;
 import edu.jhu.nlp.joint.JointNlpAnnotator.InitParams;
 import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
-import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
@@ -449,7 +449,7 @@ public class JointNlpRunner {
             
             if (JointNlpRunner.modelIn == null) {
                 // Feature selection at train time only for SRL.
-                anno.add(new TransientAnnotator(new SrlFeatureSelection(prm.buPrm.fePrm)));
+                anno.add(new TransientAnnotator(new SrlFeatureSelection(prm.buPrm.fgPrm)));
             }
             
             if (pruneByDist) {
@@ -460,16 +460,15 @@ public class JointNlpRunner {
                 if (pruneModel == null) {
                     throw new IllegalStateException("If pruneByModel is true, pruneModel must be specified.");
                 }
-                anno.add(new FirstOrderPruner(pruneModel, getSrlFgExampleBuilderPrm(null), getDecoderPrm()));
+                anno.add(new FirstOrderPruner(pruneModel, getJointNlpFgExampleBuilderPrm(), getDecoderPrm()));
             }
             if ((pruneByDist || pruneByModel ) && trainer == Trainer.CLL) {
                 anno.add(new GoldDepParseUnpruner());
             }
             if (modelIn == null && prm.buPrm.fgPrm.srlPrm.predictPredPos) {
                 // Predict SRL predicate positions as a separate step.
+                // (Use the same features as the main jointAnno. These might be edited by feature selection.)
                 JointNlpAnnotatorPrm prm2 = Prm.clone(prm);
-                // Use the same features as the main jointAnno. These might be edited by feature selection.
-                prm2.buPrm.fePrm = prm.buPrm.fePrm;
                 // This is transient so we need to create another one.
                 prm2.crfPrm = getCrfTrainerPrm();
                 // Don't include anything except for SRL.
@@ -640,33 +639,17 @@ public class JointNlpRunner {
         prm.initParams = initParams;
         prm.ofcPrm = getObsFeatureConjoinerPrm();
         prm.dpSkipPunctuation = dpSkipPunctuation;
-        JointNlpFeatureExtractorPrm fePrm = getJointNlpFeatureExtractorPrm();
-        prm.buPrm = getSrlFgExampleBuilderPrm(fePrm);
+        prm.buPrm = getJointNlpFgExampleBuilderPrm();
         return prm;
     }
     
-    private static JointNlpFgExampleBuilderPrm getSrlFgExampleBuilderPrm(JointNlpEncoder.JointNlpFeatureExtractorPrm fePrm) {
+    private static JointNlpFgExampleBuilderPrm getJointNlpFgExampleBuilderPrm() {
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        
-        // Factor graph structure.
-        prm.fgPrm.dpPrm.linkVarType = linkVarType;
-        prm.fgPrm.dpPrm.useProjDepTreeFactor = useProjDepTreeFactor;
-        prm.fgPrm.dpPrm.unaryFactors = unaryFactors;
-        prm.fgPrm.dpPrm.excludeNonprojectiveGrandparents = excludeNonprojectiveGrandparents;
-        prm.fgPrm.dpPrm.grandparentFactors = grandparentFactors;
-        prm.fgPrm.dpPrm.arbitrarySiblingFactors = arbitrarySiblingFactors;
-        prm.fgPrm.dpPrm.headBigramFactors = headBigramFactors;
-        prm.fgPrm.dpPrm.pruneEdges = pruneByDist || pruneByModel;
-                
-        prm.fgPrm.srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
-        prm.fgPrm.srlPrm.roleStructure = roleStructure;
-        prm.fgPrm.srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;
-        prm.fgPrm.srlPrm.unaryFactors = unaryFactors;
-        prm.fgPrm.srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
-        prm.fgPrm.srlPrm.predictSense = predictSense;
-        prm.fgPrm.srlPrm.predictPredPos = predictPredPos;
-        
-        // Relation Feature extraction.
+        // Dependency parse factor graph.
+        prm.fgPrm.dpPrm = getDepParseFactorGraphBuilderPrm();
+        // SRL factor graph.
+        prm.fgPrm.srlPrm = getSrlFactorGraphBuilderPrm();
+        // Relation factor graph.
         if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
             prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
@@ -674,10 +657,7 @@ public class JointNlpRunner {
         prm.fgPrm.includeDp = CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE);
         prm.fgPrm.includeSrl = CorpusHandler.getGoldOnlyAts().contains(AT.SRL);
         prm.fgPrm.includeRel = CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS);
-        
-        // Feature extraction.
-        prm.fePrm = fePrm;
-        
+                
         // Example construction and storage.
         prm.exPrm.cacheType = cacheType;
         prm.exPrm.gzipped = gzipCache;
@@ -685,25 +665,20 @@ public class JointNlpRunner {
         
         return prm;
     }
-    
-    private static ObsFeatureConjoinerPrm getObsFeatureConjoinerPrm() {
-        ObsFeatureConjoinerPrm prm = new ObsFeatureConjoinerPrm();
-        prm.featCountCutoff = featCountCutoff;
-        prm.includeUnsupportedFeatures = includeUnsupportedFeatures;
-        return prm;
-    }
-    
-    private static JointNlpFeatureExtractorPrm getJointNlpFeatureExtractorPrm() {
-        // SRL Feature Extraction.
-        SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
-        srlFePrm.biasOnly = biasOnly;
-        srlFePrm.useTemplates = useTemplates;
-        
-        srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
-        srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
 
-        srlFePrm.featureHashMod = featureHashMod;
-                
+    private static DepParseFactorGraphBuilderPrm getDepParseFactorGraphBuilderPrm() {
+        DepParseFactorGraphBuilderPrm dpPrm = new DepParseFactorGraphBuilderPrm();
+        
+        // Dependency Parsing factor graph structure.
+        dpPrm.linkVarType = linkVarType;
+        dpPrm.useProjDepTreeFactor = useProjDepTreeFactor;
+        dpPrm.unaryFactors = unaryFactors;
+        dpPrm.excludeNonprojectiveGrandparents = excludeNonprojectiveGrandparents;
+        dpPrm.grandparentFactors = grandparentFactors;
+        dpPrm.arbitrarySiblingFactors = arbitrarySiblingFactors;
+        dpPrm.headBigramFactors = headBigramFactors;
+        dpPrm.pruneEdges = pruneByDist || pruneByModel;
+
         // Dependency parsing Feature Extraction
         DepParseFeatureExtractorPrm dpFePrm = new DepParseFeatureExtractorPrm();
         dpFePrm.biasOnly = biasOnly;
@@ -717,15 +692,45 @@ public class JointNlpRunner {
             dpFePrm.onlyTrueEdges = false;
             dpFePrm.onlyFast = false; // Overrides command line option.
         }
+        // Bitshift feature extraction.        
+        BitshiftDepParseFeatureExtractorPrm bsDpFePrm = parser.getInstanceFromParsedArgs(BitshiftDepParseFeatureExtractorPrm.class);
+        bsDpFePrm.featureHashMod = featureHashMod;
+
+        dpPrm.dpFePrm = dpFePrm;
+        dpPrm.bsDpFePrm = bsDpFePrm;     
+        return dpPrm;
+    }
+    
+    private static SrlFactorGraphBuilderPrm getSrlFactorGraphBuilderPrm() {
+        SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
+        // Semantic Role Labeling factor graph structure.
+        srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
+        srlPrm.roleStructure = roleStructure;
+        srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;
+        srlPrm.unaryFactors = unaryFactors;
+        srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
+        srlPrm.predictSense = predictSense;
+        srlPrm.predictPredPos = predictPredPos;
+
+        // SRL Feature Extraction.
+        SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
+        srlFePrm.biasOnly = biasOnly;
+        srlFePrm.useTemplates = useTemplates;       
+        srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
+        srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
+        srlFePrm.featureHashMod = featureHashMod;
         
-        JointNlpFeatureExtractorPrm fePrm = new JointNlpFeatureExtractorPrm();
-        fePrm.srlFePrm = srlFePrm;
-        fePrm.dpFePrm = dpFePrm;
-        fePrm.bsDpFePrm = parser.getInstanceFromParsedArgs(BitshiftDepParseFeatureExtractorPrm.class);
-        fePrm.bsDpFePrm.featureHashMod = featureHashMod;
-        return fePrm;
+        srlPrm.srlFePrm = srlFePrm;
+        return srlPrm;
     }
 
+    private static ObsFeatureConjoinerPrm getObsFeatureConjoinerPrm() {
+        ObsFeatureConjoinerPrm prm = new ObsFeatureConjoinerPrm();
+        prm.featCountCutoff = featCountCutoff;
+        prm.includeUnsupportedFeatures = includeUnsupportedFeatures;
+        return prm;
+    }
+    
     /**
      * Gets feature templates from multiple files or resources.
      * @param featTpls A colon separated list of paths to feature template files or resources.

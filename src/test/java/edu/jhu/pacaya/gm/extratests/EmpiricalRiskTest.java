@@ -104,7 +104,7 @@ public class EmpiricalRiskTest {
         prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
         prm.exPrm.cacheType = CacheType.NONE;
-        prm.fePrm.dpFePrm.featureHashMod = featureHashMod;
+        prm.fgPrm.dpPrm.dpFePrm.featureHashMod = featureHashMod;
         
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
         FgExampleList data = builder.getData(sents);

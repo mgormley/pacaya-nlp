@@ -17,7 +17,7 @@ import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
@@ -54,7 +54,7 @@ public class JointNlpFactorGraphTest {
 
     @Test
     public void testNSquaredModel() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.dpPrm.linkVarType = VarType.LATENT;
         prm.srlPrm.makeUnknownPredRolesLatent = false;
@@ -85,7 +85,7 @@ public class JointNlpFactorGraphTest {
 
     @Test
     public void testNSquaredModelIsTree() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.dpPrm.linkVarType = VarType.LATENT;
         prm.srlPrm.makeUnknownPredRolesLatent = false;
@@ -101,7 +101,7 @@ public class JointNlpFactorGraphTest {
     
     @Test
     public void testPredsGiven() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.dpPrm.linkVarType = VarType.LATENT;
         prm.srlPrm.makeUnknownPredRolesLatent = false;
@@ -130,7 +130,7 @@ public class JointNlpFactorGraphTest {
     
     @Test
     public void testRoleSelfLoops() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.dpPrm.linkVarType = VarType.LATENT;
         prm.srlPrm.makeUnknownPredRolesLatent = false;
@@ -150,7 +150,7 @@ public class JointNlpFactorGraphTest {
     
     @Test
     public void testLinksPredictedRolesLatent() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.dpPrm.linkVarType = VarType.PREDICTED;
         prm.srlPrm.makeUnknownPredRolesLatent = true;
@@ -167,7 +167,7 @@ public class JointNlpFactorGraphTest {
 
     @Test
     public void testUseProjDepTreeFactor() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.dpPrm.linkVarType = VarType.LATENT;
         prm.srlPrm.makeUnknownPredRolesLatent = false;
@@ -198,7 +198,7 @@ public class JointNlpFactorGraphTest {
 
     @Test
     public void testPredictSense() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.srlPrm.predictSense = true;
         prm.srlPrm.predictPredPos = false;
@@ -235,7 +235,7 @@ public class JointNlpFactorGraphTest {
     
     @Test
     public void testFirstOrderDepParser() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.includeSrl = false;
         prm.includeDp = true;
         prm.dpPrm.linkVarType = VarType.PREDICTED;
@@ -248,7 +248,7 @@ public class JointNlpFactorGraphTest {
 
     @Test
     public void testSecondOrderDepParser() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.includeSrl = false;
         prm.dpPrm.linkVarType = VarType.PREDICTED;
         prm.dpPrm.unaryFactors = true;
@@ -279,7 +279,7 @@ public class JointNlpFactorGraphTest {
     
     @Test
     public void testSecondOrderDepParserPruned() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.includeSrl = false;
         prm.dpPrm.linkVarType = VarType.PREDICTED;
         prm.dpPrm.unaryFactors = true;       
@@ -322,11 +322,9 @@ public class JointNlpFactorGraphTest {
         }
     }
     
-    public static JointNlpFactorGraph getJointNlpFg(JointFactorGraphPrm prm) {
+    public static JointNlpFactorGraph getJointNlpFg(JointNlpFactorGraphPrm prm) {
         // --- These won't even be used in these tests ---
         FactorTemplateList fts = new FactorTemplateList();
-        FeatureExtractor fe = new SimpleVCFeatureExtractor(new FeatureNames()); 
-        ObsFeatureExtractor obsFe = new SimpleVCObsFeatureExtractor(fts);
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         // ---                                         ---
         Map<String,List<String>> psMap = new HashMap<String,List<String>>() {
@@ -355,7 +353,9 @@ public class JointNlpFactorGraphTest {
         cs.roleStateNames = QLists.getList("A1", "A2", "A3");
         cs.predSenseListMap = psMap;
         
-        JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe);
+        prm.srlPrm.srlFePrm.biasOnly = true;
+        prm.dpPrm.dpFePrm.biasOnly = true;
+        JointNlpFactorGraph fg = new JointNlpFactorGraph(prm, sent, cs, ofc);
         
         return fg;
     }

@@ -138,7 +138,7 @@ public class O2AllGraFgInferencerTest {
 
         FeatureNames alphabet = new FeatureNames();
         LinkVarFe fe = new LinkVarFe(alphabet);
-        builder.build(sent, fe, fg);
+        builder.build(sent.getWords(), sent.getDepEdgeMask(), fe, fg);
         
         FgModel model = new FgModel(1000);
         if (!zeroModel) {

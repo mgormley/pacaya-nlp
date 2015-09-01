@@ -53,8 +53,7 @@ public class FgExampleTest {
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
         prm.fgPrm.dpPrm.linkVarType = VarType.LATENT;
-
-        prm.fePrm.srlFePrm.biasOnly = true;
+        prm.fgPrm.srlPrm.srlFePrm.biasOnly = true;
         
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);

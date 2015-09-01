@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
@@ -66,6 +67,9 @@ public class SrlFactorGraphBuilder implements Serializable {
         
         /** Whether to predict the predicate positions. */
         public boolean predictPredPos = false;
+        
+        /** Feature extractor options for SRL. */
+        public SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
     }
 
     public enum RoleStructure {
@@ -142,8 +146,11 @@ public class SrlFactorGraphBuilder implements Serializable {
     private SenseVar[] senseVars;
 
     // The sentence length.
-    private int n;                
+    private int n;
 
+    // Cached for reuse by the joint factors.
+    private ObsFeatureExtractor obsFe;         
+    
     public SrlFactorGraphBuilder(SrlFactorGraphBuilderPrm prm) {
         this.prm = prm;
     }
@@ -151,15 +158,17 @@ public class SrlFactorGraphBuilder implements Serializable {
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureExtractor obsFe,
-            ObsFeatureConjoiner ofc, FactorGraph fg) {
-        build(sent.getWords(), sent.getLemmas(), sent.getKnownPreds(), cs.roleStateNames, cs.predSenseListMap, obsFe, ofc, fg);
+    public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
+            FactorGraph fg) {
+        // Create feature extractor.
+        obsFe = new SrlFeatureExtractor(prm.srlFePrm, sent, cs, ofc.getTemplates());
+        build(sent.getWords(), sent.getLemmas(), sent.getKnownPreds(), cs.roleStateNames, cs.predSenseListMap, obsFe, ofc, fg);        
     }
 
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(List<String> words, List<String> lemmas, IntSet knownPreds, List<String> roleStateNames,
+    private void build(List<String> words, List<String> lemmas, IntSet knownPreds, List<String> roleStateNames,
             Map<String, List<String>> psMap, ObsFeatureExtractor obsFe, ObsFeatureConjoiner ofc, FactorGraph fg) {
         // Check for null arguments.
         if (prm.roleStructure == RoleStructure.PREDS_GIVEN && knownPreds == null) {
@@ -176,7 +185,7 @@ public class SrlFactorGraphBuilder implements Serializable {
         }
         
         this.n = words.size();
-
+        
         // Create the Role variables.
         roleVars = new RoleVar[n][n];
         if (prm.roleStructure == RoleStructure.PREDS_GIVEN) {
@@ -326,6 +335,10 @@ public class SrlFactorGraphBuilder implements Serializable {
 
     public RoleVar[][] getRoleVars() {
         return roleVars;
+    }
+
+    public ObsFeatureExtractor getFeatExtractor() {
+        return obsFe;
     }
     
 }
