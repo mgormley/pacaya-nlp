@@ -22,7 +22,7 @@ import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.EdgeProperty;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
-import edu.jhu.nlp.relations.RelObsFe.EntityTypeRepl;
+import edu.jhu.nlp.relations.RelObsFeatures.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.pacaya.gm.data.UFgExample;
@@ -45,7 +45,7 @@ import edu.jhu.prim.util.Lambda.FnObjDoubleToVoid;
  * 
  * @author mgormley
  */
-public class WordFeatures {
+public class RelWordFeatures {
 
     public enum EmbFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, FULL }
 
@@ -57,13 +57,13 @@ public class WordFeatures {
         public EntityTypeRepl entityTypeRepl = EntityTypeRepl.NONE;
     }
     
-    private static final Logger log = LoggerFactory.getLogger(WordFeatures.class);
+    private static final Logger log = LoggerFactory.getLogger(RelWordFeatures.class);
 
     private WordFeaturesPrm prm;
     private AnnoSentence sent;
     private FeatureNames alphabet;
 
-    public WordFeatures(WordFeaturesPrm prm, AnnoSentence sent, FeatureNames alphabet) {
+    public RelWordFeatures(WordFeaturesPrm prm, AnnoSentence sent, FeatureNames alphabet) {
         this.prm = prm;
         this.sent = sent;
         this.alphabet = alphabet;
@@ -76,7 +76,7 @@ public class WordFeatures {
     public List<FeatureVector> getFeatures(RelVar rv) {
         LocalObservations local = LocalObservations.newNe1Ne2(rv.ment1, rv.ment2);
         // TODO: Do we want a bias feature here?
-        RelObsFe.maybeSetEntityTypesAndSubTypes(sent, local, prm.entityTypeRepl);
+        RelObsFeatures.maybeSetEntityTypesAndSubTypes(sent, local, prm.entityTypeRepl);
         List<FeatureVector> fvs = new ArrayList<>();
         for (int i=0; i<sent.size(); i++) {
             fvs.add(new FeatureVector());
@@ -120,12 +120,12 @@ public class WordFeatures {
             //     - chunk_head+ne1
             //     - chunk_head+ne2
             //     - chunk_head+ne1+ne2
-            Pair<List<LabeledSpan>, IntArrayList> chunkPair = RelObsFe.getSpansFromBIO(sent.getChunks(), true);
+            Pair<List<LabeledSpan>, IntArrayList> chunkPair = RelObsFeatures.getSpansFromBIO(sent.getChunks(), true);
             List<LabeledSpan> chunks = chunkPair.get1();
             IntArrayList tokIdxToChunkIdx = chunkPair.get2();
             int c1 = tokIdxToChunkIdx.get(m1.getHead());
             int c2 = tokIdxToChunkIdx.get(m2.getHead());
-            int[] chunkHeads = RelObsFe.getHeadsOfSpans(chunks, sent.getParents());
+            int[] chunkHeads = RelObsFeatures.getHeadsOfSpans(chunks, sent.getParents());
             for (int b=c1+1; b<=c2-1; b++) {
                 int i = chunkHeads[b];
                 addEmbFeat("chunk_head", i, fvs);

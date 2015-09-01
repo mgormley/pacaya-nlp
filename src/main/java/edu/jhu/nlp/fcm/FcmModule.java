@@ -146,7 +146,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
         }
         
         if (toUpdate != null) {
-            // Hack to update the containing FcmFactor for this FcmModule.
+            // HACK: to update the containing FcmFactor for this FcmModule.
             for (int c=0; c<fac.size(); c++) {
                 toUpdate.setValue(c, scores.getValue(c)); //fac.getAlgebra().toLogProb(fac.getValue(c)));
             }

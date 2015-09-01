@@ -9,8 +9,8 @@ import org.junit.Test;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
-import edu.jhu.nlp.relations.WordFeatures.EmbFeatType;
-import edu.jhu.nlp.relations.WordFeatures.WordFeaturesPrm;
+import edu.jhu.nlp.relations.RelWordFeatures.EmbFeatType;
+import edu.jhu.nlp.relations.RelWordFeatures.WordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.util.FeatureNames;
@@ -19,7 +19,7 @@ import edu.jhu.prim.map.IntDoubleEntry;
 import edu.jhu.prim.tuple.Pair;
 
 
-public class WordFeaturesTest {
+public class RelWordFeaturesTest {
 
     @Test
     public void testGetPerWordFeats() throws Exception {
@@ -33,7 +33,7 @@ public class WordFeaturesTest {
         WordFeaturesPrm prm = new WordFeaturesPrm();
         prm.embFeatType = EmbFeatType.HEAD_TYPE_LOC;
         prm.entityTypeRepl = null;
-        WordFeatures fe = new WordFeatures(prm, sent, alphabet);
+        RelWordFeatures fe = new RelWordFeatures(prm, sent, alphabet);
         List<FeatureVector> featsList = fe.getFeatures(rv);
         
         assertEquals(sent.size(), featsList.size());

@@ -13,10 +13,10 @@ import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.fcm.FcmFactor;
-import edu.jhu.nlp.relations.RelObsFe.EntityTypeRepl;
-import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
-import edu.jhu.nlp.relations.WordFeatures.EmbFeatType;
-import edu.jhu.nlp.relations.WordFeatures.WordFeaturesPrm;
+import edu.jhu.nlp.relations.RelObsFeatures.EntityTypeRepl;
+import edu.jhu.nlp.relations.RelObsFeatures.RelObsFePrm;
+import edu.jhu.nlp.relations.RelWordFeatures.EmbFeatType;
+import edu.jhu.nlp.relations.RelWordFeatures.WordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
@@ -106,17 +106,17 @@ public class RelationsFactorGraphBuilder {
         RelObsFePrm relPrm = new RelObsFePrm();
         relPrm.entityTypeRepl = prm.entityTypeRepl;
         relPrm.useZhou05Features = prm.useZhou05Features;
-        RelObsFe relFe = new RelObsFe(relPrm, sent, ofc.getTemplates());
+        RelObsFeatures relFe = new RelObsFeatures(relPrm, sent, ofc.getTemplates());
     	
     	// FCM's feature extractor.
-    	WordFeatures wordFe = null;
+    	RelWordFeatures wordFe = null;
     	if (prm.useEmbeddingFeatures) {
     	    WordFeaturesPrm wordPrm = new WordFeaturesPrm();
             wordPrm.embFeatType = prm.embFeatType;
             wordPrm.entityTypeRepl = prm.entityTypeRepl;
             // TODO: Does this work correctly?
             final FeatureNames alphabet = ofc.fcmAlphabet;
-            wordFe = new WordFeatures(wordPrm, sent, alphabet);
+            wordFe = new RelWordFeatures(wordPrm, sent, alphabet);
     	}
     	
         // Create unary factors for each relation variable.

@@ -43,7 +43,7 @@ import edu.jhu.prim.util.Lambda.FnObjDoubleToVoid;
  * Feature extraction for relations.
  * @author mgormley
  */
-public class RelObsFe implements ObsFeatureExtractor {
+public class RelObsFeatures implements ObsFeatureExtractor {
 
     public enum EntityTypeRepl { BROWN, NONE };
 
@@ -55,13 +55,13 @@ public class RelObsFe implements ObsFeatureExtractor {
         public EntityTypeRepl entityTypeRepl = EntityTypeRepl.NONE;
     }
     
-    private static final Logger log = LoggerFactory.getLogger(RelObsFe.class);
+    private static final Logger log = LoggerFactory.getLogger(RelObsFeatures.class);
 
     private RelObsFePrm prm;
     private AnnoSentence sent;
     private FactorTemplateList fts;
 
-    public RelObsFe(RelObsFePrm prm, AnnoSentence sent, FactorTemplateList fts) {
+    public RelObsFeatures(RelObsFePrm prm, AnnoSentence sent, FactorTemplateList fts) {
         this.prm = prm;
         this.sent = sent;
         this.fts = fts;

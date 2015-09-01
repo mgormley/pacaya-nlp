@@ -12,12 +12,12 @@ import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
-public class RelObsFeTest {
+public class RelObsFeaturesTest {
 
     @Test
     public void testGetSpansFromBIONoOutside() {
         List<String> tags = QLists.getList("B-NP", "I-NP", "I-NP", "O", "B-NP", "B-VP", "I-VP", "O", "O", "B-PP");
-        Pair<List<LabeledSpan>, IntArrayList> pair = RelObsFe.getSpansFromBIO(tags, false);
+        Pair<List<LabeledSpan>, IntArrayList> pair = RelObsFeatures.getSpansFromBIO(tags, false);
         List<LabeledSpan> spans = pair.get1();
         IntArrayList tokIdxToSpanIdx = pair.get2();
         
@@ -33,7 +33,7 @@ public class RelObsFeTest {
     @Test
     public void testGetSpansFromBIOWithOutside() {
         List<String> tags = QLists.getList("B-NP", "I-NP", "I-NP", "O", "B-NP", "B-VP", "I-VP", "O", "O", "B-PP");
-        Pair<List<LabeledSpan>, IntArrayList> pair = RelObsFe.getSpansFromBIO(tags, true);
+        Pair<List<LabeledSpan>, IntArrayList> pair = RelObsFeatures.getSpansFromBIO(tags, true);
         List<LabeledSpan> spans = pair.get1();
         IntArrayList tokIdxToSpanIdx = pair.get2();
         

@@ -43,6 +43,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         public JointNlpFeatureExtractorPrm fePrm = new JointNlpFeatureExtractorPrm();
     }
     
+    // TODO: Fold these into JointFactorGraphPrm's respective fields.
     public static class JointNlpFeatureExtractorPrm extends Prm {
         private static final long serialVersionUID = 1L;
         public DepParseFeatureExtractorPrm dpFePrm = new DepParseFeatureExtractorPrm();

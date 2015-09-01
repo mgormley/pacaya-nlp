@@ -5,7 +5,7 @@ import java.util.List;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
-import edu.jhu.nlp.relations.WordFeatures;
+import edu.jhu.nlp.relations.RelWordFeatures;
 import edu.jhu.pacaya.autodiff.Module;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
@@ -28,11 +28,11 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
     private ObsFeatureConjoiner ofc;
     private Embeddings embeddings;
     private boolean fineTuning;
-    private WordFeatures wf;
+    private RelWordFeatures wf;
     // This will be cached.
     private List<FeatureVector> wordFeats;
 
-    public FcmFactor(VarSet vars, AnnoSentence sent, Embeddings embeddings, ObsFeatureConjoiner ofc, boolean fineTuning, WordFeatures wf) {
+    public FcmFactor(VarSet vars, AnnoSentence sent, Embeddings embeddings, ObsFeatureConjoiner ofc, boolean fineTuning, RelWordFeatures wf) {
         super(vars);
         if (vars.size() != 1 || !(vars.get(0) instanceof RelVar)) {
             throw new IllegalArgumentException("Expected one var of type " + RelVar.class);

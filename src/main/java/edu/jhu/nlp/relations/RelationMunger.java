@@ -207,7 +207,7 @@ public class RelationMunger implements Serializable {
                 NerMention ne1 = nes.get(i);
                 for (int j = i + 1; j < nes.size(); j++) {
                     NerMention ne2 = nes.get(j);                    
-                    int numMentsBtwn = RelObsFe.getNumBtwn(sent, ne1, ne2);
+                    int numMentsBtwn = RelObsFeatures.getNumBtwn(sent, ne1, ne2);
                     if (numMentsBtwn <= prm.maxInterveningEntities) {   
                         if (rels != null) {
                             // Only add if negative example, since we already added positive examples.
