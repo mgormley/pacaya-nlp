@@ -155,7 +155,9 @@ public class CorpusStatistics implements Serializable {
                 }
                 for (SrlPred pred : sent.getSrlGraph().getPreds()) {
                     int position = pred.getPosition();
-                    String lemma = sent.getLemma(position);
+                    // If we don't have lemmas, then this is a map from underscore to all possible
+                    // predicate senses.
+                    String lemma = (sent.getLemmas() != null) ? sent.getLemma(position) : "_";
                     Set<String> senses = predSenseSetMap.get(lemma);
                     if (senses == null) {
                         senses = new TreeSet<String>();
