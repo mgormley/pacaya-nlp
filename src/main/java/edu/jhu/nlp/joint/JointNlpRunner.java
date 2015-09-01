@@ -710,12 +710,13 @@ public class JointNlpRunner {
         dpFePrm.firstOrderTpls = getFeatTpls(dp1FeatTpls);
         dpFePrm.secondOrderTpls = getFeatTpls(dp2FeatTpls);
         dpFePrm.featureHashMod = featureHashMod;
+        dpFePrm.onlyFast = dpFastFeats;
         if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && acl14DepFeats) {
             // This special case is only for historical consistency.
             dpFePrm.onlyTrueBias = false;
             dpFePrm.onlyTrueEdges = false;
+            dpFePrm.onlyFast = false; // Overrides command line option.
         }
-        dpFePrm.onlyFast = dpFastFeats;
         
         JointNlpFeatureExtractorPrm fePrm = new JointNlpFeatureExtractorPrm();
         fePrm.srlFePrm = srlFePrm;
