@@ -21,9 +21,9 @@ import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
@@ -31,7 +31,7 @@ import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
 import edu.jhu.pacaya.gm.train.DlFactory;
 import edu.jhu.pacaya.gm.train.EmpiricalRisk.EmpiricalRiskFactory;
 import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.gm.train.L2Distance.L2DistanceFactory;
 import edu.jhu.pacaya.gm.train.ModuleObjective;
 import edu.jhu.pacaya.gm.train.MtFactory;
 import edu.jhu.pacaya.util.semiring.Algebra;
@@ -50,9 +50,9 @@ public class EmpiricalRiskTest {
     @Test
     public void testDpData() throws IOException {
         helpDpDataErma(new ExpectedRecallFactory(), RealAlgebra.getInstance());
-        helpDpDataErma(new MeanSquaredErrorFactory(), RealAlgebra.getInstance());
+        helpDpDataErma(new L2DistanceFactory(), RealAlgebra.getInstance());
         helpDpDataErma(new ExpectedRecallFactory(), LogSignAlgebra.getInstance());
-        helpDpDataErma(new MeanSquaredErrorFactory(), LogSignAlgebra.getInstance());
+        helpDpDataErma(new L2DistanceFactory(), LogSignAlgebra.getInstance());
     }
 
     private void helpDpDataErma(DlFactory dl, Algebra s) throws IOException {

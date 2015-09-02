@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -101,7 +100,7 @@ import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
 import edu.jhu.pacaya.gm.train.DepParseSoftmaxMbr.DepParseSoftmaxMbrFactory;
 import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.gm.train.L2Distance.L2DistanceFactory;
 import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
@@ -130,7 +129,7 @@ public class JointNlpRunner {
 
     public static enum Optimizer { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD };
 
-    public enum ErmaLoss { MSE, EXPECTED_RECALL, SOFTMAX_MBR };
+    public enum ErmaLoss { L2DIST, EXPECTED_RECALL, SOFTMAX_MBR };
 
     public enum Inference { BRUTE_FORCE, BP, DP };
     
@@ -366,17 +365,18 @@ public class JointNlpRunner {
     @Opt(hasArg=true, description="The type of trainer to use (e.g. conditional log-likelihood, ERMA).")
     public static Trainer trainer = Trainer.CLL;
     
-    // Options for training a dependency parser with ERMA.
+    // Options for training with ERMA.
+    // TODO: Remove the "dp" prefixes on these flags.
     @Opt(hasArg=true, description="The start temperature for the softmax MBR decoder for dependency parsing.")
     public static double dpStartTemp = 10;
     @Opt(hasArg=true, description="The end temperature for the softmax MBR decoder for dependency parsing.")
     public static double dpEndTemp = .1;
     @Opt(hasArg=true, description="Whether to use log scale for the temperature annealing.")
     public static boolean dpUseLogScale = true;
-    @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
+    @Opt(hasArg=true, description="Whether to transition from L2DIST to the softmax MBR decoder with expected recall.")
     public static boolean dpAnnealMse = true;
-    @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
-    public static ErmaLoss dpLoss = ErmaLoss.SOFTMAX_MBR;
+    @Opt(hasArg=true, description="Whether to transition from L2DIST to the softmax MBR decoder with expected recall.")
+    public static ErmaLoss dpLoss = ErmaLoss.L2DIST;
     
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
@@ -884,19 +884,23 @@ public class JointNlpRunner {
         prm.trainer = trainer;                
         
         // TODO: add options for other loss functions.
-        if (prm.trainer == Trainer.ERMA && 
-                CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
+        if (prm.trainer == Trainer.ERMA) {
             if (dpLoss == ErmaLoss.SOFTMAX_MBR) {
+                if (!CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
+                    throw new RuntimeException("The " + dpLoss.name() + " loss function is only for " + AT.DEP_TREE);
+                }
                 DepParseSoftmaxMbrFactory lossPrm = new DepParseSoftmaxMbrFactory();
                 lossPrm.annealMse = dpAnnealMse;
                 lossPrm.startTemp = dpStartTemp;
                 lossPrm.useLogScale = dpUseLogScale;
                 lossPrm.endTemp = dpEndTemp;
                 prm.dlFactory = lossPrm;
-            } else if (dpLoss == ErmaLoss.MSE) {
-                prm.dlFactory = new MeanSquaredErrorFactory();
+            } else if (dpLoss == ErmaLoss.L2DIST) {
+                prm.dlFactory = new L2DistanceFactory();
             } else if (dpLoss == ErmaLoss.EXPECTED_RECALL) {
                 prm.dlFactory = new ExpectedRecallFactory();
+            } else {
+                throw new ParseException("Unsupported loss: " + dpLoss.name());
             }
         }
         
