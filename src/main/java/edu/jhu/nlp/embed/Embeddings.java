@@ -79,7 +79,7 @@ public class Embeddings implements Serializable {
             addHandler.addEmbedding(UNKNOWN_WORD, embed);
         }
         alphabet.stopGrowth();
-        log.debug("Embedding vocabulary size: " + alphabet.size());
+        log.debug("Embedding vocabulary size: " + alphabet.size() + " and dimension: " + dim.v);
     }
     
     private interface EmbeddingHandler {

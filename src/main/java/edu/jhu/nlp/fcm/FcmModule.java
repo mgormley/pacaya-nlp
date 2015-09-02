@@ -231,6 +231,10 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
 
     /** Initializes a model with embeddings. */
     public static void initModelWithEmbeds(Embeddings embeddings, FgModel model, ObsFeatureConjoiner ofc) {
+        if (ofc.getReservedMax() == 0) {
+            // There are no embeddings as model parameters.
+            return;
+        }
         int offset = ofc.getReservedOffset();
         Tensor e = embeddings.getEmbeddings();
         for (int i=0; i<e.size(); i++) {
