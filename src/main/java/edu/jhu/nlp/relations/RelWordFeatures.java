@@ -64,6 +64,9 @@ public class RelWordFeatures implements WordFeatures {
     
     @Override
     public List<FeatureVector> getFeatures(VarSet vars) {
+        if (vars.size() != 1 || !(vars.get(0) instanceof RelVar)) {
+            throw new IllegalArgumentException("Expected one var of type " + RelVar.class);
+        }
         return getFeatures((RelVar)vars.get(0));
     }
     

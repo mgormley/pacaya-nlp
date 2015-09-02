@@ -33,9 +33,6 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
 
     public FcmFactor(VarSet vars, AnnoSentence sent, Embeddings embeddings, ObsFeatureConjoiner ofc, boolean fineTuning, WordFeatures wf) {
         super(vars);
-        if (vars.size() != 1 || !(vars.get(0) instanceof RelVar)) {
-            throw new IllegalArgumentException("Expected one var of type " + RelVar.class);
-        }
         this.sent = sent;
         this.embeddings = embeddings;
         this.ofc = ofc;
