@@ -3,11 +3,15 @@ package edu.jhu.nlp.tag;
 import java.util.ArrayList;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.pacaya.util.collections.QSets;
 
 /**
@@ -20,6 +24,7 @@ public class StrictPosTagAnnotator extends AbstractParallelAnnotator implements 
     // There should be at most 8 of these "coarsest" tags.
     public enum StrictPosTag { VERB, NOUN, PUNC, CONJ, OTHER }; 
     
+    private static final Logger log = LoggerFactory.getLogger(StrictPosTagAnnotator.class); 
     private static final long serialVersionUID = 1L;
     
     public StrictPosTagAnnotator() {
@@ -45,7 +50,7 @@ public class StrictPosTagAnnotator extends AbstractParallelAnnotator implements 
 
     private static StrictPosTag getStrictPosTag(String pos, String cpos) {
         if (pos == null && cpos == null) {
-            throw new IllegalArgumentException("Unable to add strict POS tags without the POS or coarse POS tags.");
+            log.trace("Unable to add strict POS tags without the POS or coarse POS tags.");
         }
         if (cpos != null) {
             // These will match the universal POS tags from Petrov et al. (2012).
