@@ -85,17 +85,23 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
         ArrayList<String> obsFeats;
         FeatureNames alphabet;
         if (ft == JointFactorTemplate.LINK_ROLE_BINARY || ft == DepParseFactorTemplate.UNARY 
-                || ft == SrlFactorTemplate.ROLE_UNARY || ft == SrlFactorTemplate.SENSE_ROLE_BINARY) {
+                || ft == SrlFactorTemplate.ROLE_UNARY || ft == SrlFactorTemplate.SENSE_ROLE_BINARY
+                || ft == JointFactorTemplate.ROLE_C_TAG_BINARY || ft == JointFactorTemplate.ROLE_P_TAG_BINARY) {
             // Look at the variables to determine the parent and child.
-            Var var = vars.iterator().next();
-            int parent;
-            int child;
-            if (var instanceof LinkVar) {
-                parent = ((LinkVar)var).getParent();
-                child = ((LinkVar)var).getChild();
-            } else {
-                parent = ((RoleVar)var).getParent();
-                child = ((RoleVar)var).getChild();
+            int parent = Integer.MIN_VALUE;
+            int child = Integer.MIN_VALUE;
+            for (int i=0; i<vars.size(); i++) {
+                Var var = vars.get(i);
+                if (var instanceof LinkVar) {
+                    parent = ((LinkVar)var).getParent();
+                    child = ((LinkVar)var).getChild();
+                } else if (var instanceof RoleVar) {
+                    parent = ((RoleVar)var).getParent();
+                    child = ((RoleVar)var).getChild();
+                }
+            }
+            if (parent == Integer.MIN_VALUE && child == Integer.MIN_VALUE) {
+                throw new RuntimeException("Unknown variable type for ft: " + ft);
             }
 
             // Get features on the observations for a pair of words.

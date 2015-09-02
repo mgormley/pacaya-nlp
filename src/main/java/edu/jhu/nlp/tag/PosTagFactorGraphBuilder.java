@@ -93,7 +93,7 @@ public class PosTagFactorGraphBuilder {
             // Add the other features.
             FeatureUtils.addFeatures(obsFeats, alphabet, fv, false, prm.featureHashMod);
             
-            return null;
+            return fv;
         }
     };
     
@@ -114,7 +114,7 @@ public class PosTagFactorGraphBuilder {
             } else {
                 stateNames = cs.posTagStateNames;
             }
-            TagVar v = new TagVar(VarType.PREDICTED, TagVar.getDefaultName(i), stateNames, i);
+            TagVar v = new TagVar(prm.posTagVarType, TagVar.getDefaultName(i), stateNames, i);
             tagVars.add(v);
         }
             	

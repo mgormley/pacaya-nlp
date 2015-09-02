@@ -667,6 +667,7 @@ public class JointNlpRunner {
             prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
         
+        prm.fgPrm.includePos = CorpusHandler.getGoldOnlyAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE);
         prm.fgPrm.includeSrl = CorpusHandler.getGoldOnlyAts().contains(AT.SRL);
         prm.fgPrm.includeRel = CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS);
