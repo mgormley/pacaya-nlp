@@ -1,13 +1,8 @@
 package edu.jhu.nlp.relations;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,40 +11,31 @@ import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.fcm.FcmModule;
+import edu.jhu.nlp.fcm.WordFeatures;
 import edu.jhu.nlp.features.FeaturizedSentence;
 import edu.jhu.nlp.features.FeaturizedTokenPair;
 import edu.jhu.nlp.features.LocalObservations;
-import edu.jhu.nlp.features.TemplateFeatureExtractor;
-import edu.jhu.nlp.features.TemplateLanguage.EdgeProperty;
-import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.relations.RelObsFeatures.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
-import edu.jhu.nlp.tag.BrownClusterTagger;
-import edu.jhu.pacaya.gm.data.UFgExample;
-import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
-import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.list.IntArrayList;
-import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
-import edu.jhu.prim.util.Lambda.FnObjDoubleToVoid;
 
 /**
  * Per-word features used by the FCM.
  * 
  * @author mgormley
  */
-public class RelWordFeatures {
+public class RelWordFeatures implements WordFeatures {
 
     public enum EmbFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, FULL }
 
-    public static class WordFeaturesPrm extends Prm {
+    public static class RelWordFeaturesPrm extends Prm {
         private static final long serialVersionUID = 1L;
         @Opt(hasArg=true, description="The feature set for embeddings.")
         public EmbFeatType embFeatType = EmbFeatType.FULL;        
@@ -59,40 +45,42 @@ public class RelWordFeatures {
     
     private static final Logger log = LoggerFactory.getLogger(RelWordFeatures.class);
 
-    private WordFeaturesPrm prm;
+    private RelWordFeaturesPrm prm;
     private AnnoSentence sent;
     private FeatureNames alphabet;
-
-    public RelWordFeatures(WordFeaturesPrm prm, AnnoSentence sent, FeatureNames alphabet) {
+    private FeaturizedSentence fsent;
+    
+    public RelWordFeatures(RelWordFeaturesPrm prm, AnnoSentence sent, FeatureNames alphabet) {
         this.prm = prm;
         this.sent = sent;
         this.alphabet = alphabet;
+        fsent = new FeaturizedSentence(sent, null);
     }
     
+    @Override
     public FeatureNames getAlphabet() {
         return alphabet;
+    }
+    
+    @Override
+    public List<FeatureVector> getFeatures(VarSet vars) {
+        return getFeatures((RelVar)vars.get(0));
     }
     
     public List<FeatureVector> getFeatures(RelVar rv) {
         LocalObservations local = LocalObservations.newNe1Ne2(rv.ment1, rv.ment2);
         // TODO: Do we want a bias feature here?
         RelObsFeatures.maybeSetEntityTypesAndSubTypes(sent, local, prm.entityTypeRepl);
-        List<FeatureVector> fvs = new ArrayList<>();
-        for (int i=0; i<sent.size(); i++) {
-            fvs.add(new FeatureVector());
-        }
+        List<FeatureVector> fvs = getListOfEmptyFvs(sent.size());
         addEmbeddingFeatures(local, fvs);
         return fvs;
     }
 
     /**
-     * Adds the embedding or embeddingless features for the FCM. The "embedding" features include
-     * the dimension and value of the embedding. The "embeddingless" features only include the 
-     * observed feature with value 1.0, for use in {@link FcmModule}.
+     * Adds the per-word features for the FCM.
      * 
      * @param local The local observations.
      * @param fv Output feature vector
-     * @param useEmb Whether to use embedding (true) or embeddingless (false) features.
      */
     private void addEmbeddingFeatures(LocalObservations local, List<FeatureVector> fvs) {
         //  - Per word, we have various features, such as whether a word is in between
@@ -105,9 +93,7 @@ public class RelWordFeatures {
         NerMention m2 = local.getNe2();
         Span m1span = m1.getSpan();
         Span m2span = m2.getSpan();
-        
-        FeaturizedSentence fsent = new FeaturizedSentence(sent, null);
-        
+                
         String ne1 = m1.getEntityType();
         String ne2 = m2.getEntityType();
         String sne1 = m1.getEntitySubType();
@@ -162,8 +148,8 @@ public class RelWordFeatures {
             //     - on_path+ne1 if on_path = T
             //     - on_path+ne2 if on_path = T
             //     - on_path+ne1+ne2 if on_path = T
-            FeaturizedTokenPair ftp = fsent.getFeatTokPair(m1.getHead(), m2.getHead());
             if (sent.getParents() != null) {
+                FeaturizedTokenPair ftp = fsent.getFeatTokPair(m1.getHead(), m2.getHead());
                 List<Pair<Integer, ParentsArray.Dir>> depPath = ftp.getDependencyPath();
                 if (depPath != null) {
                     for (Pair<Integer,ParentsArray.Dir> pair : depPath) {

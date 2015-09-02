@@ -10,7 +10,7 @@ import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.nlp.relations.RelWordFeatures.EmbFeatType;
-import edu.jhu.nlp.relations.RelWordFeatures.WordFeaturesPrm;
+import edu.jhu.nlp.relations.RelWordFeatures.RelWordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.util.FeatureNames;
@@ -30,7 +30,7 @@ public class RelWordFeaturesTest {
                 QLists.getList("OWNER", "NEAR", "ART"));
         
         FeatureNames alphabet = new FeatureNames();
-        WordFeaturesPrm prm = new WordFeaturesPrm();
+        RelWordFeaturesPrm prm = new RelWordFeaturesPrm();
         prm.embFeatType = EmbFeatType.HEAD_TYPE_LOC;
         prm.entityTypeRepl = null;
         RelWordFeatures fe = new RelWordFeatures(prm, sent, alphabet);

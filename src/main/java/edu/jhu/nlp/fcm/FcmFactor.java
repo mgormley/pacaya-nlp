@@ -5,7 +5,6 @@ import java.util.List;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
-import edu.jhu.nlp.relations.RelWordFeatures;
 import edu.jhu.pacaya.autodiff.Module;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
@@ -28,11 +27,11 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
     private ObsFeatureConjoiner ofc;
     private Embeddings embeddings;
     private boolean fineTuning;
-    private RelWordFeatures wf;
+    private WordFeatures wf;
     // This will be cached.
     private List<FeatureVector> wordFeats;
 
-    public FcmFactor(VarSet vars, AnnoSentence sent, Embeddings embeddings, ObsFeatureConjoiner ofc, boolean fineTuning, RelWordFeatures wf) {
+    public FcmFactor(VarSet vars, AnnoSentence sent, Embeddings embeddings, ObsFeatureConjoiner ofc, boolean fineTuning, WordFeatures wf) {
         super(vars);
         if (vars.size() != 1 || !(vars.get(0) instanceof RelVar)) {
             throw new IllegalArgumentException("Expected one var of type " + RelVar.class);
@@ -47,7 +46,7 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
     @Override
     public void updateFromModel(FgModel model) {
         // Set the values on the ExplicitFactor. This is done automatically by the call to forward().
-        VarTensor fac = getFactorModule(new FgModelIdentity(model), LogSemiring.getInstance()).forward();
+        getFactorModule(new FgModelIdentity(model), LogSemiring.getInstance()).forward();
     }
 
     @Override
@@ -63,7 +62,7 @@ public class FcmFactor extends ExplicitFactor implements Factor, AutodiffFactor 
     @Override
     public FcmModule getFactorModule(Module<MVecFgModel> modIn, Algebra s) {
         if (wordFeats == null) {
-            wordFeats = wf.getFeatures((RelVar)getVars().get(0));
+            wordFeats = wf.getFeatures(getVars());
         }
         return new FcmModule(modIn, s, wordFeats, wf.getAlphabet(), 
                 getVars(), sent, embeddings, ofc.getReservedOffset(), fineTuning,

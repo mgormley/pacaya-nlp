@@ -16,7 +16,7 @@ import edu.jhu.nlp.fcm.FcmFactor;
 import edu.jhu.nlp.relations.RelObsFeatures.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelObsFeatures.RelObsFePrm;
 import edu.jhu.nlp.relations.RelWordFeatures.EmbFeatType;
-import edu.jhu.nlp.relations.RelWordFeatures.WordFeaturesPrm;
+import edu.jhu.nlp.relations.RelWordFeatures.RelWordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
@@ -32,6 +32,7 @@ public class RelationsFactorGraphBuilder {
     private static final Logger log = LoggerFactory.getLogger(RelationsFactorGraphBuilder.class);
 
     public static class RelationsFactorGraphBuilderPrm extends Prm {
+        // TODO: Cleanup these names: drop "use" and add "rel" prefix.
         private static final long serialVersionUID = 1L;
         @Opt(hasArg=true, description="Whether to use the standard binary features.")
         public boolean useZhou05Features = true;
@@ -111,10 +112,10 @@ public class RelationsFactorGraphBuilder {
     	// FCM's feature extractor.
     	RelWordFeatures wordFe = null;
     	if (prm.useEmbeddingFeatures) {
-    	    WordFeaturesPrm wordPrm = new WordFeaturesPrm();
+    	    RelWordFeaturesPrm wordPrm = new RelWordFeaturesPrm();
             wordPrm.embFeatType = prm.embFeatType;
             wordPrm.entityTypeRepl = prm.entityTypeRepl;
-            // TODO: Does this work correctly?
+            // HACK: Does this work correctly?
             final FeatureNames alphabet = ofc.fcmAlphabet;
             wordFe = new RelWordFeatures(wordPrm, sent, alphabet);
     	}
@@ -124,8 +125,10 @@ public class RelationsFactorGraphBuilder {
             VarSet vars = new VarSet(rv);
             // Even if the interesting features are turned off, we still want the bias feature from this factor.
             fg.addFactor(new ObsFeTypedFactor(vars, RelationFactorType.RELATION, ofc, relFe));
-            if (prm.useEmbeddingFeatures) {                
-                fg.addFactor(new FcmFactor(vars, sent, (Embeddings)ofc.embeddings, ofc, prm.fcmFineTuning, wordFe));
+            if (prm.useEmbeddingFeatures) {
+                // HACK: The embeddings should be carried in a submodel.
+                Embeddings embeddings = (Embeddings)ofc.embeddings;
+                fg.addFactor(new FcmFactor(vars, sent, embeddings, ofc, prm.fcmFineTuning, wordFe));
             }
         }
     }
