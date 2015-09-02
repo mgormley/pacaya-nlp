@@ -1,0 +1,50 @@
+# This is a simple feature set defined for POS tagging.
+# 
+# Choice of features inspired by:
+# http://webcache.googleusercontent.com/search?q=cache:jxQ-WjXX7mMJ:https://honnibal.wordpress.com/2013/09/11/a-good-part-of-speechpos-tagger-in-about-200-lines-of-python/+&cd=2&hl=en&ct=clnk&gl=us
+#
+
+word(p)
+
+# Character prefix/suffix n-grams for n up to 4.
+chpre1(p)
+chpre2(p)
+chpre3(p)
+chpre4(p)
+chsuf1(p)
+chsuf2(p)
+chsuf3(p)
+chsuf4(p)
+
+# Other properties
+bc0(p)
+bc1(p)
+capitalized(p)
+
+# Nearby words
+word(-1(p))
+word(-2(p))
+word(1(p))
+word(2(p))
+
+# 1-char prefixes of nearby words
+chpre1(-1(p))
+chpre1(-2(p))
+chpre1(1(p))
+chpre1(2(p))
+
+# 3-char suffixes of nearby words
+chsuf3(-1(p))
+chsuf3(-2(p))
+chsuf3(1(p))
+chsuf3(2(p))
+
+# Brown clusters of nearby words
+bc0(-1(p))
+bc0(-2(p))
+bc0(1(p))
+bc0(2(p))
+bc1(-1(p))
+bc1(-2(p))
+bc1(1(p))
+bc1(2(p))

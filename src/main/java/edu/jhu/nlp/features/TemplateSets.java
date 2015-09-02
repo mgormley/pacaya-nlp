@@ -48,7 +48,10 @@ public class TemplateSets {
     
     // Constituency Parsing feature sets
     public static final String finkel08FeatsResource = "/edu/jhu/nlp/features/finkel08-parse-feats.txt";
-    
+
+    // Part-of-speech Tagging feature sets
+    public static final String custom2TagFeatsResource = "/edu/jhu/nlp/features/custom2-tag-feats.txt";
+        
     private TemplateSets() {
         // Private constructor.
     }

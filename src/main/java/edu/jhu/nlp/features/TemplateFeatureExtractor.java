@@ -561,13 +561,16 @@ public class TemplateFeatureExtractor {
             } else {
                 return null;
             }
-        case CHPRE5:
-            form = tok.getForm();
-            if (form.length() > 5) {
-                return tok.getPrefix();
-            } else {
-                return null;
-            }
+        case CHPRE1: return prefix(tok, 1);
+        case CHPRE2: return prefix(tok, 2);
+        case CHPRE3: return prefix(tok, 3);
+        case CHPRE4: return prefix(tok, 4);
+        case CHPRE5: return prefix(tok, 5);
+        case CHSUF1: return suffix(tok, 1);
+        case CHSUF2: return suffix(tok, 2);
+        case CHSUF3: return suffix(tok, 3);
+        case CHSUF4: return suffix(tok, 4);
+        case CHSUF5: return suffix(tok, 5);
         case LEMMA:
             return tok.getLemma();
         case POS:
@@ -596,7 +599,17 @@ public class TemplateFeatureExtractor {
             throw new IllegalStateException();
         }
     }
+
+    private String prefix(FeaturizedToken tok, int max) {
+        String s = tok.getForm();
+        return s.substring(0, Math.min(s.length(), max));
+    }
     
+    private static String suffix(FeaturizedToken tok, int max) {
+        String s = tok.getForm();
+        return s.substring(Math.max(0, s.length() - max), s.length());
+    }
+        
     protected static <T> Collection<T> bag(Collection<T> elements) {
         // bag, which removes all duplicated strings and sort the rest
         return new TreeSet<T>(elements);

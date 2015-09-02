@@ -171,8 +171,19 @@ public class TemplateFeatureExtractorTest {
         // 
         assertEquals("Resultaban", extr.getTokProp(TokProperty.WORD, 1));
         assertEquals("resultaban", extr.getTokProp(TokProperty.LC, 1));
-        assertEquals("Resul", extr.getTokProp(TokProperty.CHPRE5, 1));
         assertEquals("UC", extr.getTokProp(TokProperty.CAPITALIZED, 1));
+        // 
+        assertEquals("R", extr.getTokProp(TokProperty.CHPRE1, 1));
+        assertEquals("Re", extr.getTokProp(TokProperty.CHPRE2, 1));
+        assertEquals("Res", extr.getTokProp(TokProperty.CHPRE3, 1));
+        assertEquals("Resu", extr.getTokProp(TokProperty.CHPRE4, 1));
+        assertEquals("Resul", extr.getTokProp(TokProperty.CHPRE5, 1));
+        assertEquals("taban", extr.getTokProp(TokProperty.CHSUF5, 1));
+        assertEquals("n", extr.getTokProp(TokProperty.CHSUF1, 1));
+        assertEquals("an", extr.getTokProp(TokProperty.CHSUF2, 1));
+        assertEquals("ban", extr.getTokProp(TokProperty.CHSUF3, 1));
+        assertEquals("aban", extr.getTokProp(TokProperty.CHSUF4, 1));
+        assertEquals("taban", extr.getTokProp(TokProperty.CHSUF5, 1));
     }
     
     @Test
@@ -190,7 +201,16 @@ public class TemplateFeatureExtractorTest {
         assertEquals("BEGIN_NO_DEPREL", extr.getTokProp(TokProperty.DEPREL, -1));
         assertEquals("UNK-CAPS", extr.getTokProp(TokProperty.UNK, -1));
         assertEquals("begin_no_form", extr.getTokProp(TokProperty.LC, -1));
+        assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE1, -1));
+        assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE2, -1));
+        assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE3, -1));
+        assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE4, -1));
         assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE5, -1));
+        assertEquals("BEGIN_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF1, -1));
+        assertEquals("BEGIN_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF2, -1));
+        assertEquals("BEGIN_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF3, -1));
+        assertEquals("BEGIN_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF4, -1));
+        assertEquals("BEGIN_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF5, -1));
     }
     
     @Test    
@@ -209,7 +229,16 @@ public class TemplateFeatureExtractorTest {
         assertEquals("END_NO_DEPREL", extr.getTokProp(TokProperty.DEPREL, n));
         assertEquals("UNK-CAPS", extr.getTokProp(TokProperty.UNK, n));
         assertEquals("end_no_form", extr.getTokProp(TokProperty.LC, n));
+        assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE1, n));
+        assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE2, n));
+        assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE3, n));
+        assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE4, n));
         assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE5, n));
+        assertEquals("END_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF1, n));
+        assertEquals("END_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF2, n));
+        assertEquals("END_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF3, n));
+        assertEquals("END_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF4, n));
+        assertEquals("END_NO_SUFFIX", extr.getTokProp(TokProperty.CHSUF5, n));
     }
     
     @Test

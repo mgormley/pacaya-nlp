@@ -34,7 +34,9 @@ public class TemplateLanguage {
         
     /** Word property. A mapping from a position to a string. */
     public enum TokProperty {
-        INDEX, WORD, LEMMA, POS, CPOS, BC0, BC1, MORPHO, DEPREL, LC, UNK, CHPRE5, CAPITALIZED, WORD_TOP_N,
+        INDEX, WORD, LEMMA, POS, CPOS, BC0, BC1, MORPHO, DEPREL, LC, UNK, CAPITALIZED, WORD_TOP_N,
+        CHPRE1, CHPRE2, CHPRE3, CHPRE4, CHPRE5,
+        CHSUF1, CHSUF2, CHSUF3, CHSUF4, CHSUF5,
         //
         MORPHO1, MORPHO2, MORPHO3;        
     }
@@ -221,10 +223,21 @@ public class TemplateLanguage {
         desc(TokProperty.DEPREL, "deprel", "Dependency relation to head", AT.DEPREL);
         desc(TokProperty.LC, "lc", "Lower-cased word", AT.WORD);
         desc(TokProperty.UNK, "unk", "Unknown word class", AT.WORD);
-        desc(TokProperty.CHPRE5, "chpre5", "5-character prefix of a word", AT.WORD);
         desc(TokProperty.CAPITALIZED, "capitalized", "Whether this word starts with a capital letter", AT.WORD);
         desc(TokProperty.WORD_TOP_N, "wordTopN", "Word if it's in the top N", AT.WORD);
         desc(TokProperty.INDEX, "index", "The position itself", AT.WORD);
+
+        desc(TokProperty.CHPRE1, "chpre1", "1-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE2, "chpre2", "2-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE3, "chpre3", "3-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE4, "chpre4", "4-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE5, "chpre5", "5-character prefix of a word", AT.WORD);
+
+        desc(TokProperty.CHSUF1, "chsuf1", "1-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF2, "chsuf2", "2-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF3, "chsuf3", "3-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF4, "chsuf4", "4-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF5, "chsuf5", "5-character suffix of a word", AT.WORD);
         
         desc(TokProperty.MORPHO1, "morpho1", "Morphological feature 1", AT.MORPHO);
         desc(TokProperty.MORPHO2, "morpho2", "Morphological feature 2", AT.MORPHO);
