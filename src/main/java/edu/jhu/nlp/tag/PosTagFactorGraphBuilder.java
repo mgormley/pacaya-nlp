@@ -37,10 +37,14 @@ public class PosTagFactorGraphBuilder {
         public List<FeatTemplate> templates = TemplateSets.getFromResource(TemplateSets.custom2TagFeatsResource);
         /** The value of the mod for use in the feature hashing trick. If <= 0, feature-hashing will be disabled. */
         public int featureHashMod = -1;
+        /** Whether to include unary factors on each tag. */
+        public boolean unigramFactors = true;
+        /** Whether to include binary factors on each pair of tags. */
+        public boolean bigramFactors = true;
     }
     
     public enum PosTagFactorType {
-        POS_TAG, INIT_TAG
+        TAG_BIGRAM, INIT_TAG, TAG_UNIGRAM
     }
     
     private PosTagFactorGraphBuilderPrm prm;
@@ -119,16 +123,25 @@ public class PosTagFactorGraphBuilder {
         }
             	
         // Create factors.
-        //
-        // Unary factor for initial tag.
         TemplateFeatureExtractor fe = new TemplateFeatureExtractor(sent, cs);
-        fg.addFactor(new PosTagFactor(new VarSet(tagVars.get(0)), PosTagFactorType.INIT_TAG, 
-                ofc, LocalObservations.newPidx(0), fe));
-        for (int i=1; i<sent.size(); i++) {
-            // Binary factors for subsequent tags.
-            VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
-            fg.addFactor(new PosTagFactor(vars, PosTagFactorType.POS_TAG, 
-                    ofc, LocalObservations.newPidx(i), fe));
+        if (prm.bigramFactors) {
+            // Unary factor for initial tag, since we can't do a bigram factor for it.
+            fg.addFactor(new PosTagFactor(new VarSet(tagVars.get(0)), PosTagFactorType.INIT_TAG, 
+                    ofc, LocalObservations.newPidx(0), fe));
+        }
+        for (int i=0; i<sent.size(); i++) {
+            if (prm.unigramFactors) {
+                // Unary factor for each tag.
+                VarSet vars = new VarSet(tagVars.get(i));
+                fg.addFactor(new PosTagFactor(vars, PosTagFactorType.TAG_UNIGRAM, 
+                        ofc, LocalObservations.newPidx(i), fe));
+            }
+            if (i > 0 && prm.bigramFactors) {
+                // Binary factor for each pair of tags.
+                VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
+                fg.addFactor(new PosTagFactor(vars, PosTagFactorType.TAG_BIGRAM,
+                        ofc, LocalObservations.newPidx(i), fe));
+            }
         }
     }
     
