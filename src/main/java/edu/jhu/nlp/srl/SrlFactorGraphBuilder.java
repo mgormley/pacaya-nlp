@@ -10,13 +10,17 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.embed.Embeddings;
+import edu.jhu.nlp.fcm.FcmFactor;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
+import edu.jhu.nlp.srl.SrlWordFeatures.SrlWordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.iter.IntIter;
 import edu.jhu.prim.set.IntSet;
@@ -40,36 +44,31 @@ public class SrlFactorGraphBuilder implements Serializable {
      * @author mgormley
      */
     public static class SrlFactorGraphBuilderPrm implements Serializable {
-
         private static final long serialVersionUID = 1L;
-
         /** The structure of the Role variables. */
         public RoleStructure roleStructure = RoleStructure.ALL_PAIRS;
-        
         /**
          * Whether the Role variables (if any) that correspond to predicates not
          * marked with a "Y" should be latent, as opposed to predicted
          * variables.
          */
         public boolean makeUnknownPredRolesLatent = true;
-        
         /** Whether to allow a predicate to assign a role to itself. (This should be turned on for English) */
         public boolean allowPredArgSelfLoops = false;
-        
         /** Whether to include unary factors in the model. (Ignored if there are no Link variables.) */
         public boolean unaryFactors = true;
-        
         /** Whether to include factors between the sense and role variables. */
         public boolean binarySenseRoleFactors = false;
-        
         /** Whether to predict the predicate sense. */
         public boolean predictSense = false;
-        
         /** Whether to predict the predicate positions. */
         public boolean predictPredPos = false;
-        
         /** Feature extractor options for SRL. */
         public SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
+        /** Whether to use FCM factors. */ 
+        public boolean fcmFactors = false;
+        /** Whether to treat the embeddings as model parameters. */ 
+        public boolean fcmFineTuning = false;
     }
 
     public enum RoleStructure {
@@ -160,16 +159,15 @@ public class SrlFactorGraphBuilder implements Serializable {
      */
     public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
             FactorGraph fg) {
+        List<String> words = sent.getWords();
+        List<String> lemmas = sent.getLemmas();
+        IntSet knownPreds = sent.getKnownPreds();
+        List<String> roleStateNames = cs.roleStateNames;
+        Map<String, List<String>> psMap = cs.predSenseListMap;
+
         // Create feature extractor.
         obsFe = new SrlFeatureExtractor(prm.srlFePrm, sent, cs, ofc.getTemplates());
-        build(sent.getWords(), sent.getLemmas(), sent.getKnownPreds(), cs.roleStateNames, cs.predSenseListMap, obsFe, ofc, fg);        
-    }
-
-    /**
-     * Adds factors and variables to the given factor graph.
-     */
-    private void build(List<String> words, List<String> lemmas, IntSet knownPreds, List<String> roleStateNames,
-            Map<String, List<String>> psMap, ObsFeatureExtractor obsFe, ObsFeatureConjoiner ofc, FactorGraph fg) {
+        
         // Check for null arguments.
         if (prm.roleStructure == RoleStructure.PREDS_GIVEN && knownPreds == null) {
             throw new IllegalArgumentException("knownPreds must be non-null");
@@ -270,7 +268,16 @@ public class SrlFactorGraphBuilder implements Serializable {
                 if (i != -1) {
                     // Add unary factors on Roles.
                     if (prm.unaryFactors && roleVars[i][j] != null) {
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j]), SrlFactorTemplate.ROLE_UNARY, ofc, obsFe));
+                        VarSet vars = new VarSet(roleVars[i][j]);
+                        fg.addFactor(new ObsFeTypedFactor(vars, SrlFactorTemplate.ROLE_UNARY, ofc, obsFe));
+                        if (prm.fcmFactors) {
+                            // HACK: Does this work correctly? We do the same in RelationsFactorGraphBuilder.
+                            final FeatureNames alphabet = ofc.fcmAlphabet;
+                            Embeddings embeddings = (Embeddings)ofc.embeddings;
+                            SrlWordFeaturesPrm wfPrm = new SrlWordFeaturesPrm();
+                            SrlWordFeatures wf = new SrlWordFeatures(wfPrm, sent, alphabet);
+                            fg.addFactor(new FcmFactor(vars, sent, embeddings, ofc, prm.fcmFineTuning, wf));
+                        }
                     }
                     // Add binary factors between Role and Sense variables.
                     if (prm.binarySenseRoleFactors && senseVars[i] != null && roleVars[i][j] != null) {

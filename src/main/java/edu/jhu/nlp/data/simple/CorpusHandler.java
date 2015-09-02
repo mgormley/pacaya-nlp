@@ -418,6 +418,7 @@ public class CorpusHandler {
 
     /** Gets a set containing all the words appearing in train/dev/test. */
     public Set<String> getAllKnownWords() throws IOException {
+        log.info("Reading all data to build known words set.");
         Set<String> words = new HashSet<>();
         if (this.hasTrain()) {
             for (AnnoSentence sent : getTrainInput()) {

@@ -231,6 +231,10 @@ public class JointNlpRunner {
     public static boolean predictSense = false;
     @Opt(hasArg = true, description = "Whether to predict predicate positions.")
     public static boolean predictPredPos = false;
+    @Opt(hasArg = true, description = " Whether to use FCM factors.")
+    public static boolean srlFcmFactors = false;
+    @Opt(hasArg = true, description = "Whether to treat the embeddings as model parameters.")
+    public static boolean srlFcmFineTuning = false;
     
     // Options for joint factor graph structure.
     @Opt(hasArg = true, description = "Whether to include unary factors in the model.")
@@ -713,7 +717,9 @@ public class JointNlpRunner {
         srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
         srlPrm.predictSense = predictSense;
         srlPrm.predictPredPos = predictPredPos;
-
+        srlPrm.fcmFactors = srlFcmFactors;
+        srlPrm.fcmFineTuning = srlFcmFineTuning;
+        
         // SRL Feature Extraction.
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
         srlFePrm.biasOnly = biasOnly;
@@ -721,7 +727,7 @@ public class JointNlpRunner {
         srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
         srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
-        
+                
         srlPrm.srlFePrm = srlFePrm;
         return srlPrm;
     }
