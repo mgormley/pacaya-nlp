@@ -7,6 +7,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
@@ -39,7 +41,7 @@ public class Embeddings implements Serializable {
         this.alphabet = alphabet;
     }
     
-    public Embeddings(File txtFile) {
+    public Embeddings(File txtFile, final Set<String> words) {
         log.info("Reading word embeddings from file: " + txtFile);
         // Count the number of words and length of the embeddings.
         final MutableInt numWords = new MutableInt(0);
@@ -47,8 +49,10 @@ public class Embeddings implements Serializable {
         EmbeddingHandler countHandler = new EmbeddingHandler(){
             @Override
             public void addEmbedding(String word, double[] embed) {
-                numWords.v += 1;
-                dim.v = embed.length;
+                if (words == null || words.contains(word)) {
+                    numWords.v += 1;                    
+                    dim.v = embed.length;
+                }
             }
         };
         parseEmbFile(txtFile, countHandler);
@@ -58,9 +62,11 @@ public class Embeddings implements Serializable {
         EmbeddingHandler addHandler = new EmbeddingHandler(){
             @Override
             public void addEmbedding(String word, double[] embed) {
-                int i = alphabet.lookupIndex(word);
-                for (int d=0; d<embed.length; d++) {
-                    embeds.set(embed[d], i, d);
+                if (words == null || words.contains(word)) {
+                    int i = alphabet.lookupIndex(word);
+                    for (int d=0; d<embed.length; d++) {
+                        embeds.set(embed[d], i, d);
+                    }
                 }
             }
         };
@@ -184,7 +190,7 @@ public class Embeddings implements Serializable {
     }
     
     public static void main(String[] args) throws IOException {
-        Embeddings embed = new Embeddings(new File(args[0]));
+        Embeddings embed = new Embeddings(new File(args[0]), null);
         embed.writeEmbeddings(System.out);
     }
     

@@ -415,5 +415,26 @@ public class CorpusHandler {
         }
         return ats;
     }
+
+    /** Gets a set containing all the words appearing in train/dev/test. */
+    public Set<String> getAllKnownWords() throws IOException {
+        Set<String> words = new HashSet<>();
+        if (this.hasTrain()) {
+            for (AnnoSentence sent : getTrainInput()) {
+                words.addAll(sent.getWords());
+            }
+        }
+        if (this.hasDev()) {
+            for (AnnoSentence sent : getDevInput()) {
+                words.addAll(sent.getWords());
+            }
+        }
+        if (this.hasTest()) {
+            for (AnnoSentence sent : getTestInput()) {
+                words.addAll(sent.getWords());
+            }
+        }
+        return words;
+    }
     
 }

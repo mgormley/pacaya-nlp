@@ -44,9 +44,9 @@ public class EmbeddingsAnnotator extends AbstractParallelAnnotator implements An
     private AtomicInteger numLookups = new AtomicInteger(0);
     private AtomicInteger numMisses = new AtomicInteger(0);
     
-    public EmbeddingsAnnotator(EmbeddingsAnnotatorPrm prm) {
+    public EmbeddingsAnnotator(EmbeddingsAnnotatorPrm prm, Set<String> words) {
         this.prm = prm;
-        this.embeddings = new Embeddings(prm.embeddingsFile);
+        this.embeddings = new Embeddings(prm.embeddingsFile, words);
         embeddings.normPerWord(prm.embNorm);
         embeddings.scaleAll(prm.embScalar);
         if (prm.entitySpecificEmbeddings) {

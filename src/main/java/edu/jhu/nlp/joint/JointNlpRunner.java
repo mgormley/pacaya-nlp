@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -438,7 +439,8 @@ public class JointNlpRunner {
             }
             // Add word embeddings.
             if (embeddingsFile != null) {
-                EmbeddingsAnnotator embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm());               
+                Set<String> words = corpus.getAllKnownWords();
+                EmbeddingsAnnotator embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm(), words);               
                 if (parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class).useEmbeddingFeatures == true) {
                     embeds = embedAnno.getEmbeddings();
                 }
