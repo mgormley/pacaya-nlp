@@ -71,6 +71,7 @@ public class CorpusStatistics implements Serializable {
     public List<String> linkStateNames;
     public List<String> roleStateNames;
     public List<String> relationStateNames;
+    public List<String> posTagStateNames;
     // Mapping from predicate form to the set of predicate senses.
     public Map<String,List<String>> predSenseListMap = new HashMap<String,List<String>>();
 
@@ -194,9 +195,10 @@ public class CorpusStatistics implements Serializable {
         
         topNWords = getTopNUnigrams(words, prm.topN, prm.cutoff);
         
-        this.linkStateNames = new ArrayList<String>(knownLinks);
-        this.roleStateNames =  new ArrayList<String>(knownRoles);
-        this.relationStateNames =  new ArrayList<String>(knownRelations);
+        this.linkStateNames = new ArrayList<>(knownLinks);
+        this.roleStateNames =  new ArrayList<>(knownRoles);
+        this.relationStateNames =  new ArrayList<>(knownRelations);
+        this.posTagStateNames = new ArrayList<>(knownPostags);
         for (Entry<String,Set<String>> entry : predSenseSetMap.entrySet()) {
             predSenseListMap.put(entry.getKey(), new ArrayList<String>(entry.getValue()));
         }

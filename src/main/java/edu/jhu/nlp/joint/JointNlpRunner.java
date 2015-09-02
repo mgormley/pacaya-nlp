@@ -83,6 +83,7 @@ import edu.jhu.nlp.srl.SrlFeatureSelection;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
+import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
@@ -272,6 +273,10 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "Arg feature template output file.")
     public static File argFeatTplsOut = null;
 
+    // Options for POS tagging factor graph structure.
+    @Opt(hasArg = true, description = "The type of the tag variables.")
+    public static VarType posTagVarType = VarType.LATENT;
+    
     // Options for dependency parse factor graph structure.
     @Opt(hasArg = true, description = "The type of the link variables.")
     public static VarType linkVarType = VarType.LATENT;
@@ -651,6 +656,8 @@ public class JointNlpRunner {
     
     private static JointNlpFgExampleBuilderPrm getJointNlpFgExampleBuilderPrm() {
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
+        // Part-of-speech tagging factor graph.
+        prm.fgPrm.posPrm = getPosTagFactorGraphBuilderPrm();
         // Dependency parse factor graph.
         prm.fgPrm.dpPrm = getDepParseFactorGraphBuilderPrm();
         // SRL factor graph.
@@ -670,6 +677,16 @@ public class JointNlpRunner {
         prm.exPrm.maxEntriesInMemory = maxEntriesInMemory;
         
         return prm;
+    }
+
+    private static PosTagFactorGraphBuilderPrm getPosTagFactorGraphBuilderPrm() {
+        PosTagFactorGraphBuilderPrm posPrm = new PosTagFactorGraphBuilderPrm();
+        posPrm.featureHashMod = featureHashMod;
+        posPrm.posTagVarType = posTagVarType;
+        if (posTagVarType != VarType.LATENT) {
+            throw new RuntimeException("encoding/decoding for POS tagging is not yet implemented");
+        }
+        return posPrm;
     }
 
     private static DepParseFactorGraphBuilderPrm getDepParseFactorGraphBuilderPrm() {

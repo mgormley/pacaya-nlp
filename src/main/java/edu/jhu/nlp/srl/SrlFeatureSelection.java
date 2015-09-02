@@ -103,6 +103,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             fgPrm.srlPrm.srlFePrm.pairTemplates   = TemplateLanguage.filterOutRequiring(srlFePrm.pairTemplates, at);
             fgPrm.dpPrm.dpFePrm.firstOrderTpls = TemplateLanguage.filterOutRequiring(dpFePrm.firstOrderTpls, at);
             fgPrm.dpPrm.dpFePrm.secondOrderTpls   = TemplateLanguage.filterOutRequiring(dpFePrm.secondOrderTpls, at);
+            fgPrm.posPrm.templates = TemplateLanguage.filterOutRequiring(fgPrm.posPrm.templates, at);
         }
     }
     

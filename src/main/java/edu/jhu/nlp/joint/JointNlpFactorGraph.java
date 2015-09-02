@@ -1,14 +1,14 @@
 package edu.jhu.nlp.joint;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
-import edu.jhu.nlp.depparse.DepParseFeatureExtractor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
@@ -16,6 +16,9 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
+import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
+import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
+import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.TagVar;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.VarSet;
@@ -42,6 +45,8 @@ public class JointNlpFactorGraph extends FactorGraph {
      */
     public static class JointNlpFactorGraphPrm extends Prm {
         private static final long serialVersionUID = 1L;
+        public boolean includePos = false;
+        public PosTagFactorGraphBuilderPrm posPrm = new PosTagFactorGraphBuilderPrm();
         public boolean includeDp = true;
         public DepParseFactorGraphBuilderPrm dpPrm = new DepParseFactorGraphBuilderPrm();
         public boolean includeSrl = true;
@@ -51,7 +56,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     }
     
     public enum JointFactorTemplate {
-        LINK_ROLE_BINARY,
+        LINK_ROLE_BINARY, ROLE_P_TAG_BINARY, ROLE_C_TAG_BINARY,
     }
     
     // Parameters for constructing the factor graph.
@@ -61,6 +66,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     private int n;
     
     // Factor graph builders, which also cache the variables.
+    private PosTagFactorGraphBuilder pos;  
     private DepParseFactorGraphBuilder dp;  
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
@@ -76,7 +82,11 @@ public class JointNlpFactorGraph extends FactorGraph {
     public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
             FactorGraph fg) {
         this.n = sent.size();
-        
+
+        if (prm.includePos) {
+            pos = new PosTagFactorGraphBuilder(prm.posPrm);
+            pos.build(sent, ofc, fg, cs);
+        }
         if (prm.includeDp) {
             dp = new DepParseFactorGraphBuilder(prm.dpPrm);
             dp.build(sent, fg, cs, ofc);
@@ -100,6 +110,28 @@ public class JointNlpFactorGraph extends FactorGraph {
                         // Add binary factors between Roles and Links.
                         if (roleVars[i][j] != null && childVars[i][j] != null) {
                             addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
+                        }
+                    }
+                }
+            }
+        }
+        if (prm.includePos && prm.includeSrl) {
+            // Add the joint factors.
+            List<TagVar> tagVars = pos.getTagVars();
+            RoleVar[][] roleVars = srl.getRoleVars();
+            for (int i = -1; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i != -1) {
+                        // Add binary factors between Roles and Tags.
+                        if (roleVars[i][j] != null) {
+                            if (tagVars.get(i) != null) {
+                                addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], tagVars.get(i)), 
+                                        JointFactorTemplate.ROLE_P_TAG_BINARY, ofc, srl.getFeatExtractor()));
+                            }
+                            if (tagVars.get(j) != null) {
+                                addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], tagVars.get(j)), 
+                                        JointFactorTemplate.ROLE_C_TAG_BINARY, ofc, srl.getFeatExtractor()));
+                            }
                         }
                     }
                 }
