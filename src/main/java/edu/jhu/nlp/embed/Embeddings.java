@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.pacaya.autodiff.Tensor;
+import edu.jhu.pacaya.util.dist.Gaussian;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.arrays.DoubleArrays;
@@ -64,11 +65,13 @@ public class Embeddings implements Serializable {
             }
         };
         parseEmbFile(txtFile, addHandler);
-        // TODO: Always add an embedding for the special <UNK> word type.
-        // Currently this is commented out to align with Mo's implementation.
-        //        if (alphabet.lookupIndex(UNKNOWN_WORD) == -1) {
-        //            addHandler.addEmbedding(UNKNOWN_WORD, new double[dim.v]);
-        //        }
+        // Always add an embedding for the special <UNK> word type.
+        if (alphabet.lookupIndex(UNKNOWN_WORD) == -1) {
+            // Initialize to some small random values.
+            double[] embed = new double[dim.v];
+            Gaussian.nextDoubleArray(0, 1e-4, embed);
+            addHandler.addEmbedding(UNKNOWN_WORD, embed);
+        }
         alphabet.stopGrowth();
         log.debug("Embedding vocabulary size: " + alphabet.size());
     }
