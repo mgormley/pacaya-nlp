@@ -109,7 +109,8 @@ public class JointNlpFactorGraph extends FactorGraph {
                     if (i != -1) {
                         // Add binary factors between Roles and Links.
                         if (roleVars[i][j] != null && childVars[i][j] != null) {
-                            addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
+                            addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), 
+                                    JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
                         }
                     }
                 }
