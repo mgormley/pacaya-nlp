@@ -1,22 +1,15 @@
 package edu.jhu.nlp.srl;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.nlp.data.LabeledSpan;
-import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.fcm.FcmModule;
 import edu.jhu.nlp.fcm.WordFeatures;
 import edu.jhu.nlp.features.FeaturizedSentence;
 import edu.jhu.nlp.features.FeaturizedTokenPair;
-import edu.jhu.nlp.features.LocalObservations;
-import edu.jhu.nlp.relations.RelObsFeatures;
-import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.model.VarSet;
@@ -24,7 +17,6 @@ import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -34,7 +26,7 @@ import edu.jhu.prim.tuple.Pair;
  */
 public class SrlWordFeatures implements WordFeatures {
 
-    public enum SrlWordFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, FULL }
+    public enum SrlWordFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, HEAD_TYPE_LOC_ST_LT, FULL }
 
     public static class SrlWordFeaturesPrm extends Prm {
         private static final long serialVersionUID = 1L;
@@ -100,6 +92,16 @@ public class SrlWordFeatures implements WordFeatures {
         
         switch (prm.embFeatType) {
         case FULL:
+        case HEAD_TYPE_LOC_ST_LT:
+            //- {l} \cross {hC, mC, hC_mC}
+            addEmbFeat("l-hC:"+hC,      left, fvs);
+            addEmbFeat("l-mC:"+mC,      left, fvs);
+            addEmbFeat("l-hCmC:"+hC_mC, left, fvs);
+            //- {r} \cross {hC, mC, hC_mC}            
+            addEmbFeat("r-hC:"+hC,      right, fvs);
+            addEmbFeat("r-mC:"+mC,      right, fvs);
+            addEmbFeat("r-hCmC:"+hC_mC, right, fvs);
+            
         case HEAD_TYPE_LOC_ST:
             //- {h} \cross {hD, mD}
             //- {m} \cross {hD, mD}
@@ -107,7 +109,7 @@ public class SrlWordFeatures implements WordFeatures {
             addEmbFeat("h-mD:"+mD,    head, fvs);
             addEmbFeat("m-hD:"+hD,    modifier, fvs);
             addEmbFeat("m-mD:"+mD,    modifier, fvs);
-        
+            
         case HEAD_TYPE_LOC:
             //- {btwn} \cross {hC, mC, hC+mC} : btwn = is the word between l and r
             Span btwn = new Span(left+1, right);
@@ -115,7 +117,7 @@ public class SrlWordFeatures implements WordFeatures {
                 addEmbFeat("in_between", i, fvs);
                 addEmbFeat("in_between-hC:"+hC, i, fvs);
                 addEmbFeat("in_between-mC:"+mC, i, fvs);
-                addEmbFeat("in_between-hCmC:"+hC_mC, i, fvs);
+                // COMMENTED OUT: addEmbFeat("in_between-hCmC:"+hC_mC, i, fvs);
             }
             //- {onpath} \cross {hC, mC, hC_mC} : onpath = is the word on the dependency
             //  path between h and m
@@ -128,7 +130,7 @@ public class SrlWordFeatures implements WordFeatures {
                         addEmbFeat("on_path", i, fvs);
                         addEmbFeat("on_path-hC:"+hC, i, fvs);
                         addEmbFeat("on_path-mC:"+mC, i, fvs);
-                        addEmbFeat("on_path-hCmC:"+hC_mC, i, fvs);
+                        // COMMENTED OUT: addEmbFeat("on_path-hCmC:"+hC_mC, i, fvs);
                     }
                 } else {
                     log.trace("No dependency path between mention heads");
@@ -154,16 +156,7 @@ public class SrlWordFeatures implements WordFeatures {
             addEmbFeat("+1_m", modifier+1, fvs);
             addEmbFeat("-2_m", modifier-2, fvs);
             addEmbFeat("+2_m", modifier+2, fvs);
-            
-            //- {l} \cross {hC, mC, hC_mC}
-            addEmbFeat("l-hC:"+hC,      left, fvs);
-            addEmbFeat("l-mC:"+mC,      left, fvs);
-            addEmbFeat("l-hCmC:"+hC_mC, left, fvs);
-            //- {r} \cross {hC, mC, hC_mC}            
-            addEmbFeat("r-hC:"+hC,      right, fvs);
-            addEmbFeat("r-mC:"+mC,      right, fvs);
-            addEmbFeat("r-hCmC:"+hC_mC, right, fvs);
-                    
+                                
         case HEAD_TYPE:
             //- {h} \cross {hC, mC, hC_mC}
             addEmbFeat("h-hC:"+hC,      head, fvs);
