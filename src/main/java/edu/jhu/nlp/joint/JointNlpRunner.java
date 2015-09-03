@@ -214,7 +214,7 @@ public class JointNlpRunner {
     @Opt(hasArg=true, description="Method for normalization of the embeddings.")
     public static Scaling embNorm = Scaling.L2_NORM;
     @Opt(hasArg=true, description="Amount to scale embeddings after normalization.")
-    public static double embScalar = 15.0;
+    public static double embScalar = 1.0;
     @Opt(hasArg=true, description="Whether to use entity mention specific embeddings.")
     public static boolean entitySpecificEmbeddings = false;
     
