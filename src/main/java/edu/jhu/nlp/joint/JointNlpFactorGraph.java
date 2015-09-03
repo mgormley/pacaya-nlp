@@ -10,6 +10,13 @@ import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
+import edu.jhu.nlp.features.LocalObservations;
+import edu.jhu.nlp.features.TemplateFeatureExtractor;
+import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
+import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate1;
+import edu.jhu.nlp.features.TemplateLanguage.Position;
+import edu.jhu.nlp.features.TemplateLanguage.PositionModifier;
+import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
@@ -19,11 +26,13 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.TagVar;
+import edu.jhu.nlp.tag.TemplateFeatureFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * A factor graph builder for joint dependency parsing and semantic role
@@ -118,6 +127,13 @@ public class JointNlpFactorGraph extends FactorGraph {
         }
         if (prm.includePos && prm.includeSrl) {
             // Add the joint factors.
+            TemplateFeatureExtractor fe = new TemplateFeatureExtractor(sent, cs);
+            List<FeatTemplate> templates = QLists.getList(
+                    new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.WORD), // word(p)
+                    new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.WORD), // word(c)
+                    new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.BC0), // bc0(p)
+                    new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.BC0) // bc0(c)
+                    );
             List<TagVar> tagVars = pos.getTagVars();
             RoleVar[][] roleVars = srl.getRoleVars();
             for (int i = -1; i < n; i++) {
@@ -125,13 +141,16 @@ public class JointNlpFactorGraph extends FactorGraph {
                     if (i != -1) {
                         // Add binary factors between Roles and Tags.
                         if (roleVars[i][j] != null) {
+                            LocalObservations local = LocalObservations.newPidxCidx(i, j);
                             if (tagVars.get(i) != null) {
-                                addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], tagVars.get(i)), 
-                                        JointFactorTemplate.ROLE_P_TAG_BINARY, ofc, srl.getFeatExtractor()));
+                                addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], tagVars.get(i)), 
+                                        JointFactorTemplate.ROLE_P_TAG_BINARY, ofc, local , fe, 
+                                        templates, prm.srlPrm.srlFePrm.featureHashMod));
                             }
                             if (tagVars.get(j) != null) {
-                                addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], tagVars.get(j)), 
-                                        JointFactorTemplate.ROLE_C_TAG_BINARY, ofc, srl.getFeatExtractor()));
+                                addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], tagVars.get(j)), 
+                                        JointFactorTemplate.ROLE_C_TAG_BINARY, ofc, local , fe, 
+                                        templates, prm.srlPrm.srlFePrm.featureHashMod));
                             }
                         }
                     }

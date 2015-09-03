@@ -12,16 +12,11 @@ import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
-import edu.jhu.nlp.relations.FeatureUtils;
-import edu.jhu.pacaya.gm.feat.FactorTemplateList;
-import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.gm.feat.ObsCjExpFamFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarSet;
-import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.Prm;
 
 public class PosTagFactorGraphBuilder {
@@ -66,41 +61,6 @@ public class PosTagFactorGraphBuilder {
         }
     }
     
-    public class PosTagFactor extends ObsCjExpFamFactor {
-
-        private static final long serialVersionUID = 1L;
-        private LocalObservations local;
-        private TemplateFeatureExtractor fe;
-        
-        public PosTagFactor(VarSet vars, Object templateKey, ObsFeatureConjoiner ofc, 
-                LocalObservations local, TemplateFeatureExtractor fe) {
-            super(vars, templateKey, ofc);
-            this.local = local;
-            this.fe = fe;
-        }
-        
-        @Override
-        public FeatureVector getObsFeatures() {
-            FactorTemplateList fts = ofc.getTemplates();
-            final FeatureNames alphabet = fts.getTemplate(this).getAlphabet();
-            ArrayList<String> obsFeats = new ArrayList<String>();
-            fe.addFeatures(prm.templates, local, obsFeats);
-            
-            // The bias features are used to ensure that at least one feature fires for each variable configuration.
-            ArrayList<String> biasFeats = new ArrayList<String>();
-            biasFeats.add("BIAS_FEATURE");
-            
-            // Add the bias features.
-            FeatureVector fv = new FeatureVector(biasFeats.size() + obsFeats.size());
-            FeatureUtils.addFeatures(biasFeats, alphabet, fv, true, prm.featureHashMod);
-            
-            // Add the other features.
-            FeatureUtils.addFeatures(obsFeats, alphabet, fv, false, prm.featureHashMod);
-            
-            return fv;
-        }
-    };
-    
     /**
      * Adds factors and variables to the given factor graph.
      */
@@ -121,26 +81,30 @@ public class PosTagFactorGraphBuilder {
             TagVar v = new TagVar(prm.posTagVarType, TagVar.getDefaultName(i), stateNames, i);
             tagVars.add(v);
         }
-            	
+        
         // Create factors.
         TemplateFeatureExtractor fe = new TemplateFeatureExtractor(sent, cs);
         if (prm.bigramFactors) {
             // Unary factor for initial tag, since we can't do a bigram factor for it.
-            fg.addFactor(new PosTagFactor(new VarSet(tagVars.get(0)), PosTagFactorType.INIT_TAG, 
-                    ofc, LocalObservations.newPidx(0), fe));
+            VarSet vars = new VarSet(tagVars.get(0));
+            fg.addFactor(new TemplateFeatureFactor(vars, PosTagFactorType.INIT_TAG, 
+                    ofc, LocalObservations.newPidx(0), fe,
+                    prm.templates, prm.featureHashMod));
         }
         for (int i=0; i<sent.size(); i++) {
             if (prm.unigramFactors) {
                 // Unary factor for each tag.
                 VarSet vars = new VarSet(tagVars.get(i));
-                fg.addFactor(new PosTagFactor(vars, PosTagFactorType.TAG_UNIGRAM, 
-                        ofc, LocalObservations.newPidx(i), fe));
+                fg.addFactor(new TemplateFeatureFactor(vars, PosTagFactorType.TAG_UNIGRAM, 
+                        ofc, LocalObservations.newPidx(i), fe,
+                        prm.templates, prm.featureHashMod));
             }
             if (i > 0 && prm.bigramFactors) {
                 // Binary factor for each pair of tags.
                 VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
-                fg.addFactor(new PosTagFactor(vars, PosTagFactorType.TAG_BIGRAM,
-                        ofc, LocalObservations.newPidx(i), fe));
+                fg.addFactor(new TemplateFeatureFactor(vars, PosTagFactorType.TAG_BIGRAM,
+                        ofc, LocalObservations.newPidx(i), fe,
+                        prm.templates, prm.featureHashMod));
             }
         }
     }
