@@ -114,9 +114,12 @@ public class SrlWordFeatures implements WordFeatures {
             //- {btwn} \cross {hC, mC, hC+mC} : btwn = is the word between l and r
             Span btwn = new Span(left+1, right);
             for (int i=btwn.start(); i<btwn.end(); i++) {
-                addEmbFeat("in_between", i, fvs);
-                addEmbFeat("in_between-hC:"+hC, i, fvs);
-                addEmbFeat("in_between-mC:"+mC, i, fvs);
+                final int maxDistance = 4; // Max distance from either l or r.
+                if (Math.abs(left - i) < maxDistance || Math.abs(right - i) < maxDistance) {
+                    addEmbFeat("in_between", i, fvs);
+                }
+                // COMMENTED OUT: addEmbFeat("in_between-hC:"+hC, i, fvs);
+                // COMMENTED OUT: addEmbFeat("in_between-mC:"+mC, i, fvs);
                 // COMMENTED OUT: addEmbFeat("in_between-hCmC:"+hC_mC, i, fvs);
             }
             //- {onpath} \cross {hC, mC, hC_mC} : onpath = is the word on the dependency
@@ -128,8 +131,8 @@ public class SrlWordFeatures implements WordFeatures {
                     for (Pair<Integer,ParentsArray.Dir> pair : depPath) {
                         int i = pair.get1();
                         addEmbFeat("on_path", i, fvs);
-                        addEmbFeat("on_path-hC:"+hC, i, fvs);
-                        addEmbFeat("on_path-mC:"+mC, i, fvs);
+                        // COMMENTED OUT: addEmbFeat("on_path-hC:"+hC, i, fvs);
+                        // COMMENTED OUT: addEmbFeat("on_path-mC:"+mC, i, fvs);
                         // COMMENTED OUT: addEmbFeat("on_path-hCmC:"+hC_mC, i, fvs);
                     }
                 } else {

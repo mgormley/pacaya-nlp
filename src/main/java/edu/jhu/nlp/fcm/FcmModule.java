@@ -113,6 +113,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
             int w_i = sent.getEmbedId(i);
             if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
+            if (f_i.getUsed() == 0) { continue; }
             // Loop over labels.
             for (int y=0; y<numLabels; y++) {
                 // Loop over embedding dimensions.
@@ -192,6 +193,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
             int w_i = sent.getEmbedId(i);
             if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
+            if (f_i.getUsed() == 0) { continue; }
             // Loop over labels.
             for (int y=0; y<numLabels; y++) {
                 // Loop over embedding dimensions.
