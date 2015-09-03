@@ -301,6 +301,7 @@ public class IGFeatureTemplateSelector {
      */
     public static double computeInformationGain(IntDoubleDenseVector[] counts) {
         double curIg = 0.0;
+        if (counts.length == 0) { return curIg; }
         final DenseDoubleMatrix cm = new DenseDoubleMatrix(counts);
         double[] vCounts = cm.getRowSums();
         double[] fCounts = cm.getColSums();
