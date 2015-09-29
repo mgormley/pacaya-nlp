@@ -25,12 +25,15 @@ import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
 import edu.jhu.hlt.optimize.MalletLBFGS;
 import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
+import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
 import edu.jhu.hlt.optimize.SGDFobos;
 import edu.jhu.hlt.optimize.SGDFobos.SGDFobosPrm;
 import edu.jhu.hlt.optimize.StanfordQNMinimizer;
+import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
+import edu.jhu.hlt.optimize.function.Regularizer;
 import edu.jhu.hlt.optimize.functions.L2;
 import edu.jhu.nlp.AnnoPipeline;
 import edu.jhu.nlp.Annotator;
@@ -116,6 +119,7 @@ import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.pacaya.util.semiring.ShiftedRealAlgebra;
 import edu.jhu.pacaya.util.semiring.SplitAlgebra;
+import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
@@ -126,8 +130,6 @@ import edu.jhu.prim.util.random.Prng;
  * @author mmitchell
  */
 public class JointNlpRunner {
-
-    public static enum Optimizer { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD };
 
     public enum ErmaLoss { L2DIST, EXPECTED_RECALL, SOFTMAX_MBR };
 
@@ -321,46 +323,6 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "Whether to gzip an object before caching it.")
     public static boolean gzipCache = false;    
     
-    // Options for optimization.
-    @Opt(hasArg=true, description="The optimization method to use for training.")
-    public static Optimizer optimizer = Optimizer.LBFGS;
-    @Opt(hasArg=true, description="The variance for the L2 regularizer.")
-    public static double l2variance = 1.0;
-    @Opt(hasArg=true, description="The type of regularizer.")
-    public static RegularizerType regularizer = RegularizerType.L2;
-    @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
-    public static int maxLbfgsIterations = 1000;
-    @Opt(hasArg=true, description="Number of effective passes over the dataset for SGD.")
-    public static int sgdNumPasses = 30;
-    @Opt(hasArg=true, description="The batch size to use at each step of SGD.")
-    public static int sgdBatchSize = 15;
-    @Opt(hasArg=true, description="The initial learning rate for SGD.")
-    public static double sgdInitialLr = 0.1;
-    @Opt(hasArg=true, description="Whether to sample with replacement for SGD.")
-    public static boolean sgdWithRepl = false;
-    @Opt(hasArg=true, description="Whether to automatically select the learning rate.")
-    public static boolean sgdAutoSelectLr = true;
-    @Opt(hasArg=true, description="How many epochs between auto-select runs.")
-    public static int sgdAutoSelecFreq = 5;
-    @Opt(hasArg=true, description="Whether to compute the function value on iterations other than the last.")
-    public static boolean sgdComputeValueOnNonFinalIter = true;
-    @Opt(hasArg=true, description="Whether to do parameter averaging.")
-    public static boolean sgdAveraging = false;
-    @Opt(hasArg=true, description="Whether to do early stopping.")
-    public static boolean sgdEarlyStopping = true;
-    @Opt(hasArg=true, description="The AdaGrad parameter for scaling the learning rate.")
-    public static double adaGradEta = 0.1;
-    @Opt(hasArg=true, description="The constant addend for AdaGrad.")
-    public static double adaGradConstantAddend = 1e-9;
-    @Opt(hasArg=true, description="The initial value of the sum of squares for AdaGrad.")
-    public static double adaGradInitialSumSquares = 0;
-    @Opt(hasArg=true, description="The decay rate for AdaDelta.")
-    public static double adaDeltaDecayRate = 0.95;
-    @Opt(hasArg=true, description="The constant addend for AdaDelta.")
-    public static double adaDeltaConstantAddend = Math.pow(Math.E, -6.);
-    @Opt(hasArg=true, description="Stop training by this date/time.")
-    public static Date stopTrainingBy = null;
-    
     // Options for training.
     @Opt(hasArg=true, description="The type of trainer to use (e.g. conditional log-likelihood, ERMA).")
     public static Trainer trainer = Trainer.CLL;
@@ -395,10 +357,10 @@ public class JointNlpRunner {
         if (useLogAddTable) {
             log.warn("Using log-add table instead of exact computation. When using global factors, this may result in numerical instability.");
         }
-        if (stopTrainingBy != null && new Date().after(stopTrainingBy)) {
-            log.warn("Training will never begin since stopTrainingBy has already happened: " + stopTrainingBy);
+        if (OptimizerFactory.stopTrainingBy != null && new Date().after(OptimizerFactory.stopTrainingBy)) {
+            log.warn("Training will never begin since stopTrainingBy has already happened: " + OptimizerFactory.stopTrainingBy);
             log.warn("Ignoring stopTrainingBy by setting it to null.");
-            stopTrainingBy = null;
+            OptimizerFactory.stopTrainingBy = null;
         }
         
         // Initialize the data reader/writer.
@@ -812,76 +774,12 @@ public class JointNlpRunner {
             // TODO: This cast is a temporary hack.
             prm.bFactory = (BeliefsModuleFactory) infPrm;
         }
-        if (optimizer == Optimizer.LBFGS) {
-            prm.optimizer = getMalletLbfgs();
-            prm.batchOptimizer = null;
-        } else if (optimizer == Optimizer.QN) {
-            prm.optimizer = getStanfordLbfgs();
-            prm.batchOptimizer = null;            
-        } else if (optimizer == Optimizer.SGD || optimizer == Optimizer.ASGD  ||
-                optimizer == Optimizer.ADAGRAD || optimizer == Optimizer.ADADELTA) {
-            prm.optimizer = null;
-            SGDPrm sgdPrm = getSgdPrm();
-            if (optimizer == Optimizer.SGD){
-                BottouSchedulePrm boPrm = new BottouSchedulePrm();
-                boPrm.initialLr = sgdInitialLr;
-                boPrm.lambda = 1.0 / l2variance;
-                sgdPrm.sched = new BottouSchedule(boPrm);
-            } else if (optimizer == Optimizer.ASGD){
-                BottouSchedulePrm boPrm = new BottouSchedulePrm();
-                boPrm.initialLr = sgdInitialLr;
-                boPrm.lambda = 1.0 / l2variance;
-                boPrm.power = 0.75;
-                sgdPrm.sched = new BottouSchedule(boPrm);
-                sgdPrm.averaging = true;
-            } else if (optimizer == Optimizer.ADAGRAD){
-                AdaGradSchedulePrm adaGradPrm = new AdaGradSchedulePrm();
-                adaGradPrm.eta = adaGradEta;
-                adaGradPrm.constantAddend = adaGradConstantAddend;
-                adaGradPrm.initialSumSquares = adaGradInitialSumSquares;
-                sgdPrm.sched = new AdaGradSchedule(adaGradPrm);
-            } else if (optimizer == Optimizer.ADADELTA){
-                AdaDeltaPrm adaDeltaPrm = new AdaDeltaPrm();
-                adaDeltaPrm.decayRate = adaDeltaDecayRate;
-                adaDeltaPrm.constantAddend = adaDeltaConstantAddend;
-                sgdPrm.sched = new AdaDelta(adaDeltaPrm);
-                sgdPrm.autoSelectLr = false;
-            }
-            prm.batchOptimizer = new SGD(sgdPrm);
-        } else if (optimizer == Optimizer.ADAGRAD_COMID) {
-            AdaGradComidL2Prm sgdPrm = new AdaGradComidL2Prm();
-            setSgdPrm(sgdPrm);
-            //TODO: sgdPrm.l1Lambda = l1Lambda;
-            sgdPrm.l2Lambda = 1.0 / l2variance;
-            sgdPrm.eta = adaGradEta;
-            sgdPrm.constantAddend = adaGradConstantAddend;
-            sgdPrm.initialSumSquares = adaGradInitialSumSquares;
-            sgdPrm.sched = null;
-            prm.optimizer = null;
-            prm.batchOptimizer = new AdaGradComidL2(sgdPrm);
-        } else if (optimizer == Optimizer.FOBOS) {
-            SGDFobosPrm sgdPrm = new SGDFobosPrm();
-            setSgdPrm(sgdPrm);
-            //TODO: sgdPrm.l1Lambda = l1Lambda;            
-            sgdPrm.l2Lambda = 1.0 / l2variance;
-            BottouSchedulePrm boPrm = new BottouSchedulePrm();
-            boPrm.initialLr = sgdInitialLr;
-            boPrm.lambda = 1.0 / l2variance;
-            sgdPrm.sched = new BottouSchedule(boPrm);  
-            prm.optimizer = null;
-            prm.batchOptimizer = new SGDFobos(sgdPrm);
-        } else {
-            throw new RuntimeException("Optimizer not supported: " + optimizer);
-        }
-        if (regularizer == RegularizerType.L2) {
-            prm.regularizer = new L2(l2variance);
-        } else if (regularizer == RegularizerType.NONE) {
-            prm.regularizer = null;
-        } else {
-            throw new ParseException("Unsupported regularizer: " + regularizer);
-        }
-        prm.numThreads = threads;     
-        prm.trainer = trainer;                
+        Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> opts = OptimizerFactory.getOptimizers();
+        prm.optimizer = opts.get1();
+        prm.batchOptimizer = opts.get2();
+        prm.regularizer = OptimizerFactory.getRegularizer();
+        prm.numThreads = threads;
+        prm.trainer = trainer;
         
         // TODO: add options for other loss functions.
         if (prm.trainer == Trainer.ERMA) {
@@ -905,36 +803,6 @@ public class JointNlpRunner {
         }
         
         return prm;
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getMalletLbfgs() {
-        MalletLBFGSPrm prm = new MalletLBFGSPrm();
-        prm.maxIterations = maxLbfgsIterations;
-        return new MalletLBFGS(prm);
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getStanfordLbfgs() {
-        return new StanfordQNMinimizer(maxLbfgsIterations);
-    }
-    
-    private static SGDPrm getSgdPrm() {
-        SGDPrm prm = new SGDPrm();
-        setSgdPrm(prm);
-        return prm;
-    }
-
-    private static void setSgdPrm(SGDPrm prm) {
-        prm.numPasses = sgdNumPasses;
-        prm.batchSize = sgdBatchSize;
-        prm.withReplacement = sgdWithRepl;
-        prm.stopBy = stopTrainingBy;
-        prm.autoSelectLr = sgdAutoSelectLr;
-        prm.autoSelectFreq = sgdAutoSelecFreq;
-        prm.computeValueOnNonFinalIter = sgdComputeValueOnNonFinalIter;
-        prm.averaging = sgdAveraging; 
-        prm.earlyStopping = sgdEarlyStopping; 
-        // Make sure we correctly set the schedule somewhere else.
-        prm.sched = null;
     }
 
     private static FgInferencerFactory getInfFactory() throws ParseException {
@@ -997,6 +865,7 @@ public class JointNlpRunner {
         try {
             parser = new ArgParser(JointNlpRunner.class);
             parser.registerClass(JointNlpRunner.class);
+            parser.registerClass(OptimizerFactory.class);
             parser.registerClass(CorpusHandler.class);
             parser.registerClass(RelationMungerPrm.class);
             parser.registerClass(RelationsFactorGraphBuilderPrm.class);
