@@ -62,6 +62,11 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
 
         // Get the variable assignments given in the training data.
         VarConfig vc = new VarConfig();
+        if (prm.fgPrm.includePos) {
+            if (gold != null && gold.getPosTags() != null) {
+                fg.getPosTagBuilder().addRelVarAssignments(gold.getPosTags(), vc);;
+            }
+        }
         if (prm.fgPrm.includeDp) {
             if (gold != null && gold.getParents() != null) {
                 DepParseEncoder.addDepParseTrainAssignment(gold.getParents(), fg.getDpBuilder(), vc);

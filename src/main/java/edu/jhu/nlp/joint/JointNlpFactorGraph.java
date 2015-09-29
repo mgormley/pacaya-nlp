@@ -200,6 +200,10 @@ public class JointNlpFactorGraph extends FactorGraph {
         return n;
     }
 
+    public PosTagFactorGraphBuilder getPosTagBuilder() {
+        return pos;
+    }
+    
     public DepParseFactorGraphBuilder getDpBuilder() {
         return dp;
     }

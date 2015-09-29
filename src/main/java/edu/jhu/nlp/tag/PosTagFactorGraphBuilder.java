@@ -12,10 +12,13 @@ import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
+import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
+import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
 
@@ -24,7 +27,6 @@ public class PosTagFactorGraphBuilder {
     private static final Logger log = LoggerFactory.getLogger(PosTagFactorGraphBuilder.class);
 
     public static class PosTagFactorGraphBuilderPrm extends Prm {
-        // TODO: Cleanup these names: drop "use" and add "rel" prefix.
         private static final long serialVersionUID = 1L;
         /** The type of the link variables. */
         public VarType posTagVarType = VarType.LATENT;
@@ -111,6 +113,24 @@ public class PosTagFactorGraphBuilder {
     
     public List<TagVar> getTagVars() {
         return tagVars;
+    }
+
+    /* ------------------------- Encode ------------------------- */
+    public void addRelVarAssignments(List<String> tags, VarConfig vc) {
+        for (int i=0; i<tagVars.size(); i++) {
+            Var var = tagVars.get(i);
+            vc.put(var, tags.get(i));
+        }
+    }
+    
+    /* ------------------------- Decode ------------------------- */
+    public List<String> getTagsFromMbrVarConfig(VarConfig mbrVarConfig) {
+        ArrayList<String> tags = new ArrayList<>();
+        for (int i=0; i<tagVars.size(); i++) {
+            Var var = tagVars.get(i);
+            tags.add(mbrVarConfig.getStateName(var));
+        }
+        return tags;
     }
     
 }
