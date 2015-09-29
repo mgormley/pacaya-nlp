@@ -15,26 +15,9 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.hlt.optimize.AdaDelta;
-import edu.jhu.hlt.optimize.AdaDelta.AdaDeltaPrm;
-import edu.jhu.hlt.optimize.AdaGradComidL2;
-import edu.jhu.hlt.optimize.AdaGradComidL2.AdaGradComidL2Prm;
-import edu.jhu.hlt.optimize.AdaGradSchedule;
-import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
-import edu.jhu.hlt.optimize.BottouSchedule;
-import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
-import edu.jhu.hlt.optimize.MalletLBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
 import edu.jhu.hlt.optimize.Optimizer;
-import edu.jhu.hlt.optimize.SGD;
-import edu.jhu.hlt.optimize.SGD.SGDPrm;
-import edu.jhu.hlt.optimize.SGDFobos;
-import edu.jhu.hlt.optimize.SGDFobos.SGDFobosPrm;
-import edu.jhu.hlt.optimize.StanfordQNMinimizer;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
-import edu.jhu.hlt.optimize.function.Regularizer;
-import edu.jhu.hlt.optimize.functions.L2;
 import edu.jhu.nlp.AnnoPipeline;
 import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
@@ -57,6 +40,7 @@ import edu.jhu.nlp.eval.DepParseAccuracy;
 import edu.jhu.nlp.eval.DepParseExactMatch;
 import edu.jhu.nlp.eval.OraclePruningAccuracy;
 import edu.jhu.nlp.eval.OraclePruningExactMatch;
+import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.ProportionAnnotated;
 import edu.jhu.nlp.eval.PruningEfficiency;
 import edu.jhu.nlp.eval.RelationEvaluator;
@@ -477,6 +461,9 @@ public class JointNlpRunner {
                 eval.add(new PruningEfficiency(dpSkipPunctuation));
                 eval.add(new OraclePruningAccuracy(dpSkipPunctuation));
                 eval.add(new OraclePruningExactMatch(dpSkipPunctuation));
+            }
+            if (CorpusHandler.getGoldOnlyAts().contains(AT.POS)) {
+                eval.add(new PosTagAccuracy());
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE)) {
                 eval.add(new DepParseAccuracy(dpSkipPunctuation));

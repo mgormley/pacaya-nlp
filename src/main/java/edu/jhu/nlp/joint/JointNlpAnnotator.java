@@ -26,6 +26,7 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.eval.DepParseAccuracy;
+import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.RelationEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
@@ -140,6 +141,8 @@ public class JointNlpAnnotator implements Trainable, Annotator {
         final Evaluator eval;
         if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
             eval = new DepParseAccuracy(prm.dpSkipPunctuation);
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.POS))) {
+            eval = new PosTagAccuracy();
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) || 
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
