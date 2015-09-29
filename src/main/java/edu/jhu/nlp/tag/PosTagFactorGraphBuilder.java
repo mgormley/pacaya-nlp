@@ -21,6 +21,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
 
 public class PosTagFactorGraphBuilder {
 
@@ -28,7 +29,7 @@ public class PosTagFactorGraphBuilder {
 
     public static class PosTagFactorGraphBuilderPrm extends Prm {
         private static final long serialVersionUID = 1L;
-        /** The type of the link variables. */
+        /** The type of the tag variables. */
         public VarType posTagVarType = VarType.LATENT;
         /** Feature templates. */
         public List<FeatTemplate> templates = TemplateSets.getFromResource(TemplateSets.custom2TagFeatsResource);

@@ -633,9 +633,6 @@ public class JointNlpRunner {
         PosTagFactorGraphBuilderPrm posPrm = new PosTagFactorGraphBuilderPrm();
         posPrm.featureHashMod = featureHashMod;
         posPrm.posTagVarType = posTagVarType;
-        if (posTagVarType != VarType.LATENT) {
-            throw new RuntimeException("encoding/decoding for POS tagging is not yet implemented");
-        }
         return posPrm;
     }
 

@@ -9,6 +9,7 @@ import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.pacaya.gm.app.Loss;
+import edu.jhu.pacaya.util.report.Reporter;
 
 /**
  * Computes the per-token POS tagging accuracy.
@@ -18,6 +19,7 @@ import edu.jhu.pacaya.gm.app.Loss;
 public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
 
     private static final Logger log = LoggerFactory.getLogger(PosTagAccuracy.class);
+    private static final Reporter rep = Reporter.getReporter(PosTagAccuracy.class);
 
     private double accuracy;
     private int correct;
@@ -43,7 +45,8 @@ public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
             evaluate(pred, gold);
         }
         accuracy = (double) correct / (double) total;
-        log.info(String.format("POS tag accuracy on %s: %.4f", dataName, accuracy));        
+        log.info(String.format("POS tag accuracy on %s: %.4f", dataName, accuracy));    
+        rep.report(dataName+"PosAccuracy", accuracy);
         return getErrors();
     }
 

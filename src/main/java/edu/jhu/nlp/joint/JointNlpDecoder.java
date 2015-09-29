@@ -60,7 +60,7 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
         // Get the POS tags.
         if (fg.getPosTagBuilder() != null) {
             List<String> posTags = fg.getPosTagBuilder().getTagsFromMbrVarConfig(mbrVarConfig);
-            sent.setPosTags(posTags);
+            predSent.setPosTags(posTags);
         }
         // Get the SRL graph.
         SrlGraph srlGraph = SrlDecoder.getSrlGraphFromVarConfig(mbrVarConfig, n);
