@@ -10,6 +10,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.FeTypedFactor;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
@@ -128,9 +129,10 @@ public class DepParseFactorGraphBuilder implements Serializable {
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, FactorGraph fg, CorpusStatistics cs, ObsFeatureConjoiner ofc) {
+    public void build(IntAnnoSentence isent, FactorGraph fg, CorpusStatistics cs, ObsFeatureConjoiner ofc) {
+        AnnoSentence sent = isent.getAnnoSentence();
         FeatureExtractor fe = prm.dpFePrm.onlyFast ?
-                new BitshiftDepParseFeatureExtractor(prm.bsDpFePrm, sent, cs, ofc) :
+                new BitshiftDepParseFeatureExtractor(prm.bsDpFePrm, isent, cs, ofc) :
                 new DepParseFeatureExtractor(prm.dpFePrm, sent, cs, ofc.getFeAlphabet());
         build(sent.getWords(), sent.getDepEdgeMask(), fe, fg);
     }

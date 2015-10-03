@@ -6,13 +6,11 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.FeTypedFactor;
-import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorTemplate;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.GraFeTypedFactor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.HbFeTypedFactor;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.SibFeTypedFactor;
-import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
@@ -67,9 +65,9 @@ public class BitshiftDepParseFeatureExtractor implements FeatureExtractor {
     private BitshiftDepParseFeatureExtractorPrm prm;
     private IntAnnoSentence isent;
     
-    public BitshiftDepParseFeatureExtractor(BitshiftDepParseFeatureExtractorPrm prm, AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc) {
+    public BitshiftDepParseFeatureExtractor(BitshiftDepParseFeatureExtractorPrm prm, IntAnnoSentence isent, CorpusStatistics cs, ObsFeatureConjoiner ofc) {
         this.prm = prm;
-        this.isent = new IntAnnoSentence(sent, cs.store);
+        this.isent = isent;
         ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
     }
 

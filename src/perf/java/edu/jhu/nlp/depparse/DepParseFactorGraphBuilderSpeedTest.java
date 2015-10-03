@@ -4,6 +4,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
@@ -53,8 +54,9 @@ public class DepParseFactorGraphBuilderSpeedTest {
         fgPrm.bsDpFePrm.useCoarseTags = true;
         fgPrm.bsDpFePrm.useMstFeats = true;
 
+        IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
-        builder.build(sent, fg, cs, ofc);
+        builder.build(isent, fg, cs, ofc);
         
         UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;

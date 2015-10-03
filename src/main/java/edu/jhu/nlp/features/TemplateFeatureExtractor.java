@@ -609,7 +609,7 @@ public class TemplateFeatureExtractor {
         String s = tok.getForm();
         return s.substring(Math.max(0, s.length() - max), s.length());
     }
-        
+    
     protected static <T> Collection<T> bag(Collection<T> elements) {
         // bag, which removes all duplicated strings and sort the rest
         return new TreeSet<T>(elements);

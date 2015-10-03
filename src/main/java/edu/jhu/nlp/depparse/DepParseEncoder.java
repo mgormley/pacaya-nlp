@@ -2,6 +2,7 @@ package edu.jhu.nlp.depparse;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
@@ -10,7 +11,6 @@ import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.LabeledFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
-import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -23,7 +23,7 @@ import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
  * 
  * @author mgormley
  */
-public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
+public class DepParseEncoder implements Encoder<IntAnnoSentence, int[]> {
 
     public static class DepParseEncoderPrm {
         // TODO: Fill w/non-null values.
@@ -43,19 +43,19 @@ public class DepParseEncoder implements Encoder<AnnoSentence, int[]> {
     }
 
     @Override
-    public LFgExample encode(AnnoSentence sent, int[] parents) {
-        return getExample(sent, parents, true);
+    public LFgExample encode(IntAnnoSentence isent, int[] parents) {
+        return getExample(isent, parents, true);
     }
 
     @Override
-    public UFgExample encode(AnnoSentence sent) {
-        return getExample(sent, null, false);
+    public UFgExample encode(IntAnnoSentence isent) {
+        return getExample(isent, null, false);
     }
 
-    private LFgExample getExample(AnnoSentence sent, int[] parents, boolean labeledExample) {
+    private LFgExample getExample(IntAnnoSentence isent, int[] parents, boolean labeledExample) {
         FactorGraph fg = new FactorGraph();
         DepParseFactorGraphBuilder dp = new DepParseFactorGraphBuilder(prm.dpPrm);
-        dp.build(sent, fg, cs, ofc);
+        dp.build(isent, fg, cs, ofc);
         
         VarConfig goldConfig = new VarConfig();
         addDepParseTrainAssignment(parents, dp, goldConfig);

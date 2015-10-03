@@ -8,20 +8,22 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
-import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
-import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.ExpFamFactor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.util.SafeCast;
 
 public class PosTagFactorGraphBuilder {
 
@@ -31,10 +33,12 @@ public class PosTagFactorGraphBuilder {
         private static final long serialVersionUID = 1L;
         /** The type of the tag variables. */
         public VarType posTagVarType = VarType.LATENT;
+        /** Whether to use fast features only. */
+        public boolean onlyFast = true;
         /** Feature templates. */
         public List<FeatTemplate> templates = TemplateSets.getFromResource(TemplateSets.custom2TagFeatsResource);
         /** The value of the mod for use in the feature hashing trick. If <= 0, feature-hashing will be disabled. */
-        public int featureHashMod = -1;
+        public int featureHashMod = 1000000;
         /** Whether to include unary factors on each tag. */
         public boolean unigramFactors = true;
         /** Whether to include binary factors on each pair of tags. */
@@ -46,31 +50,21 @@ public class PosTagFactorGraphBuilder {
     }
     
     private PosTagFactorGraphBuilderPrm prm;
-    private List<TagVar> tagVars;
+    private List<Var> tagVars;
     
     public PosTagFactorGraphBuilder(PosTagFactorGraphBuilderPrm prm) {
         this.prm = prm;
     }
     
-    public static class TagVar extends Var {
-        private static final long serialVersionUID = 1L;
-        public int i;
-        public TagVar(VarType type, String name, List<String> stateNames, int i) {
-            super(type, stateNames.size(), name, stateNames);
-            this.i = i;
-        }
-        public static String getDefaultName(int i) {
-            return String.format("TagVar[%d]", i);
-        }
-    }
-    
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+    public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+        ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
+        
         // Create tag variables.
         tagVars = new ArrayList<>();
-        for (int i=0; i<sent.size(); i++) {
+        for (int i=0; i<isent.size(); i++) {
             List<String> stateNames;
             if (prm.posTagVarType == VarType.LATENT) {
                 int numLatTags = 10;
@@ -81,9 +75,66 @@ public class PosTagFactorGraphBuilder {
             } else {
                 stateNames = cs.posTagStateNames;
             }
-            TagVar v = new TagVar(prm.posTagVarType, TagVar.getDefaultName(i), stateNames, i);
+            Var v = new Var(prm.posTagVarType, stateNames.size(), "tag"+i, stateNames);
             tagVars.add(v);
         }
+
+        if (prm.onlyFast && prm.featureHashMod > 0) {
+            addFastFactors(isent, ofc, fg, cs);
+        } else {
+            addSlowFactors(isent.getAnnoSentence(), ofc, fg, cs);
+        }
+    }
+
+    private void addFastFactors(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+        final int featureHashMod = prm.featureHashMod;
+        for (int i=0; i<isent.size(); i++) {
+            if (prm.unigramFactors) {
+                // Unary factor for each tag.
+                VarSet vars = new VarSet(tagVars.get(i));
+                final FeatureVector obsFeats = new FeatureVector();
+                BitshiftTokenFeatures.addUnigramFeatures(isent, i, obsFeats, featureHashMod, (short) 0); // config=0
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+            }
+            if (i > 0 && prm.bigramFactors) {
+                // Binary factor for each pair of tags.
+                VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
+                final FeatureVector obsFeats = new FeatureVector();
+                BitshiftTokenFeatures.addBigramFeatures(isent, i, obsFeats, featureHashMod, (short) 0); // config=0
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+            }
+        }
+    }
+    
+    private static class HashObsFeatsFactor extends ExpFamFactor {
+
+        private static final long serialVersionUID = 1L;
+        private FeatureVector obsFeats;
+        private int featureHashMod;
+        
+        public HashObsFeatsFactor(VarSet vars, FeatureVector obsFeats, int featureHashMod) {
+            super(vars);
+            this.obsFeats = obsFeats;
+            this.featureHashMod = featureHashMod;
+        }
+        
+        @Override
+        public FeatureVector getFeatures(int config) {
+            int[] idxs = obsFeats.getInternalIndices();
+            int used = obsFeats.getUsed();
+            FeatureVector feats = new FeatureVector(obsFeats.getUsed());
+            for (int k=0; k<used; k++) {
+                long feat =  (config << 32) & idxs[k];
+                BitshiftTokenFeatures.addFeat(feats, featureHashMod, feat);
+            }
+            return feats;
+        }
+        
+    }
+    
+    protected void addSlowFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+        // Features for tag bigrams.
+        List<FeatTemplate> templates = QLists.getList(); // Only use the bias feature.
         
         // Create factors.
         TemplateFeatureExtractor fe = new TemplateFeatureExtractor(sent, cs);
@@ -112,7 +163,7 @@ public class PosTagFactorGraphBuilder {
         }
     }
     
-    public List<TagVar> getTagVars() {
+    public List<Var> getTagVars() {
         return tagVars;
     }
 

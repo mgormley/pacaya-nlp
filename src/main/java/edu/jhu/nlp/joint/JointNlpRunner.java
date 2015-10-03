@@ -301,7 +301,7 @@ public class JointNlpRunner {
 
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
-    public static CacheType cacheType = CacheType.CACHE;
+    public static CacheType cacheType = CacheType.NONE;
     @Opt(hasArg = true, description = "When caching, the maximum number of examples to keep cached in memory or -1 for SoftReference caching.")
     public static int maxEntriesInMemory = 100;
     @Opt(hasArg = true, description = "Whether to gzip an object before caching it.")

@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.features.LocalObservations;
@@ -25,10 +26,10 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
-import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.TagVar;
 import edu.jhu.nlp.tag.TemplateFeatureFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
+import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
@@ -92,13 +93,16 @@ public class JointNlpFactorGraph extends FactorGraph {
             FactorGraph fg) {
         this.n = sent.size();
 
+        // TODO: This should move up the stack.
+        IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
+        
         if (prm.includePos) {
             pos = new PosTagFactorGraphBuilder(prm.posPrm);
-            pos.build(sent, ofc, fg, cs);
+            pos.build(isent, ofc, fg, cs);
         }
         if (prm.includeDp) {
             dp = new DepParseFactorGraphBuilder(prm.dpPrm);
-            dp.build(sent, fg, cs, ofc);
+            dp.build(isent, fg, cs, ofc);
         }
         if (prm.includeSrl) {
             srl = new SrlFactorGraphBuilder(prm.srlPrm); 
@@ -134,7 +138,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                     new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.BC0), // bc0(p)
                     new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.BC0) // bc0(c)
                     );
-            List<TagVar> tagVars = pos.getTagVars();
+            List<Var> tagVars = pos.getTagVars();
             RoleVar[][] roleVars = srl.getRoleVars();
             for (int i = -1; i < n; i++) {
                 for (int j = 0; j < n; j++) {
