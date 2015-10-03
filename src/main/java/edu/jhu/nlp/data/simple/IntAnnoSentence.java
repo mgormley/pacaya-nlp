@@ -3,6 +3,8 @@ package edu.jhu.nlp.data.simple;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhu.nlp.data.simple.AlphabetStore.AffixGetter;
+import edu.jhu.nlp.features.FeaturizedToken;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.list.ByteArrayList;
@@ -19,6 +21,7 @@ public class IntAnnoSentence {
 
     final static int MAX_WORD = SHORT_MAX;
     final static int MAX_PREFIX = SHORT_MAX;
+    final static int MAX_SUFFIX = SHORT_MAX;
     final static int MAX_LEMMA = SHORT_MAX;
     final static int MAX_POS = BYTE_MAX;
     final static int MAX_CPOS = BYTE_MAX;
@@ -27,7 +30,9 @@ public class IntAnnoSentence {
     final static int MAX_DEPREL = BYTE_MAX;
     
     private ShortArrayList words;
-    private ShortArrayList prefixes;
+    private ShortArrayList[] prefixes;
+    private ShortArrayList[] suffixes;
+    private boolean[] isCapitalized;    
     private ShortArrayList lemmas;
     private ByteArrayList posTags;
     private ByteArrayList cposTags;
@@ -49,7 +54,9 @@ public class IntAnnoSentence {
         this.sent = sent;
         this.store = store;
         this.words = getShorts(sent.getWords(), store.words);
-        this.prefixes = getShorts(sent.getPrefixes(), store.prefixes);
+        this.prefixes = getAffixShorts(sent.getWords(), store.prefixes, store.maxPrefixLen, true);
+        this.suffixes = getAffixShorts(sent.getWords(), store.suffixes, store.maxSuffixLen, false);
+        this.isCapitalized = getIsCapitalized(sent.getWords());
         this.lemmas = getShorts(sent.getLemmas(), store.lemmas);
         this.posTags = getBytes(sent.getPosTags(), store.posTags);
         this.cposTags = getBytes(sent.getCposTags(), store.cposTags);
@@ -70,7 +77,15 @@ public class IntAnnoSentence {
         this.numPuncsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.PUNC);
         this.numConjsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.CONJ);
     }
-    
+
+    private static boolean[] getIsCapitalized(List<String> words) {
+        boolean[] isCapitalized = new boolean[words.size()];
+        for (int i=0; i<words.size(); i++) {
+            isCapitalized[i] = FeaturizedToken.capitalized(words.get(i));
+        }
+        return isCapitalized;
+    }
+
     private static IntArrayList getInts(List<String> tokens, IntObjectBimap<String> alphabet) {
         if (tokens == null) { return null; }
         IntArrayList arr = new IntArrayList(tokens.size());
@@ -123,18 +138,41 @@ public class IntAnnoSentence {
         }
         return arr;
     }
-
+    
+    private static ShortArrayList[] getAffixShorts(List<String> tokens, IntObjectBimap<String> alphabet, int maxLen, boolean isPre) {
+        if (tokens == null) { return null; }
+        // TODO: Simpler? short[][] arr2d = new short[maxLen][tokens.size()];
+        ShortArrayList[] arr = new ShortArrayList[maxLen];
+        for (int k=0; k<maxLen; k++) {
+            arr[k] = new ShortArrayList(tokens.size());
+            for (int i=0; i<tokens.size(); i++) {
+                int idx = AlphabetStore.safeLookup(alphabet, AffixGetter.getAffix(tokens.get(i), k+1, isPre));
+                arr[k].add(SafeCast.safeIntToUnsignedShort(idx));
+            }
+        }
+        return arr;
+    }
     
     /** Gets the i'th word. */
     public short getWord(int i) {
         return words.get(i);
     }
-    
-    /** Gets the i'th word. */
-    public short getPrefix(int i) {
-        return prefixes.get(i);
+
+    /** Gets the i'th prefix of length len. */
+    public short getPrefix(int i, int len) {
+        return prefixes[len-1].get(i);
     }
     
+    /** Gets the i'th suffix of length len. */
+    public short getSuffix(int i, int len) {
+        return suffixes[len-1].get(i);
+    }
+    
+    /** Gets whether the i'th word is capitalized. */
+    public boolean isCapitalized(int i) {
+        return isCapitalized[i];
+    }
+        
     /** Gets the i'th lemma. */
     public short getLemma(int i) {
         return lemmas.get(i);

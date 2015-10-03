@@ -3,6 +3,8 @@ package edu.jhu.nlp.data.simple;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,7 @@ public class AlphabetStore implements Serializable {
     
     IntObjectBimap<String> words;
     IntObjectBimap<String> prefixes;
+    IntObjectBimap<String> suffixes;
     IntObjectBimap<String> lemmas;
     IntObjectBimap<String> posTags;
     IntObjectBimap<String> cposTags;
@@ -42,9 +45,22 @@ public class AlphabetStore implements Serializable {
     //Alphabet<String> ntAlphabet;    
     private List<IntObjectBimap<String>> as;
     
+    public final int maxPrefixLen = 5;
+    public final int maxSuffixLen = 5;
+    
     public AlphabetStore(Iterable<AnnoSentence> sents) {
+        // The string generators for prefixes and suffixes create all affixes up to a given max
+        // length. The string to int mapping is kept in only a single IntObjectBimap.
+        MultiStrGetter prefixGetter = new MultiStrGetter(
+                IntStream.range(0, maxPrefixLen).mapToObj(
+                        i -> new AffixGetter(i+1, true)));
+        MultiStrGetter suffixGetter = new MultiStrGetter(
+                IntStream.range(0, maxSuffixLen).mapToObj(
+                        i -> new AffixGetter(i+1, false)));
+        
         words = getInitAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
         prefixes = getInitAlphabet("prefix", prefixGetter, IntAnnoSentence.MAX_PREFIX, sents);
+        suffixes = getInitAlphabet("suffix", suffixGetter, IntAnnoSentence.MAX_SUFFIX, sents);
         lemmas = getInitAlphabet("lemma", lemmaGetter, IntAnnoSentence.MAX_LEMMA, sents);
         posTags = getInitAlphabet("pos", posTagGetter, IntAnnoSentence.MAX_POS, sents);
         cposTags = getInitAlphabet("cpos", cposTagGetter, IntAnnoSentence.MAX_CPOS, sents);
@@ -52,7 +68,7 @@ public class AlphabetStore implements Serializable {
         feats = getInitAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
         deprels= getInitAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
         
-        as = QLists.getList(words, prefixes, lemmas, posTags, cposTags, clusters, feats, deprels);
+        as = QLists.getList(words, prefixes, suffixes, lemmas, posTags, cposTags, clusters, feats, deprels);
         this.stopGrowth();
     }
 
@@ -125,6 +141,10 @@ public class AlphabetStore implements Serializable {
         return safeLookup(prefixes, prefix);
     }
     
+    public int getSuffixIdx(String suffix) {
+        return safeLookup(suffixes, suffix);
+    }
+    
     public int getLemmaIdx(String lemma) {
         return safeLookup(lemmas, lemma);
     }
@@ -150,16 +170,58 @@ public class AlphabetStore implements Serializable {
     }
     
 
-    private interface StrGetter extends Serializable {
+    public interface StrGetter extends Serializable {
         List<String> getStrs(AnnoSentence sent);
+    }
+    public static class AffixGetter implements StrGetter {
+        private static final long serialVersionUID = 1L;
+        private int max;
+        private boolean isPre;
+        public AffixGetter(int max, boolean isPre) { 
+            this.max = max;
+            this.isPre = isPre;
+        }
+        public List<String> getStrs(AnnoSentence sent) { 
+            ArrayList<String> strs = new ArrayList<>(sent.size());
+            for (int i=0; i<sent.size(); i++) {
+                String s = sent.getWord(i);
+                s = getAffix(s, max, isPre);
+                strs.add(s);
+            }
+            return strs;
+        }
+        public static String getAffix(String s, int max, boolean isPre) {
+            if (isPre) {
+                s = s.substring(0, Math.min(s.length(), max)); // prefix
+            } else {
+                s = s.substring(Math.max(0, s.length() - max), s.length()); // suffix
+            }
+            return s;
+        }
+    }
+    private static class MultiStrGetter implements StrGetter {
+        private static final long serialVersionUID = 1L;
+        List<StrGetter> getters = new ArrayList<>();
+        public MultiStrGetter(StrGetter... getters) {
+            for (StrGetter g : getters) {
+                this.getters.add(g);
+            }
+        }
+        public MultiStrGetter(Stream<StrGetter> getters) {
+            getters.forEach(g -> this.getters.add(g));
+        }
+        @Override
+        public List<String> getStrs(AnnoSentence sent) {
+            ArrayList<String> strs = new ArrayList<>();
+            for (StrGetter g : getters) {
+                strs.addAll(g.getStrs(sent));
+            }
+            return strs;
+        }
     }
     private StrGetter wordGetter = new StrGetter() {
         private static final long serialVersionUID = 1L;
         public List<String> getStrs(AnnoSentence sent) { return sent.getWords(); }
-    };
-    private StrGetter prefixGetter = new StrGetter() {
-        private static final long serialVersionUID = 1L;
-        public List<String> getStrs(AnnoSentence sent) { return sent.getPrefixes(); }
     };
     private StrGetter lemmaGetter = new StrGetter() {
         private static final long serialVersionUID = 1L;

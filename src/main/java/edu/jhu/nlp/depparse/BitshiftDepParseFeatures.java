@@ -891,8 +891,8 @@ public class BitshiftDepParseFeatures {
         byte hPos = (head < 0) ? TOK_WALL_INT : sent.getPosTag(head);
         byte mPos = (modifier < 0) ? TOK_WALL_INT : sent.getPosTag(modifier);
         // 5-character prefixes.
-        short hPrefix = (head < 0) ? TOK_WALL_INT : sent.getPrefix(head);
-        short mPrefix = (modifier < 0) ? TOK_WALL_INT : sent.getPrefix(modifier);
+        short hPrefix = (head < 0) ? TOK_WALL_INT : sent.getPrefix(head, 5);
+        short mPrefix = (modifier < 0) ? TOK_WALL_INT : sent.getPrefix(modifier, 5);
         // Whether to include features for the 5-char prefixes.
         AnnoSentence aSent = sent.getAnnoSentence();
         boolean hPrefixFeats = (head < 0) ? false : aSent.getWord(head).length() > 5;
