@@ -124,7 +124,7 @@ public class PosTagFactorGraphBuilder {
             int used = obsFeats.getUsed();
             FeatureVector feats = new FeatureVector(obsFeats.getUsed());
             for (int k=0; k<used; k++) {
-                long feat =  (config << 32) & idxs[k];
+                long feat =  (config << 32) | idxs[k];
                 BitshiftTokenFeatures.addFeat(feats, featureHashMod, feat);
             }
             return feats;
