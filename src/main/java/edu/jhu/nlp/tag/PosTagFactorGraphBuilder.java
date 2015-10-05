@@ -111,7 +111,8 @@ public class PosTagFactorGraphBuilder {
         private static final long serialVersionUID = 1L;
         private FeatureVector obsFeats;
         private int featureHashMod;
-        
+        private static final long INT_MAX =   0xffffffff;
+
         public HashObsFeatsFactor(VarSet vars, FeatureVector obsFeats, int featureHashMod) {
             super(vars);
             this.obsFeats = obsFeats;
@@ -124,7 +125,7 @@ public class PosTagFactorGraphBuilder {
             int used = obsFeats.getUsed();
             FeatureVector feats = new FeatureVector(obsFeats.getUsed());
             for (int k=0; k<used; k++) {
-                long feat =  (config << 32) | idxs[k];
+                long feat =  (config & INT_MAX) | ((idxs[k] & INT_MAX) << 32);
                 BitshiftTokenFeatures.addFeat(feats, featureHashMod, feat);
             }
             return feats;
