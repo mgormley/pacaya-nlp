@@ -14,9 +14,13 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
+import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
+import edu.jhu.nlp.joint.JointNlpRunner;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.pacaya.util.report.Reporter;
+import edu.jhu.pacaya.util.report.ReporterManager;
 import edu.jhu.prim.arrays.DoubleArrays;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.util.random.Prng;
@@ -33,6 +37,7 @@ import edu.jhu.prim.util.random.RandBits;
 public class SignificanceTests {
 
     private static final Logger log = LoggerFactory.getLogger(SignificanceTests.class);
+    private static final Reporter rep = Reporter.getReporter(SignificanceTests.class);
 
     
     public interface EvalMetric<X> {
@@ -283,8 +288,10 @@ public class SignificanceTests {
             double[][] ssEmpty = new double[goldSents.size()][2];
             double score1 = getShuffledDiff(ss1, ssEmpty, flips, metric); 
             log.info("Score on dataset 1: " + score1);
+            rep.report("score1", score1);
             double score2 = getShuffledDiff(ss2, ssEmpty, flips, metric);
             log.info("Score on dataset 2: " + score2);
+            rep.report("score2", score2);
         }
         double diff = getShuffledDiff(ss1, ss2, flips, metric);
         log.trace("diff: " + diff);
@@ -425,6 +432,14 @@ public class SignificanceTests {
     public static boolean _skipPunct = false;
     @Opt(name="numSamples", hasArg=true, description="The number of samples to use for the significance test")
     public static int _numSamples = (int) Math.pow(2, 20);
+
+    private static AnnoSentenceCollection getData(File path, DatasetType type, String name) throws IOException {
+        AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
+        prm.name = name;
+        AnnoSentenceReader reader = new AnnoSentenceReader(prm);
+        reader.loadSents(path, type);
+        return reader.getData();
+    }
     
     /**
      * Speed Notes:
@@ -437,8 +452,10 @@ public class SignificanceTests {
     public static void main(String[] args) throws ParseException, IOException {
         ArgParser parser = new ArgParser(SignificanceTests.class);
         parser.registerClass(SignificanceTests.class);
-        parser.parseArgs(args);
-                
+        parser.registerClass(ReporterManager.class);
+        parser.parseArgs(args);        
+        ReporterManager.init(ReporterManager.reportOut, true);
+        
         AnnoSentenceCollection goldSents = getData(_gold, _type, "gold");
         AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1");
         AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2");
@@ -466,20 +483,15 @@ public class SignificanceTests {
             // 20 seconds for 2416 sentences.
             double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
             log.info("p-value (fast paired permutation): {}", ppt);
+            rep.report("p-value-ppt-fast", ppt);
         }
         
         double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
         log.info("p-value (paired permutation): {}", ppt);
+        rep.report("p-value-ppt", ppt);
         double bts = bootstrapTest(goldSents, predSents1, predSents2, _numSamples, metric);
         log.info("p-value (paired permutation): {}", bts);
-    }
-
-    protected static AnnoSentenceCollection getData(File path, DatasetType type, String name) throws IOException {
-        AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
-        prm.name = name;
-        AnnoSentenceReader reader = new AnnoSentenceReader(prm);
-        reader.loadSents(path, type);
-        return reader.getData();
+        rep.report("p-value-bts", bts);
     }
     
 }
