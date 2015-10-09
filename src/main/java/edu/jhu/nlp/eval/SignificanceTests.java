@@ -281,11 +281,12 @@ public class SignificanceTests {
         assert ss1[0].length == ss2[0].length;
         
         int numSents = ss1.length;
+        int numStats = ss1[0].length;
 
         boolean[] flips = new boolean[numSents];
         {
             // Log the scores for reference.
-            double[][] ssEmpty = new double[goldSents.size()][2];
+            double[][] ssEmpty = new double[goldSents.size()][numStats];
             double score1 = getShuffledDiff(ss1, ssEmpty, flips, metric); 
             log.info("Score on dataset 1: " + score1);
             rep.report("score1", score1);
@@ -364,13 +365,14 @@ public class SignificanceTests {
         assert ss1[0].length == ss2[0].length;
         
         int numSents = ss1.length;
-
+        int numStats = ss1[0].length;
+        
         int numGt = 0;
         // Compute the difference in the metric on the true test set.
         int[] sample = IntArrays.range(numSents);
         {
             // Log the scores for reference.
-            double[][] ssEmpty = new double[goldSents.size()][2];
+            double[][] ssEmpty = new double[goldSents.size()][numStats];
             double score1 = computeSampleDiff(ss1, ssEmpty, sample, metric); 
             log.info("Score on dataset 1: " + score1);
             double score2 = computeSampleDiff(ss2, ssEmpty, sample, metric);
