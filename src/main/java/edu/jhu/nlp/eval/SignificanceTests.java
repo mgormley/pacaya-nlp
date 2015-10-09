@@ -59,6 +59,31 @@ public class SignificanceTests {
         return pairedPermutationTest(scores1, scores2, numSamples);
     }
 
+    public static double pptMetricDepParseAccuracy(
+            AnnoSentenceCollection goldSents, 
+            AnnoSentenceCollection predSents1, 
+            AnnoSentenceCollection predSents2, 
+            boolean skipPunctuation) {
+        final int numSamples = (int) Math.pow(2, 20);
+        
+        new DepParseAccuracy(skipPunctuation).evaluate(predSents1, goldSents, "pred1");
+        new DepParseAccuracy(skipPunctuation).evaluate(predSents2, goldSents, "pred2");
+        DepAccuracyMetric metric = new DepAccuracyMetric(skipPunctuation);
+
+        // Compute the scores for each data set.
+        double[][] ss1 = new double[goldSents.size()][2];
+        double[][] ss2 = new double[goldSents.size()][2];
+        for (int i=0; i<goldSents.size(); i++) {
+            AnnoSentence gold = goldSents.get(i);
+            AnnoSentence pred1 = predSents1.get(i);
+            AnnoSentence pred2 = predSents2.get(i);
+            ss1[i] = metric.getSufficientStats(gold, pred1);
+            ss2[i] = metric.getSufficientStats(gold, pred2);
+        }
+        
+        return pairedPermutationTest(ss1, ss2, numSamples, metric);
+    }
+    
     public static double bootstrapDepParseAccuracy(
             AnnoSentenceCollection goldSents, 
             AnnoSentenceCollection predSents1, 
@@ -68,7 +93,8 @@ public class SignificanceTests {
         
         new DepParseAccuracy(skipPunctuation).evaluate(predSents1, goldSents, "pred1");
         new DepParseAccuracy(skipPunctuation).evaluate(predSents2, goldSents, "pred2");
-        
+        DepAccuracyMetric metric = new DepAccuracyMetric(skipPunctuation);
+
         // Compute the scores for each data set.
         double[][] ss1 = new double[goldSents.size()][2];
         double[][] ss2 = new double[goldSents.size()][2];
@@ -76,17 +102,11 @@ public class SignificanceTests {
             AnnoSentence gold = goldSents.get(i);
             AnnoSentence pred1 = predSents1.get(i);
             AnnoSentence pred2 = predSents2.get(i);
-            DepParseAccuracy acc1 = new DepParseAccuracy(skipPunctuation);
-            acc1.loss(pred1, gold);
-            DepParseAccuracy acc2 = new DepParseAccuracy(skipPunctuation);
-            acc2.loss(pred2, gold);
-            ss1[i][0] = acc1.getCorrect();
-            ss1[i][1] = acc1.getTotal();
-            ss2[i][0] = acc2.getCorrect();
-            ss2[i][1] = acc2.getTotal();
+            ss1[i] = metric.getSufficientStats(gold, pred1);
+            ss2[i] = metric.getSufficientStats(gold, pred2);
         }
         
-        return bootstrapTest(ss1, ss2, numSamples);
+        return bootstrapTest(ss1, ss2, numSamples, metric);
     }
 
     /** Paired permutation test as given by Yeh (2000). */
@@ -131,9 +151,67 @@ public class SignificanceTests {
         }
         return sum / diffs.length;
     }
+    
+    /** Paired permutation test as given by Yeh (2000). */
+    public static <X> double pairedPermutationTest(double[][] ss1, double[][] ss2, final int numSamples, StatSigMetric<X> metric) {
+        assert ss1.length == ss2.length;
+        assert ss1[0].length == ss2[0].length;
+        
+        int numSents = ss1.length;
+
+        boolean[] flips = new boolean[numSents];
+        double diff = getShuffledDiff(ss1, ss2, flips, metric);
+        log.trace("diff: " + diff);
+        if (diff < 0) {
+            throw new IllegalStateException("we assume pred1 outperformed pred2");
+        }
+        
+        // Shuffle and compute the mean.
+        int numGte = 0;
+        RandBits rand = new RandBits();
+        for (int s=0; s<numSamples; s++) {
+            for (int i=0; i<numSents; i++) {
+                flips[i] = rand.nextBit();
+            }
+            double diff_s = getShuffledDiff(ss1, ss2, flips, metric);
+            if (diff_s >= diff) {
+                numGte++;
+            }
+        }
+
+        // Estimate the p-value.
+        // 
+        // Yeh (2000) cites (Noreen, 1989, Sec. 3A.3) as defining the estimate of the p-value as below.
+        double pval = (numGte + 1.0) / (numSamples + 1.0);
+        log.trace("p-value (paired permutation test): " + pval);
+        return pval;
+    }
+
+    private static <X> double getShuffledDiff(double[][] ss1, double[][] ss2, boolean[] flips, StatSigMetric<X> metric) {
+        final int numStats = ss1[0].length;
+        // Add the sufficient statistics for the shuffled sample.
+        double[] accum1 = new double[numStats];
+        double[] accum2 = new double[numStats];
+        for (int i=0; i<flips.length; i++) {
+            if (flips[i]) {
+                DoubleArrays.add(accum1, ss2[i]);
+                DoubleArrays.add(accum2, ss1[i]);
+            } else {
+                DoubleArrays.add(accum1, ss1[i]);
+                DoubleArrays.add(accum2, ss2[i]);
+            }
+        }
+        // Compute the metric (accuracy) for each sampled dataset.
+        double acc1 = metric.getMetric(accum1);
+        double acc2 = metric.getMetric(accum2);
+        log.trace("acc1 = {} acc2 = {}", acc1, acc2);
+        // Compute the difference in metric.
+        double diff = acc1 - acc2;
+        return diff;
+    }
 
     /** Paired bootstrap test as given by Berg-Kirkpatrick & Klein (2012). */ 
-    public static double bootstrapTest(double[][] ss1, double[][] ss2, final int numSamples) {
+    public static <X> double bootstrapTest(double[][] ss1, double[][] ss2, final int numSamples, StatSigMetric<X> metric) {
         assert ss1.length == ss2.length;
         assert ss1[0].length == ss2[0].length;
         
@@ -142,7 +220,7 @@ public class SignificanceTests {
         int numGt = 0;
         // Compute the difference in the metric on the true test set.
         int[] sample = IntArrays.range(numSents);
-        double diff = computeSampleDiff(ss1, ss2, sample); 
+        double diff = computeSampleDiff(ss1, ss2, sample, metric); 
         log.debug("true diff = {}", diff);
         for (int s=0; s<numSamples; s++) {
             // Sample n sentences with replacement.
@@ -150,7 +228,7 @@ public class SignificanceTests {
                 sample[ii] = Prng.nextInt(numSents);
             }
             // Compute the difference in the metric on the sample.
-            double diff_s = computeSampleDiff(ss1, ss2, sample);
+            double diff_s = computeSampleDiff(ss1, ss2, sample, metric);
             // Update the counter if there's a difference of the two times the true delta.
             if (diff_s > 2*diff) {
                 numGt++;
@@ -162,25 +240,69 @@ public class SignificanceTests {
         return 1.0 * numGt / numSamples;
     }
 
-    private static double computeSampleDiff(double[][] ss1, double[][] ss2, int[] sample) {
-        final int numSents = ss1.length;
+    private static <X> double computeSampleDiff(double[][] ss1, double[][] ss2, int[] sample, StatSigMetric<X> metric) {
         final int numStats = ss1[0].length;
         // Add the sufficient statistics for the sample.
-        double[][] accum = new double[2][numStats];
-        for (int ii=0; ii<numSents; ii++) {
+        double[] accum1 = new double[numStats];
+        double[] accum2 = new double[numStats];
+        for (int ii=0; ii<sample.length; ii++) {
             int i = sample[ii];
-            for (int d=0; d<numStats; d++) {
-                accum[0][d] += ss1[i][d];
-                accum[1][d] += ss2[i][d];
-            }
+            DoubleArrays.add(accum1, ss1[i]);
+            DoubleArrays.add(accum2, ss2[i]);
         }
         // Compute the metric (accuracy) for each sampled dataset.
-        double acc1 = accum[0][0] / accum[0][1];
-        double acc2 = accum[1][0] / accum[1][1];
+        double acc1 = metric.getMetric(accum1);
+        double acc2 = metric.getMetric(accum2);
         log.trace("acc1 = {} acc2 = {}", acc1, acc2);
         // Compute the difference in metric.
         double diff = acc1 - acc2;
         return diff;
+    }
+    
+    public interface StatSigMetric<X> {
+        
+        /**
+         * Gets the sufficient statistics for the metric.
+         * 
+         * @param gold The gold sentence.
+         * @param pred The predicted sentence.
+         * @return The sufficient statistics.
+         */
+        double[] getSufficientStats(X gold, X pred);
+
+        /**
+         * Gets the value of the metric from the sufficient statistics created by getSufficientStats().
+         * 
+         * @param ss The sufficient statistics.
+         * @return The value of the metric.
+         */
+        double getMetric(double[] sufficientStats);
+        
+    }
+    
+    private static class DepAccuracyMetric implements StatSigMetric<AnnoSentence> {
+
+        private boolean skipPunctuation;
+
+        public DepAccuracyMetric(boolean skipPunctuation) {
+            this.skipPunctuation = skipPunctuation;
+        }
+
+        @Override
+        public double[] getSufficientStats(AnnoSentence gold, AnnoSentence pred) {
+            double[] ss = new double[2];
+            DepParseAccuracy acc = new DepParseAccuracy(skipPunctuation);
+            acc.loss(pred, gold);
+            ss[0] = acc.getCorrect();
+            ss[1] = acc.getTotal();
+            return ss;
+        }
+
+        @Override
+        public double getMetric(double[] ss) {
+            return ss[0] / ss[1]; 
+        }
+        
     }
     
     @Opt(required=true, hasArg=true, description="The path to the gold data")
@@ -192,7 +314,7 @@ public class SignificanceTests {
     @Opt(required=true, hasArg=true, description="The path to the predicted data (set 2)")
     public static DatasetType type = null;
     @Opt(required=true, hasArg=true, description="Whether to skip punctuation (dependency accuracy only)")
-    public static boolean skipPunctuation = false;
+    public static boolean skipPunct = false;
     
     public static void main(String[] args) throws ParseException, IOException {
         ArgParser parser = new ArgParser(SignificanceTests.class);
@@ -204,10 +326,13 @@ public class SignificanceTests {
         AnnoSentenceCollection predSents2 = getData(pred2, type, "pred2");
         
         // 20 seconds for 2416 sentences.
-        double ppt = pptDepParseAccuracy(goldSents, predSents1, predSents2, skipPunctuation);
+        double ppt = pptDepParseAccuracy(goldSents, predSents1, predSents2, skipPunct);
         log.info("p-value (paired permutation): {}", ppt);
+        // 73 seconds for 2416 sentences.
+        double ppt2 = pptMetricDepParseAccuracy(goldSents, predSents1, predSents2, skipPunct);
+        log.info("p-value (paired permutation): {}", ppt2);
         // 126 seconds for 2416 sentences.
-        double bts = bootstrapDepParseAccuracy(goldSents, predSents1, predSents2, skipPunctuation);
+        double bts = bootstrapDepParseAccuracy(goldSents, predSents1, predSents2, skipPunct);
         log.info("p-value (paired bootstrap): {}", bts);
     }
 
