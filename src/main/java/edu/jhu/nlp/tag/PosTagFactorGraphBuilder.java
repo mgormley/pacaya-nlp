@@ -80,13 +80,13 @@ public class PosTagFactorGraphBuilder {
         }
 
         if (prm.onlyFast && prm.featureHashMod > 0) {
-            addFastFactors(isent, ofc, fg, cs);
+            addFastFactors(isent, fg);
         } else {
             addSlowFactors(isent.getAnnoSentence(), ofc, fg, cs);
         }
     }
 
-    private void addFastFactors(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+    private void addFastFactors(IntAnnoSentence isent, FactorGraph fg) {
         final int featureHashMod = prm.featureHashMod;
         for (int i=0; i<isent.size(); i++) {
             if (prm.unigramFactors) {
@@ -121,6 +121,7 @@ public class PosTagFactorGraphBuilder {
         
         @Override
         public FeatureVector getFeatures(int config) {
+            // TODO: Double check that magic is not a bug - should config be opened up?
             int[] idxs = obsFeats.getInternalIndices();
             int used = obsFeats.getUsed();
             FeatureVector feats = new FeatureVector(obsFeats.getUsed());
