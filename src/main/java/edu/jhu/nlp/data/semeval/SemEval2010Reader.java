@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.CloseableIterable;
+import edu.jhu.nlp.eval.RelationEvaluator;
 
 /**
  * Reader of training files from the SemEval-2010 shared task for relation classification. <br>
@@ -25,7 +29,7 @@ import edu.jhu.nlp.data.simple.CloseableIterable;
  * <br>
  * 
  * <pre>
- * 1    "The <e1>man</e2> jumped over the <e2>moon</e2>."
+ * 1    "The <e1>man</e1> jumped over the <e2>moon</e2>."
  * Was-Jumped(e2,e1)
  * Comment: He jumped very high.
  * 
@@ -39,7 +43,8 @@ import edu.jhu.nlp.data.simple.CloseableIterable;
  * @author mgormley
  */
 public class SemEval2010Reader implements CloseableIterable<SemEval2010Sentence>, Iterator<SemEval2010Sentence> {
-
+    
+    private static final Logger log = LoggerFactory.getLogger(SemEval2010Reader.class);
     private SemEval2010Sentence sentence;
     private BufferedReader reader;
 
@@ -59,10 +64,10 @@ public class SemEval2010Reader implements CloseableIterable<SemEval2010Sentence>
     private static final Pattern TAB_RE = Pattern.compile("\t");
     private static final Pattern SPACE_RE = Pattern.compile(" ");
     //private static final Pattern PAREN_COMMA_RE = Pattern.compile("[(),]");
-    private static final Pattern E1S_RE = Pattern.compile("<e1>(.+)");
-    private static final Pattern E1E_RE = Pattern.compile("(.+)</e1>");
-    private static final Pattern E2S_RE = Pattern.compile("<e2>(.+)");
-    private static final Pattern E2E_RE = Pattern.compile("(.+)</e2>");
+    private static final Pattern E1S_RE = Pattern.compile("(.*)<e1>(.+)");
+    private static final Pattern E1E_RE = Pattern.compile("(.+)</e1>(.*)");
+    private static final Pattern E2S_RE = Pattern.compile("(.*)<e2>(.+)");
+    private static final Pattern E2E_RE = Pattern.compile("(.+)</e2>(.*)");
 
 
     public static SemEval2010Sentence readSentence(BufferedReader reader) throws IOException {
@@ -104,32 +109,34 @@ public class SemEval2010Reader implements CloseableIterable<SemEval2010Sentence>
             if (e1sm.find()) {
                 if (e1s != -1) { throw new RuntimeException("Multiple matches for <e1></e1>: " + sentStr);}
                 e1s = i;
-                words.set(i, e1sm.group(1));
+                words.set(i, e1sm.group(1)+e1sm.group(2));
             }
             Matcher e1em = E1E_RE.matcher(words.get(i));
             if (e1em.find()) {
                 if (e1e != -1) { throw new RuntimeException("Multiple matches for <e1></e1>: " + sentStr);}
                 e1e = i;
-                words.set(i, e1em.group(1));
+                words.set(i, e1em.group(1)+e1em.group(2));
             }
             Matcher e2sm = E2S_RE.matcher(words.get(i));
             if (e2sm.find()) {
                 if (e2s != -1) { throw new RuntimeException("Multiple matches for <e2></e2>: " + sentStr);}
                 e2s = i;
-                words.set(i, e2sm.group(1));
+                words.set(i, e2sm.group(1)+e2sm.group(2));
             }
             Matcher e2em = E2E_RE.matcher(words.get(i));
             if (e2em.find()) {
                 if (e2e != -1) { throw new RuntimeException("Multiple matches for <e2></e2>: " + sentStr);}
                 e2e = i;
-                words.set(i, e2em.group(1));
+                words.set(i, e2em.group(1)+e2em.group(2));
             }
         }
         
         if (e1s == -1 || e1e == -1 || e2s == -1 || e2e == -1) {
+            log.error("Invalid indices: e1s={} e1e={} e2s={} e2e={}", e1s, e1e, e2s, e2e);
             throw new RuntimeException("Unable to find e1 or e2: " + sentStr);
         }
         if (e1s > e1e || e2s > e2e) {
+            log.error("Invalid indices: e1s={} e1e={} e2s={} e2e={}", e1s, e1e, e2s, e2e);
             throw new RuntimeException(String.format("Invalid indices: %d %d %d %d", e1s, e1e, e2s, e2e));
         }
         
