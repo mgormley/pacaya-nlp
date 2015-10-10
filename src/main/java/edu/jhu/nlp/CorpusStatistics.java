@@ -172,8 +172,12 @@ public class CorpusStatistics implements Serializable {
             if (sent.getNamedEntities() != null) {
                 for (int k=0; k<sent.getNamedEntities().size(); k++) {
                     NerMention ne = sent.getNamedEntities().get(k);
-                    knownNeTypes.add(ne.getEntityType());
-                    knownNeSubtypes.add(ne.getEntityType() + ":" + ne.getEntitySubType());
+                    if (ne.getEntityType() != null) {
+                        knownNeTypes.add(ne.getEntityType());
+                        if (ne.getEntitySubType() != null) {
+                            knownNeSubtypes.add(ne.getEntityType() + ":" + ne.getEntitySubType());
+                        }
+                    }
                 }
             }
             
