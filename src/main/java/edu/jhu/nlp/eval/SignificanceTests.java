@@ -8,15 +8,14 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cc.mallet.classify.Boostable;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
-import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
-import edu.jhu.nlp.joint.JointNlpRunner;
+import edu.jhu.nlp.relations.RelationMunger;
+import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.report.Reporter;
@@ -440,7 +439,22 @@ public class SignificanceTests {
         prm.name = name;
         AnnoSentenceReader reader = new AnnoSentenceReader(prm);
         reader.loadSents(path, type);
-        return reader.getData();
+        AnnoSentenceCollection sents = reader.getData();
+        if (type == DatasetType.SEMEVAL_2010) {
+            // Munge the relation data into labels.
+            RelationMungerPrm rmPrm = new RelationMungerPrm();
+            rmPrm.makeRelSingletons = false;
+            rmPrm.maxInterveningEntities = -1;
+            rmPrm.nePairsFromNeg = false;
+            rmPrm.nePairsFromPos = true;
+            rmPrm.predictArgRoles = true;
+            rmPrm.removeEntityTypes = false;
+            rmPrm.shortenEntityMentions = false;
+            rmPrm.useRelationSubtype = false;
+            RelationMunger rm = new RelationMunger(rmPrm);
+            rm.getDataPreproc().annotate(sents);
+        }
+        return sents;
     }
     
     /**
@@ -486,6 +500,10 @@ public class SignificanceTests {
             double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
             log.info("p-value (fast paired permutation): {}", ppt);
             rep.report("p-value-ppt-fast", ppt);
+        } else if (_metric.name().startsWith("REL")) {
+            RelationEvaluator eval = new RelationEvaluator();
+            eval.evaluate(predSents1, goldSents, "pred1");
+            eval.evaluate(predSents2, goldSents, "pred2");
         }
         
         double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
