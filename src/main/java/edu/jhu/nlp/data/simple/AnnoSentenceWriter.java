@@ -62,24 +62,7 @@ public class AnnoSentenceWriter {
         } else if (type == DatasetType.SEMEVAL_2010) {
             SemEval2010Writer sw = new SemEval2010Writer(out);
             try {
-                int i = 0;
-                for (AnnoSentence sent : sents) {
-                    // Write one SemEval-2010 sentence for each pair of entities.
-                    if (!sent.hasAt(AT.NE_PAIRS)) {
-                        throw new RuntimeException("Sentence missing required annotation: " + AT.NE_PAIRS);
-                    }
-                    if (sent.getNePairs().size() > 0) {
-                        if (!sent.hasAt(AT.REL_LABELS)) {
-                            //throw new RuntimeException("Sentence missing required annotation: " + AT.REL_LABELS);
-                            log.warn("Sentence missing required annotation: " + AT.REL_LABELS);
-                        } else {
-                            List<SemEval2010Sentence> seSents = SemEval2010Sentence.fromAnnoSentence(sent, i++);
-                            for (SemEval2010Sentence seSent : seSents) {                        
-                                sw.write(seSent);
-                            }
-                        }
-                    }                
-                }
+                write(sw, sents);
             } finally {
                 sw.close();
             }
@@ -97,6 +80,27 @@ public class AnnoSentenceWriter {
             w.write(sents, out);
         } else {
             throw new IllegalStateException("Unsupported data type: " + type);
+        }
+    }
+
+    protected void write(SemEval2010Writer sw, AnnoSentenceCollection sents) throws IOException {
+        int i = 0;
+        for (AnnoSentence sent : sents) {
+            // Write one SemEval-2010 sentence for each pair of entities.
+            if (!sent.hasAt(AT.NE_PAIRS)) {
+                throw new RuntimeException("Sentence missing required annotation: " + AT.NE_PAIRS);
+            }
+            if (sent.getNePairs().size() > 0) {
+                if (!sent.hasAt(AT.REL_LABELS)) {
+                    //throw new RuntimeException("Sentence missing required annotation: " + AT.REL_LABELS);
+                    log.warn("Sentence missing required annotation: " + AT.REL_LABELS);
+                } else {
+                    List<SemEval2010Sentence> seSents = SemEval2010Sentence.fromAnnoSentence(sent, i++);
+                    for (SemEval2010Sentence seSent : seSents) {                        
+                        sw.write(seSent);
+                    }
+                }
+            }                
         }
     }
     

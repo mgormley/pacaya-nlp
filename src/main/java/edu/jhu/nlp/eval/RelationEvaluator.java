@@ -34,6 +34,7 @@ public class RelationEvaluator implements Evaluator {
     
     /** Computes the precision, recall, and micro-averaged F1 of relations mentions. */
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
+        zero();
         
         assert predSents.size() == goldSents.size();
         
@@ -56,6 +57,15 @@ public class RelationEvaluator implements Evaluator {
         rep.report(dataName+"RelF1", f1);
         
         return -f1;
+    }
+
+    protected void zero() {
+        numCorrectPositive = 0;
+        numCorrectNegative = 0;
+        numPredictPositive = 0;
+        numTruePositive = 0;
+        numInstances = 0;
+        numMissing = 0;
     }
 
     /** Accumulate the sufficient statistics for the sentence. */
