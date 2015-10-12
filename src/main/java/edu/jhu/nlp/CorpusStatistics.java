@@ -121,6 +121,7 @@ public class CorpusStatistics implements Serializable {
         // However, removing this messes up what we assume as default.
         knownRoles.add("_");
         int numTruePosRels = 0;
+        int numRels = 0;
         for (AnnoSentence sent : cr) {
             // Need to know max sent length because distance features
             // use these values explicitly; an unknown sentence length in
@@ -189,6 +190,7 @@ public class CorpusStatistics implements Serializable {
                     if (!RelationMunger.isNoRelationLabel(relation)) {
                     	numTruePosRels++;
                     }
+                    numRels++;
                 }
             }
         }
@@ -214,6 +216,7 @@ public class CorpusStatistics implements Serializable {
         log.info("Found {} NER types: {}", knownNeTypes.size(), knownNeTypes);
         log.info("Found {} Relation types: {}", relationStateNames.size(), relationStateNames);        
         log.info("Num true positive relations: " + numTruePosRels);
+        log.info("Num relations: " + numRels);
     }
     
     // ------------------- private ------------------- //
