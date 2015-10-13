@@ -36,8 +36,7 @@ import edu.jhu.prim.util.random.RandBits;
 public class SignificanceTests {
 
     private static final Logger log = LoggerFactory.getLogger(SignificanceTests.class);
-    private static final Reporter rep = Reporter.getReporter(SignificanceTests.class);
-
+    private static Reporter rep = Reporter.getReporter(SignificanceTests.class);
     
     public interface EvalMetric<X> {
         
@@ -229,14 +228,18 @@ public class SignificanceTests {
         
         double mean = DoubleArrays.mean(diffs);
         log.trace("Score mean: " + mean);
-        if (mean < 0) {
-            throw new IllegalStateException("we assume pred1 outperformed pred2");
+        if (mean == 0) {
+            throw new IllegalStateException("no difference between pred1 and pred2");
         }
+        // If pred2 scored higher than pred1 we flip all the signs.
+        boolean timesNeg1 = (mean < 0);
+        if (timesNeg1) { mean *= -1; }
         
         // Shuffle and compute the mean.
         int numGte = 0;
         for (int s=0; s<numSamples; s++) {
             double shufMean = getShuffledMean(diffs);
+            if (timesNeg1) { shufMean *= -1; }
             if (shufMean >= mean) {
                 numGte++;
             }
@@ -295,9 +298,12 @@ public class SignificanceTests {
         }
         double diff = getShuffledDiff(ss1, ss2, flips, metric);
         log.trace("diff: " + diff);
-        if (diff < 0) {
-            throw new IllegalStateException("we assume pred1 outperformed pred2");
+        if (diff == 0) {
+            throw new IllegalStateException("no difference between pred1 and pred2");
         }
+        // If pred2 scored higher than pred1 we flip all the signs.
+        boolean timesNeg1 = (diff < 0);
+        if (timesNeg1) { diff *= -1; }
         
         // Shuffle and compute the mean.
         int numGte = 0;
@@ -307,6 +313,7 @@ public class SignificanceTests {
                 flips[i] = rand.nextBit();
             }
             double diff_s = getShuffledDiff(ss1, ss2, flips, metric);
+            if (timesNeg1) { diff_s *= -1; }
             if (diff_s >= diff) {
                 numGte++;
             }
@@ -379,6 +386,13 @@ public class SignificanceTests {
         }
         double diff = computeSampleDiff(ss1, ss2, sample, metric); 
         log.debug("true diff = {}", diff);
+        if (diff == 0) {
+            throw new IllegalStateException("no difference between pred1 and pred2");
+        }
+        // If pred2 scored higher than pred1 we flip all the signs.
+        boolean timesNeg1 = (diff < 0);
+        if (timesNeg1) { diff *= -1; }
+        
         for (int s=0; s<numSamples; s++) {
             // Sample n sentences with replacement.
             for (int ii=0; ii<sample.length; ii++) {
@@ -386,6 +400,7 @@ public class SignificanceTests {
             }
             // Compute the difference in the metric on the sample.
             double diff_s = computeSampleDiff(ss1, ss2, sample, metric);
+            if (timesNeg1) { diff_s *= -1; }
             // Update the counter if there's a difference of the two times the true delta.
             if (diff_s > 2*diff) {
                 numGt++;
@@ -433,10 +448,13 @@ public class SignificanceTests {
     public static boolean _skipPunct = false;
     @Opt(name="numSamples", hasArg=true, description="The number of samples to use for the significance test")
     public static int _numSamples = (int) Math.pow(2, 20);
+    @Opt(name="maxNumSentences", hasArg=true, description="The maximum number of sentences")
+    public static int _maxNumSentences = Integer.MAX_VALUE;
 
     private static AnnoSentenceCollection getData(File path, DatasetType type, String name) throws IOException {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.name = name;
+        prm.maxNumSentences = _maxNumSentences;
         AnnoSentenceReader reader = new AnnoSentenceReader(prm);
         reader.loadSents(path, type);
         AnnoSentenceCollection sents = reader.getData();
@@ -471,47 +489,50 @@ public class SignificanceTests {
         parser.registerClass(ReporterManager.class);
         parser.parseArgs(args);        
         ReporterManager.init(ReporterManager.reportOut, true);
-        
-        AnnoSentenceCollection goldSents = getData(_gold, _type, "gold");
-        AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1");
-        AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2");
-        
-        EvalMetric<AnnoSentence> metric;
-        if (_metric == Metric.POS_ACC) {
-            metric = new PosTagAccuracyMetric(); 
-        } else if (_metric == Metric.DP_ACC) {
-            metric = new DepAccuracyMetric(_skipPunct);
-        } else if (_metric.name().startsWith("SRL_")) {
-            SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
-            // TODO: add command line options.
-            prm.evalPredicatePosition = false;
-            prm.evalRoles = true;
-            prm.evalSense = true;
-            prm.labeled = true;
-            metric = new SrlF1Metric(prm, _metric);
-        } else if (_metric.name().startsWith("REL_")) {
-            metric = new RelF1Metric(_metric);
-        } else {
-            throw new ParseException("Unsupported metric: " + _metric.name());
+        try {
+            AnnoSentenceCollection goldSents = getData(_gold, _type, "gold");
+            AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1");
+            AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2");
+            
+            EvalMetric<AnnoSentence> metric;
+            if (_metric == Metric.POS_ACC) {
+                metric = new PosTagAccuracyMetric(); 
+            } else if (_metric == Metric.DP_ACC) {
+                metric = new DepAccuracyMetric(_skipPunct);
+            } else if (_metric.name().startsWith("SRL_")) {
+                SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
+                // TODO: add command line options.
+                prm.evalPredicatePosition = false;
+                prm.evalRoles = true;
+                prm.evalSense = true;
+                prm.labeled = true;
+                metric = new SrlF1Metric(prm, _metric);
+            } else if (_metric.name().startsWith("REL_")) {
+                metric = new RelF1Metric(_metric);
+            } else {
+                throw new ParseException("Unsupported metric: " + _metric.name());
+            }
+            
+            if (_metric == Metric.DP_ACC) {
+                // 20 seconds for 2416 sentences.
+                double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
+                log.info("p-value (fast paired permutation): {}", ppt);
+                rep.report("p-value-ppt-fast", ppt);
+            } else if (_metric.name().startsWith("REL")) {
+                RelationEvaluator eval = new RelationEvaluator();
+                eval.evaluate(predSents1, goldSents, "pred1");
+                eval.evaluate(predSents2, goldSents, "pred2");
+            }
+            
+            double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
+            log.info("p-value (paired permutation): {}", ppt);
+            rep.report("p-value-ppt", ppt);
+            double bts = bootstrapTest(goldSents, predSents1, predSents2, _numSamples, metric);
+            log.info("p-value (paired permutation): {}", bts);
+            rep.report("p-value-bts", bts);
+        } finally {
+            ReporterManager.close();
         }
-        
-        if (_metric == Metric.DP_ACC) {
-            // 20 seconds for 2416 sentences.
-            double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
-            log.info("p-value (fast paired permutation): {}", ppt);
-            rep.report("p-value-ppt-fast", ppt);
-        } else if (_metric.name().startsWith("REL")) {
-            RelationEvaluator eval = new RelationEvaluator();
-            eval.evaluate(predSents1, goldSents, "pred1");
-            eval.evaluate(predSents2, goldSents, "pred2");
-        }
-        
-        double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
-        log.info("p-value (paired permutation): {}", ppt);
-        rep.report("p-value-ppt", ppt);
-        double bts = bootstrapTest(goldSents, predSents1, predSents2, _numSamples, metric);
-        log.info("p-value (paired permutation): {}", bts);
-        rep.report("p-value-bts", bts);
     }
     
 }
