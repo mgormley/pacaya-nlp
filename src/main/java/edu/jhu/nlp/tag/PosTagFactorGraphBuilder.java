@@ -87,20 +87,19 @@ public class PosTagFactorGraphBuilder {
     }
 
     private void addFastFactors(IntAnnoSentence isent, FactorGraph fg) {
-        final int featureHashMod = prm.featureHashMod;
         for (int i=0; i<isent.size(); i++) {
             if (prm.unigramFactors) {
                 // Unary factor for each tag.
                 VarSet vars = new VarSet(tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
-                BitshiftTokenFeatures.addUnigramFeatures(isent, i, obsFeats, featureHashMod, (short) 0); // config=0
+                BitshiftTokenFeatures.addUnigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
                 fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
             }
             if (i > 0 && prm.bigramFactors) {
                 // Binary factor for each pair of tags.
                 VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
-                BitshiftTokenFeatures.addBigramFeatures(isent, i, obsFeats, featureHashMod, (short) 0); // config=0
+                BitshiftTokenFeatures.addBigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
                 fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
             }
         }
