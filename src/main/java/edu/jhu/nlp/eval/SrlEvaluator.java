@@ -20,15 +20,19 @@ public class SrlEvaluator implements Evaluator {
 
     public static class SrlEvaluatorPrm extends Prm {
         private static final long serialVersionUID = 1L;
+        /** Whether to do labeled or unlabeled evaluation. */
         public boolean labeled = true;
-        public boolean evalSense = true;
-        public boolean evalPredicatePosition = false;
+        /** Whether to evaluate predicate sense. */
+        public boolean evalPredSense = true;
+        /** Whether to evaluate predicate position. */
+        public boolean evalPredPosition = false;
+        /** Whether to evaluate arguments (i.e. semantic roles). */
         public boolean evalRoles = true;
         public SrlEvaluatorPrm() { }
         public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
             this.labeled = labeled;
-            this.evalSense = evalSense;
-            this.evalPredicatePosition = evalPredicatePosition;
+            this.evalPredSense = evalSense;
+            this.evalPredPosition = evalPredicatePosition;
             this.evalRoles = evalRoles;
         }
     }
@@ -52,9 +56,6 @@ public class SrlEvaluator implements Evaluator {
     int numInstances = 0;
     int numMissing = 0;
     
-    /**
-     * @param labeled Whether to compute labeled or unlabeled F1.
-     */
     public SrlEvaluator(SrlEvaluatorPrm prm) {
         this.prm = prm;
     }
@@ -71,8 +72,8 @@ public class SrlEvaluator implements Evaluator {
             accum(goldSent, predSent);
         }
         String detail = prm.labeled ? "Labeled" : "Unlabeled";
-        detail += prm.evalSense ? "Sense" : "";
-        detail += prm.evalPredicatePosition ? "Position" : "";
+        detail += prm.evalPredSense ? "Sense" : "";
+        detail += prm.evalPredPosition ? "Position" : "";
         detail += prm.evalRoles ? "Roles" : "";                
         log.debug(String.format("SRL %s # correct positives on %s: %d", detail, dataName, numCorrectPositive));
         log.debug(String.format("SRL %s # predicted positives on %s: %d", detail, dataName, numPredictPositive));
@@ -103,7 +104,7 @@ public class SrlEvaluator implements Evaluator {
         // For each gold edge.
         int n = goldSent.size();
         for (int p=-1; p < n; p++) {          
-            if (!prm.evalSense && !prm.evalPredicatePosition && p == -1) {
+            if (!prm.evalPredSense && !prm.evalPredPosition && p == -1) {
                 // Exclude arcs from the virtual root to predicates.
                 continue;
             }
@@ -112,7 +113,7 @@ public class SrlEvaluator implements Evaluator {
                 continue;
             }
             for (int c=0; c < n; c++) {                      
-                if (!prm.evalPredicatePosition && !hasPredicateForEdge(gold, p, c)) {
+                if (!prm.evalPredPosition && !hasPredicateForEdge(gold, p, c)) {
                     // Only consider predicates which appear in the gold annotations.
                     continue;
                 }
@@ -163,7 +164,7 @@ public class SrlEvaluator implements Evaluator {
         String label = dg.get(p, c);
         if (label == null) {
             return NO_LABEL;
-        } else if (!prm.labeled || (p == -1 && !prm.evalSense)){
+        } else if (!prm.labeled || (p == -1 && !prm.evalPredSense)){
             return SOME_LABEL;
         } else {
             return label;

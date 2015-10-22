@@ -147,8 +147,8 @@ public class JointNlpAnnotator implements Trainable, Annotator {
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
             SrlEvaluatorPrm evalPrm = new SrlEvaluatorPrm();
-            evalPrm.evalSense = prm.buPrm.fgPrm.srlPrm.predictSense;
-            evalPrm.evalPredicatePosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
+            evalPrm.evalPredSense = prm.buPrm.fgPrm.srlPrm.predictSense;
+            evalPrm.evalPredPosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
             evalPrm.evalRoles = (prm.buPrm.fgPrm.srlPrm.roleStructure != RoleStructure.NO_ROLES);
             eval = new SrlEvaluator(evalPrm);
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS)) ||

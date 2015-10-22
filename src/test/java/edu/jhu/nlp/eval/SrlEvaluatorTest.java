@@ -65,8 +65,8 @@ public class SrlEvaluatorTest {
     public void testZeros() {
         SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
         prm.labeled = true;
-        prm.evalSense = true;
-        prm.evalPredicatePosition = true;
+        prm.evalPredSense = true;
+        prm.evalPredPosition = true;
         SrlEvaluator eval = new SrlEvaluator(prm);
         eval.evaluate(new AnnoSentenceCollection(), new AnnoSentenceCollection(), "empty dataset");
         assertEquals(0.0, eval.getPrecision(), 1e-13);
@@ -130,8 +130,8 @@ public class SrlEvaluatorTest {
         double er = (double) numCorrectPositives / numTruePositives;
         SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
         prm.labeled = labeled;
-        prm.evalSense = evalSense;
-        prm.evalPredicatePosition = evalPredicatePosition;
+        prm.evalPredSense = evalSense;
+        prm.evalPredPosition = evalPredicatePosition;
         prm.evalRoles = evalRoles;
         SrlEvaluator eval = new SrlEvaluator(prm);
         eval.evaluate(predSents, goldSents, "dataset name");

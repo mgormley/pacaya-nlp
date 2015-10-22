@@ -451,10 +451,11 @@ public class SignificanceTests {
     @Opt(name="maxNumSentences", hasArg=true, description="The maximum number of sentences")
     public static int _maxNumSentences = Integer.MAX_VALUE;
 
-    private static AnnoSentenceCollection getData(File path, DatasetType type, String name) throws IOException {
+    // TODO: Move this elsewhere?
+    public static AnnoSentenceCollection getData(File path, DatasetType type, String name, int maxNumSents) throws IOException {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.name = name;
-        prm.maxNumSentences = _maxNumSentences;
+        prm.maxNumSentences = maxNumSents;
         AnnoSentenceReader reader = new AnnoSentenceReader(prm);
         reader.loadSents(path, type);
         AnnoSentenceCollection sents = reader.getData();
@@ -490,9 +491,9 @@ public class SignificanceTests {
         parser.parseArgs(args);        
         ReporterManager.init(ReporterManager.reportOut, true);
         try {
-            AnnoSentenceCollection goldSents = getData(_gold, _type, "gold");
-            AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1");
-            AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2");
+            AnnoSentenceCollection goldSents = getData(_gold, _type, "gold", _maxNumSentences);
+            AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1", _maxNumSentences);
+            AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2", _maxNumSentences);
             
             EvalMetric<AnnoSentence> metric;
             if (_metric == Metric.POS_ACC) {
@@ -502,9 +503,9 @@ public class SignificanceTests {
             } else if (_metric.name().startsWith("SRL_")) {
                 SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
                 // TODO: add command line options.
-                prm.evalPredicatePosition = false;
+                prm.evalPredPosition = false;
                 prm.evalRoles = true;
-                prm.evalSense = true;
+                prm.evalPredSense = true;
                 prm.labeled = true;
                 metric = new SrlF1Metric(prm, _metric);
             } else if (_metric.name().startsWith("REL_")) {
