@@ -66,6 +66,7 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
         SrlGraph srlGraph = SrlDecoder.getSrlGraphFromVarConfig(mbrVarConfig, n);
         if (srlGraph != null) {
             predSent.setSrlGraph(srlGraph);
+            predSent.setKnownPredsFromSrlGraph();
         }
         // Get the dependency tree.
         int[] parents = (new DepParseDecoder()).decode(inf, ex, sent);

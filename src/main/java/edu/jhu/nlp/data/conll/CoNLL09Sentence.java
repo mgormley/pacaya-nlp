@@ -378,6 +378,7 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
         s.setSourceSent(cos);
         s.setWords(cos.getWords());
         s.setSrlGraph(cos.getSrlGraph());
+        s.setKnownPredsFromSrlGraph();
         if (useGoldSyntax) {
             s.setLemmas(cos.getLemmas());
             s.setParents(cos.getParentsFromHead());

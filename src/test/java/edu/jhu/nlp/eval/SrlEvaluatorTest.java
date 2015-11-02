@@ -44,6 +44,7 @@ public class SrlEvaluatorTest {
         predSrl.set(2, 3, "theme");    // Arg (incorrect label)
         predSrl.set(-1, 0, "run.02");  // Pred (extra)
         pred.setSrlGraph(predSrl.toSrlGraph());
+        pred.setKnownPredsFromSrlGraph();
         
         goldSrl.set(-1, 1, "like.01"); // Pred
         goldSrl.set(1, 0, "agent");    // Arg
@@ -53,7 +54,8 @@ public class SrlEvaluatorTest {
         goldSrl.set(2, 0, "agent");    // Arg
         goldSrl.set(2, 3, "patient");  // Arg
         gold.setSrlGraph(goldSrl.toSrlGraph());
-        
+        gold.setKnownPredsFromSrlGraph();
+
         System.out.println(pred.getSrlGraph());
         System.out.println(gold.getSrlGraph());
         
