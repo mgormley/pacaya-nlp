@@ -659,7 +659,11 @@ public class AnnoSentence {
     /** Sets the SRL graph and also the known predicate positions. */
     public void setSrlGraph(SrlGraph srlGraph) {
         this.srlGraph = srlGraph;
-        this.setKnownPredsFromSrlGraph();
+        if (srlGraph == null) {
+            this.knownPreds = null;
+        } else {
+            this.setKnownPredsFromSrlGraph();
+        }
     }
     
     public List<String> getDeprels() {
