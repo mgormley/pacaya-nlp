@@ -688,8 +688,8 @@ public class JointNlpRunner {
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
         srlFePrm.biasOnly = biasOnly;
         srlFePrm.useTemplates = useTemplates;       
-        srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
-        srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
+        srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
+        srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
                 
         srlPrm.srlFePrm = srlFePrm;

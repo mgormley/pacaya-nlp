@@ -47,8 +47,8 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
         /** Whether to use ONLY feature templates. */
         public boolean useTemplates = true;
         /** Feature templates. */
-        public List<FeatTemplate> soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
-        public List<FeatTemplate> pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
+        public List<FeatTemplate> senseTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
+        public List<FeatTemplate> argTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
         /** The value of the mod for use in the feature hashing trick. If <= 0, feature-hashing will be disabled. */
         public int featureHashMod = -1;
         /** Whether to create human interpretable feature names when possible. */
@@ -106,10 +106,6 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
 
             // Get features on the observations for a pair of words.
             // IMPORTANT NOTE: We include the case where the parent is the Wall node (position -1).
-            // 
-            // As of 12/18/13, this breaks backwards compatibility with SOME of
-            // the features in SentFeatureExtractor including useNarad and
-            // useSimple.
             obsFeats = createFeatureSet(parent, child);
         } else if (ft == SrlFactorTemplate.SENSE_UNARY) {
             SenseVar var = (SenseVar) vars.iterator().next();
@@ -191,17 +187,17 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
     }
 
     private void addTemplateSoloFeatures(int idx, ArrayList<String> feats) {
-        if (prm.soloTemplates == null) {
+        if (prm.senseTemplates == null) {
             throw new IllegalStateException("Solo template set must be specified");
         }
-        ext.addFeatures(prm.soloTemplates, LocalObservations.newPidx(idx), feats);
+        ext.addFeatures(prm.senseTemplates, LocalObservations.newPidx(idx), feats);
     }
 
     private void addTemplatePairFeatures(int pidx, int aidx, ArrayList<String> feats) {
-        if (prm.pairTemplates == null) {
+        if (prm.argTemplates == null) {
             throw new IllegalStateException("Pair template set must be specified");
         }
-        ext.addFeatures(prm.pairTemplates, LocalObservations.newPidxCidx(pidx, aidx), feats);        
+        ext.addFeatures(prm.argTemplates, LocalObservations.newPidxCidx(pidx, aidx), feats);        
     }
     
 }

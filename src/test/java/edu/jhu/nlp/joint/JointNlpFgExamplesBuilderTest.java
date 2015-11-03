@@ -139,8 +139,8 @@ public class JointNlpFgExamplesBuilderTest {
         cs.init(simpleSents);
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
         prm.fgPrm.srlPrm.srlFePrm.useTemplates = true;
-        prm.fgPrm.srlPrm.srlFePrm.soloTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
-        prm.fgPrm.srlPrm.srlFePrm.pairTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
+        prm.fgPrm.srlPrm.srlFePrm.senseTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
+        prm.fgPrm.srlPrm.srlFePrm.argTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         
         {

@@ -102,8 +102,8 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
             AnnoSentence sent = sents.get(0);
             if (prm.fgPrm.srlPrm.srlFePrm.useTemplates) {
                 if (prm.fgPrm.includeSrl) {
-                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fgPrm.srlPrm.srlFePrm.soloTemplates);
-                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fgPrm.srlPrm.srlFePrm.pairTemplates);
+                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fgPrm.srlPrm.srlFePrm.senseTemplates);
+                    TemplateLanguage.assertRequiredAnnotationTypes(sent, prm.fgPrm.srlPrm.srlFePrm.argTemplates);
                 }
             }
             if (prm.fgPrm.includeDp && !prm.fgPrm.dpPrm.dpFePrm.onlyFast) {

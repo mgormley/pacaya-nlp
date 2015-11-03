@@ -190,8 +190,8 @@ public class SrlFeatureExtractorTest {
         
         SrlFeatureExtractorPrm prm = new SrlFeatureExtractorPrm();
         prm.useTemplates = true;
-        prm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
-        prm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
+        prm.senseTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
+        prm.argTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
         prm.featureHashMod = 2; // Enable feature hashing
         SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, simpleSents.get(0), cs, fts);
         featExt.init(fts);

@@ -63,25 +63,26 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             CorpusStatisticsPrm csPrm = JointNlpRunner.getCorpusStatisticsPrm();
             
             IGFeatureTemplateSelectorPrm prm = JointNlpRunner.getInformationGainFeatureSelectorPrm();
-            SrlFeatTemplates sft = new SrlFeatTemplates(srlFePrm.soloTemplates, srlFePrm.pairTemplates, null);
+            SrlFeatTemplates sft = new SrlFeatTemplates(srlFePrm.senseTemplates, srlFePrm.argTemplates, null);
             IGFeatureTemplateSelector ig = new IGFeatureTemplateSelector(prm);
             sft = ig.getFeatTemplatesForSrl(inputSents, goldSents, csPrm, sft);
             // Set the chosen templates for SRL.
-            fgPrm.srlPrm.srlFePrm.soloTemplates = sft.srlSense;
-            fgPrm.srlPrm.srlFePrm.pairTemplates = sft.srlArg;
+            fgPrm.srlPrm.srlFePrm.senseTemplates = sft.srlSense;
+            fgPrm.srlPrm.srlFePrm.argTemplates = sft.srlArg;
+        }
         }
         if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
             // Set the chosen templates for dependencing parsing.
-            fgPrm.dpPrm.dpFePrm.firstOrderTpls = srlFePrm.pairTemplates;
+            fgPrm.dpPrm.dpFePrm.firstOrderTpls = srlFePrm.argTemplates;
         }
         if (JointNlpRunner.useTemplates) {
-            log.info("Num sense feature templates: " + srlFePrm.soloTemplates.size());
-            log.info("Num arg feature templates: " + srlFePrm.pairTemplates.size());
+            log.info("Num sense feature templates: " + srlFePrm.senseTemplates.size());
+            log.info("Num arg feature templates: " + srlFePrm.argTemplates.size());
             if (JointNlpRunner.senseFeatTplsOut != null) {
-                TemplateWriter.write(JointNlpRunner.senseFeatTplsOut, srlFePrm.soloTemplates);
+                TemplateWriter.write(JointNlpRunner.senseFeatTplsOut, srlFePrm.senseTemplates);
             }
             if (JointNlpRunner.argFeatTplsOut != null) {
-                TemplateWriter.write(JointNlpRunner.argFeatTplsOut, srlFePrm.pairTemplates);
+                TemplateWriter.write(JointNlpRunner.argFeatTplsOut, srlFePrm.argTemplates);
             }
         }
     }
@@ -99,8 +100,8 @@ public class SrlFeatureSelection implements Annotator, Trainable {
         for (AT at : ats) {
             SrlFeatureExtractorPrm srlFePrm = fgPrm.srlPrm.srlFePrm;
             DepParseFeatureExtractorPrm dpFePrm = fgPrm.dpPrm.dpFePrm;
-            fgPrm.srlPrm.srlFePrm.soloTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.soloTemplates, at);
-            fgPrm.srlPrm.srlFePrm.pairTemplates   = TemplateLanguage.filterOutRequiring(srlFePrm.pairTemplates, at);
+            fgPrm.srlPrm.srlFePrm.senseTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.senseTemplates, at);
+            fgPrm.srlPrm.srlFePrm.argTemplates   = TemplateLanguage.filterOutRequiring(srlFePrm.argTemplates, at);
             fgPrm.dpPrm.dpFePrm.firstOrderTpls = TemplateLanguage.filterOutRequiring(dpFePrm.firstOrderTpls, at);
             fgPrm.dpPrm.dpFePrm.secondOrderTpls   = TemplateLanguage.filterOutRequiring(dpFePrm.secondOrderTpls, at);
             fgPrm.posPrm.templates = TemplateLanguage.filterOutRequiring(fgPrm.posPrm.templates, at);

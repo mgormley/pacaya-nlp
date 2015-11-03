@@ -170,8 +170,8 @@ public class SrlSpeedTest {
         prm.srlFePrm.featureHashMod = numParams;
         prm.srlFePrm.useTemplates = true;
         //prm.srlFePrm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();;
-        prm.srlFePrm.pairTemplates = TemplateSets.getFromResource("/edu/jhu/nlp/features/coarse1-arg-feats-igconll09en.txt");
-        prm.srlFePrm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
+        prm.srlFePrm.argTemplates = TemplateSets.getFromResource("/edu/jhu/nlp/features/coarse1-arg-feats-igconll09en.txt");
+        prm.srlFePrm.senseTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
         prm.srlPrm.allowPredArgSelfLoops = true;
         prm.srlPrm.binarySenseRoleFactors = true;
         prm.srlPrm.predictPredPos = true;
