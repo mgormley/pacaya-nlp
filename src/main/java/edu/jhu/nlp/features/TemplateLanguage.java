@@ -97,7 +97,7 @@ public class TemplateLanguage {
      * feature.
      */
     public enum OtherFeat {
-        RELATIVE, DISTANCE, GENEOLOGY, PATH_LEN, CONTINUITY, PATH_GRAMS, SENT_LEN,
+        RELATIVE, DISTANCE, UNDIR_EDGE, DIR_EDGE, GENEOLOGY, PATH_LEN, CONTINUITY, PATH_GRAMS, SENT_LEN,
         //
         RULE_IS_UNARY;
         // TODO: Not implemented:
@@ -300,8 +300,11 @@ public class TemplateLanguage {
         desc(ListModifier.TRIGRAM, "3gram", "Creates a separate feature for each trigram in the list.");
         
         /** Additional Features. Mapping from parent and child positions to a feature. */
+        // TODO: the first few templates below should be properties of a word pair. 
         desc(OtherFeat.RELATIVE, "relative(p,c)", "Relative position of p and c: before, after, on.", AT.WORD);
         desc(OtherFeat.DISTANCE, "distance(p,c)", "Distance binned into greater than: 2, 5, 10, 20, 30, or 40", AT.WORD);
+        desc(OtherFeat.UNDIR_EDGE, "undiredge(p,c)", "Whether there is an undirected edge connecting p and c", AT.DEP_TREE);
+        desc(OtherFeat.DIR_EDGE, "diredge(p,c)", "Whether there is a directed edge connecting p and c", AT.DEP_TREE);
         desc(OtherFeat.GENEOLOGY, "geneology(p,c)", "geneological relationship between p and c in a syntactic parse: parent, child, ancestor, descendent.", AT.DEP_TREE);
         desc(OtherFeat.PATH_LEN, "len(path(p,c))", "Path length binned into greater than: 2, 5, 10, 20, 30, or 40", AT.DEP_TREE);
         desc(OtherFeat.PATH_GRAMS, "pathGrams", "$1,2,3$-gram path features of words/POS tags", AT.DEP_TREE);

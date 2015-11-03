@@ -344,13 +344,20 @@ public class TemplateFeatureExtractor {
         int pidx = local.getPidx();
         int cidx = local.getCidx();
         FeaturizedTokenPair pair = getFeatTokPair(pidx, cidx);
+        int[] parents;
         switch (template) {
         case DISTANCE:
             return Integer.toString(Math.abs(pidx - cidx));
-        case GENEOLOGY:
-            return pair.getGeneologicalRelation();
         case RELATIVE:
             return pair.getRelativePosition();
+        case UNDIR_EDGE:
+            parents = fSent.getSent().getParents();
+            return (parents[cidx] == pidx || (pidx != -1 && parents[pidx] == cidx)) ? "T" : "F"; 
+        case DIR_EDGE:
+            parents = fSent.getSent().getParents();
+            return (parents[cidx] == pidx) ? "T" : "F"; 
+        case GENEOLOGY:
+            return pair.getGeneologicalRelation();
         case CONTINUITY:
             return Integer.toString(pair.getCountOfNonConsecutivesInPath());
         case PATH_LEN:            

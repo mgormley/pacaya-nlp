@@ -58,4 +58,8 @@ public class FeaturizedSentence {
         return idx;
     }
     
+    public AnnoSentence getSent() {
+        return sent;
+    }
+    
 }

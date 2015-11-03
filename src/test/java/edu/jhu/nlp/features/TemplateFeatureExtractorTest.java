@@ -371,6 +371,16 @@ public class TemplateFeatureExtractorTest {
         testOtherFeaturesHelper(2, 4, OtherFeat.DISTANCE, "2");
         testOtherFeaturesHelper(4, 2, OtherFeat.DISTANCE, "2");
         //
+        testOtherFeaturesHelper(5, 3, OtherFeat.UNDIR_EDGE, "T");
+        testOtherFeaturesHelper(3, 5, OtherFeat.UNDIR_EDGE, "T");
+        testOtherFeaturesHelper(1, 2, OtherFeat.UNDIR_EDGE, "F");
+        testOtherFeaturesHelper(2, 1, OtherFeat.UNDIR_EDGE, "F");
+        testOtherFeaturesHelper(-1, 2, OtherFeat.UNDIR_EDGE, "F");
+        //
+        testOtherFeaturesHelper(5, 3, OtherFeat.DIR_EDGE, "T");
+        testOtherFeaturesHelper(3, 5, OtherFeat.DIR_EDGE, "F");
+        testOtherFeaturesHelper(-1, 5, OtherFeat.DIR_EDGE, "F");
+        //
         testOtherFeaturesHelper(5, 3, OtherFeat.GENEOLOGY, "parent");
         testOtherFeaturesHelper(3, 5, OtherFeat.GENEOLOGY, "child");
         testOtherFeaturesHelper(1, 2, OtherFeat.GENEOLOGY, "ancestor");
