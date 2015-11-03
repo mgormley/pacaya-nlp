@@ -286,6 +286,7 @@ public class CoNLL08Sentence implements Iterable<CoNLL08Token> {
         AnnoSentence s = new AnnoSentence();
         s.setSourceSent(cos);
         s.setSrlGraph(cos.getSrlGraph());
+        s.setKnownPredsFromSrlGraph();
 
         if (useSplitForms) {
             s.setWords(cos.getSplitWords());
