@@ -12,11 +12,16 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.pacaya.util.report.ReporterManager;
 
 public class SrlEvaluatorTest {
 
     AnnoSentenceCollection predSents;
     AnnoSentenceCollection goldSents;
+
+    static {
+        ReporterManager.init(null, true);        
+    }
     
     /**
      * Creates two SRL graphs (predicted and gold) and stores them in AnnoSentenceCollections.
