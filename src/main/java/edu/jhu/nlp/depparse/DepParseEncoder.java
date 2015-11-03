@@ -58,19 +58,18 @@ public class DepParseEncoder implements Encoder<IntAnnoSentence, int[]> {
         dp.build(isent, fg, cs, ofc);
         
         VarConfig goldConfig = new VarConfig();
-        addDepParseTrainAssignment(parents, dp, goldConfig);
+        DepParseEncoder.addDepParseTrainAssignment(parents, dp, goldConfig);
         if (labeledExample) {
             return new LabeledFgExample(fg, goldConfig);
         } else {
             return new UnlabeledFgExample(fg);
         }
     }
-    
+
+    /** Add all the training data assignments to the link variables, if they are not latent. */
     public static void addDepParseTrainAssignment(int[] parents, DepParseFactorGraphBuilder dp, VarConfig vc) {
         int n = parents.length;
-        // LINK VARS
-        // Add all the training data assignments to the link variables, if they are not latent.
-        // IMPORTANT NOTE: We include the case where the parent is the Wall node (position -1).
+        // We include the case where the parent is the Wall node (position -1).
         for (int p=-1; p<n; p++) {
             for (int c=0; c<n; c++) {
                 if (c != p && dp.getLinkVar(p, c) != null) {

@@ -16,7 +16,6 @@ import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.sort.IntDoubleSort;
-import edu.jhu.prim.tuple.Pair;
 
 /**
  * Decodes from the marginals of a factor graph for dependency parsing to a {@link DepEdgeMask}
@@ -52,15 +51,8 @@ public class DepEdgeMaskDecoder implements Decoder<AnnoSentence, DepEdgeMask> {
     public DepEdgeMask decode(FgInferencer inf, UFgExample ex, AnnoSentence sent) {
         FactorGraph fg = ex.getFactorGraph();
         int n = sent.size();
-        Pair<EdgeScores, Integer> pair = DepParseDecoder.getEdgeScores(inf, fg, n);
-        EdgeScores scores = pair.get1();
-        int linkVarCount = pair.get2();
-        
-        if (linkVarCount > 0) {
-            return getDepEdgeMask(scores, prm.pruneMargProp, prm.maxPrunedHeads, prm.includeMbrParse);
-        } else {
-            return null;
-        }
+        EdgeScores scores = DepParseDecoder.getEdgeScores(inf, fg, n);
+        return getDepEdgeMask(scores, prm.pruneMargProp, prm.maxPrunedHeads, prm.includeMbrParse);
     }
 
     /** See {@link #decode(FgInferencer, UFgExample, AnnoSentence)}. */

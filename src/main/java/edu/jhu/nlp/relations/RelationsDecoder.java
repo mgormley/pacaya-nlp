@@ -3,8 +3,12 @@ package edu.jhu.nlp.relations;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
+import edu.jhu.nlp.srl.SrlDecoder;
 import edu.jhu.pacaya.gm.app.Decoder;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.decode.MbrDecoder;
@@ -14,6 +18,8 @@ import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarConfig;
 
 public class RelationsDecoder implements Decoder<AnnoSentence, List<String>> {
+    
+    private static final Logger log = LoggerFactory.getLogger(SrlDecoder.class);
     
     public static class RelationsDecoderPrm {
         // TODO: Set to non-null values.
@@ -38,6 +44,8 @@ public class RelationsDecoder implements Decoder<AnnoSentence, List<String>> {
     public static List<String> getRelLabelsFromVarConfig(VarConfig mbrVarConfig) {
         int relVarCount = 0;
         List<String> rels = new ArrayList<>();
+        // TODO: How do we know this works? The order in the mbrVarConfig is the same as the order
+        // in which the relations were created. This is very dangerous.
         for (Var v : mbrVarConfig.getVars()) {
            if (v instanceof RelVar) {
                RelVar rv = (RelVar) v;
@@ -46,12 +54,8 @@ public class RelationsDecoder implements Decoder<AnnoSentence, List<String>> {
                relVarCount++;
            }
         }
-
-        if (relVarCount > 0) {
-            return rels;
-        } else {
-            return null;
-        }        
+        log.trace("Relation var count = {}", relVarCount);
+        return rels;
     }
     
     // These decode methods could be used for decoding to RelationMention objects.

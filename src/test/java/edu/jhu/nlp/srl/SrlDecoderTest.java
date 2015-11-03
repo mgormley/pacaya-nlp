@@ -41,7 +41,8 @@ public class SrlDecoderTest {
         int n = 3;
         VarConfig vc = new VarConfig();
         SrlGraph g = SrlDecoder.getSrlGraphFromVarConfig(vc, n);
-        assertEquals(null, g);
+        assertEquals(0, g.getNumPreds());
+        assertEquals(0, g.getNumArgs());
     }
         
 }
