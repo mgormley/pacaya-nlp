@@ -1,7 +1,9 @@
 package edu.jhu.nlp.srl;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -15,6 +17,10 @@ import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
+import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate0;
+import edu.jhu.nlp.features.TemplateLanguage.JoinTemplate;
+import edu.jhu.nlp.features.TemplateLanguage.OtherFeat;
 import edu.jhu.nlp.features.TemplateWriter;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector.IGFeatureTemplateSelectorPrm;
@@ -70,6 +76,15 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             fgPrm.srlPrm.srlFePrm.senseTemplates = sft.srlSense;
             fgPrm.srlPrm.srlFePrm.argTemplates = sft.srlArg;
         }
+        if (JointNlpRunner.srlExtraArgFeats) {
+            // For the original ACL'14 experiments, we allowed factors between "PREDICTED" and
+            // "OBSERVED" variables. Here, we add the equivalent features for such a factor explicitly.
+            List<FeatTemplate> argFeats = fgPrm.srlPrm.srlFePrm.argTemplates;
+            List<FeatTemplate> newFeats = new ArrayList<>();
+            for (FeatTemplate tpl : argFeats) {
+                newFeats.add(new JoinTemplate(tpl, new FeatTemplate0(OtherFeat.DIR_EDGE)));            
+            }
+            argFeats.addAll(newFeats);
         }
         if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
             // Set the chosen templates for dependencing parsing.

@@ -257,6 +257,8 @@ public class JointNlpRunner {
     public static File senseFeatTplsOut = null;
     @Opt(hasArg = true, description = "Arg feature template output file.")
     public static File argFeatTplsOut = null;
+    @Opt(hasArg = true, description = "Whether to include extra ACL '14 style arg features.")
+    public static boolean srlExtraArgFeats = false;
 
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
