@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.NerMention;
@@ -724,6 +725,13 @@ public class AnnoSentence {
 
     public void setRelations(RelationMentions relations) {
         this.relations = relations;
+    }
+
+    public List<String> getLowerCaseWords() {
+        if (words == null) { return null; }
+        return words.stream()
+                .map(x -> x.toLowerCase())
+                .collect(Collectors.toList());
     }
     
 }

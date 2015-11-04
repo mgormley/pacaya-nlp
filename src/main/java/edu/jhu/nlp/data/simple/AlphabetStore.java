@@ -2,6 +2,7 @@ package edu.jhu.nlp.data.simple;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -32,6 +33,7 @@ public class AlphabetStore implements Serializable {
     public static String[] specialTokenStrs = new String[] { TOK_UNK_STR, TOK_START_STR, TOK_END_STR, TOK_WALL_STR};
     
     IntObjectBimap<String> words;
+    IntObjectBimap<String> lcWords;
     IntObjectBimap<String> prefixes;
     IntObjectBimap<String> suffixes;
     IntObjectBimap<String> lemmas;
@@ -59,6 +61,7 @@ public class AlphabetStore implements Serializable {
                         i -> new AffixGetter(i+1, false)));
         
         words = getInitAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
+        lcWords = getInitAlphabet("lcWord", lcWordGetter, IntAnnoSentence.MAX_WORD, sents);
         prefixes = getInitAlphabet("prefix", prefixGetter, IntAnnoSentence.MAX_PREFIX, sents);
         suffixes = getInitAlphabet("suffix", suffixGetter, IntAnnoSentence.MAX_SUFFIX, sents);
         lemmas = getInitAlphabet("lemma", lemmaGetter, IntAnnoSentence.MAX_LEMMA, sents);
@@ -68,7 +71,7 @@ public class AlphabetStore implements Serializable {
         feats = getInitAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
         deprels= getInitAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
         
-        as = QLists.getList(words, prefixes, suffixes, lemmas, posTags, cposTags, clusters, feats, deprels);
+        as = QLists.getList(words, lcWords, prefixes, suffixes, lemmas, posTags, cposTags, clusters, feats, deprels);
         this.stopGrowth();
     }
 
@@ -137,6 +140,10 @@ public class AlphabetStore implements Serializable {
         return safeLookup(words, word);
     }
 
+    public int getLcWordIdx(String lcWord) {
+        return safeLookup(lcWords, lcWord);
+    }
+
     public int getPrefixIdx(String prefix) {
         return safeLookup(prefixes, prefix);
     }
@@ -173,6 +180,7 @@ public class AlphabetStore implements Serializable {
     public interface StrGetter extends Serializable {
         List<String> getStrs(AnnoSentence sent);
     }
+    /** For each token, get all affixes up to a maximum length. */
     public static class AffixGetter implements StrGetter {
         private static final long serialVersionUID = 1L;
         private int max;
@@ -182,6 +190,7 @@ public class AlphabetStore implements Serializable {
             this.isPre = isPre;
         }
         public List<String> getStrs(AnnoSentence sent) { 
+            if (sent.getWords() == null) { return Collections.emptyList(); }
             ArrayList<String> strs = new ArrayList<>(sent.size());
             for (int i=0; i<sent.size(); i++) {
                 String s = sent.getWord(i);
@@ -222,6 +231,10 @@ public class AlphabetStore implements Serializable {
     private StrGetter wordGetter = new StrGetter() {
         private static final long serialVersionUID = 1L;
         public List<String> getStrs(AnnoSentence sent) { return sent.getWords(); }
+    };
+    private StrGetter lcWordGetter = new StrGetter() {
+        private static final long serialVersionUID = 1L;
+        public List<String> getStrs(AnnoSentence sent) { return sent.getLowerCaseWords(); }
     };
     private StrGetter lemmaGetter = new StrGetter() {
         private static final long serialVersionUID = 1L;

@@ -17,7 +17,7 @@ public class IntAnnoSentenceTest {
         // Test known words.
         int i = 0;
         AnnoSentence s = new AnnoSentence();
-        s.setWords(QLists.getList("word"+i));
+        s.setWords(QLists.getList("Word"+i));
         s.setPrefixes(QLists.getList("prefix"+i));
         s.setLemmas(QLists.getList("lemma"+i));
         s.setPosTags(QLists.getList("pos"+i));
@@ -28,10 +28,11 @@ public class IntAnnoSentenceTest {
         sents.add(s);
         
         IntAnnoSentence isent = new IntAnnoSentence(s, store);
-        assertEquals((short) store.getWordIdx("word"+0), isent.getWord(0));
-        assertEquals((short) store.getPrefixIdx("w"), isent.getPrefix(0,1));
-        assertEquals((short) store.getPrefixIdx("wo"), isent.getPrefix(0,2));
-        assertEquals((short) store.getPrefixIdx("wor"), isent.getPrefix(0,3));
+        assertEquals((short) store.getWordIdx("Word"+0), isent.getWord(0));
+        assertEquals((short) store.getLcWordIdx("word"+0), isent.getLcWord(0));
+        assertEquals((short) store.getPrefixIdx("W"), isent.getPrefix(0,1));
+        assertEquals((short) store.getPrefixIdx("Wo"), isent.getPrefix(0,2));
+        assertEquals((short) store.getPrefixIdx("Wor"), isent.getPrefix(0,3));
         assertEquals((short) store.getSuffixIdx("0"), isent.getSuffix(0,1));
         assertEquals((short) store.getSuffixIdx("d0"), isent.getSuffix(0,2));
         assertEquals((short) store.getSuffixIdx("rd0"), isent.getSuffix(0,3));
@@ -63,6 +64,7 @@ public class IntAnnoSentenceTest {
         
         IntAnnoSentence isent = new IntAnnoSentence(s, store);
         assertEquals((short) AlphabetStore.TOK_UNK_INT, isent.getWord(0));
+        assertEquals((short) AlphabetStore.TOK_UNK_INT, isent.getLcWord(0));
         assertEquals((short) AlphabetStore.TOK_UNK_INT, isent.getPrefix(0,1));
         assertEquals((short) AlphabetStore.TOK_UNK_INT, isent.getPrefix(0,2));
         assertEquals((short) AlphabetStore.TOK_UNK_INT, isent.getPrefix(0,3));

@@ -30,6 +30,7 @@ public class IntAnnoSentence {
     final static int MAX_DEPREL = BYTE_MAX;
     
     private ShortArrayList words;
+    private ShortArrayList lcWords; // lower-case words
     private ShortArrayList[] prefixes;
     private ShortArrayList[] suffixes;
     private boolean[] isCapitalized;    
@@ -54,6 +55,7 @@ public class IntAnnoSentence {
         this.sent = sent;
         this.store = store;
         this.words = getShorts(sent.getWords(), store.words);
+        this.lcWords = getShorts(sent.getLowerCaseWords(), store.lcWords);
         this.prefixes = getAffixShorts(sent.getWords(), store.prefixes, store.maxPrefixLen, true);
         this.suffixes = getAffixShorts(sent.getWords(), store.suffixes, store.maxSuffixLen, false);
         this.isCapitalized = getIsCapitalized(sent.getWords());
@@ -156,6 +158,11 @@ public class IntAnnoSentence {
     /** Gets the i'th word. */
     public short getWord(int i) {
         return words.get(i);
+    }
+    
+    /** Gets the i'th lowercased word. */
+    public short getLcWord(int i) {
+        return lcWords.get(i);
     }
 
     /** Gets the i'th prefix of length len. */
