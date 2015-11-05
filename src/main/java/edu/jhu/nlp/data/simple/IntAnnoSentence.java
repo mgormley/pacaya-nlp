@@ -38,6 +38,7 @@ public class IntAnnoSentence {
     private ByteArrayList posTags;
     private ByteArrayList cposTags;
     private ShortArrayList clusters;
+    private ShortArrayList[] clusterPrefixes;
     private ArrayList<ShortArrayList> feats;
     private ByteArrayList deprels;
     // TODO: private IntNaryTree naryTree;
@@ -63,6 +64,7 @@ public class IntAnnoSentence {
         this.posTags = getBytes(sent.getPosTags(), store.posTags);
         this.cposTags = getBytes(sent.getCposTags(), store.cposTags);
         this.clusters = getShorts(sent.getClusters(), store.clusters);
+        this.clusterPrefixes = getAffixShorts(sent.getClusters(), store.clusterPrefixes, store.maxClusterPrefixLen, true);
         if (sent.getFeats() != null) {
             feats = new ArrayList<>(sent.getFeats().size());
             for (List<String> featList : sent.getFeats()) {
@@ -199,6 +201,11 @@ public class IntAnnoSentence {
     public short getCluster(int i) {
         return clusters.get(i);
     }
+
+    /** Gets the i'th cluster prefix of length len. */
+    public short getClusterPrefix(int i, int len) {
+        return clusterPrefixes[len-1].get(i);
+    }
     
     /** Gets the features (e.g. morphological features) of the i'th word. */
     public ShortArrayList getFeats(int i) {
@@ -247,6 +254,10 @@ public class IntAnnoSentence {
     
     public AnnoSentence getAnnoSentence() {
         return sent;
+    }
+    
+    public AlphabetStore getStore() {
+        return store;
     }
 
 }

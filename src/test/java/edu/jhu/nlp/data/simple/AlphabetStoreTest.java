@@ -33,6 +33,7 @@ public class AlphabetStoreTest {
         assertEquals(NUM_TOKENS, store.posTags.size());
         assertEquals(NUM_TOKENS, store.cposTags.size());
         assertEquals(NUM_TOKENS, store.clusters.size());
+        assertEquals(18, store.clusterPrefixes.size());
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
         
@@ -69,6 +70,10 @@ public class AlphabetStoreTest {
         assertEquals(TOK_UNK_STR, store.clusters.lookupObject(0));
         assertEquals("cluster"+0, store.clusters.lookupObject(FIRST_TOK_ID));
         assertEquals(FIRST_TOK_ID, store.getClusterIdx("cluster"+0));
+        
+        assertEquals(TOK_UNK_STR, store.clusters.lookupObject(0));
+        assertEquals("c", store.clusters.lookupObject(FIRST_TOK_ID)); // prefix of cluster0
+        assertEquals(FIRST_TOK_ID, store.getClusterIdx("c")); // prefix of cluster0
 
         assertEquals(TOK_UNK_STR, store.feats.lookupObject(0));
         assertEquals("feat"+0, store.feats.lookupObject(FIRST_TOK_ID));
@@ -102,6 +107,11 @@ public class AlphabetStoreTest {
             assertEquals(at == AT.POS ? FIRST_TOK_ID : NUM_TOKENS, store.posTags.size());
             assertEquals(at == AT.CPOS ? FIRST_TOK_ID : NUM_TOKENS, store.cposTags.size());
             assertEquals(at == AT.BROWN ? FIRST_TOK_ID : NUM_TOKENS, store.clusters.size());
+            if (at == AT.BROWN){
+                assertEquals(FIRST_TOK_ID, store.clusterPrefixes.size());
+            } else {
+                assertTrue(FIRST_TOK_ID < store.clusterPrefixes.size());
+            }
             assertEquals(at == AT.MORPHO ? FIRST_TOK_ID : NUM_TOKENS, store.feats.size());
             assertEquals(at == AT.DEPREL ? FIRST_TOK_ID : NUM_TOKENS, store.deprels.size());
         }
@@ -124,6 +134,7 @@ public class AlphabetStoreTest {
         assertEquals(NUM_TOKENS, store.posTags.size());
         assertEquals(NUM_TOKENS, store.cposTags.size());
         assertEquals(NUM_TOKENS, store.clusters.size());
+        assertEquals(18, store.clusterPrefixes.size());
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
     }

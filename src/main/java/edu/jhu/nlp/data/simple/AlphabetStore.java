@@ -20,6 +20,11 @@ public class AlphabetStore implements Serializable {
 
     private static final Logger log = LoggerFactory.getLogger(AlphabetStore.class);
     
+    // Tunable parameters.
+    public final int maxPrefixLen = 5;
+    public final int maxSuffixLen = 5;
+    public final int maxClusterPrefixLen = 5;
+    
     // Special Tokens.
     public static final int NUM_SPECIAL_TOKS = 4;
     public static final String TOK_UNK_STR = "TOK_UNK";
@@ -32,6 +37,8 @@ public class AlphabetStore implements Serializable {
     public static final int TOK_WALL_INT = 3;
     public static String[] specialTokenStrs = new String[] { TOK_UNK_STR, TOK_START_STR, TOK_END_STR, TOK_WALL_STR};
     
+    CountingIntObjectBimap<String> wordsCounter;
+    
     IntObjectBimap<String> words;
     IntObjectBimap<String> lcWords;
     IntObjectBimap<String> prefixes;
@@ -40,51 +47,62 @@ public class AlphabetStore implements Serializable {
     IntObjectBimap<String> posTags;
     IntObjectBimap<String> cposTags;
     IntObjectBimap<String> clusters;
+    IntObjectBimap<String> clusterPrefixes;
     IntObjectBimap<String> feats;
     IntObjectBimap<String> deprels;
-    // TODO: 
-    //Alphabet<String> lexAlphabet;
-    //Alphabet<String> ntAlphabet;    
     private List<IntObjectBimap<String>> as;
-    
-    public final int maxPrefixLen = 5;
-    public final int maxSuffixLen = 5;
     
     public AlphabetStore(Iterable<AnnoSentence> sents) {
         // The string generators for prefixes and suffixes create all affixes up to a given max
         // length. The string to int mapping is kept in only a single IntObjectBimap.
         MultiStrGetter prefixGetter = new MultiStrGetter(
                 IntStream.range(0, maxPrefixLen).mapToObj(
-                        i -> new AffixGetter(i+1, true)));
+                        i -> new AffixGetter(i+1, true, wordGetter)));
         MultiStrGetter suffixGetter = new MultiStrGetter(
                 IntStream.range(0, maxSuffixLen).mapToObj(
-                        i -> new AffixGetter(i+1, false)));
+                        i -> new AffixGetter(i+1, false, wordGetter)));
+        MultiStrGetter clusterPrefixGetter = new MultiStrGetter(
+                IntStream.range(0, maxClusterPrefixLen).mapToObj(
+                        i -> new AffixGetter(i+1, true, clusterGetter)));
         
-        words = getInitAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
-        lcWords = getInitAlphabet("lcWord", lcWordGetter, IntAnnoSentence.MAX_WORD, sents);
-        prefixes = getInitAlphabet("prefix", prefixGetter, IntAnnoSentence.MAX_PREFIX, sents);
-        suffixes = getInitAlphabet("suffix", suffixGetter, IntAnnoSentence.MAX_SUFFIX, sents);
-        lemmas = getInitAlphabet("lemma", lemmaGetter, IntAnnoSentence.MAX_LEMMA, sents);
-        posTags = getInitAlphabet("pos", posTagGetter, IntAnnoSentence.MAX_POS, sents);
-        cposTags = getInitAlphabet("cpos", cposTagGetter, IntAnnoSentence.MAX_CPOS, sents);
-        clusters = getInitAlphabet("cluster", clusterGetter, IntAnnoSentence.MAX_CLUSTER, sents);
-        feats = getInitAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
-        deprels= getInitAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
+        // Equivalent to: words = getAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
+        wordsCounter = countStrings(wordGetter, sents);
+        words = applyCountCutoffToGetAlphabet("word", IntAnnoSentence.MAX_WORD, wordsCounter);
         
-        as = QLists.getList(words, lcWords, prefixes, suffixes, lemmas, posTags, cposTags, clusters, feats, deprels);
+        lcWords = getAlphabet("lcWord", lcWordGetter, IntAnnoSentence.MAX_WORD, sents);
+        prefixes = getAlphabet("prefix", prefixGetter, IntAnnoSentence.MAX_PREFIX, sents);
+        suffixes = getAlphabet("suffix", suffixGetter, IntAnnoSentence.MAX_SUFFIX, sents);
+        lemmas = getAlphabet("lemma", lemmaGetter, IntAnnoSentence.MAX_LEMMA, sents);
+        posTags = getAlphabet("pos", posTagGetter, IntAnnoSentence.MAX_POS, sents);
+        cposTags = getAlphabet("cpos", cposTagGetter, IntAnnoSentence.MAX_CPOS, sents);
+        clusters = getAlphabet("cluster", clusterGetter, IntAnnoSentence.MAX_CLUSTER, sents);
+        clusterPrefixes = getAlphabet("clusterPrefix", clusterPrefixGetter, IntAnnoSentence.MAX_CLUSTER, sents);
+        feats = getAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
+        deprels= getAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
+        
+        as = QLists.getList(words, lcWords, prefixes, suffixes, lemmas, posTags, cposTags, clusters, clusterPrefixes, feats, deprels);
         this.stopGrowth();
     }
 
-    private static IntObjectBimap<String> getInitAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
-        CountingIntObjectBimap<String> counter = new CountingIntObjectBimap<>();
-        for (AnnoSentence sent : sents) {
-            List<String> strs = sg.getStrs(sent);
-            if (strs != null) {
-                for (String str : strs) {
-                    counter.lookupIndex(str);
-                }
-            }
-        }
+    /**
+     * Gets a mapping from ints to strings. Types occurring fewer than K times are re-mapped to UNK,
+     * where K is the minimum value such that the maximum index of the final mapping is
+     * less-than-or-equal to maxIdx.
+     */
+    private static IntObjectBimap<String> getAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
+        CountingIntObjectBimap<String> counter = countStrings(sg, sents);
+        IntObjectBimap<String> alphabet = applyCountCutoffToGetAlphabet(name, maxIdx, counter);
+        return alphabet;
+    }
+
+    /**
+     * Transforms a mapping from ints to strings (with counts!) to ensure it does not exceed a
+     * maximum size. Types occurring fewer than K times are re-mapped to UNK, where K is the minimum
+     * value such that the maximum index of the final mapping is less-than-or-equal to maxIdx.
+     */
+    protected static IntObjectBimap<String> applyCountCutoffToGetAlphabet(String name, int maxIdx,
+            CountingIntObjectBimap<String> counter) {
+        // Apply count-cutoffs, increasing K (the cutoff) until the total number of types is <= maxIdx.
         IntObjectBimap<String> alphabet;
         for (int cutoff = 1; ; cutoff++) {
             alphabet = getInitAlphabet();
@@ -103,7 +121,25 @@ public class AlphabetStore implements Serializable {
         }
         return alphabet;
     }
-    
+
+    /** Gets a mapping from ints to strings, with counts of the number of times each one was observed. */
+    private static CountingIntObjectBimap<String> countStrings(StrGetter sg, Iterable<AnnoSentence> sents) {
+        CountingIntObjectBimap<String> counter = new CountingIntObjectBimap<>();
+        for (AnnoSentence sent : sents) {
+            List<String> strs = sg.getStrs(sent);
+            if (strs != null) {
+                for (String str : strs) {
+                    counter.lookupIndex(str);
+                }
+            }
+        }
+        return counter;
+    }
+
+    /**
+     * Gets a mapping from ints to strings, which is initialized with the special tokens occupying
+     * their reserved positions.
+     */
     private static IntObjectBimap<String> getInitAlphabet() {
         IntObjectBimap<String> alphabet = new IntObjectBimap<String>();
         //for (SpecialToken tok : SpecialToken.values()) {
@@ -113,6 +149,10 @@ public class AlphabetStore implements Serializable {
                 throw new RuntimeException("Expecting first index from alphabet to be 0");
             }
         }
+        assert alphabet.lookupIndex(TOK_UNK_STR) == TOK_UNK_INT;
+        assert alphabet.lookupIndex(TOK_START_STR) == TOK_START_INT;
+        assert alphabet.lookupIndex(TOK_END_STR) == TOK_END_INT;
+        assert alphabet.lookupIndex(TOK_WALL_STR) == TOK_WALL_INT;
         return alphabet;
     }
 
@@ -134,6 +174,10 @@ public class AlphabetStore implements Serializable {
             idx = TOK_UNK_INT;
         }
         return idx;
+    }
+
+    public int getWordTypeCount(int wordIdx) {
+        return wordsCounter.lookupObjectCount(wordIdx);
     }
     
     public int getWordIdx(String word) {
@@ -167,6 +211,10 @@ public class AlphabetStore implements Serializable {
     public int getClusterIdx(String cluster) {
         return safeLookup(clusters, cluster);
     }
+    
+    public int getClusterPrefixIdx(String clusterPrefix) {
+        return safeLookup(clusterPrefixes, clusterPrefix);
+    }
 
     public int getFeatIdx(String feat) {
         return safeLookup(feats, feat);
@@ -180,20 +228,24 @@ public class AlphabetStore implements Serializable {
     public interface StrGetter extends Serializable {
         List<String> getStrs(AnnoSentence sent);
     }
+    
     /** For each token, get all affixes up to a maximum length. */
     public static class AffixGetter implements StrGetter {
         private static final long serialVersionUID = 1L;
         private int max;
         private boolean isPre;
-        public AffixGetter(int max, boolean isPre) { 
+        private StrGetter getter;
+        public AffixGetter(int max, boolean isPre, StrGetter getter) { 
             this.max = max;
             this.isPre = isPre;
+            this.getter = getter;
         }
         public List<String> getStrs(AnnoSentence sent) { 
-            if (sent.getWords() == null) { return Collections.emptyList(); }
-            ArrayList<String> strs = new ArrayList<>(sent.size());
-            for (int i=0; i<sent.size(); i++) {
-                String s = sent.getWord(i);
+            List<String> input = getter.getStrs(sent);
+            if (input == null) { return Collections.emptyList(); }
+            ArrayList<String> strs = new ArrayList<>(input.size());
+            for (int i=0; i<input.size(); i++) {
+                String s = input.get(i);
                 s = getAffix(s, max, isPre);
                 strs.add(s);
             }
@@ -208,6 +260,8 @@ public class AlphabetStore implements Serializable {
             return s;
         }
     }
+    
+    /** Concatenates the output of multiple StrGetters. */
     private static class MultiStrGetter implements StrGetter {
         private static final long serialVersionUID = 1L;
         List<StrGetter> getters = new ArrayList<>();
@@ -228,6 +282,7 @@ public class AlphabetStore implements Serializable {
             return strs;
         }
     }
+    
     private StrGetter wordGetter = new StrGetter() {
         private static final long serialVersionUID = 1L;
         public List<String> getStrs(AnnoSentence sent) { return sent.getWords(); }
