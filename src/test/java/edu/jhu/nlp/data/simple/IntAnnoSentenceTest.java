@@ -110,4 +110,5 @@ public class IntAnnoSentenceTest {
         assertEquals(3, isent.getNumVerbsInBetween(0, 8));
         assertEquals(4, isent.getNumVerbsInBetween(-1, 8));
     }
+
 }

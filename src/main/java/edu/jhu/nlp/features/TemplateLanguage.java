@@ -294,7 +294,7 @@ public class TemplateLanguage {
         /** List Modifiers. Mapping of a list of strings to a new list of strings. */
         desc(ListModifier.SEQ, "seq", "Identity function.");
         desc(ListModifier.BAG, "bag", "List to set.");
-        desc(ListModifier.NO_DUP, "noDup", "Unix “uniq” on original list.");
+        desc(ListModifier.NO_DUP, "noDup", "Unix 'uniq' on original list.");
         desc(ListModifier.UNIGRAM, "1gram", "Creates a separate feature for each element of the list.");
         desc(ListModifier.BIGRAM, "2gram", "Creates a separate feature for each bigram in the list.");
         desc(ListModifier.TRIGRAM, "3gram", "Creates a separate feature for each trigram in the list.");
@@ -322,7 +322,7 @@ public class TemplateLanguage {
                 log.warn("Multiple structures with the same name: " + d.getName());
             }
             nameDescMap.put(d.getName(), d);
-        }        
+        }
     }
     
     /** Feature function description. */
@@ -377,6 +377,7 @@ public class TemplateLanguage {
 
     public static abstract class FeatTemplate implements Serializable {
         protected String name;
+        protected int id;
         private static final long serialVersionUID = 1L;
         public FeatTemplate() { }
         public String getName() {
@@ -384,6 +385,13 @@ public class TemplateLanguage {
                 name = getNameFromDesc(this);
             }
             return name;
+        }
+        public int getId() {
+            if (id == 0) {
+                id = getName().hashCode();
+                if (id == 0) { id = -7; }
+            }
+            return id;
         }
         public abstract List<Enum<?>> getStructure();
         public String toString() {
@@ -402,9 +410,9 @@ public class TemplateLanguage {
     
     /**
      * For feature templates of the form: 
-     *     p.bc1
-     *     c_{head}.dr
-     *     first(t, NOUN, path(p, root)).bc0
+     *     bc1(p)
+     *     dr(head(c))
+     *     bc0(first(t, NOUN, path(p, root)))
      */
     public static class FeatTemplate1 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -429,7 +437,7 @@ public class TemplateLanguage {
     
     /**
      * For feature templates of the form: 
-     *     p.morpho
+     *     morpho(p)
      * which extract multiple features of a single token.
      */
     public static class FeatTemplate2 extends FeatTemplate {
@@ -455,9 +463,9 @@ public class TemplateLanguage {
 
     /**
      * For feature templates of the form: 
-     *    path(lca(p,c),root).bc0+dir.noDup
-     *    children(p).bc0.seq
-     *    line(p,c).t.noDup
+     *    noDup(bc0+dir(path(lca(p,c),root)))
+     *    seq(bc0(children(p)))
+     *    noDup(t(line(p,c)))
      */
     public static class FeatTemplate3 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -485,8 +493,8 @@ public class TemplateLanguage {
     
     /**
      * For feature templates of the form: 
-     *     ruleP.tag
-     *     ruleLc.bTag
+     *     tag(ruleP)
+     *     bTag(ruleLc)
      */
     public static class FeatTemplate4 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -531,9 +539,9 @@ public class TemplateLanguage {
         
     /**
      * For n-gram feature templates of the form:
-     *     p.w + c_{-1}.bc0
-     *     p.t + c.t
-     *     p.t + c.t + p.w
+     *     w(p) + bc0(-1(c))
+     *     t(p) + t(c)
+     *     t(p) + t(c) + w(p)
      */
     public static class JoinTemplate extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -634,7 +642,7 @@ public class TemplateLanguage {
     }
 
     /** Filters out feature templates which contain the specified enum. */
-    public static ArrayList<FeatTemplate> filterOutFeats(ArrayList<FeatTemplate> tpls, Enum<?> enumMatch) {
+    public static List<FeatTemplate> filterOutFeats(List<FeatTemplate> tpls, Enum<?> enumMatch) {
         ArrayList<FeatTemplate> tplsNew = new ArrayList<FeatTemplate>();
         for (FeatTemplate tpl : tpls) {
             boolean keep = true;

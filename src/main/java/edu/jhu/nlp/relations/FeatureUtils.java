@@ -24,7 +24,7 @@ public class FeatureUtils {
                 }
             }
         } else {
-            // Apply the feature-hashing trick.
+            // Apply the feature-hashing trick and store the ints in the Alphabet.
             for (String fname : obsFeats) {
                 int hash = MurmurHash3.murmurhash3_x86_32(fname);
                 hash = FastMath.mod(hash, featureHashMod);
@@ -39,6 +39,16 @@ public class FeatureUtils {
                     }
                 }
             }
+        }
+    }
+
+    public static void addFeatures(Collection<String> obsFeats, FeatureVector fv, int featureHashMod) {
+        // Apply the feature-hashing trick and ignore the alphabet.
+        for (String fname : obsFeats) {
+            int hash = MurmurHash3.murmurhash3_x86_32(fname);
+            int fidx = FastMath.mod(hash, featureHashMod);
+            fv.add(fidx, 1.0);
+            // ALERT: no reverse hashing here.
         }
     }
 

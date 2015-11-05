@@ -15,7 +15,7 @@ import edu.jhu.prim.util.Timer;
 public class AnnoSentenceReaderSpeedTest {
 
     private static String conllxDir = "/Users/mgormley/research/pacaya/data/conllx/CoNLL-X";
-    private static String conll09Dir = "/Users/mgormley/research/corpora/LDC/LDC2012T04/data/CoNLL2009-ST-English";
+    private static String conll09Dir = "/Users/mgormley/research/LDC/LDC2012T04/data/CoNLL2009-ST-English";
     
     public static String ptbYmTest = conllxDir + "/test/data/english/ptb_ym/test/english_ptb_ym_test.conll";
     public static String ptbYmTrain = conllxDir + "/train/data/english/ptb_ym/train/english_ptb_ym_train.conll";
