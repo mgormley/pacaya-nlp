@@ -349,7 +349,7 @@ public class TemplateFeatureExtractor {
         case DISTANCE:
             return Integer.toString(Math.abs(pidx - cidx));
         case RELATIVE:
-            return pair.getRelativePosition();
+            return pair.getRelativePosition().name();
         case UNDIR_EDGE:
             parents = fSent.getSent().getParents();
             return (parents[cidx] == pidx || (pidx != -1 && parents[pidx] == cidx)) ? "T" : "F"; 
@@ -357,7 +357,7 @@ public class TemplateFeatureExtractor {
             parents = fSent.getSent().getParents();
             return (parents[cidx] == pidx) ? "T" : "F"; 
         case GENEOLOGY:
-            return pair.getGeneologicalRelation();
+            return pair.getGeneologicalRelation().name();
         case CONTINUITY:
             return Integer.toString(pair.getCountOfNonConsecutivesInPath());
         case PATH_LEN:            

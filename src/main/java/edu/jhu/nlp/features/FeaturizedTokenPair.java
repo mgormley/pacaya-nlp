@@ -148,25 +148,29 @@ public class FeaturizedTokenPair {
         }        
     }
     
-    public String getGeneologicalRelation() {
+    public enum GeneologicalRelation {
+        SELF, PARENT, CHILD, SIBLING, ANCESTOR, DESCENDENT, COUSIN
+    }
+    
+    public GeneologicalRelation getGeneologicalRelation() {
         if (pidx == aidx) {
-            return "self";
+            return GeneologicalRelation.SELF;
         } else if (hasParent(aidx) && pidx == parents[aidx]) {
-            return "parent";
+            return GeneologicalRelation.PARENT;
         } else if (hasParent(pidx) && parents[pidx] == aidx) {
-            return "child";
+            return GeneologicalRelation.CHILD;
         } else if (hasParent(aidx) && hasParent(pidx) && parents[pidx] == parents[aidx]) {
-            return "sibling";
+            return GeneologicalRelation.SIBLING;
         } else if (pidx == -1) {
-            return "ancestor";     // Short circuit to avoid ArrayIndexOutOfBounds.
+            return GeneologicalRelation.ANCESTOR; // Short circuit to avoid ArrayIndexOutOfBounds.
         } else if (aidx == -1) {
-            return "descendent";   // Short circuit to avoid ArrayIndexOutOfBounds.
+            return GeneologicalRelation.DESCENDENT;   // Short circuit to avoid ArrayIndexOutOfBounds.
         } else if (ParentsArray.isAncestor(pidx, aidx, parents)) {
-            return "ancestor";
+            return GeneologicalRelation.ANCESTOR;
         } else if (ParentsArray.isAncestor(aidx, pidx, parents)) {
-            return "descendent";
+            return GeneologicalRelation.DESCENDENT;
         } else {
-            return "cousin";
+            return GeneologicalRelation.COUSIN;
         }
     }
     
@@ -174,13 +178,15 @@ public class FeaturizedTokenPair {
         return 0 <= aidx && aidx < parents.length;
     }
 
-    public String getRelativePosition() {
+    public enum RelativePosition { ON, BEFORE, AFTER };    
+    
+    public RelativePosition getRelativePosition() {
         if (pidx == aidx) {
-            return "on";
+            return RelativePosition.ON;
         } else if (pidx < aidx) {
-            return "before";
+            return RelativePosition.BEFORE;
         } else {
-            return "after";
+            return RelativePosition.AFTER;
         }
     }
 
