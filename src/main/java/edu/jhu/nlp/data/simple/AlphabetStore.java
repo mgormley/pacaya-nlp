@@ -36,10 +36,8 @@ public class AlphabetStore implements Serializable {
     public static final int TOK_END_INT = 2;
     public static final int TOK_WALL_INT = 3;
     public static String[] specialTokenStrs = new String[] { TOK_UNK_STR, TOK_START_STR, TOK_END_STR, TOK_WALL_STR};
-    
-    CountingIntObjectBimap<String> wordsCounter;
-    
-    IntObjectBimap<String> words;
+        
+    CountingIntObjectBimap<String> words;
     IntObjectBimap<String> lcWords;
     IntObjectBimap<String> prefixes;
     IntObjectBimap<String> suffixes;
@@ -65,10 +63,7 @@ public class AlphabetStore implements Serializable {
                 IntStream.range(0, maxClusterPrefixLen).mapToObj(
                         i -> new AffixGetter(i+1, true, clusterGetter)));
         
-        // Equivalent to: words = getAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
-        wordsCounter = countStrings(wordGetter, sents);
-        words = applyCountCutoffToGetAlphabet("word", IntAnnoSentence.MAX_WORD, wordsCounter);
-        
+        words = getAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
         lcWords = getAlphabet("lcWord", lcWordGetter, IntAnnoSentence.MAX_WORD, sents);
         prefixes = getAlphabet("prefix", prefixGetter, IntAnnoSentence.MAX_PREFIX, sents);
         suffixes = getAlphabet("suffix", suffixGetter, IntAnnoSentence.MAX_SUFFIX, sents);
@@ -89,9 +84,9 @@ public class AlphabetStore implements Serializable {
      * where K is the minimum value such that the maximum index of the final mapping is
      * less-than-or-equal to maxIdx.
      */
-    private static IntObjectBimap<String> getAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
+    private static CountingIntObjectBimap<String> getAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
         CountingIntObjectBimap<String> counter = countStrings(sg, sents);
-        IntObjectBimap<String> alphabet = applyCountCutoffToGetAlphabet(name, maxIdx, counter);
+        CountingIntObjectBimap<String> alphabet = applyCountCutoffToGetAlphabet(name, maxIdx, counter);
         return alphabet;
     }
 
@@ -100,17 +95,25 @@ public class AlphabetStore implements Serializable {
      * maximum size. Types occurring fewer than K times are re-mapped to UNK, where K is the minimum
      * value such that the maximum index of the final mapping is less-than-or-equal to maxIdx.
      */
-    protected static IntObjectBimap<String> applyCountCutoffToGetAlphabet(String name, int maxIdx,
+    protected static CountingIntObjectBimap<String> applyCountCutoffToGetAlphabet(String name, int maxIdx,
             CountingIntObjectBimap<String> counter) {
         // Apply count-cutoffs, increasing K (the cutoff) until the total number of types is <= maxIdx.
-        IntObjectBimap<String> alphabet;
+        CountingIntObjectBimap<String> alphabet;
         for (int cutoff = 1; ; cutoff++) {
             alphabet = getInitAlphabet();
+            alphabet.setObjectCount(TOK_START_INT, 0);
+            alphabet.setObjectCount(TOK_END_INT, 0);
+            alphabet.setObjectCount(TOK_WALL_INT, 0);
+            alphabet.setObjectCount(TOK_UNK_INT, 0);
             for (int idx=0; idx<counter.size(); idx++) {
                 String str = counter.lookupObject(idx);
                 int count = counter.lookupObjectCount(idx);
                 if (count >= cutoff) {
-                    alphabet.lookupIndex(str);
+                    int newIdx = alphabet.lookupIndex(str);
+                    alphabet.setObjectCount(newIdx, count);
+                } else if (idx >= NUM_SPECIAL_TOKS) {
+                    count += alphabet.lookupObjectCount(TOK_UNK_INT);
+                    alphabet.setObjectCount(TOK_UNK_INT, count);
                 }
             }
             if (alphabet.size()-1 <= maxIdx) {
@@ -140,8 +143,8 @@ public class AlphabetStore implements Serializable {
      * Gets a mapping from ints to strings, which is initialized with the special tokens occupying
      * their reserved positions.
      */
-    private static IntObjectBimap<String> getInitAlphabet() {
-        IntObjectBimap<String> alphabet = new IntObjectBimap<String>();
+    private static CountingIntObjectBimap<String> getInitAlphabet() {
+        CountingIntObjectBimap<String> alphabet = new CountingIntObjectBimap<String>();
         //for (SpecialToken tok : SpecialToken.values()) {
         for (int i=0; i<NUM_SPECIAL_TOKS; i++) {
             int idx = alphabet.lookupIndex(specialTokenStrs[i]);
@@ -177,7 +180,7 @@ public class AlphabetStore implements Serializable {
     }
 
     public int getWordTypeCount(int wordIdx) {
-        return wordsCounter.lookupObjectCount(wordIdx);
+        return words.lookupObjectCount(wordIdx);
     }
     
     public int getWordIdx(String word) {

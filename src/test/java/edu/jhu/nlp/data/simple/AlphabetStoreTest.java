@@ -138,6 +138,32 @@ public class AlphabetStoreTest {
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
     }
+    
+    @Test
+    public void testWordCounts() {
+        {
+            AnnoSentenceCollection sents = getSents(true);
+            AlphabetStore store = new AlphabetStore(sents);
+            // Observed.
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+0)));
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+1)));
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+10)));
+            // Mapped to UNK.
+            assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+101)));
+            assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+1000)));
+        }
+        {
+            AnnoSentenceCollection sents = getSents(false);
+            AlphabetStore store = new AlphabetStore(sents);
+            // Observed.
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+0)));
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+1)));
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+10)));
+            // Mapped to UNK.
+            assertEquals(0, store.getWordTypeCount(store.getWordIdx("Word"+101)));
+            assertEquals(0, store.getWordTypeCount(store.getWordIdx("Word"+1000)));
+        }
+    }
 
     /**
      * Gets a list of sentences. If <code>includeExtras</code> is false, we return only three
