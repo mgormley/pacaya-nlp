@@ -10,6 +10,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.conll.LanguageConstants;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -59,8 +60,8 @@ public class FeaturizedToken {
     private int lowSupportVerb;
     private int highSupportVerb;
     private int[] parents;
-    private ArrayList<Integer> children;
-    private ArrayList<Integer> noFarChildren;
+    private IntArrayList children;
+    private IntArrayList noFarChildren;
     /* Additional features owing to Bjorkelund al. 2009 */
     private boolean cachedSiblings = false;
     private int nearLeftSibling;
@@ -244,7 +245,7 @@ public class FeaturizedToken {
         }
     }
     
-    public ArrayList<Integer> getChildren() {
+    public IntArrayList getChildren() {
         ensureChildren();
         return children;
     }
@@ -292,10 +293,11 @@ public class FeaturizedToken {
     private void cacheFarthestNearestChildren() {
         ensureChildren();
         // Farthest and nearest child to the left; farthest and nearest child to the right.
-        ArrayList<Integer> leftChildren = new ArrayList<Integer>();
-        ArrayList<Integer> rightChildren = new ArrayList<Integer>();
+        IntArrayList leftChildren = new IntArrayList();
+        IntArrayList rightChildren = new IntArrayList();
         // Go through children in order
-        for (int child : children) {
+        for (int i=0; i<children.size(); i++) {
+            int child = children.get(i);
             if (child < idx) {
                 leftChildren.add(child);
             } else if (child > idx) {
@@ -322,7 +324,7 @@ public class FeaturizedToken {
 
     }
     
-    public ArrayList<Integer> getNoFarChildren() {
+    public IntArrayList getNoFarChildren() {
         if (noFarChildren == null) {
             cacheNoFarChildren();
         }
@@ -334,7 +336,7 @@ public class FeaturizedToken {
      * excludes the left most and the right most children (noFarChildren). */
     private void cacheNoFarChildren() {
         ensureChildren();
-        this.noFarChildren = new ArrayList<Integer>();
+        this.noFarChildren = new IntArrayList();
         // Go through children in order
         for (int i=0; i<children.size(); i++) {
             int child = children.get(i);

@@ -32,6 +32,7 @@ import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.pacaya.parse.cky.Rule;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -237,7 +238,7 @@ public class TemplateFeatureExtractor {
             } else if (prop == null) {
                 throw new IllegalStateException("TokProperty must be non-null for position lists.");
             }
-            List<Integer> posList = getPositionList(pl, local);
+            IntArrayList posList = getPositionList(pl, local);
             vals = getTokPropsForList(prop, posList);
             listAndPathHelper(vals, lmod, tpl, feats);
             return;
@@ -395,7 +396,7 @@ public class TemplateFeatureExtractor {
         }
     }
 
-    private List<Integer> getPositionList(PositionList pl, LocalObservations local) {              
+    private IntArrayList getPositionList(PositionList pl, LocalObservations local) {              
         FeaturizedToken tok;
         FeaturizedTokenPair pair;
         switch (pl) {
@@ -419,13 +420,7 @@ public class TemplateFeatureExtractor {
             return pair.getLinePath();
         case BTWN_P_C:
             pair = getFeatTokPair(local.getPidx(), local.getCidx());
-            List<Integer> posList = pair.getLinePath();
-            if (posList.size() > 2) {
-                posList = posList.subList(1, posList.size() - 1);
-            } else {
-                posList = Collections.emptyList();
-            }
-            return posList;
+            return pair.getBtwnPath();
         default:
             throw new IllegalStateException();
         }
@@ -522,9 +517,10 @@ public class TemplateFeatureExtractor {
         return props;
     }
 
-    private List<String> getTokPropsForList(TokProperty prop, List<Integer> posList) {
+    private List<String> getTokPropsForList(TokProperty prop, IntArrayList posList) {
         List<String> props = new ArrayList<String>(posList.size());
-        for (int idx : posList) {
+        for (int i=0; i<posList.size(); i++) {
+            int idx = posList.get(i);
             String val = getTokProp(prop, idx);
             if (val != null) {
                 props.add(val);

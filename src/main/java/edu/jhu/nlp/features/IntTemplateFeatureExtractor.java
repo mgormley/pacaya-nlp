@@ -226,7 +226,7 @@ public class IntTemplateFeatureExtractor {
             } else if (prop == null) {
                 throw new IllegalStateException("TokProperty must be non-null for position lists.");
             }
-            List<Integer> posList = getPositionList(pl, local);
+            IntArrayList posList = getPositionList(pl, local);
             vals = getTokPropsForList(prop, posList);
             listAndPathHelper(vals, lmod, tpl, feats);
             return;
@@ -387,7 +387,7 @@ public class IntTemplateFeatureExtractor {
         }
     }
 
-    private List<Integer> getPositionList(PositionList pl, LocalObservations local) {              
+    private IntArrayList getPositionList(PositionList pl, LocalObservations local) {              
         FeaturizedToken tok;
         FeaturizedTokenPair pair;
         switch (pl) {
@@ -411,13 +411,7 @@ public class IntTemplateFeatureExtractor {
             return pair.getLinePath();
         case BTWN_P_C:
             pair = getFeatTokPair(local.getPidx(), local.getCidx());
-            List<Integer> posList = pair.getLinePath();
-            if (posList.size() > 2) {
-                posList = posList.subList(1, posList.size() - 1);
-            } else {
-                posList = Collections.emptyList();
-            }
-            return posList;
+            return pair.getBtwnPath();
         default:
             throw new IllegalStateException();
         }
@@ -511,9 +505,10 @@ public class IntTemplateFeatureExtractor {
         return props;
     }
 
-    private IntArrayList getTokPropsForList(TokProperty prop, List<Integer> posList) {
+    private IntArrayList getTokPropsForList(TokProperty prop, IntArrayList posList) {
         IntArrayList props = new IntArrayList(posList.size());
-        for (int idx : posList) {
+        for (int i=0; i<posList.size(); i++) {
+            int idx = posList.get(i);
             int val = getTokProp(prop, idx);
             props.add(val);
         }
@@ -579,6 +574,10 @@ public class IntTemplateFeatureExtractor {
         }
     }
 
+    private int toFeat(IntArrayList feats) {
+        return MurmurHash.hash32(feats.getInternalElements(), feats.size());
+    }
+    
     private int toFeat(ShortArrayList feats) {
         return MurmurHash.hash32(feats.getInternalElements(), feats.size());
     }

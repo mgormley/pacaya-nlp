@@ -6,6 +6,7 @@ import java.util.List;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -41,9 +42,10 @@ public class FeaturizedTokenPair {
     private FeaturizedToken aTok;    
     private int[] parents;
     
-    private ArrayList<Integer> linePath;
+    private IntArrayList linePath;
+    private IntArrayList btwnPath;
     private List<Pair<Integer, ParentsArray.Dir>> dependencyPath;
-    private ArrayList<Pair<Integer, ParentsArray.Dir>> dpPathShare;
+    private List<Pair<Integer, ParentsArray.Dir>> dpPathShare;
     private List<Pair<Integer, ParentsArray.Dir>> dpPathPred;
     private List<Pair<Integer, ParentsArray.Dir>> dpPathArg;
     
@@ -128,7 +130,7 @@ public class FeaturizedTokenPair {
         }
     }
     
-    public ArrayList<Integer> getLinePath() {
+    public IntArrayList getLinePath() {
         if (linePath == null) {
             cacheLinePath();
         }
@@ -136,7 +138,7 @@ public class FeaturizedTokenPair {
     }
     
     private void cacheLinePath() {
-        this.linePath = new ArrayList<Integer>();        
+        this.linePath = new IntArrayList();        
         if (pidx < aidx) {
             for (int i=pidx; i<=aidx; i++) {
                 this.linePath.add(i);
@@ -144,6 +146,26 @@ public class FeaturizedTokenPair {
         } else {
             for (int i=pidx; i>=aidx; i--) {
                 this.linePath.add(i);
+            }
+        }        
+    }
+
+    public IntArrayList getBtwnPath() {
+        if (btwnPath == null) {
+            cacheBtwnPath();
+        }
+        return btwnPath;
+    }
+    
+    private void cacheBtwnPath() {
+        this.btwnPath = new IntArrayList();        
+        if (pidx < aidx) {
+            for (int i=pidx+1; i<aidx; i++) {
+                this.btwnPath.add(i);
+            }
+        } else {
+            for (int i=aidx+1; i<pidx; i++) {
+                this.btwnPath.add(i);
             }
         }        
     }

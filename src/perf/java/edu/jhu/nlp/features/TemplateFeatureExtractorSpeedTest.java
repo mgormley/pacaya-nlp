@@ -91,6 +91,7 @@ public class TemplateFeatureExtractorSpeedTest {
         
         FeatureNames alphabet = new FeatureNames();
         
+        double msPerSent = 0;
         double toksPerSec = 0;
         for (int trial = 0; trial < trials; trial++) {
             Timer timer = new Timer();
@@ -139,12 +140,13 @@ public class TemplateFeatureExtractorSpeedTest {
                 timer.start();
             }
             timer.stop();
+            msPerSent = timer.totMs() / maxSents;
             toksPerSec = n / timer.totSec();
-            log.info("Average ms per sent: " + (timer.totMs() / maxSents));
+            log.info("Average ms per sent: " + msPerSent);
             log.info("Toks / sec: " + toksPerSec);
             if (useAlphabet) { log.info("Alphabet.size(): " + alphabet.size()); }
         }
-        return toksPerSec;
+        return msPerSent;
     }
 
     protected static FeatureVector getFeatures(List<FeatTemplate> tpls, FeatureNames alphabet, TemplateFeatureExtractor extStr,
@@ -178,19 +180,27 @@ Speed test results:
             Dep             POS         SRL(C1)       SRL(C1en)           Notes
          271.96        81266.67         1445.60         1545.97             str
          873.37        78645.16         3321.53         3666.17             int        
+         966.69       212000.00         3983.66         4083.75             int (after List<Integer> --> IntArrayList)
+         
+         w/400 sentences
+            Dep             POS         SRL(C1)       SRL(C1en)           Notes
+          91.54            0.23           17.50           15.66             str
+          21.70            0.11            5.85            6.11             int
             
      */
     public static void main(String[] args) throws ParseException, IOException {
-        maxSents = 200;
-        double depStr = testSpeedDepParse();
-        double posStr = testSpeedPosTag();
-        double srlC1Str = testSpeedSrlC1();
-        double srlEnStr = testSpeedSrlC1En();
+        double depStr, posStr, srlC1Str, srlEnStr;
+        double depInt, posInt, srlC1Int, srlEnInt;
+        maxSents = 400;
+        depStr = testSpeedDepParse();
+        posStr = testSpeedPosTag();
+        srlC1Str = testSpeedSrlC1();
+        srlEnStr = testSpeedSrlC1En();
         useStrs = false;
-        double depInt = testSpeedDepParse();
-        double posInt = testSpeedPosTag();
-        double srlC1Int = testSpeedSrlC1();
-        double srlEnInt = testSpeedSrlC1En();
+        depInt = testSpeedDepParse();
+        posInt = testSpeedPosTag();
+        srlC1Int = testSpeedSrlC1();
+        srlEnInt = testSpeedSrlC1En();
         System.out.printf("%15s %15s %15s %15s %15s\n", "Dep", "POS", "SRL(C1)", "SRL(C1en)", "Notes");
         System.out.printf("%15.2f %15.2f %15.2f %15.2f %15s\n", depStr, posStr, srlC1Str, srlEnStr, "str");
         System.out.printf("%15.2f %15.2f %15.2f %15.2f %15s\n", depInt, posInt, srlC1Int, srlEnInt, "int");
