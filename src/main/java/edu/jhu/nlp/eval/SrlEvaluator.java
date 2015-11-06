@@ -49,20 +49,33 @@ public class SrlEvaluator implements Evaluator {
     private double f1;
     // Precision = # correctly predicted positive / # predicted positive
     // Recall = # correctly predicted positive / # true positive
-    int numCorrectPositive = 0;
-    int numCorrectNegative = 0;
-    int numPredictPositive = 0;
-    int numTruePositive = 0;
-    int numInstances = 0;
-    int numMissing = 0;
+    private int numCorrectPositive;
+    private int numCorrectNegative;
+    private int numPredictPositive;
+    private int numTruePositive;
+    private int numInstances;
+    private int numMissing;
     
     public SrlEvaluator(SrlEvaluatorPrm prm) {
         this.prm = prm;
     }
+
+    protected void reset() {
+        precision = 0;
+        recall = 0;
+        f1 = 0;
+        numCorrectPositive = 0;
+        numCorrectNegative = 0;
+        numPredictPositive = 0;
+        numTruePositive = 0;
+        numInstances = 0;
+        numMissing = 0;
+    }
     
     /** Computes the precision, recall, and micro-averaged F1 of SRL. */
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
-      
+        reset();
+        
         assert predSents.size() == goldSents.size();
         
         // For each sentence.

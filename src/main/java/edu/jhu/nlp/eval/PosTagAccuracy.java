@@ -28,16 +28,20 @@ public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
     /** Gets the number of incorrect tags. */
     @Override
     public double loss(AnnoSentence pred, AnnoSentence gold) {
-        correct = 0;
-        total = 0;
+        reset();
         evaluate(pred, gold);
         return getErrors();
     }
 
-    /** Computes the number of correct tags, total tags, and accuracy. */
-    public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
+    private void reset() {
         correct = 0;
         total = 0;
+        accuracy = 0;
+    }
+
+    /** Computes the number of correct tags, total tags, and accuracy. */
+    public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
+        reset();
         assert(predSents.size() == goldSents.size());
         for (int i = 0; i < goldSents.size(); i++) {
             AnnoSentence gold = goldSents.get(i);
