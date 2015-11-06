@@ -163,9 +163,7 @@ public class TemplateFeatureExtractorSpeedTest {
             IntArrayList feats = new IntArrayList();
             extInt.addFeatures(tpls, local, feats);
             FeatureVector fv = new FeatureVector(feats.size());
-            for (int k=0; k<feats.size(); k++) {
-                fv.add(feats.get(k), 1.0);
-            }
+            FeatureUtils.addFeatures(feats, fv, featureHashMod);
             return fv;
         }
     }
@@ -176,6 +174,10 @@ Speed test results:
             Dep             POS         SRL(C1)       SRL(C1en)           Notes
          280.96        85543.86         1348.08         1437.08             str
         1065.33       232190.48         3475.41         3888.36             int
+        
+            Dep             POS         SRL(C1)       SRL(C1en)           Notes
+         271.96        81266.67         1445.60         1545.97             str
+         873.37        78645.16         3321.53         3666.17             int        
             
      */
     public static void main(String[] args) throws ParseException, IOException {

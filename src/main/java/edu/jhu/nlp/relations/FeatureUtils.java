@@ -6,6 +6,7 @@ import java.util.List;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.hash.MurmurHash3;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.util.math.FastMath;
 
 public class FeatureUtils {
@@ -42,10 +43,20 @@ public class FeatureUtils {
         }
     }
 
-    public static void addFeatures(Collection<String> obsFeats, FeatureVector fv, int featureHashMod) {
+    public static void addFeatures(Collection<String> feats, FeatureVector fv, int featureHashMod) {
         // Apply the feature-hashing trick and ignore the alphabet.
-        for (String fname : obsFeats) {
+        for (String fname : feats) {
             int hash = MurmurHash3.murmurhash3_x86_32(fname);
+            int fidx = FastMath.mod(hash, featureHashMod);
+            fv.add(fidx, 1.0);
+            // ALERT: no reverse hashing here.
+        }
+    }
+
+    public static void addFeatures(IntArrayList feats, FeatureVector fv, int featureHashMod) {
+        // Apply the feature-hashing trick and ignore the alphabet.
+        for (int k=0; k<feats.size(); k++) {
+            int hash = feats.get(k);
             int fidx = FastMath.mod(hash, featureHashMod);
             fv.add(fidx, 1.0);
             // ALERT: no reverse hashing here.
