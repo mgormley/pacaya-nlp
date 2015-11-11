@@ -12,6 +12,7 @@ import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceTest;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 public class FeaturizedTokenPairTest {
@@ -82,8 +83,8 @@ public class FeaturizedTokenPairTest {
         assertEquals(dpPathShare, expectedDpPathShare);
 
         // Line path (consecutive indices between two).
-        ArrayList<Integer> linePath = zhaoLink.getLinePath();
-        ArrayList<Integer> expectedLinePath = new ArrayList<Integer>();
+        IntArrayList linePath = zhaoLink.getLinePath();
+        IntArrayList expectedLinePath = new IntArrayList();
         expectedLinePath.add(0);
         expectedLinePath.add(1);
         expectedLinePath.add(2);
@@ -142,8 +143,8 @@ public class FeaturizedTokenPairTest {
         assertEquals(dpPathShare, expectedDpPathShare);
 
         // Line path (consecutive indices between two).
-        ArrayList<Integer> linePath = zhaoLink.getLinePath();
-        ArrayList<Integer> expectedLinePath = new ArrayList<Integer>();
+        IntArrayList linePath = zhaoLink.getLinePath();
+        IntArrayList expectedLinePath = new IntArrayList();
         expectedLinePath.add(0);
         expectedLinePath.add(1);
         expectedLinePath.add(2);
