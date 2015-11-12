@@ -13,6 +13,7 @@ import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceTest;
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.list.IntArrayList;
 
 public class FeaturizedTokenTest {
 
@@ -67,34 +68,7 @@ public class FeaturizedTokenTest {
         System.out.println(argFeat);
         assertEquals(argFeat,intendedArgFeats);
     }
-    
-    @Test
-    public void testZhaoObjectPos() {
-        CoNLL09Sentence sent = getSpanishConll09Sentence2();
-        CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
-        csPrm.useGoldSyntax = true;
-        AnnoSentence simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
-
-        FeaturizedToken zhaoPred = new FeaturizedToken(3, simpleSent);
-        FeaturizedToken zhaoArg = new FeaturizedToken(4, simpleSent);
-
-        String predPos = zhaoPred.getPos();
-        String argPos = zhaoArg.getPos();
-        assertEquals(predPos,argPos,"p");
         
-        csPrm.useGoldSyntax = false;
-        simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
-
-        zhaoPred = new FeaturizedToken(3, simpleSent);
-        zhaoArg = new FeaturizedToken(4, simpleSent);
-        
-        predPos = zhaoPred.getPos();
-        argPos = zhaoArg.getPos();
-        
-        assertEquals(predPos,"p");
-        assertEquals(argPos,"WRONG");
-    }
-    
     @Test
     public void testZhaoObjectParentsChildrenSentence2() {
         CoNLL09Sentence sent = getSpanishConll09Sentence2();
@@ -106,7 +80,7 @@ public class FeaturizedTokenTest {
         
         FeaturizedToken zhaoObj = new FeaturizedToken(3, simpleSent, cs);
         assertEquals(zhaoObj.getParent(), 5);
-        assertEquals(zhaoObj.getChildren(), new ArrayList<Integer>());
+        assertEquals(zhaoObj.getChildren(), new IntArrayList());
         assertEquals(zhaoObj.getFarLeftChild(), -2);
         assertEquals(zhaoObj.getFarLeftChild(), -2);
         assertEquals(zhaoObj.getFarRightChild(), -2);
@@ -116,8 +90,7 @@ public class FeaturizedTokenTest {
         assertEquals(zhaoObj.getLowSupportNoun(), -1);
         assertEquals(zhaoObj.getHighSupportVerb(), 1);
         assertEquals(zhaoObj.getLowSupportVerb(), 5);
-        ArrayList<Integer> expectedNoFarChildren = new ArrayList<Integer>();
-        assertEquals(zhaoObj.getNoFarChildren(), expectedNoFarChildren);
+        assertEquals(zhaoObj.getNoFarChildren(), new IntArrayList());
     }
 
     @Test

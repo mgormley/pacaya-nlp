@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
 import edu.jhu.nlp.CorpusStatistics;
+import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.features.TemplateLanguage.EdgeProperty;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
@@ -48,6 +49,7 @@ public class TemplateFeatureExtractor {
 
     private final CorpusStatistics cs;
     private final SrlBerkeleySignatureBuilder sig;
+    private final AnnoSentence sent;
     private final FeaturizedSentence fSent; 
 
     /**
@@ -59,6 +61,7 @@ public class TemplateFeatureExtractor {
         if (cs != null) { this.sig = cs.sig; }
         else { this.sig = null; }
         this.fSent = fSent;
+        this.sent = fSent.getSent();
     }
     
     public TemplateFeatureExtractor(AnnoSentence sent, CorpusStatistics cs) {
@@ -69,6 +72,7 @@ public class TemplateFeatureExtractor {
             this.sig = null;
         }
         this.fSent = new FeaturizedSentence(sent, cs);
+        this.sent = fSent.getSent();
     }
             
     /** Adds features for a list of feature templates. */
@@ -353,10 +357,10 @@ public class TemplateFeatureExtractor {
             return pair.getRelativePosition().name();
         case UNDIR_EDGE:
             parents = fSent.getSent().getParents();
-            return (parents[cidx] == pidx || (pidx != -1 && parents[pidx] == cidx)) ? "T" : "F"; 
+            return ((cidx != -1 && parents[cidx] == pidx) || (pidx != -1 && parents[pidx] == cidx)) ? "T" : "F"; 
         case DIR_EDGE:
             parents = fSent.getSent().getParents();
-            return (parents[cidx] == pidx) ? "T" : "F"; 
+            return (cidx != -1 && parents[cidx] == pidx) ? "T" : "F"; 
         case GENEOLOGY:
             return pair.getGeneologicalRelation().name();
         case CONTINUITY:
@@ -545,48 +549,50 @@ public class TemplateFeatureExtractor {
      */
     // package private for testing.
     String getTokProp(TokProperty prop, int idx) {
+        if (idx < 0) { return "BOS"; }
+        if (idx >= fSent.size()) { return "EOS"; }
         FeaturizedToken tok = getFeatTok(idx);
         String form;
         switch (prop) {
         case WORD:
-            return tok.getForm();
+            return sent.getWord(idx);
         case INDEX:
             return Integer.toString(idx);
         case LC:
             //TODO: return tok.getFormLc();
-            return tok.getForm().toLowerCase();
+            return sent.getWord(idx).toLowerCase();
         case CAPITALIZED:
             return tok.isCapatalized() ? "UC" : "LC";
         case WORD_TOP_N:
-            form = tok.getForm();
+            form = sent.getWord(idx);
             if (cs.topNWords.contains(form)) {
                 return form;
             } else {
                 return null;
             }
-        case CHPRE1: return prefix(tok, 1);
-        case CHPRE2: return prefix(tok, 2);
-        case CHPRE3: return prefix(tok, 3);
-        case CHPRE4: return prefix(tok, 4);
-        case CHPRE5: return prefix(tok, 5);
-        case CHSUF1: return suffix(tok, 1);
-        case CHSUF2: return suffix(tok, 2);
-        case CHSUF3: return suffix(tok, 3);
-        case CHSUF4: return suffix(tok, 4);
-        case CHSUF5: return suffix(tok, 5);
+        case CHPRE1: return prefix(idx, 1);
+        case CHPRE2: return prefix(idx, 2);
+        case CHPRE3: return prefix(idx, 3);
+        case CHPRE4: return prefix(idx, 4);
+        case CHPRE5: return prefix(idx, 5);
+        case CHSUF1: return suffix(idx, 1);
+        case CHSUF2: return suffix(idx, 2);
+        case CHSUF3: return suffix(idx, 3);
+        case CHSUF4: return suffix(idx, 4);
+        case CHSUF5: return suffix(idx, 5);
         case LEMMA:
-            return tok.getLemma();
+            return sent.getLemma(idx);
         case POS:
-            return tok.getPos();
+            return sent.getPosTag(idx);
         case CPOS:
-            return tok.getCpos();
+            return sent.getCposTag(idx);
         case BC0:
-            String bc = tok.getCluster();
+            String bc = sent.getCluster(idx);
             return bc.substring(0, Math.min(bc.length(), 5));
         case BC1:
-            return tok.getCluster();
+            return sent.getCluster(idx);
         case DEPREL:
-            return tok.getDeprel();
+            return sent.getDeprel(idx);
         case MORPHO:
             return tok.getFeatStr();
         case MORPHO1:
@@ -603,13 +609,13 @@ public class TemplateFeatureExtractor {
         }
     }
 
-    private String prefix(FeaturizedToken tok, int max) {
-        String s = tok.getForm();
+    private String prefix(int idx, int max) {
+        String s = sent.getWord(idx);
         return s.substring(0, Math.min(s.length(), max));
     }
     
-    private static String suffix(FeaturizedToken tok, int max) {
-        String s = tok.getForm();
+    private String suffix(int idx, int max) {
+        String s = sent.getWord(idx);
         return s.substring(Math.max(0, s.length() - max), s.length());
     }
     

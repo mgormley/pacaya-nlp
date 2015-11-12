@@ -165,65 +165,11 @@ public class FeaturizedToken {
         return sent.getWord(idx);
     }
 
-    public String getPrefix() {
-        if (idx < 0) {
-            return "BEGIN_NO_PREFIX";
-        } else if (idx >= sent.size()) {
-            return "END_NO_PREFIX";
-        }
-        return sent.getPrefix(idx);
-    }
-    
-    public String getLemma() {
-        if (idx < 0) {
-            return "BEGIN_NO_LEMMA";
-        } else if (idx >= sent.size()) {
-            return "END_NO_LEMMA";
-        }
-        return sent.getLemma(idx);
-    }
-    
-    public String getPos() {
-        if (idx < 0) {
-            return "BEGIN_NO_POS";
-        } else if (idx >= sent.size()) {
-            return "END_NO_POS";
-        }
-        return sent.getPosTag(idx);
-    }
-
-    public String getCpos() {
-        if (idx < 0) {
-            return "BEGIN_NO_CPOS";
-        } else if (idx >= sent.size()) {
-            return "END_NO_CPOS";
-        }
-        return sent.getCposTag(idx);
-    }
-    
-    public String getCluster() {
-        if (idx < 0) {
-            return "BEGIN_NO_CLUSTER";
-        } else if (idx >= sent.size()) {
-            return "END_NO_CLUSTER";
-        }
-        return sent.getCluster(idx);
-    }
-    
-    public String getDeprel() {
-        if (idx < 0) {
-            return "BEGIN_NO_DEPREL";
-        } else if (idx >= sent.size()) {
-            return "END_NO_DEPREL";
-        }
-        return sent.getDeprel(idx);
-    }
-
     public int getParent() {
         if (idx < 0) {
             return -2;
         } else if (idx >= sent.size()) {
-            return -1;
+            return -3;
         }
         return sent.getParent(idx);
     }
@@ -448,16 +394,6 @@ public class FeaturizedToken {
             }
         }
         cachedSiblings = true;
-    }
-
-    public ParentsArray.Dir getDirection() {
-        return direction;
-    }
-
-    // TODO: Remove this when possible.
-    @Deprecated
-    public void setDirection(ParentsArray.Dir dir) {
-        this.direction = dir;
     }
 
     // Package private accessor for FeaturizedTokenPair

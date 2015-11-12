@@ -33,7 +33,7 @@ public class AlphabetStoreTest {
         assertEquals(NUM_TOKENS, store.posTags.size());
         assertEquals(NUM_TOKENS, store.cposTags.size());
         assertEquals(NUM_TOKENS, store.clusters.size());
-        assertEquals(18, store.clusterPrefixes.size());
+        assertEquals(9, store.clusterPrefixes.size());
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
         
@@ -71,9 +71,9 @@ public class AlphabetStoreTest {
         assertEquals("cluster"+0, store.clusters.lookupObject(FIRST_TOK_ID));
         assertEquals(FIRST_TOK_ID, store.getClusterIdx("cluster"+0));
         
-        assertEquals(TOK_UNK_STR, store.clusters.lookupObject(0));
-        assertEquals("c", store.clusters.lookupObject(FIRST_TOK_ID)); // prefix of cluster0
-        assertEquals(FIRST_TOK_ID, store.getClusterIdx("c")); // prefix of cluster0
+        assertEquals(TOK_UNK_STR, store.clusterPrefixes.lookupObject(0));
+        assertEquals("c", store.clusterPrefixes.lookupObject(FIRST_TOK_ID)); // prefix of cluster0
+        assertEquals(FIRST_TOK_ID, store.getClusterPrefixIdx("c")); // prefix of cluster0
 
         assertEquals(TOK_UNK_STR, store.feats.lookupObject(0));
         assertEquals("feat"+0, store.feats.lookupObject(FIRST_TOK_ID));
@@ -134,7 +134,7 @@ public class AlphabetStoreTest {
         assertEquals(NUM_TOKENS, store.posTags.size());
         assertEquals(NUM_TOKENS, store.cposTags.size());
         assertEquals(NUM_TOKENS, store.clusters.size());
-        assertEquals(18, store.clusterPrefixes.size());
+        assertEquals(9, store.clusterPrefixes.size());
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
     }
