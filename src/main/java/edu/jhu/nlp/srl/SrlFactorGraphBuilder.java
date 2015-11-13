@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.fcm.FcmFactor;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
@@ -157,8 +158,9 @@ public class SrlFactorGraphBuilder implements Serializable {
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
+    public void build(IntAnnoSentence isent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
             FactorGraph fg) {
+        AnnoSentence sent = isent.getAnnoSentence();                
         List<String> words = sent.getWords();
         List<String> lemmas = sent.getLemmas();
         IntSet knownPreds = sent.getKnownPreds();
@@ -166,7 +168,7 @@ public class SrlFactorGraphBuilder implements Serializable {
         Map<String, List<String>> psMap = cs.predSenseListMap;
 
         // Create feature extractor.
-        obsFe = new SrlFeatureExtractor(prm.srlFePrm, sent, cs, ofc.getTemplates());
+        obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
         
         // Check for null arguments.
         if (prm.roleStructure == RoleStructure.PREDS_GIVEN && knownPreds == null) {

@@ -106,7 +106,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         }
         if (prm.includeSrl) {
             srl = new SrlFactorGraphBuilder(prm.srlPrm); 
-            srl.build(sent, cs, ofc, fg);
+            srl.build(isent, cs, ofc, fg);
         }
         if (prm.includeRel ) {
             rel = new RelationsFactorGraphBuilder(prm.relPrm);

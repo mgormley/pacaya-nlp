@@ -4,6 +4,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
@@ -58,7 +59,7 @@ public class SrlEncoder implements Encoder<AnnoSentence, SrlGraph> {
     private LFgExample getExample(AnnoSentence sent, SrlGraph graph, boolean labeledExample) {
         FactorGraph fg = new FactorGraph();
         SrlFactorGraphBuilder srl = new SrlFactorGraphBuilder(prm.srlPrm);
-        srl.build(sent, cs, ofc, fg);
+        srl.build(new IntAnnoSentence(sent, cs.store), cs, ofc, fg);
         
         VarConfig goldConfig = new VarConfig();
         if (labeledExample) {
