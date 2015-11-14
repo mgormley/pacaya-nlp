@@ -540,14 +540,13 @@ public class IntTemplateFeatureExtractor {
         case LC: return isent.getLcWord(idx);
         case CAPITALIZED: return isent.isCapitalized(idx) ? 1 : 0;
         case WORD_TOP_N:
-            throw new RuntimeException("not implemented");
-            // TODO: Currently, we only have word counts, not ranks.
-            //            short word = isent.getWord(idx);
-            //            if (isent.getStore().getWordTypeCount(word) > 800) {
-            //                return word;
-            //            } else {
-            //                return AlphabetStore.TOK_UNK_INT;
-            //            }
+            short word = isent.getWord(idx);
+            AlphabetStore store = isent.getStore();
+            if (store.getWordTypeCount(word) > store.getWordTopNCutoff()) {
+                return word;
+            } else {
+                return AlphabetStore.TOK_UNK_INT;
+            }
         case CHPRE1: return isent.getPrefix(idx, 1);
         case CHPRE2: return isent.getPrefix(idx, 2);
         case CHPRE3: return isent.getPrefix(idx, 3);

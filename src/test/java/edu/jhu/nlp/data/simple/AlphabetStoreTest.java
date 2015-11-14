@@ -165,6 +165,35 @@ public class AlphabetStoreTest {
         }
     }
 
+    @Test
+    public void testWordTopNCutoff() {
+        {
+            AnnoSentenceCollection sents = getWordOnlySents(1000);
+            AlphabetStore store = new AlphabetStore(sents);
+            assertEquals(1003, store.words.size());
+            assertEquals(199, store.getWordTopNCutoff());
+        }{
+            AnnoSentenceCollection sents = getWordOnlySents(10);
+            AlphabetStore store = new AlphabetStore(sents);
+            assertEquals(13, store.words.size());
+            assertEquals(1, store.getWordTopNCutoff());
+        }
+    }
+
+    protected AnnoSentenceCollection getWordOnlySents(int numSents) {
+        AnnoSentenceCollection sents = new AnnoSentenceCollection();
+        // Add three tokens for word<i> for i in [0,..,99].
+        for (int i=0; i<numSents; i++) {
+            AnnoSentence s = new AnnoSentence();
+            s.setWords(new ArrayList<>());
+            for (int j=0; j<i; j++) {
+                s.getWords().add("Word"+j);
+            }
+            sents.add(s);
+        }
+        return sents;
+    }
+    
     /**
      * Gets a list of sentences. If <code>includeExtras</code> is false, we return only three
      * sentences of length 100 tokens. This will include 100 unique types for each of the

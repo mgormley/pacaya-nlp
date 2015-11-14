@@ -3,7 +3,10 @@ package edu.jhu.nlp.data.simple;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -11,8 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.bimap.CountingIntObjectBimap;
 import edu.jhu.prim.bimap.IntObjectBimap;
+import edu.jhu.prim.list.IntArrayList;
+import edu.jhu.prim.tuple.ComparablePair;
+import edu.jhu.prim.tuple.Pair;
 
 public class AlphabetStore implements Serializable {
 
@@ -49,6 +56,8 @@ public class AlphabetStore implements Serializable {
     IntObjectBimap<String> feats;
     IntObjectBimap<String> deprels;
     private List<IntObjectBimap<String>> as;
+
+    private int wordTopNCutoff;
     
     public AlphabetStore(Iterable<AnnoSentence> sents) {
         // The string generators for prefixes and suffixes create all affixes up to a given max
@@ -75,8 +84,23 @@ public class AlphabetStore implements Serializable {
         feats = getAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
         deprels= getAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
         
+        // Compute the minimum frequence of the top 800 most frequent words.
+        wordTopNCutoff = getTopNCutoff(words, 800);
+        
         as = QLists.getList(words, lcWords, prefixes, suffixes, lemmas, posTags, cposTags, clusters, clusterPrefixes, feats, deprels);
         this.stopGrowth();
+    }
+
+    /** Gets the frequency of the topN'th most frequent word. */
+    private static int getTopNCutoff(CountingIntObjectBimap<String> words, int topN) {
+        IntArrayList idxCountMap = words.getIdxCountMap();
+        idxCountMap.sortDesc();
+        int i = Math.min(idxCountMap.size() - 1, topN);
+        int cutoff = idxCountMap.get(i);
+        while(i > 0 && cutoff == 0) {
+            cutoff = idxCountMap.get(--i);
+        }
+        return cutoff;
     }
 
     /**
@@ -327,5 +351,9 @@ public class AlphabetStore implements Serializable {
         private static final long serialVersionUID = 1L;
         public List<String> getStrs(AnnoSentence sent) { return sent.getDeprels(); }
     };
+
+    public int getWordTopNCutoff() {
+        return wordTopNCutoff;
+    }
     
 }
