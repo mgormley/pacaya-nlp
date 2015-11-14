@@ -81,7 +81,7 @@ public class FeatureUtils {
             int hash = feats.get(k);
             hash = FastMath.mod(hash, featureHashMod);
             int fidx = alphabet.lookupIndex(hash);
-            fv.add(fidx, 1.0);
+            if (fidx != -1) { fv.add(fidx, 1.0); }
             // ALERT: no reverse hashing here.
         }
     }
