@@ -20,6 +20,7 @@ import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.util.SafeCast;
 
 public class AlphabetStore implements Serializable {
 
@@ -43,7 +44,26 @@ public class AlphabetStore implements Serializable {
     public static final int TOK_END_INT = 2;
     public static final int TOK_WALL_INT = 3;
     public static String[] specialTokenStrs = new String[] { TOK_UNK_STR, TOK_START_STR, TOK_END_STR, TOK_WALL_STR};
-        
+
+    // Maximum values (in integer space) for the various types of strings.
+    //
+    // We reserve the value -1 for truly unknown values.
+    private static final int BYTE_MAX_IDX = 0xff-1;
+    private static final int SHORT_MAX_IDX = 0xffff-1;
+    // TODO: We're missing a bit because our Alphabets always return signed values. 
+    private static final int INT_MAX_IDX = Integer.MAX_VALUE; //0xffffffff;
+
+    final static int MAX_WORD = SHORT_MAX_IDX;
+    final static int MAX_PREFIX = SHORT_MAX_IDX;
+    final static int MAX_SUFFIX = SHORT_MAX_IDX;
+    final static int MAX_LEMMA = SHORT_MAX_IDX;
+    final static int MAX_POS = BYTE_MAX_IDX;
+    final static int MAX_CPOS = BYTE_MAX_IDX;
+    final static int MAX_STRICT_POS = BYTE_MAX_IDX;
+    final static int MAX_CLUSTER = SHORT_MAX_IDX;
+    final static int MAX_FEAT = SHORT_MAX_IDX;
+    final static int MAX_DEPREL = BYTE_MAX_IDX;
+    
     CountingIntObjectBimap<String> words;
     IntObjectBimap<String> lcWords;
     IntObjectBimap<String> prefixes;
@@ -72,17 +92,17 @@ public class AlphabetStore implements Serializable {
                 IntStream.range(0, maxClusterPrefixLen).mapToObj(
                         i -> new AffixGetter(i+1, true, clusterGetter)));
         
-        words = getAlphabet("word", wordGetter, IntAnnoSentence.MAX_WORD, sents);
-        lcWords = getAlphabet("lcWord", lcWordGetter, IntAnnoSentence.MAX_WORD, sents);
-        prefixes = getAlphabet("prefix", prefixGetter, IntAnnoSentence.MAX_PREFIX, sents);
-        suffixes = getAlphabet("suffix", suffixGetter, IntAnnoSentence.MAX_SUFFIX, sents);
-        lemmas = getAlphabet("lemma", lemmaGetter, IntAnnoSentence.MAX_LEMMA, sents);
-        posTags = getAlphabet("pos", posTagGetter, IntAnnoSentence.MAX_POS, sents);
-        cposTags = getAlphabet("cpos", cposTagGetter, IntAnnoSentence.MAX_CPOS, sents);
-        clusters = getAlphabet("cluster", clusterGetter, IntAnnoSentence.MAX_CLUSTER, sents);
-        clusterPrefixes = getAlphabet("clusterPrefix", clusterPrefixGetter, IntAnnoSentence.MAX_CLUSTER, sents);
-        feats = getAlphabet("feat", featGetter, IntAnnoSentence.MAX_FEAT, sents);
-        deprels= getAlphabet("deprel", deprelGetter, IntAnnoSentence.MAX_DEPREL, sents);
+        words = getAlphabet("word", wordGetter, MAX_WORD, sents);
+        lcWords = getAlphabet("lcWord", lcWordGetter, MAX_WORD, sents);
+        prefixes = getAlphabet("prefix", prefixGetter, MAX_PREFIX, sents);
+        suffixes = getAlphabet("suffix", suffixGetter, MAX_SUFFIX, sents);
+        lemmas = getAlphabet("lemma", lemmaGetter, MAX_LEMMA, sents);
+        posTags = getAlphabet("pos", posTagGetter, MAX_POS, sents);
+        cposTags = getAlphabet("cpos", cposTagGetter, MAX_CPOS, sents);
+        clusters = getAlphabet("cluster", clusterGetter, MAX_CLUSTER, sents);
+        clusterPrefixes = getAlphabet("clusterPrefix", clusterPrefixGetter, MAX_CLUSTER, sents);
+        feats = getAlphabet("feat", featGetter, MAX_FEAT, sents);
+        deprels= getAlphabet("deprel", deprelGetter, MAX_DEPREL, sents);
         
         // Compute the minimum frequence of the top 800 most frequent words.
         wordTopNCutoff = getTopNCutoff(words, 800);
@@ -203,16 +223,17 @@ public class AlphabetStore implements Serializable {
         return idx;
     }
 
-    public int getWordTypeCount(int wordIdx) {
-        return words.lookupObjectCount(wordIdx);
+    public int getWordTypeCount(short wordIdx) {
+        assert MAX_WORD == SHORT_MAX_IDX;
+        return words.lookupObjectCount(SafeCast.safeUnsignedShortToInt(wordIdx));
     }
     
-    public int getWordIdx(String word) {
-        return safeLookup(words, word);
+    public short getWordIdx(String word) {
+        return SafeCast.safeIntToUnsignedShort(safeLookup(words, word));
     }
 
     public int getLcWordIdx(String lcWord) {
-        return safeLookup(lcWords, lcWord);
+        return SafeCast.safeIntToUnsignedShort(safeLookup(lcWords, lcWord));
     }
 
     public int getPrefixIdx(String prefix) {

@@ -14,21 +14,6 @@ import edu.jhu.prim.util.SafeCast;
 
 public class IntAnnoSentence {
 
-    private static final int BYTE_MAX = 0xff;
-    private static final int SHORT_MAX = 0xffff;
-    // TODO: We're missing a bit because our Alphabets always return signed values. 
-    private static final int INT_MAX = Integer.MAX_VALUE; //0xffffffff;
-
-    final static int MAX_WORD = SHORT_MAX;
-    final static int MAX_PREFIX = SHORT_MAX;
-    final static int MAX_SUFFIX = SHORT_MAX;
-    final static int MAX_LEMMA = SHORT_MAX;
-    final static int MAX_POS = BYTE_MAX;
-    final static int MAX_CPOS = BYTE_MAX;
-    final static int MAX_CLUSTER = SHORT_MAX;
-    final static int MAX_FEAT = SHORT_MAX;
-    final static int MAX_DEPREL = BYTE_MAX;
-    
     private ShortArrayList words;
     private ShortArrayList lcWords; // lower-case words
     private ShortArrayList[] prefixes;
@@ -72,7 +57,7 @@ public class IntAnnoSentence {
             }
         }
         this.deprels = getBytes(sent.getDeprels(), store.deprels);
-        if (StrictPosTag.values().length > BYTE_MAX) {
+        if (StrictPosTag.values().length > AlphabetStore.MAX_STRICT_POS) {
             throw new IllegalStateException("Too many strict POS tags.");
         }
         this.coarserPosTags = getBytesFromEnums(sent.getStrictPosTags());

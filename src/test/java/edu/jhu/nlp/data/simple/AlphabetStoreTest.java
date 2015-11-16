@@ -148,6 +148,11 @@ public class AlphabetStoreTest {
             assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+0)));
             assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+1)));
             assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+10)));
+            // Special tokens
+            assertEquals(65445, store.getWordTypeCount((short) AlphabetStore.TOK_UNK_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_START_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_END_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_WALL_INT));
             // Mapped to UNK.
             assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+101)));
             assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+1000)));
@@ -159,6 +164,11 @@ public class AlphabetStoreTest {
             assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+0)));
             assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+1)));
             assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+10)));
+            // Special tokens
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_UNK_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_START_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_END_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_WALL_INT));
             // Mapped to UNK.
             assertEquals(0, store.getWordTypeCount(store.getWordIdx("Word"+101)));
             assertEquals(0, store.getWordTypeCount(store.getWordIdx("Word"+1000)));

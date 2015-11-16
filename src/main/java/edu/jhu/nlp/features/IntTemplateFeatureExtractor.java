@@ -581,7 +581,7 @@ public class IntTemplateFeatureExtractor {
         return MurmurHash.hash32(feats.getInternalElements(), feats.size());
     }
 
-    private int safeGet(ShortArrayList feats, int i) {
+    private short safeGet(ShortArrayList feats, int i) {
         if (i < feats.size()) { return feats.get(i); }
         else { return AlphabetStore.TOK_UNK_INT; }
     }

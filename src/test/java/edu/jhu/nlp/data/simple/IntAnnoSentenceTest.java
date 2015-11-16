@@ -48,7 +48,7 @@ public class IntAnnoSentenceTest {
         assertEquals((short) store.getClusterPrefixIdx("cl"), isent.getClusterPrefix(0,2));
         assertEquals((short) store.getClusterPrefixIdx("clu"), isent.getClusterPrefix(0,3));
     }
-    
+
     // If this is failing, it's likely because the alphabet growth wasn't stopped.
     @Test    
     public void testUnknownTypes() {
