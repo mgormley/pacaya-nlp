@@ -93,7 +93,7 @@ public class AlphabetStore implements Serializable {
 
     /** Gets the frequency of the topN'th most frequent word. */
     private static int getTopNCutoff(CountingIntObjectBimap<String> words, int topN) {
-        IntArrayList idxCountMap = words.getIdxCountMap();
+        IntArrayList idxCountMap = new IntArrayList(words.getInternalIdxCountMap());
         idxCountMap.sortDesc();
         int i = Math.min(idxCountMap.size() - 1, topN);
         int cutoff = idxCountMap.get(i);
