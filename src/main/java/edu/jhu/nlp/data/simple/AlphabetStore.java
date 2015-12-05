@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.Primitives;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.bimap.CountingIntObjectBimap;
 import edu.jhu.prim.bimap.IntObjectBimap;
@@ -48,10 +49,10 @@ public class AlphabetStore implements Serializable {
     // Maximum values (in integer space) for the various types of strings.
     //
     // We reserve the value -1 for truly unknown values.
-    private static final int BYTE_MAX_IDX = 0xff-1;
-    private static final int SHORT_MAX_IDX = 0xffff-1;
+    private static final int BYTE_MAX_IDX = Primitives.INT_MAX_UBYTE-1;
+    private static final int SHORT_MAX_IDX = Primitives.INT_MAX_USHORT-1;
     // TODO: We're missing a bit because our Alphabets always return signed values. 
-    private static final int INT_MAX_IDX = Integer.MAX_VALUE; //0xffffffff;
+    private static final int INT_MAX_IDX = Integer.MAX_VALUE; // This is NOT 0xffffffffL;
 
     final static int MAX_WORD = SHORT_MAX_IDX;
     final static int MAX_PREFIX = SHORT_MAX_IDX;

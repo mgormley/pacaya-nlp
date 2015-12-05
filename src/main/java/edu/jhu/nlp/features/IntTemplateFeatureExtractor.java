@@ -1,6 +1,5 @@
 package edu.jhu.nlp.features;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -29,6 +28,7 @@ import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.pacaya.parse.cky.Rule;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.util.hash.MurmurHash;
+import edu.jhu.prim.Primitives;
 import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.list.ShortArrayList;
 import edu.jhu.prim.set.IntHashSet;
@@ -521,7 +521,9 @@ public class IntTemplateFeatureExtractor {
         if (idx >= isent.size()) { return new ShortArrayList(new short[]{AlphabetStore.TOK_END_INT}); }
         switch (prop) {
         case EACH_MORPHO:
-            return isent.getFeats(idx);
+            ShortArrayList vals = isent.getFeats(idx);
+            if (vals.size() == 0) { return new ShortArrayList(new short[]{AlphabetStore.TOK_UNK_INT}); }
+            else { return vals; }
         default:
             throw new IllegalStateException();
         }
@@ -609,7 +611,7 @@ public class IntTemplateFeatureExtractor {
         return toFeat(f12, f3);
     }
 
-    private static final long INT_MAX =   0xffffffff;
+    private static final long INT_MAX = Primitives.LONG_MAX_UINT;
 
     private int toFeat(int f1, int f2) {
         long feat =  (f1 & INT_MAX) | ((f2 & INT_MAX) << 32);

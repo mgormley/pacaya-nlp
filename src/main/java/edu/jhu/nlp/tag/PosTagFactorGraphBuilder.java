@@ -23,7 +23,7 @@ import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
-import edu.jhu.prim.util.SafeCast;
+import edu.jhu.prim.Primitives;
 
 public class PosTagFactorGraphBuilder {
 
@@ -110,7 +110,7 @@ public class PosTagFactorGraphBuilder {
         private static final long serialVersionUID = 1L;
         private FeatureVector obsFeats;
         private int featureHashMod;
-        private static final long INT_MAX =   0xffffffff;
+        private static final long INT_MAX = Primitives.LONG_MAX_UINT;
 
         public HashObsFeatsFactor(VarSet vars, FeatureVector obsFeats, int featureHashMod) {
             super(vars);

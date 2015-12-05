@@ -7,6 +7,7 @@ import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatures;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.util.hash.MurmurHash;
+import edu.jhu.prim.Primitives;
 import edu.jhu.prim.util.SafeCast;
 import edu.jhu.prim.util.math.FastMath;
 
@@ -175,9 +176,9 @@ public class BitshiftTokenFeatures {
         //        }
     }
 
-    private static final long BYTE_MAX =  0xff;
-    private static final long SHORT_MAX = 0xffff;
-    private static final long INT_MAX =   0xffffffff;
+    private static final long BYTE_MAX = Primitives.LONG_MAX_UBYTE;   // 0xffL;
+    private static final long SHORT_MAX = Primitives.LONG_MAX_USHORT; // 0xffffL;
+    private static final long INT_MAX = Primitives.LONG_MAX_UINT;     // 0xffffffffL;
 
     private static long encodeFeatureS___(byte template, byte flags, short s1) {
         return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16);
