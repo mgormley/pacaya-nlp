@@ -610,11 +610,9 @@ public class IntTemplateFeatureExtractor {
         int f12 = toFeat(f1, f2);
         return toFeat(f12, f3);
     }
-
-    private static final long INT_MAX = Primitives.LONG_MAX_UINT;
-
+    
     private int toFeat(int f1, int f2) {
-        long feat =  (f1 & INT_MAX) | ((f2 & INT_MAX) << 32);
+        long feat = BitPacking.encodeFeatureII__(f1, f2);
         return MurmurHash.hash32(feat);
     }
     

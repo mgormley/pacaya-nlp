@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
+import edu.jhu.nlp.features.BitPacking;
 import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
@@ -110,7 +111,6 @@ public class PosTagFactorGraphBuilder {
         private static final long serialVersionUID = 1L;
         private FeatureVector obsFeats;
         private int featureHashMod;
-        private static final long INT_MAX = Primitives.LONG_MAX_UINT;
 
         public HashObsFeatsFactor(VarSet vars, FeatureVector obsFeats, int featureHashMod) {
             super(vars);
@@ -125,7 +125,7 @@ public class PosTagFactorGraphBuilder {
             int used = obsFeats.getUsed();
             FeatureVector feats = new FeatureVector(obsFeats.getUsed());
             for (int k=0; k<used; k++) {
-                long feat =  (config & INT_MAX) | ((idxs[k] & INT_MAX) << 32);
+                long feat = BitPacking.encodeFeatureII__(config, idxs[k]);
                 BitshiftTokenFeatures.addFeat(feats, featureHashMod, feat);
             }
             return feats;
