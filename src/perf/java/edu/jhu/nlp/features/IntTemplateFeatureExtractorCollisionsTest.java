@@ -264,7 +264,7 @@ public class IntTemplateFeatureExtractorCollisionsTest {
         useIntExtr = false;
         initCollisions();
         testSpeedSrlC1();
-        writeCollisionStats(Paths.get("./collisions-1.txt"));
+        writeCollisionStats(Paths.get("./collisions-2.txt"));
         double typeColRate2 = getTypeColRate();
         double tokColRate2 = getTokColRate();
         
