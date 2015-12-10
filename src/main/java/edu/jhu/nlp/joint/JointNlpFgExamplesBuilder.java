@@ -11,7 +11,6 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpEncoderPrm;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
-import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.FgExamplesBuilderPrm;
@@ -106,7 +105,7 @@ public class JointNlpFgExamplesBuilder {
     /** 
      * This class is read-only and thread-safe.
      */
-    private class JointNlpFgExampleFactory extends AbstractFgExampleList implements FgExampleList {
+    private class JointNlpFgExampleFactory implements FgExampleList {
 
         private AnnoSentenceCollection inputSents;
         private AnnoSentenceCollection goldSents;

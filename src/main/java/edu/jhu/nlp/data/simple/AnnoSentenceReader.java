@@ -11,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.data.concrete.ConcreteReader;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.concrete.ListCloseableIterable;
+import edu.jhu.nlp.data.conll.CoNLL02Reader;
+import edu.jhu.nlp.data.conll.CoNLL02Sentence;
 import edu.jhu.nlp.data.conll.CoNLL08Reader;
 import edu.jhu.nlp.data.conll.CoNLL08Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Reader;
@@ -45,7 +47,7 @@ public class AnnoSentenceReader {
         public ConcreteReaderPrm rePrm = new ConcreteReaderPrm();        
     }
     
-    public enum DatasetType { SYNTHETIC, PTB, CONLL_X, CONLL_2008, CONLL_2009, CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK };
+    public enum DatasetType { SYNTHETIC, PTB, CONLL_2002, CONLL_X, CONLL_2008, CONLL_2009, CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK };
     
     public interface SASReader extends Iterable<AnnoSentence> {
         public void close();        
@@ -103,6 +105,8 @@ public class AnnoSentenceReader {
                 reader = ConvCloseableIterable.getInstance(new CoNLL08Reader(fis), new CoNLL082Anno());
             } else if (type == DatasetType.CONLL_X) {
                 reader = ConvCloseableIterable.getInstance(new CoNLLXReader(fis), new CoNLLX2Anno());
+            } else if (type == DatasetType.CONLL_2002) {
+                reader = ConvCloseableIterable.getInstance(new CoNLL02Reader(fis), new CoNLL022Anno());
             } else if (type == DatasetType.SEMEVAL_2010) {
                 reader = ConvCloseableIterable.getInstance(new SemEval2010Reader(fis), new SemEval20102Anno());
             //} else if (type == DatasetType.PTB) {
@@ -168,6 +172,15 @@ public class AnnoSentenceReader {
         @Override
         public AnnoSentence convert(CoNLLXSentence x) {
             return x.toAnnoSentence(prm.useCoNLLXPhead);
+        }
+        
+    }
+
+    public class CoNLL022Anno implements Converter<CoNLL02Sentence, AnnoSentence> {
+
+        @Override
+        public AnnoSentence convert(CoNLL02Sentence x) {
+            return x.toAnnoSentence();
         }
         
     }

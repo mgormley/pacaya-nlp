@@ -9,14 +9,12 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
-import edu.jhu.nlp.features.BitPacking;
 import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.model.ExpFamFactor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -106,33 +104,6 @@ public class PosTagFactorGraphBuilder {
         }
     }
     
-    private static class HashObsFeatsFactor extends ExpFamFactor {
-
-        private static final long serialVersionUID = 1L;
-        private FeatureVector obsFeats;
-        private int featureHashMod;
-
-        public HashObsFeatsFactor(VarSet vars, FeatureVector obsFeats, int featureHashMod) {
-            super(vars);
-            this.obsFeats = obsFeats;
-            this.featureHashMod = featureHashMod;
-        }
-        
-        @Override
-        public FeatureVector getFeatures(int config) {
-            // TODO: Double check that magic is not a bug - should config be opened up?
-            int[] idxs = obsFeats.getInternalIndices();
-            int used = obsFeats.getUsed();
-            FeatureVector feats = new FeatureVector(obsFeats.getUsed());
-            for (int k=0; k<used; k++) {
-                long feat = BitPacking.encodeFeatureII__(config, idxs[k]);
-                BitshiftTokenFeatures.addFeat(feats, featureHashMod, feat);
-            }
-            return feats;
-        }
-        
-    }
-    
     protected void addSlowFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
         // Features for tag bigrams.
         List<FeatTemplate> templates = QLists.getList(); // Only use the bias feature.
@@ -169,7 +140,7 @@ public class PosTagFactorGraphBuilder {
     }
 
     /* ------------------------- Encode ------------------------- */
-    public void addRelVarAssignments(List<String> tags, VarConfig vc) {
+    public void addVarAssignments(List<String> tags, VarConfig vc) {
         for (int i=0; i<tagVars.size(); i++) {
             Var var = tagVars.get(i);
             vc.put(var, tags.get(i));

@@ -119,8 +119,6 @@ public class JointNlpRunner {
 
     public enum Inference { BRUTE_FORCE, BP, DP };
     
-    public enum RegularizerType { L2, NONE };
-    
     public enum AlgebraType {
         REAL(RealAlgebra.getInstance()), LOG(LogSemiring.getInstance()), LOG_SIGN(LogSignAlgebra.getInstance()),
         // SHIFTED_REAL and SPLIT algebras are for testing only.
@@ -764,7 +762,6 @@ public class JointNlpRunner {
         prm.optimizer = opts.get1();
         prm.batchOptimizer = opts.get2();
         prm.regularizer = OptimizerFactory.getRegularizer();
-        prm.numThreads = threads;
         prm.trainer = trainer;
         
         // TODO: add options for other loss functions.

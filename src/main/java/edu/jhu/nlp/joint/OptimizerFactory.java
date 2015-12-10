@@ -24,7 +24,6 @@ import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.hlt.optimize.function.Regularizer;
 import edu.jhu.hlt.optimize.functions.L2;
-import edu.jhu.nlp.joint.JointNlpRunner.RegularizerType;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 
@@ -32,13 +31,15 @@ public class OptimizerFactory {
 
     public static enum OptimizerType { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
 
+    public enum RegularizerType { L2, NONE };
+    
     // Options for optimization.
     @Opt(hasArg=true, description="The optimization method to use for training.")
-    public static OptimizerType optimizer = OptimizerType.LBFGS;
+    public static OptimizerType optimizer = OptimizerType.ADAGRAD_COMID;
     @Opt(hasArg=true, description="The variance for the L2 regularizer.")
     public static double l2variance = 1.0;
     @Opt(hasArg=true, description="The type of regularizer.")
-    public static JointNlpRunner.RegularizerType regularizer = JointNlpRunner.RegularizerType.L2;
+    public static RegularizerType regularizer = RegularizerType.NONE;
     @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
     public static int maxLbfgsIterations = 1000;
     @Opt(hasArg=true, description="Number of effective passes over the dataset for SGD.")

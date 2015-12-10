@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
+import edu.jhu.nlp.data.simple.AnnoSentence;
 
 /**
  * One sentence from a CoNLL-2002 formatted file.
@@ -45,7 +46,7 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
         }
         return new CoNLL02Sentence(tokens);
     }
-    
+
     public CoNLL02Token get(int i) {
         return tokens.get(i);
     }
@@ -58,6 +59,41 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
     public Iterator<CoNLL02Token> iterator() {
         return tokens.iterator();
     }
+    
+    public AnnoSentence toAnnoSentence() {
+        AnnoSentence s = new AnnoSentence();
+        s.setSourceSent(this);
+        s.setWords(this.getWords());
+        s.setPosTags(this.getPosTags());
+        // TODO: Switch from chunks to neTags.
+        s.setChunks(this.getNeTags());
+        return s;
+    }
+
+    public List<String> getWords() {
+        List<String> words = new ArrayList<String>(size());
+        for (int i=0; i<size(); i++) {
+            words.add(tokens.get(i).getWord());            
+        }
+        return words;
+    }
+    
+    public List<String> getPosTags() {
+        List<String> posTags = new ArrayList<String>(size());
+        for (int i=0; i<size(); i++) {
+            posTags.add(tokens.get(i).getPos());            
+        }
+        return posTags;
+    }
+
+    public List<String> getNeTags() {
+        List<String> neTags = new ArrayList<String>(size());
+        for (int i=0; i<size(); i++) {
+            neTags.add(tokens.get(i).getNe());            
+        }
+        return neTags;
+    }
+    
 
     @Override
     public int hashCode() {

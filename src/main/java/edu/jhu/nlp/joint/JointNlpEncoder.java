@@ -64,7 +64,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         VarConfig vc = new VarConfig();
         if (prm.fgPrm.includePos && prm.fgPrm.posPrm.posTagVarType != VarType.LATENT) {
             if (gold != null && gold.getPosTags() != null) {
-                fg.getPosTagBuilder().addRelVarAssignments(gold.getPosTags(), vc);;
+                fg.getPosTagBuilder().addVarAssignments(gold.getPosTags(), vc);;
             }
         }
         if (prm.fgPrm.includeDp) {
