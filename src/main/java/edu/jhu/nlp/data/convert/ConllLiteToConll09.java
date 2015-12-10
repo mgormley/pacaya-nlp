@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.CoNLL09Writer;
-import edu.jhu.nlp.data.conll.ConllLiteFileReader;
+import edu.jhu.nlp.data.conll.ConllLiteReader;
 import edu.jhu.nlp.data.conll.ConllLiteSentence;
 import edu.jhu.nlp.data.conll.ConllLiteToken;
 import edu.jhu.nlp.data.conll.SrlGraph;
@@ -49,7 +49,7 @@ public class ConllLiteToConll09 {
     public void run() throws IOException {
 
         CoNLL09Writer writer = new CoNLL09Writer(output);
-        ConllLiteFileReader reader = new ConllLiteFileReader(input);
+        ConllLiteReader reader = new ConllLiteReader(input);
         for (ConllLiteSentence slite : reader) {
             CoNLL09Sentence s09 = conllLiteToConll09(slite);
             writer.write(s09);

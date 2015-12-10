@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.data.concrete.ConcreteReader;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.concrete.ListCloseableIterable;
-import edu.jhu.nlp.data.conll.CoNLL08FileReader;
+import edu.jhu.nlp.data.conll.CoNLL08Reader;
 import edu.jhu.nlp.data.conll.CoNLL08Sentence;
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
-import edu.jhu.nlp.data.conll.CoNLLXFileReader;
+import edu.jhu.nlp.data.conll.CoNLLXReader;
 import edu.jhu.nlp.data.conll.CoNLLXSentence;
 import edu.jhu.nlp.data.semeval.SemEval2010Reader;
 import edu.jhu.nlp.data.semeval.SemEval2010Sentence;
@@ -98,11 +98,11 @@ public class AnnoSentenceReader {
             reader = new ListCloseableIterable(csents);
         } else {
             if (type == DatasetType.CONLL_2009) {
-                reader = ConvCloseableIterable.getInstance(new CoNLL09FileReader(fis), new CoNLL092Anno());
+                reader = ConvCloseableIterable.getInstance(new CoNLL09Reader(fis), new CoNLL092Anno());
             } else if (type == DatasetType.CONLL_2008) {
-                reader = ConvCloseableIterable.getInstance(new CoNLL08FileReader(fis), new CoNLL082Anno());
+                reader = ConvCloseableIterable.getInstance(new CoNLL08Reader(fis), new CoNLL082Anno());
             } else if (type == DatasetType.CONLL_X) {
-                reader = ConvCloseableIterable.getInstance(new CoNLLXFileReader(fis), new CoNLLX2Anno());
+                reader = ConvCloseableIterable.getInstance(new CoNLLXReader(fis), new CoNLLX2Anno());
             } else if (type == DatasetType.SEMEVAL_2010) {
                 reader = ConvCloseableIterable.getInstance(new SemEval2010Reader(fis), new SemEval20102Anno());
             //} else if (type == DatasetType.PTB) {

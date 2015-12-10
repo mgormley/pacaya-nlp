@@ -40,7 +40,7 @@ public class CoNLL08SentenceTest {
     @Test
     public void testToC09() throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL08ReadWriteTest.conll2008Example);
-        CoNLL08FileReader cr = new CoNLL08FileReader(inputStream);
+        CoNLL08Reader cr = new CoNLL08Reader(inputStream);
         for (CoNLL08Sentence sent : cr) {
             System.out.println(sent.toCoNLL09Sent(true));
         }
@@ -50,7 +50,7 @@ public class CoNLL08SentenceTest {
     @Test
     public void testRemoveNominal() throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL08ReadWriteTest.conll2008Example);
-        CoNLL08FileReader cr = new CoNLL08FileReader(inputStream);
+        CoNLL08Reader cr = new CoNLL08Reader(inputStream);
         for (CoNLL08Sentence sent : cr) {
             sent.removeNominalPreds();
             System.out.println(sent);
@@ -68,7 +68,7 @@ public class CoNLL08SentenceTest {
         //
         //String f = "/Users/mgormley/research/other_lib/srl/conll05_to_08/lth/test.wsj.conll";
         InputStream inputStream = new FileInputStream(f);
-        CoNLL08FileReader cr = new CoNLL08FileReader(inputStream);
+        CoNLL08Reader cr = new CoNLL08Reader(inputStream);
         HashSet<String> set = new HashSet<String>();
         HashMap<String,Integer> count = new HashMap<String,Integer>();
         int numPreds = 0;

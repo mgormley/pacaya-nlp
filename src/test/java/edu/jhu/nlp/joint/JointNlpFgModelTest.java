@@ -11,7 +11,7 @@ import org.junit.Test;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -27,7 +27,7 @@ public class JointNlpFgModelTest {
     public void testIsSerializable() throws IOException {
         try {
             InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-            CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+            CoNLL09Reader cr = new CoNLL09Reader(inputStream);
             CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
             AnnoSentenceCollection sents = CoNLL09Sentence.toAnno(cr.readSents(1), csPrm.useGoldSyntax);
             CorpusStatistics cs = new CorpusStatistics(csPrm);

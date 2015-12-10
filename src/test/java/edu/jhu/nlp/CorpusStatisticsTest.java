@@ -10,7 +10,7 @@ import java.util.List;
 import org.junit.Test;
 
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -27,7 +27,7 @@ public class CorpusStatisticsTest {
     @Test
     public void testCreation() throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         csPrm.topN = 1;
         List<CoNLL09Sentence> sents = cr.readSents(4);

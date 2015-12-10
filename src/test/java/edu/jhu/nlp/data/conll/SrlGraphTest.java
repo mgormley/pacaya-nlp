@@ -62,7 +62,7 @@ public class SrlGraphTest {
     @Test
     public void testGetSrlGraphOnRealData() throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         
         for (CoNLL09Sentence sent : cr) {
             sent.getSrlGraph();    

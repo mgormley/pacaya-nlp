@@ -8,7 +8,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.ConllLiteSentence;
@@ -47,7 +47,7 @@ public class Conll09ToConllLite {
     
     public void run() throws IOException {
         ConllLiteWriter writer = new ConllLiteWriter(output);
-        CoNLL09FileReader reader = new CoNLL09FileReader(input);
+        CoNLL09Reader reader = new CoNLL09Reader(input);
         for (CoNLL09Sentence s09 : reader) {
             ConllLiteSentence slite = conll09ToConllLite(s09);
             writer.write(slite);

@@ -14,7 +14,7 @@ import edu.jhu.hlt.optimize.MalletLBFGS;
 import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.SrlGraph;
@@ -52,7 +52,7 @@ public class JointNlpFgExamplesBuilderTest {
     @Test
     public void testGetData() throws Exception {
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         List<CoNLL09Sentence> sents = cr.readSents(1);
         
         AnnoSentenceCollection simpleSents = new AnnoSentenceCollection();
@@ -85,7 +85,7 @@ public class JointNlpFgExamplesBuilderTest {
         FactorTemplateList fts = new FactorTemplateList();
 
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
         List<CoNLL09Sentence> sents = cr.readSents(1);
@@ -125,7 +125,7 @@ public class JointNlpFgExamplesBuilderTest {
     @Test
     public void testPreprocess() throws Exception {
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         List<CoNLL09Sentence> sents = cr.readSents(1);
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         CorpusStatistics cs = new CorpusStatistics(csPrm);
@@ -196,7 +196,7 @@ public class JointNlpFgExamplesBuilderTest {
         FactorTemplateList fts = new FactorTemplateList();
 
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         List<CoNLL09Sentence> sents = cr.readSents(1);
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         csPrm.useGoldSyntax = true;
@@ -236,7 +236,7 @@ public class JointNlpFgExamplesBuilderTest {
         FactorTemplateList fts = new FactorTemplateList();
 
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
         List<CoNLL09Sentence> sents = cr.readSents(1);
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         csPrm.useGoldSyntax = true;

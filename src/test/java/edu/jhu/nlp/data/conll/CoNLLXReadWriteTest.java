@@ -16,7 +16,7 @@ public class CoNLLXReadWriteTest {
     @Test
     public void testReadWrite() throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream(conllXExample);
-        CoNLLXFileReader cr = new CoNLLXFileReader(inputStream);
+        CoNLLXReader cr = new CoNLLXReader(inputStream);
 
         StringWriter writer = new StringWriter();
         CoNLLXWriter cw = new CoNLLXWriter(writer);

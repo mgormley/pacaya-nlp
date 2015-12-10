@@ -16,7 +16,7 @@ public class CoNLL09ReadWriteTest {
     @Test
     public void testReadWrite() throws IOException {
         InputStream inputStream = this.getClass().getResourceAsStream(conll2009Example);
-        CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
+        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
 
         StringWriter writer = new StringWriter();
         CoNLL09Writer cw = new CoNLL09Writer(writer);
