@@ -15,23 +15,9 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.hlt.optimize.AdaDelta;
-import edu.jhu.hlt.optimize.AdaDelta.AdaDeltaPrm;
-import edu.jhu.hlt.optimize.AdaGradComidL2;
-import edu.jhu.hlt.optimize.AdaGradComidL2.AdaGradComidL2Prm;
-import edu.jhu.hlt.optimize.AdaGradSchedule;
-import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
-import edu.jhu.hlt.optimize.BottouSchedule;
-import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
-import edu.jhu.hlt.optimize.MalletLBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
-import edu.jhu.hlt.optimize.SGD;
-import edu.jhu.hlt.optimize.SGD.SGDPrm;
-import edu.jhu.hlt.optimize.SGDFobos;
-import edu.jhu.hlt.optimize.SGDFobos.SGDFobosPrm;
-import edu.jhu.hlt.optimize.StanfordQNMinimizer;
+import edu.jhu.hlt.optimize.Optimizer;
+import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
-import edu.jhu.hlt.optimize.functions.L2;
 import edu.jhu.nlp.AnnoPipeline;
 import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
@@ -40,11 +26,13 @@ import edu.jhu.nlp.TransientAnnotator;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
+import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.FirstOrderPruner;
 import edu.jhu.nlp.depparse.GoldDepParseUnpruner;
 import edu.jhu.nlp.depparse.O2AllGraFgInferencer.O2AllGraFgInferencerFactory;
 import edu.jhu.nlp.depparse.PosTagDistancePruner;
+import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.embed.Embeddings.Scaling;
 import edu.jhu.nlp.embed.EmbeddingsAnnotator;
 import edu.jhu.nlp.embed.EmbeddingsAnnotator.EmbeddingsAnnotatorPrm;
@@ -52,6 +40,7 @@ import edu.jhu.nlp.eval.DepParseAccuracy;
 import edu.jhu.nlp.eval.DepParseExactMatch;
 import edu.jhu.nlp.eval.OraclePruningAccuracy;
 import edu.jhu.nlp.eval.OraclePruningExactMatch;
+import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.ProportionAnnotated;
 import edu.jhu.nlp.eval.PruningEfficiency;
 import edu.jhu.nlp.eval.RelationEvaluator;
@@ -67,13 +56,12 @@ import edu.jhu.nlp.joint.IGFeatureTemplateSelector.IGFeatureTemplateSelectorPrm;
 import edu.jhu.nlp.joint.JointNlpAnnotator.InitParams;
 import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
-import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
-import edu.jhu.nlp.relations.RelObsFe.RelObsFePrm;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
+import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
@@ -81,24 +69,25 @@ import edu.jhu.nlp.srl.SrlFeatureSelection;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
+import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder.CacheType;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.Loss;
 import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
-import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
+import edu.jhu.pacaya.gm.inf.BeliefsModuleFactory;
+import edu.jhu.pacaya.gm.inf.BruteForceInferencer.BruteForceInferencerPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencerFactory;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.Trainer;
-import edu.jhu.pacaya.gm.train.DepParseDecodeLoss.DepParseDecodeLossFactory;
+import edu.jhu.pacaya.gm.train.DepParseSoftmaxMbr.DepParseSoftmaxMbrFactory;
 import edu.jhu.pacaya.gm.train.ExpectedRecall.ExpectedRecallFactory;
-import edu.jhu.pacaya.gm.train.L2Distance.MeanSquaredErrorFactory;
+import edu.jhu.pacaya.gm.train.L2Distance.L2DistanceFactory;
 import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
@@ -114,6 +103,7 @@ import edu.jhu.pacaya.util.semiring.LogSignAlgebra;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
 import edu.jhu.pacaya.util.semiring.ShiftedRealAlgebra;
 import edu.jhu.pacaya.util.semiring.SplitAlgebra;
+import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
@@ -125,9 +115,7 @@ import edu.jhu.prim.util.random.Prng;
  */
 public class JointNlpRunner {
 
-    public static enum Optimizer { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD };
-
-    public enum ErmaLoss { MSE, EXPECTED_RECALL, DP_DECODE_LOSS };
+    public enum ErmaLoss { L2DIST, EXPECTED_RECALL, SOFTMAX_MBR };
 
     public enum Inference { BRUTE_FORCE, BP, DP };
     
@@ -212,7 +200,9 @@ public class JointNlpRunner {
     @Opt(hasArg=true, description="Method for normalization of the embeddings.")
     public static Scaling embNorm = Scaling.L2_NORM;
     @Opt(hasArg=true, description="Amount to scale embeddings after normalization.")
-    public static double embScalar = 15.0;
+    public static double embScalar = 1.0;
+    @Opt(hasArg=true, description="Whether to use entity mention specific embeddings.")
+    public static boolean entitySpecificEmbeddings = false;
     
     // Options for SRL factor graph structure.
     @Opt(hasArg = true, description = "The structure of the Role variables.")
@@ -227,6 +217,10 @@ public class JointNlpRunner {
     public static boolean predictSense = false;
     @Opt(hasArg = true, description = "Whether to predict predicate positions.")
     public static boolean predictPredPos = false;
+    @Opt(hasArg = true, description = " Whether to use FCM factors.")
+    public static boolean srlFcmFactors = false;
+    @Opt(hasArg = true, description = "Whether to treat the embeddings as model parameters.")
+    public static boolean srlFcmFineTuning = false;
     
     // Options for joint factor graph structure.
     @Opt(hasArg = true, description = "Whether to include unary factors in the model.")
@@ -263,7 +257,13 @@ public class JointNlpRunner {
     public static File senseFeatTplsOut = null;
     @Opt(hasArg = true, description = "Arg feature template output file.")
     public static File argFeatTplsOut = null;
+    @Opt(hasArg = true, description = "Whether to include extra ACL '14 style arg features.")
+    public static boolean srlExtraArgFeats = false;
 
+    // Options for POS tagging factor graph structure.
+    @Opt(hasArg = true, description = "The type of the tag variables.")
+    public static VarType posTagVarType = VarType.LATENT;
+    
     // Options for dependency parse factor graph structure.
     @Opt(hasArg = true, description = "The type of the link variables.")
     public static VarType linkVarType = VarType.LATENT;
@@ -303,67 +303,28 @@ public class JointNlpRunner {
 
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
-    public static CacheType cacheType = CacheType.CACHE;
+    public static CacheType cacheType = CacheType.NONE;
     @Opt(hasArg = true, description = "When caching, the maximum number of examples to keep cached in memory or -1 for SoftReference caching.")
     public static int maxEntriesInMemory = 100;
     @Opt(hasArg = true, description = "Whether to gzip an object before caching it.")
     public static boolean gzipCache = false;    
     
-    // Options for optimization.
-    @Opt(hasArg=true, description="The optimization method to use for training.")
-    public static Optimizer optimizer = Optimizer.LBFGS;
-    @Opt(hasArg=true, description="The variance for the L2 regularizer.")
-    public static double l2variance = 1.0;
-    @Opt(hasArg=true, description="The type of regularizer.")
-    public static RegularizerType regularizer = RegularizerType.L2;
-    @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
-    public static int maxLbfgsIterations = 1000;
-    @Opt(hasArg=true, description="Number of effective passes over the dataset for SGD.")
-    public static int sgdNumPasses = 30;
-    @Opt(hasArg=true, description="The batch size to use at each step of SGD.")
-    public static int sgdBatchSize = 15;
-    @Opt(hasArg=true, description="The initial learning rate for SGD.")
-    public static double sgdInitialLr = 0.1;
-    @Opt(hasArg=true, description="Whether to sample with replacement for SGD.")
-    public static boolean sgdWithRepl = false;
-    @Opt(hasArg=true, description="Whether to automatically select the learning rate.")
-    public static boolean sgdAutoSelectLr = true;
-    @Opt(hasArg=true, description="How many epochs between auto-select runs.")
-    public static int sgdAutoSelecFreq = 5;
-    @Opt(hasArg=true, description="Whether to compute the function value on iterations other than the last.")
-    public static boolean sgdComputeValueOnNonFinalIter = true;
-    @Opt(hasArg=true, description="Whether to do parameter averaging.")
-    public static boolean sgdAveraging = false;
-    @Opt(hasArg=true, description="Whether to do early stopping.")
-    public static boolean sgdEarlyStopping = true;
-    @Opt(hasArg=true, description="The AdaGrad parameter for scaling the learning rate.")
-    public static double adaGradEta = 0.1;
-    @Opt(hasArg=true, description="The constant addend for AdaGrad.")
-    public static double adaGradConstantAddend = 1e-9;
-    @Opt(hasArg=true, description="The initial value of the sum of squares for AdaGrad.")
-    public static double adaGradInitialSumSquares = 0;
-    @Opt(hasArg=true, description="The decay rate for AdaDelta.")
-    public static double adaDeltaDecayRate = 0.95;
-    @Opt(hasArg=true, description="The constant addend for AdaDelta.")
-    public static double adaDeltaConstantAddend = Math.pow(Math.E, -6.);
-    @Opt(hasArg=true, description="Stop training by this date/time.")
-    public static Date stopTrainingBy = null;
-    
     // Options for training.
     @Opt(hasArg=true, description="The type of trainer to use (e.g. conditional log-likelihood, ERMA).")
     public static Trainer trainer = Trainer.CLL;
     
-    // Options for training a dependency parser with ERMA.
+    // Options for training with ERMA.
+    // TODO: Remove the "dp" prefixes on these flags.
     @Opt(hasArg=true, description="The start temperature for the softmax MBR decoder for dependency parsing.")
     public static double dpStartTemp = 10;
     @Opt(hasArg=true, description="The end temperature for the softmax MBR decoder for dependency parsing.")
     public static double dpEndTemp = .1;
     @Opt(hasArg=true, description="Whether to use log scale for the temperature annealing.")
     public static boolean dpUseLogScale = true;
-    @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
+    @Opt(hasArg=true, description="Whether to transition from L2DIST to the softmax MBR decoder with expected recall.")
     public static boolean dpAnnealMse = true;
-    @Opt(hasArg=true, description="Whether to transition from MSE to the softmax MBR decoder with expected recall.")
-    public static ErmaLoss dpLoss = ErmaLoss.DP_DECODE_LOSS;
+    @Opt(hasArg=true, description="Whether to transition from L2DIST to the softmax MBR decoder with expected recall.")
+    public static ErmaLoss dpLoss = ErmaLoss.L2DIST;
     
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
@@ -382,10 +343,10 @@ public class JointNlpRunner {
         if (useLogAddTable) {
             log.warn("Using log-add table instead of exact computation. When using global factors, this may result in numerical instability.");
         }
-        if (stopTrainingBy != null && new Date().after(stopTrainingBy)) {
-            log.warn("Training will never begin since stopTrainingBy has already happened: " + stopTrainingBy);
+        if (OptimizerFactory.stopTrainingBy != null && new Date().after(OptimizerFactory.stopTrainingBy)) {
+            log.warn("Training will never begin since stopTrainingBy has already happened: " + OptimizerFactory.stopTrainingBy);
             log.warn("Ignoring stopTrainingBy by setting it to null.");
-            stopTrainingBy = null;
+            OptimizerFactory.stopTrainingBy = null;
         }
         
         // Initialize the data reader/writer.
@@ -403,10 +364,9 @@ public class JointNlpRunner {
         // The pre-processing pipeline for gold data.
         AnnoPipeline prep = new AnnoPipeline();
         JointNlpAnnotatorPrm prm = getJointNlpAnnotatorPrm();
-        JointNlpAnnotator jointAnno = new JointNlpAnnotator(prm);
-        if (modelIn != null) {
-            jointAnno.loadModel(modelIn);
-        }
+        // Optional annotators.
+        JointNlpAnnotator jointAnno = null;
+        Embeddings embeds  = null;
         {
             // Pre-processing.
             RelationMunger relMunger = new RelationMunger(parser.getInstanceFromParsedArgs(RelationMungerPrm.class));
@@ -436,14 +396,19 @@ public class JointNlpRunner {
             }
             // Add word embeddings.
             if (embeddingsFile != null) {
-                anno.add(new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm()));
+                Set<String> words = corpus.getAllKnownWords();
+                EmbeddingsAnnotator embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm(), words);               
+                if (parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class).useEmbeddingFeatures == true) {
+                    embeds = embedAnno.getEmbeddings();
+                }
+                anno.add(embedAnno);
             } else {
                 log.debug("No embeddings file specified.");
             }
             
             if (JointNlpRunner.modelIn == null) {
                 // Feature selection at train time only for SRL.
-                anno.add(new TransientAnnotator(new SrlFeatureSelection(prm.buPrm.fePrm)));
+                anno.add(new TransientAnnotator(new SrlFeatureSelection(prm.buPrm.fgPrm)));
             }
             
             if (pruneByDist) {
@@ -454,16 +419,15 @@ public class JointNlpRunner {
                 if (pruneModel == null) {
                     throw new IllegalStateException("If pruneByModel is true, pruneModel must be specified.");
                 }
-                anno.add(new FirstOrderPruner(pruneModel, getSrlFgExampleBuilderPrm(null), getDecoderPrm()));
+                anno.add(new FirstOrderPruner(pruneModel, getJointNlpFgExampleBuilderPrm(), getDecoderPrm()));
             }
             if ((pruneByDist || pruneByModel ) && trainer == Trainer.CLL) {
                 anno.add(new GoldDepParseUnpruner());
             }
             if (modelIn == null && prm.buPrm.fgPrm.srlPrm.predictPredPos) {
                 // Predict SRL predicate positions as a separate step.
+                // (Use the same features as the main jointAnno. These might be edited by feature selection.)
                 JointNlpAnnotatorPrm prm2 = Prm.clone(prm);
-                // Use the same features as the main jointAnno. These might be edited by feature selection.
-                prm2.buPrm.fePrm = prm.buPrm.fePrm;
                 // This is transient so we need to create another one.
                 prm2.crfPrm = getCrfTrainerPrm();
                 // Don't include anything except for SRL.
@@ -473,13 +437,17 @@ public class JointNlpRunner {
                 srlPrm.predictPredPos = true;
                 srlPrm.predictSense = false;
                 srlPrm.roleStructure = RoleStructure.NO_ROLES;
-                anno.add(new JointNlpAnnotator(prm2));
+                anno.add(new JointNlpAnnotator(prm2, embeds));
                 // Don't predict SRL predicate position in the main jointAnno below.
                 prm.buPrm.fgPrm.srlPrm.predictPredPos = false;
                 prm.buPrm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
             }
             if (jointModel) {
                 // Various NLP annotations.
+                jointAnno = new JointNlpAnnotator(prm, embeds);
+                if (modelIn != null) {
+                    jointAnno.loadModel(modelIn);
+                }
                 anno.add(jointAnno);
             }
             // Post-processing.
@@ -495,6 +463,9 @@ public class JointNlpRunner {
                 eval.add(new PruningEfficiency(dpSkipPunctuation));
                 eval.add(new OraclePruningAccuracy(dpSkipPunctuation));
                 eval.add(new OraclePruningExactMatch(dpSkipPunctuation));
+            }
+            if (CorpusHandler.getGoldOnlyAts().contains(AT.POS)) {
+                eval.add(new PosTagAccuracy());
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE)) {
                 eval.add(new DepParseAccuracy(dpSkipPunctuation));
@@ -538,10 +509,10 @@ public class JointNlpRunner {
                 anno.train(trainInput, trainGold, devInput, devGold);
                 
                 // Save the model.
-                if (modelOut != null) {
+                if (jointAnno != null && modelOut != null) {
                     jointAnno.saveModel(modelOut);
                 }
-                if (printModel != null) {
+                if (jointAnno != null && printModel != null) {
                     jointAnno.printModel(printModel);
                 }
                 if (pipeOut != null) {
@@ -630,44 +601,28 @@ public class JointNlpRunner {
         prm.initParams = initParams;
         prm.ofcPrm = getObsFeatureConjoinerPrm();
         prm.dpSkipPunctuation = dpSkipPunctuation;
-        JointNlpFeatureExtractorPrm fePrm = getJointNlpFeatureExtractorPrm();
-        prm.buPrm = getSrlFgExampleBuilderPrm(fePrm);
+        prm.buPrm = getJointNlpFgExampleBuilderPrm();
         return prm;
     }
     
-    private static JointNlpFgExampleBuilderPrm getSrlFgExampleBuilderPrm(JointNlpEncoder.JointNlpFeatureExtractorPrm fePrm) {
+    private static JointNlpFgExampleBuilderPrm getJointNlpFgExampleBuilderPrm() {
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        
-        // Factor graph structure.
-        prm.fgPrm.dpPrm.linkVarType = linkVarType;
-        prm.fgPrm.dpPrm.useProjDepTreeFactor = useProjDepTreeFactor;
-        prm.fgPrm.dpPrm.unaryFactors = unaryFactors;
-        prm.fgPrm.dpPrm.excludeNonprojectiveGrandparents = excludeNonprojectiveGrandparents;
-        prm.fgPrm.dpPrm.grandparentFactors = grandparentFactors;
-        prm.fgPrm.dpPrm.arbitrarySiblingFactors = arbitrarySiblingFactors;
-        prm.fgPrm.dpPrm.headBigramFactors = headBigramFactors;
-        prm.fgPrm.dpPrm.pruneEdges = pruneByDist || pruneByModel;
-                
-        prm.fgPrm.srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
-        prm.fgPrm.srlPrm.roleStructure = roleStructure;
-        prm.fgPrm.srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;
-        prm.fgPrm.srlPrm.unaryFactors = unaryFactors;
-        prm.fgPrm.srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
-        prm.fgPrm.srlPrm.predictSense = predictSense;
-        prm.fgPrm.srlPrm.predictPredPos = predictPredPos;
-        
-        // Relation Feature extraction.
+        // Part-of-speech tagging factor graph.
+        prm.fgPrm.posPrm = getPosTagFactorGraphBuilderPrm();
+        // Dependency parse factor graph.
+        prm.fgPrm.dpPrm = getDepParseFactorGraphBuilderPrm();
+        // SRL factor graph.
+        prm.fgPrm.srlPrm = getSrlFactorGraphBuilderPrm();
+        // Relation factor graph.
         if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
-            prm.fgPrm.relPrm.fePrm = parser.getInstanceFromParsedArgs(RelObsFePrm.class);
+            prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
         
+        prm.fgPrm.includePos = CorpusHandler.getGoldOnlyAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE);
         prm.fgPrm.includeSrl = CorpusHandler.getGoldOnlyAts().contains(AT.SRL);
         prm.fgPrm.includeRel = CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS);
-        
-        // Feature extraction.
-        prm.fePrm = fePrm;
-        
+                
         // Example construction and storage.
         prm.exPrm.cacheType = cacheType;
         prm.exPrm.gzipped = gzipCache;
@@ -675,7 +630,74 @@ public class JointNlpRunner {
         
         return prm;
     }
+
+    private static PosTagFactorGraphBuilderPrm getPosTagFactorGraphBuilderPrm() {
+        PosTagFactorGraphBuilderPrm posPrm = new PosTagFactorGraphBuilderPrm();
+        posPrm.featureHashMod = featureHashMod;
+        posPrm.posTagVarType = posTagVarType;
+        return posPrm;
+    }
+
+    private static DepParseFactorGraphBuilderPrm getDepParseFactorGraphBuilderPrm() {
+        DepParseFactorGraphBuilderPrm dpPrm = new DepParseFactorGraphBuilderPrm();
+        
+        // Dependency Parsing factor graph structure.
+        dpPrm.linkVarType = linkVarType;
+        dpPrm.useProjDepTreeFactor = useProjDepTreeFactor;
+        dpPrm.unaryFactors = unaryFactors;
+        dpPrm.excludeNonprojectiveGrandparents = excludeNonprojectiveGrandparents;
+        dpPrm.grandparentFactors = grandparentFactors;
+        dpPrm.arbitrarySiblingFactors = arbitrarySiblingFactors;
+        dpPrm.headBigramFactors = headBigramFactors;
+        dpPrm.pruneEdges = pruneByDist || pruneByModel;
+
+        // Dependency parsing Feature Extraction
+        DepParseFeatureExtractorPrm dpFePrm = new DepParseFeatureExtractorPrm();
+        dpFePrm.biasOnly = biasOnly;
+        dpFePrm.firstOrderTpls = getFeatTpls(dp1FeatTpls);
+        dpFePrm.secondOrderTpls = getFeatTpls(dp2FeatTpls);
+        dpFePrm.featureHashMod = featureHashMod;
+        dpFePrm.onlyFast = dpFastFeats;
+        if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && acl14DepFeats) {
+            // This special case is only for historical consistency.
+            dpFePrm.onlyTrueBias = false;
+            dpFePrm.onlyTrueEdges = false;
+            dpFePrm.onlyFast = false; // Overrides command line option.
+        }
+        // Bitshift feature extraction.        
+        BitshiftDepParseFeatureExtractorPrm bsDpFePrm = parser.getInstanceFromParsedArgs(BitshiftDepParseFeatureExtractorPrm.class);
+        bsDpFePrm.featureHashMod = featureHashMod;
+
+        dpPrm.dpFePrm = dpFePrm;
+        dpPrm.bsDpFePrm = bsDpFePrm;     
+        return dpPrm;
+    }
     
+    private static SrlFactorGraphBuilderPrm getSrlFactorGraphBuilderPrm() {
+        SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
+        // Semantic Role Labeling factor graph structure.
+        srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
+        srlPrm.roleStructure = roleStructure;
+        srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;
+        srlPrm.unaryFactors = unaryFactors;
+        srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
+        srlPrm.predictSense = predictSense;
+        srlPrm.predictPredPos = predictPredPos;
+        srlPrm.fcmFactors = srlFcmFactors;
+        srlPrm.fcmFineTuning = srlFcmFineTuning;
+        
+        // SRL Feature Extraction.
+        SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
+        srlFePrm.biasOnly = biasOnly;
+        srlFePrm.useTemplates = useTemplates;       
+        srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
+        srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
+        srlFePrm.featureHashMod = featureHashMod;
+                
+        srlPrm.srlFePrm = srlFePrm;
+        return srlPrm;
+    }
+
     private static ObsFeatureConjoinerPrm getObsFeatureConjoinerPrm() {
         ObsFeatureConjoinerPrm prm = new ObsFeatureConjoinerPrm();
         prm.featCountCutoff = featCountCutoff;
@@ -683,38 +705,6 @@ public class JointNlpRunner {
         return prm;
     }
     
-    private static JointNlpFeatureExtractorPrm getJointNlpFeatureExtractorPrm() {
-        // SRL Feature Extraction.
-        SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
-        srlFePrm.biasOnly = biasOnly;
-        srlFePrm.useTemplates = useTemplates;
-        
-        srlFePrm.soloTemplates = getFeatTpls(senseFeatTpls);
-        srlFePrm.pairTemplates = getFeatTpls(argFeatTpls);
-
-        srlFePrm.featureHashMod = featureHashMod;
-                
-        // Dependency parsing Feature Extraction
-        DepParseFeatureExtractorPrm dpFePrm = new DepParseFeatureExtractorPrm();
-        dpFePrm.biasOnly = biasOnly;
-        dpFePrm.firstOrderTpls = getFeatTpls(dp1FeatTpls);
-        dpFePrm.secondOrderTpls = getFeatTpls(dp2FeatTpls);
-        dpFePrm.featureHashMod = featureHashMod;
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && acl14DepFeats) {
-            // This special case is only for historical consistency.
-            dpFePrm.onlyTrueBias = false;
-            dpFePrm.onlyTrueEdges = false;
-        }
-        dpFePrm.onlyFast = dpFastFeats;
-        
-        JointNlpFeatureExtractorPrm fePrm = new JointNlpFeatureExtractorPrm();
-        fePrm.srlFePrm = srlFePrm;
-        fePrm.dpFePrm = dpFePrm;
-        fePrm.bsDpFePrm = parser.getInstanceFromParsedArgs(BitshiftDepParseFeatureExtractorPrm.class);
-        fePrm.bsDpFePrm.featureHashMod = featureHashMod;
-        return fePrm;
-    }
-
     /**
      * Gets feature templates from multiple files or resources.
      * @param featTpls A colon separated list of paths to feature template files or resources.
@@ -767,128 +757,38 @@ public class JointNlpRunner {
         CrfTrainerPrm prm = new CrfTrainerPrm();
         prm.infFactory = infPrm;
         if (infPrm instanceof BeliefsModuleFactory) {
-            // TODO: This is a temporary hack to which assumes we always use ErmaBp.
+            // TODO: This cast is a temporary hack.
             prm.bFactory = (BeliefsModuleFactory) infPrm;
         }
-        if (optimizer == Optimizer.LBFGS) {
-            prm.optimizer = getMalletLbfgs();
-            prm.batchOptimizer = null;
-        } else if (optimizer == Optimizer.QN) {
-            prm.optimizer = getStanfordLbfgs();
-            prm.batchOptimizer = null;            
-        } else if (optimizer == Optimizer.SGD || optimizer == Optimizer.ASGD  ||
-                optimizer == Optimizer.ADAGRAD || optimizer == Optimizer.ADADELTA) {
-            prm.optimizer = null;
-            SGDPrm sgdPrm = getSgdPrm();
-            if (optimizer == Optimizer.SGD){
-                BottouSchedulePrm boPrm = new BottouSchedulePrm();
-                boPrm.initialLr = sgdInitialLr;
-                boPrm.lambda = 1.0 / l2variance;
-                sgdPrm.sched = new BottouSchedule(boPrm);
-            } else if (optimizer == Optimizer.ASGD){
-                BottouSchedulePrm boPrm = new BottouSchedulePrm();
-                boPrm.initialLr = sgdInitialLr;
-                boPrm.lambda = 1.0 / l2variance;
-                boPrm.power = 0.75;
-                sgdPrm.sched = new BottouSchedule(boPrm);
-                sgdPrm.averaging = true;
-            } else if (optimizer == Optimizer.ADAGRAD){
-                AdaGradSchedulePrm adaGradPrm = new AdaGradSchedulePrm();
-                adaGradPrm.eta = adaGradEta;
-                adaGradPrm.constantAddend = adaGradConstantAddend;
-                adaGradPrm.initialSumSquares = adaGradInitialSumSquares;
-                sgdPrm.sched = new AdaGradSchedule(adaGradPrm);
-            } else if (optimizer == Optimizer.ADADELTA){
-                AdaDeltaPrm adaDeltaPrm = new AdaDeltaPrm();
-                adaDeltaPrm.decayRate = adaDeltaDecayRate;
-                adaDeltaPrm.constantAddend = adaDeltaConstantAddend;
-                sgdPrm.sched = new AdaDelta(adaDeltaPrm);
-                sgdPrm.autoSelectLr = false;
-            }
-            prm.batchOptimizer = new SGD(sgdPrm);
-        } else if (optimizer == Optimizer.ADAGRAD_COMID) {
-            AdaGradComidL2Prm sgdPrm = new AdaGradComidL2Prm();
-            setSgdPrm(sgdPrm);
-            //TODO: sgdPrm.l1Lambda = l1Lambda;
-            sgdPrm.l2Lambda = 1.0 / l2variance;
-            sgdPrm.eta = adaGradEta;
-            sgdPrm.constantAddend = adaGradConstantAddend;
-            sgdPrm.initialSumSquares = adaGradInitialSumSquares;
-            sgdPrm.sched = null;
-            prm.optimizer = null;
-            prm.batchOptimizer = new AdaGradComidL2(sgdPrm);
-        } else if (optimizer == Optimizer.FOBOS) {
-            SGDFobosPrm sgdPrm = new SGDFobosPrm();
-            setSgdPrm(sgdPrm);
-            //TODO: sgdPrm.l1Lambda = l1Lambda;            
-            sgdPrm.l2Lambda = 1.0 / l2variance;
-            BottouSchedulePrm boPrm = new BottouSchedulePrm();
-            boPrm.initialLr = sgdInitialLr;
-            boPrm.lambda = 1.0 / l2variance;
-            sgdPrm.sched = new BottouSchedule(boPrm);  
-            prm.optimizer = null;
-            prm.batchOptimizer = new SGDFobos(sgdPrm);
-        } else {
-            throw new RuntimeException("Optimizer not supported: " + optimizer);
-        }
-        if (regularizer == RegularizerType.L2) {
-            prm.regularizer = new L2(l2variance);
-        } else if (regularizer == RegularizerType.NONE) {
-            prm.regularizer = null;
-        } else {
-            throw new ParseException("Unsupported regularizer: " + regularizer);
-        }
-        prm.numThreads = threads;     
-        prm.trainer = trainer;                
+        Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> opts = OptimizerFactory.getOptimizers();
+        prm.optimizer = opts.get1();
+        prm.batchOptimizer = opts.get2();
+        prm.regularizer = OptimizerFactory.getRegularizer();
+        prm.numThreads = threads;
+        prm.trainer = trainer;
         
         // TODO: add options for other loss functions.
-        if (prm.trainer == Trainer.ERMA && 
-                CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
-            if (dpLoss == ErmaLoss.DP_DECODE_LOSS) {
-                DepParseDecodeLossFactory lossPrm = new DepParseDecodeLossFactory();
+        if (prm.trainer == Trainer.ERMA) {
+            if (dpLoss == ErmaLoss.SOFTMAX_MBR) {
+                if (!CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
+                    throw new RuntimeException("The " + dpLoss.name() + " loss function is only for " + AT.DEP_TREE);
+                }
+                DepParseSoftmaxMbrFactory lossPrm = new DepParseSoftmaxMbrFactory();
                 lossPrm.annealMse = dpAnnealMse;
                 lossPrm.startTemp = dpStartTemp;
                 lossPrm.useLogScale = dpUseLogScale;
                 lossPrm.endTemp = dpEndTemp;
                 prm.dlFactory = lossPrm;
-            } else if (dpLoss == ErmaLoss.MSE) {
-                prm.dlFactory = new MeanSquaredErrorFactory();
+            } else if (dpLoss == ErmaLoss.L2DIST) {
+                prm.dlFactory = new L2DistanceFactory();
             } else if (dpLoss == ErmaLoss.EXPECTED_RECALL) {
                 prm.dlFactory = new ExpectedRecallFactory();
+            } else {
+                throw new ParseException("Unsupported loss: " + dpLoss.name());
             }
         }
         
         return prm;
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getMalletLbfgs() {
-        MalletLBFGSPrm prm = new MalletLBFGSPrm();
-        prm.maxIterations = maxLbfgsIterations;
-        return new MalletLBFGS(prm);
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getStanfordLbfgs() {
-        return new StanfordQNMinimizer(maxLbfgsIterations);
-    }
-    
-    private static SGDPrm getSgdPrm() {
-        SGDPrm prm = new SGDPrm();
-        setSgdPrm(prm);
-        return prm;
-    }
-
-    private static void setSgdPrm(SGDPrm prm) {
-        prm.numPasses = sgdNumPasses;
-        prm.batchSize = sgdBatchSize;
-        prm.withReplacement = sgdWithRepl;
-        prm.stopBy = stopTrainingBy;
-        prm.autoSelectLr = sgdAutoSelectLr;
-        prm.autoSelectFreq = sgdAutoSelecFreq;
-        prm.computeValueOnNonFinalIter = sgdComputeValueOnNonFinalIter;
-        prm.averaging = sgdAveraging; 
-        prm.earlyStopping = sgdEarlyStopping; 
-        // Make sure we correctly set the schedule somewhere else.
-        prm.sched = null;
     }
 
     private static FgInferencerFactory getInfFactory() throws ParseException {
@@ -941,6 +841,7 @@ public class JointNlpRunner {
         prm.embeddingsFile = embeddingsFile;
         prm.embNorm = embNorm;
         prm.embScalar= embScalar;
+        prm.entitySpecificEmbeddings = entitySpecificEmbeddings;
         return prm;
     }
     
@@ -950,9 +851,10 @@ public class JointNlpRunner {
         try {
             parser = new ArgParser(JointNlpRunner.class);
             parser.registerClass(JointNlpRunner.class);
+            parser.registerClass(OptimizerFactory.class);
             parser.registerClass(CorpusHandler.class);
             parser.registerClass(RelationMungerPrm.class);
-            parser.registerClass(RelObsFePrm.class);
+            parser.registerClass(RelationsFactorGraphBuilderPrm.class);
             parser.registerClass(InsideOutsideDepParse.class);      
             parser.registerClass(ReporterManager.class);
             parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);

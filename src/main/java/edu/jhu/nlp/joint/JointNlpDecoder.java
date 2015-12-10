@@ -57,20 +57,25 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
 
         AnnoSentence predSent = sent.getShallowCopy();
 
+        // Get the POS tags.
+        if (fg.getPosTagBuilder() != null) {
+            List<String> posTags = fg.getPosTagBuilder().getTagsFromMbrVarConfig(mbrVarConfig);
+            predSent.setPosTags(posTags);
+        }
         // Get the SRL graph.
-        SrlGraph srlGraph = SrlDecoder.getSrlGraphFromVarConfig(mbrVarConfig, n);
-        if (srlGraph != null) {
+        if (fg.getSrlBuilder() != null) {
+            SrlGraph srlGraph = SrlDecoder.getSrlGraphFromVarConfig(mbrVarConfig, n);
             predSent.setSrlGraph(srlGraph);
+            predSent.setKnownPredsFromSrlGraph();
         }
         // Get the dependency tree.
-        int[] parents = (new DepParseDecoder()).decode(inf, ex, sent);
-        if (parents != null) {
-            DepParseDecoder.addDepParseAssignment(parents, fg.getDpBuilder(), mbrVarConfig);
+        if (fg.getDpBuilder() != null) {
+            int[] parents = (new DepParseDecoder()).decode(inf, ex, sent);
             predSent.setParents(parents);
         }
         // Get the relations.
-        List<String> rels = RelationsDecoder.getRelLabelsFromVarConfig(mbrVarConfig);
-        if (rels != null) {
+        if (fg.getRelBuilder() != null) {
+            List<String> rels = RelationsDecoder.getRelLabelsFromVarConfig(mbrVarConfig);
             predSent.setRelLabels(rels);
         }
         

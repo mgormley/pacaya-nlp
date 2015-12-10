@@ -40,7 +40,8 @@ public class StrictPosTagAnnotatorTest {
         assertEquals(QLists.getList(OTHER, VERB, NOUN, PUNC, CONJ, OTHER), sent.getStrictPosTags());
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    // This should not fail despite there being no POS or CPOS tags. 
+    @Test
     public void testNullBehavior() {
         // Make sentence.
         AnnoSentence sent = new AnnoSentence();

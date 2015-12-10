@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.NerMention;
@@ -17,6 +18,7 @@ import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.arrays.IntArrays;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 
@@ -41,7 +43,7 @@ public class AnnoSentence {
     private List<String> cposTags;
     private List<StrictPosTag> strictPosTags;
     private List<String> clusters;
-    private List<double[]> embeds;
+    private IntArrayList embedIds;
     private List<List<String>> feats;
     private List<String> chunks;
     private List<String> deprels;
@@ -89,7 +91,7 @@ public class AnnoSentence {
         newSent.cposTags = QLists.copyOf(this.cposTags);
         newSent.strictPosTags = QLists.copyOf(this.strictPosTags);
         newSent.clusters = QLists.copyOf(this.clusters);
-        newSent.embeds = QLists.copyOf(this.embeds);
+        newSent.embedIds = new IntArrayList(this.embedIds);
         newSent.chunks = QLists.copyOf(this.chunks);
         newSent.deprels = QLists.copyOf(this.deprels);
         newSent.parents = IntArrays.copyOf(this.parents);
@@ -126,7 +128,7 @@ public class AnnoSentence {
         case CPOS: dest.cposTags = src.cposTags; break;
         case STRICT_POS: dest.strictPosTags = src.strictPosTags; break;
         case BROWN: dest.clusters = src.clusters; break;
-        case EMBED: dest.embeds = src.embeds; break;
+        case EMBED_IDX: dest.embedIds = src.embedIds; break;
         case MORPHO: dest.feats = src.feats; break;
         case CHUNKS: dest.chunks = src.chunks; break;
         case DEP_TREE: dest.parents = src.parents; break;
@@ -158,7 +160,7 @@ public class AnnoSentence {
         case CPOS: this.cposTags = null; break;
         case STRICT_POS: this.strictPosTags = null; break;
         case BROWN: this.clusters = null; break;
-        case EMBED: this.embeds = null; break;
+        case EMBED_IDX: this.embedIds = null; break;
         case MORPHO: this.feats = null; break;
         case CHUNKS: this.chunks = null; break;
         case DEP_TREE: this.parents = null; break; // TODO: Should DEP_TREE also remove the labels? Not clear.
@@ -184,7 +186,7 @@ public class AnnoSentence {
         case CPOS: return this.cposTags != null;
         case STRICT_POS: return this.strictPosTags != null;
         case BROWN: return this.clusters != null;
-        case EMBED: return this.embeds != null;
+        case EMBED_IDX: return this.embedIds != null;
         case MORPHO: return this.feats != null;
         case CHUNKS: return this.chunks != null;
         case DEP_TREE: return this.parents != null;
@@ -241,7 +243,7 @@ public class AnnoSentence {
         appendIfNotNull(sb, "cposTags", cposTags);
         appendIfNotNull(sb, "strictPosTags", strictPosTags);
         appendIfNotNull(sb, "clusters", clusters);
-        appendIfNotNull(sb, "embeds", embeds);
+        appendIfNotNull(sb, "embedIds", embedIds);
         appendIfNotNull(sb, "feats", feats);
         if (parents != null) {
             sb.append("parents=");
@@ -306,8 +308,8 @@ public class AnnoSentence {
         return clusters.get(i);
     }
     
-    public double[] getEmbed(int i) {
-        return embeds.get(i);
+    public int getEmbedId(int i) {
+        return embedIds.get(i);
     }
     
     /** Gets the i'th lemma as a String. */
@@ -389,13 +391,6 @@ public class AnnoSentence {
      */
     public List<String> getClusters(Span span) {
         return getSpan(clusters, span);
-    }
-    
-    /**
-     * Gets a list of word embeddings corresponding to a token span.
-     */
-    public List<double[]> getEmbeds(Span span) {
-        return getSpan(embeds, span);
     }
 
     /**
@@ -618,12 +613,12 @@ public class AnnoSentence {
         this.clusters = clusters;
     }
         
-    public List<double[]> getEmbeds() {
-        return embeds;
+    public IntArrayList getEmbedIds() {
+        return embedIds;
     }
 
-    public void setEmbeds(List<double[]> embeds) {
-        this.embeds = embeds;
+    public void setEmbedIds(IntArrayList embedIds) {
+        this.embedIds = embedIds;
     }
     
     public List<String> getChunks() {
@@ -662,10 +657,8 @@ public class AnnoSentence {
         return srlGraph;
     }
     
-    /** Sets the SRL graph and also the known predicate positions. */
     public void setSrlGraph(SrlGraph srlGraph) {
         this.srlGraph = srlGraph;
-        this.setKnownPredsFromSrlGraph();
     }
     
     public List<String> getDeprels() {
@@ -732,6 +725,13 @@ public class AnnoSentence {
 
     public void setRelations(RelationMentions relations) {
         this.relations = relations;
+    }
+
+    public List<String> getLowerCaseWords() {
+        if (words == null) { return null; }
+        return words.stream()
+                .map(x -> x.toLowerCase())
+                .collect(Collectors.toList());
     }
     
 }

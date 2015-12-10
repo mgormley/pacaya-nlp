@@ -20,15 +20,19 @@ public class SrlEvaluator implements Evaluator {
 
     public static class SrlEvaluatorPrm extends Prm {
         private static final long serialVersionUID = 1L;
+        /** Whether to do labeled or unlabeled evaluation. */
         public boolean labeled = true;
-        public boolean evalSense = true;
-        public boolean evalPredicatePosition = false;
+        /** Whether to evaluate predicate sense. */
+        public boolean evalPredSense = true;
+        /** Whether to evaluate predicate position. */
+        public boolean evalPredPosition = false;
+        /** Whether to evaluate arguments (i.e. semantic roles). */
         public boolean evalRoles = true;
         public SrlEvaluatorPrm() { }
         public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
             this.labeled = labeled;
-            this.evalSense = evalSense;
-            this.evalPredicatePosition = evalPredicatePosition;
+            this.evalPredSense = evalSense;
+            this.evalPredPosition = evalPredicatePosition;
             this.evalRoles = evalRoles;
         }
     }
@@ -43,87 +47,51 @@ public class SrlEvaluator implements Evaluator {
     private double precision;
     private double recall;
     private double f1;
+    // Precision = # correctly predicted positive / # predicted positive
+    // Recall = # correctly predicted positive / # true positive
+    private int numCorrectPositive;
+    private int numCorrectNegative;
+    private int numPredictPositive;
+    private int numTruePositive;
+    private int numInstances;
+    private int numMissing;
     
-    /**
-     * @param labeled Whether to compute labeled or unlabeled F1.
-     */
     public SrlEvaluator(SrlEvaluatorPrm prm) {
         this.prm = prm;
+    }
+
+    protected void reset() {
+        precision = 0;
+        recall = 0;
+        f1 = 0;
+        numCorrectPositive = 0;
+        numCorrectNegative = 0;
+        numPredictPositive = 0;
+        numTruePositive = 0;
+        numInstances = 0;
+        numMissing = 0;
     }
     
     /** Computes the precision, recall, and micro-averaged F1 of SRL. */
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
-        // Precision = # correctly predicted positive / # predicted positive
-        // Recall = # correctly predicted positive / # true positive
-        int numCorrectPositive = 0;
-        int numCorrectNegative = 0;
-        int numPredictPositive = 0;
-        int numTruePositive = 0;
-        int numInstances = 0;
-        int numMissing = 0;
+        reset();
         
         assert predSents.size() == goldSents.size();
         
         // For each sentence.
         for (int s = 0; s < goldSents.size(); s++) {
             AnnoSentence goldSent = goldSents.get(s);
-            AnnoSentence predSent = predSents.get(s);
-            
-            DepGraph gold = (goldSent.getSrlGraph() == null) ? null : goldSent.getSrlGraph().toDepGraph();
-            DepGraph pred = (predSent.getSrlGraph() == null) ? null : predSent.getSrlGraph().toDepGraph();
-            
-            if (gold == null) { continue; }
-            if (pred == null) { numMissing++; }
-            
-            // For each gold edge.
-            int n = goldSent.size();
-            for (int p=-1; p < n; p++) {          
-                if (!prm.evalSense && !prm.evalPredicatePosition && p == -1) {
-                    // Exclude arcs from the virtual root to predicates.
-                    continue;
-                }
-                if (!prm.evalRoles && p != -1) {
-                    // Only consider arcs from the virtual root.
-                    continue;
-                }
-                for (int c=0; c < n; c++) {                      
-                    if (!prm.evalPredicatePosition && !hasPredicateForEdge(gold, p, c)) {
-                        // Only consider predicates which appear in the gold annotations.
-                        continue;
-                    }
-                    String goldLabel = getLabel(gold, p, c);
-                    String predLabel = getLabel(pred, p, c);
-                    
-                    if (goldLabel.equals(predLabel)) {
-                        if (!goldLabel.equals(NO_LABEL)) {
-                            numCorrectPositive++;
-                        } else {
-                            numCorrectNegative++;
-                        }
-                    }
-                    if (!NO_LABEL.equals(goldLabel)) {
-                        numTruePositive++;
-                    }
-                    if (!NO_LABEL.equals(predLabel)) {
-                        numPredictPositive++;
-                    }
-                    numInstances++;
-                    log.trace(String.format("p=%d c=%d eq=%s goldLabel=%s predLabel=%s", 
-                            p, c, goldLabel.equals(predLabel) ? "T" : "F", goldLabel, predLabel)); 
-                }
-            }
+            AnnoSentence predSent = predSents.get(s);            
+            accum(goldSent, predSent);
         }
         String detail = prm.labeled ? "Labeled" : "Unlabeled";
-        detail += prm.evalSense ? "Sense" : "";
-        detail += prm.evalPredicatePosition ? "Position" : "";
+        detail += prm.evalPredSense ? "Sense" : "";
+        detail += prm.evalPredPosition ? "Position" : "";
         detail += prm.evalRoles ? "Roles" : "";                
         log.debug(String.format("SRL %s # correct positives on %s: %d", detail, dataName, numCorrectPositive));
         log.debug(String.format("SRL %s # predicted positives on %s: %d", detail, dataName, numPredictPositive));
         log.debug(String.format("SRL %s # true positives on %s: %d", detail, dataName, numTruePositive));
-        precision = (numPredictPositive == 0) ? 0.0 : (double) numCorrectPositive / numPredictPositive;
-        recall = (numTruePositive == 0) ? 0.0 :  (double) numCorrectPositive / numTruePositive;
-        f1 = (precision == 0.0 && recall == 0.0) ? 0.0 : (double) (2 * precision * recall) / (precision + recall);
-        
+
         log.info(String.format("SRL Num sents not annotated on %s: %d", dataName, numMissing));
         log.info(String.format("SRL Num instances on %s: %d", dataName, numInstances));
         log.info(String.format("SRL %s accuracy on %s: %.4f", detail, dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
@@ -136,6 +104,57 @@ public class SrlEvaluator implements Evaluator {
         rep.report(dataName+detail+"SrlF1", f1);
         
         return -f1;
+    }
+
+    /** Update the sufficient statistics with another sentence. */
+    public void accum(AnnoSentence goldSent, AnnoSentence predSent) {
+        DepGraph gold = (goldSent.getSrlGraph() == null) ? null : goldSent.getSrlGraph().toDepGraph();
+        DepGraph pred = (predSent.getSrlGraph() == null) ? null : predSent.getSrlGraph().toDepGraph();
+        
+        if (gold == null) { return; }
+        if (pred == null) { numMissing++; }
+        
+        // For each gold edge.
+        int n = goldSent.size();
+        for (int p=-1; p < n; p++) {          
+            if (!prm.evalPredSense && !prm.evalPredPosition && p == -1) {
+                // Exclude arcs from the virtual root to predicates.
+                continue;
+            }
+            if (!prm.evalRoles && p != -1) {
+                // Only consider arcs from the virtual root.
+                continue;
+            }
+            for (int c=0; c < n; c++) {                      
+                if (!prm.evalPredPosition && !hasPredicateForEdge(gold, p, c)) {
+                    // Only consider predicates which appear in the gold annotations.
+                    continue;
+                }
+                String goldLabel = getLabel(gold, p, c);
+                String predLabel = getLabel(pred, p, c);
+                
+                if (goldLabel.equals(predLabel)) {
+                    if (!goldLabel.equals(NO_LABEL)) {
+                        numCorrectPositive++;
+                    } else {
+                        numCorrectNegative++;
+                    }
+                }
+                if (!NO_LABEL.equals(goldLabel)) {
+                    numTruePositive++;
+                }
+                if (!NO_LABEL.equals(predLabel)) {
+                    numPredictPositive++;
+                }
+                numInstances++;
+                log.trace(String.format("p=%d c=%d eq=%s goldLabel=%s predLabel=%s", 
+                        p, c, goldLabel.equals(predLabel) ? "T" : "F", goldLabel, predLabel)); 
+            }
+        }
+
+        precision = (numPredictPositive == 0) ? 0.0 : (double) numCorrectPositive / numPredictPositive;
+        recall = (numTruePositive == 0) ? 0.0 :  (double) numCorrectPositive / numTruePositive;
+        f1 = (precision == 0.0 && recall == 0.0) ? 0.0 : (double) (2 * precision * recall) / (precision + recall);        
     }
 
     private boolean hasPredicateForEdge(DepGraph gold, int p, int c) {
@@ -158,7 +177,7 @@ public class SrlEvaluator implements Evaluator {
         String label = dg.get(p, c);
         if (label == null) {
             return NO_LABEL;
-        } else if (!prm.labeled || (p == -1 && !prm.evalSense)){
+        } else if (!prm.labeled || (p == -1 && !prm.evalPredSense)){
             return SOME_LABEL;
         } else {
             return label;
@@ -175,6 +194,30 @@ public class SrlEvaluator implements Evaluator {
 
     public double getF1() {
         return f1;
+    }
+
+    public int getNumCorrectPositive() {
+        return numCorrectPositive;
+    }
+
+    public int getNumCorrectNegative() {
+        return numCorrectNegative;
+    }
+
+    public int getNumPredictPositive() {
+        return numPredictPositive;
+    }
+
+    public int getNumTruePositive() {
+        return numTruePositive;
+    }
+
+    public int getNumInstances() {
+        return numInstances;
+    }
+
+    public int getNumMissing() {
+        return numMissing;
     }
     
 }

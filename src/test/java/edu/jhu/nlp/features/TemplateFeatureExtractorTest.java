@@ -119,8 +119,8 @@ public class TemplateFeatureExtractorTest {
         // 
         testPositionModifiersHelper(6, PositionModifier.LOW_SV, "ser");
         testPositionModifiersHelper(6, PositionModifier.HIGH_SV, "Resultaban");
-        testPositionModifiersHelper(6, PositionModifier.LOW_SN, "BEGIN_NO_FORM");
-        testPositionModifiersHelper(6, PositionModifier.HIGH_SN, "BEGIN_NO_FORM");
+        testPositionModifiersHelper(6, PositionModifier.LOW_SN, "BOS");
+        testPositionModifiersHelper(6, PositionModifier.HIGH_SN, "BOS");
         testPositionModifiersHelper(1, PositionModifier.LOW_SV, "Resultaban");
         testPositionModifiersHelper(1, PositionModifier.HIGH_SV, "Resultaban");        
     }
@@ -171,45 +171,74 @@ public class TemplateFeatureExtractorTest {
         // 
         assertEquals("Resultaban", extr.getTokProp(TokProperty.WORD, 1));
         assertEquals("resultaban", extr.getTokProp(TokProperty.LC, 1));
-        assertEquals("Resul", extr.getTokProp(TokProperty.CHPRE5, 1));
         assertEquals("UC", extr.getTokProp(TokProperty.CAPITALIZED, 1));
+        // 
+        assertEquals("R", extr.getTokProp(TokProperty.CHPRE1, 1));
+        assertEquals("Re", extr.getTokProp(TokProperty.CHPRE2, 1));
+        assertEquals("Res", extr.getTokProp(TokProperty.CHPRE3, 1));
+        assertEquals("Resu", extr.getTokProp(TokProperty.CHPRE4, 1));
+        assertEquals("Resul", extr.getTokProp(TokProperty.CHPRE5, 1));
+        assertEquals("taban", extr.getTokProp(TokProperty.CHSUF5, 1));
+        assertEquals("n", extr.getTokProp(TokProperty.CHSUF1, 1));
+        assertEquals("an", extr.getTokProp(TokProperty.CHSUF2, 1));
+        assertEquals("ban", extr.getTokProp(TokProperty.CHSUF3, 1));
+        assertEquals("aban", extr.getTokProp(TokProperty.CHSUF4, 1));
+        assertEquals("taban", extr.getTokProp(TokProperty.CHSUF5, 1));
     }
     
     @Test
     public void testBosProperties() {
         TemplateFeatureExtractor extr = getCoNLLSentenceExtractor1();
-        assertEquals("BEGIN_NO_FORM", extr.getTokProp(TokProperty.WORD, -1));
-        assertEquals("BEGIN_NO_LEMMA", extr.getTokProp(TokProperty.LEMMA, -1));
-        assertEquals("BEGIN_NO_POS", extr.getTokProp(TokProperty.POS, -1));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO, -1));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO1, -1));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO2, -1));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO3, -1));
-        assertEquals("BEGIN", extr.getTokProp(TokProperty.BC0, -1));
-        assertEquals("BEGIN_NO_CLUSTER", extr.getTokProp(TokProperty.BC1, -1));
-        assertEquals("BEGIN_NO_DEPREL", extr.getTokProp(TokProperty.DEPREL, -1));
-        assertEquals("UNK-CAPS", extr.getTokProp(TokProperty.UNK, -1));
-        assertEquals("begin_no_form", extr.getTokProp(TokProperty.LC, -1));
-        assertEquals("BEGIN_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE5, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.WORD, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.LEMMA, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.POS, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO1, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO2, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO3, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.BC0, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.BC1, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.DEPREL, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.UNK, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.LC, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE1, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE2, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE3, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE4, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE5, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHSUF1, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHSUF2, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHSUF3, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHSUF4, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CHSUF5, -1));
     }
     
     @Test    
     public void testEosProperties() {
         TemplateFeatureExtractor extr = getCoNLLSentenceExtractor1();
         int n = CoNLL09SentencesForTests.getSpanishConll09Sentence1().size();
-        assertEquals("END_NO_FORM", extr.getTokProp(TokProperty.WORD, n));
-        assertEquals("END_NO_LEMMA", extr.getTokProp(TokProperty.LEMMA, n));
-        assertEquals("END_NO_POS", extr.getTokProp(TokProperty.POS, n));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO, n));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO1, -1));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO2, -1));
-        assertEquals("NO_MORPH", extr.getTokProp(TokProperty.MORPHO3, -1));
-        assertEquals("END_N", extr.getTokProp(TokProperty.BC0, n));
-        assertEquals("END_NO_CLUSTER", extr.getTokProp(TokProperty.BC1, n));
-        assertEquals("END_NO_DEPREL", extr.getTokProp(TokProperty.DEPREL, n));
-        assertEquals("UNK-CAPS", extr.getTokProp(TokProperty.UNK, n));
-        assertEquals("end_no_form", extr.getTokProp(TokProperty.LC, n));
-        assertEquals("END_NO_PREFIX", extr.getTokProp(TokProperty.CHPRE5, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.WORD, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.LEMMA, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.POS, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO1, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO2, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO3, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.BC0, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.BC1, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.DEPREL, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.UNK, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.LC, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE1, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE2, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE3, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE4, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE5, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHSUF1, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHSUF2, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHSUF3, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHSUF4, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CHSUF5, n));
     }
     
     @Test
@@ -258,7 +287,7 @@ public class TemplateFeatureExtractorTest {
         testPositionListsHelper(2, 4, PositionList.PATH_P_C, "lo_UP_hicieron_DOWN__", true);
         testPositionListsHelper(2, 3, PositionList.PATH_C_LCA, "que_UP_hicieron", true);
         testPositionListsHelper(2, 3, PositionList.PATH_P_LCA, "lo_UP_hicieron", true);
-        testPositionListsHelper(2, 3, PositionList.PATH_LCA_ROOT, "hicieron_UP_es_UP_BEGIN_NO_FORM", true);
+        testPositionListsHelper(2, 3, PositionList.PATH_LCA_ROOT, "hicieron_UP_es_UP_BOS", true);
         
         testPositionListsHelper(2, 3, PositionList.LINE_P_C, "lo_que", false);
         testPositionListsHelper(2, 2, PositionList.LINE_P_C, "lo", false);
@@ -342,13 +371,23 @@ public class TemplateFeatureExtractorTest {
         testOtherFeaturesHelper(2, 4, OtherFeat.DISTANCE, "2");
         testOtherFeaturesHelper(4, 2, OtherFeat.DISTANCE, "2");
         //
-        testOtherFeaturesHelper(5, 3, OtherFeat.GENEOLOGY, "parent");
-        testOtherFeaturesHelper(3, 5, OtherFeat.GENEOLOGY, "child");
-        testOtherFeaturesHelper(1, 2, OtherFeat.GENEOLOGY, "ancestor");
-        testOtherFeaturesHelper(2, 1, OtherFeat.GENEOLOGY, "descendent");
-        testOtherFeaturesHelper(0, 2, OtherFeat.GENEOLOGY, "cousin");
-        testOtherFeaturesHelper(2, 0, OtherFeat.GENEOLOGY, "cousin");
-        testOtherFeaturesHelper(4, 2, OtherFeat.GENEOLOGY, "sibling");
+        testOtherFeaturesHelper(5, 3, OtherFeat.UNDIR_EDGE, "T");
+        testOtherFeaturesHelper(3, 5, OtherFeat.UNDIR_EDGE, "T");
+        testOtherFeaturesHelper(1, 2, OtherFeat.UNDIR_EDGE, "F");
+        testOtherFeaturesHelper(2, 1, OtherFeat.UNDIR_EDGE, "F");
+        testOtherFeaturesHelper(-1, 2, OtherFeat.UNDIR_EDGE, "F");
+        //
+        testOtherFeaturesHelper(5, 3, OtherFeat.DIR_EDGE, "T");
+        testOtherFeaturesHelper(3, 5, OtherFeat.DIR_EDGE, "F");
+        testOtherFeaturesHelper(-1, 5, OtherFeat.DIR_EDGE, "F");
+        //
+        testOtherFeaturesHelper(5, 3, OtherFeat.GENEOLOGY, "PARENT");
+        testOtherFeaturesHelper(3, 5, OtherFeat.GENEOLOGY, "CHILD");
+        testOtherFeaturesHelper(1, 2, OtherFeat.GENEOLOGY, "ANCESTOR");
+        testOtherFeaturesHelper(2, 1, OtherFeat.GENEOLOGY, "DESCENDENT");
+        testOtherFeaturesHelper(0, 2, OtherFeat.GENEOLOGY, "COUSIN");
+        testOtherFeaturesHelper(2, 0, OtherFeat.GENEOLOGY, "COUSIN");
+        testOtherFeaturesHelper(4, 2, OtherFeat.GENEOLOGY, "SIBLING");
         //
         testOtherFeaturesHelper(4, 2, OtherFeat.PATH_LEN, "2"); // is 3
         testOtherFeaturesHelper(2, 4, OtherFeat.PATH_LEN, "2"); // is 3
@@ -357,9 +396,9 @@ public class TemplateFeatureExtractorTest {
         // 
         testOtherFeaturesHelper(0, 0, OtherFeat.SENT_LEN, "5"); // is 7
         //
-        testOtherFeaturesHelper(4, 2, OtherFeat.RELATIVE, "after");
-        testOtherFeaturesHelper(2, 2, OtherFeat.RELATIVE, "on");
-        testOtherFeaturesHelper(2, 4, OtherFeat.RELATIVE, "before");
+        testOtherFeaturesHelper(4, 2, OtherFeat.RELATIVE, "AFTER");
+        testOtherFeaturesHelper(2, 2, OtherFeat.RELATIVE, "ON");
+        testOtherFeaturesHelper(2, 4, OtherFeat.RELATIVE, "BEFORE");
     }
 
     private void testOtherFeaturesHelper(int pidx, int cidx, OtherFeat f, String expectedVal) {

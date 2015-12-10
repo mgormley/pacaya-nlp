@@ -29,9 +29,9 @@ import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -69,7 +69,7 @@ public class JointNlpFgExamplesBuilderTest {
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
         
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
-        prm.fePrm.srlFePrm.biasOnly = true;
+        prm.fgPrm.srlPrm.srlFePrm.biasOnly = true;
 
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
@@ -96,7 +96,7 @@ public class JointNlpFgExamplesBuilderTest {
         }
         cs.init(simpleSents);        
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.biasOnly = true;
+        prm.fgPrm.srlPrm.srlFePrm.biasOnly = true;
         //prm.includeUnsupportedFeatures = 
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
 
@@ -138,9 +138,9 @@ public class JointNlpFgExamplesBuilderTest {
 
         cs.init(simpleSents);
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.useTemplates = true;
-        prm.fePrm.srlFePrm.soloTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
-        prm.fePrm.srlFePrm.pairTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
+        prm.fgPrm.srlPrm.srlFePrm.useTemplates = true;
+        prm.fgPrm.srlPrm.srlFePrm.senseTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
+        prm.fgPrm.srlPrm.srlFePrm.argTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         
         {
@@ -211,7 +211,7 @@ public class JointNlpFgExamplesBuilderTest {
         cs.init(simpleSents);        
         
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.biasOnly = true;
+        prm.fgPrm.srlPrm.srlFePrm.biasOnly = true;
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
 
@@ -251,7 +251,7 @@ public class JointNlpFgExamplesBuilderTest {
         cs.init(simpleSents);        
         
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
-        prm.fePrm.srlFePrm.biasOnly = true;
+        prm.fgPrm.srlPrm.srlFePrm.biasOnly = true;
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.srlPrm.predictSense = true;
         prm.fgPrm.srlPrm.predictPredPos = false;

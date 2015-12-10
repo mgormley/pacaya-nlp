@@ -55,7 +55,9 @@ public class RelationMunger implements Serializable {
         @Opt(hasArg = true, description = "Whether ReConcreteReader should create a separate sentence for each relation.")
         public boolean makeRelSingletons = true;    
         @Opt(hasArg = true, description = "Whether to look at the positive relations when constructing the named entity pairs.")
-        public boolean useRelationsForNePairs = true;  
+        public boolean nePairsFromPos = true;
+        @Opt(hasArg = true, description = "Whether to add pairs of entities with no relation when constructing the named entity pairs.")
+        public boolean nePairsFromNeg = true;
     }
 
     private static final long serialVersionUID = 1L;
@@ -165,12 +167,12 @@ public class RelationMunger implements Serializable {
 
             NerMentions nes = sent.getNamedEntities();
             RelationMentions rels = sent.getRelations();
-            if (prm.useRelationsForNePairs && rels == null) {
+            if (prm.nePairsFromPos && rels == null) {
                 // This setting is for a training setting that captures every relation in the annotated data.
                 // The relations must be present on both gold and input data.
                 throw new IllegalStateException("Relations are required when prm.useRelationsForNePairs is true");
             }
-            if (!prm.useRelationsForNePairs) {
+            if (!prm.nePairsFromPos) {
                 // Never consider the relations when constructing NE pairs.
                 rels = null;
             }
@@ -199,25 +201,27 @@ public class RelationMunger implements Serializable {
                     nePairs.add(new Pair<NerMention,NerMention>(ne1, ne2));
                 }
             }
-            // Add negative instances. 
-            //
-            // Iterate over all pairs of mentions, such that ne1 comes before ne2.
-            // This code assumes that the mentions are already in sorted order.
-            for (int i = 0; i < nes.size(); i++) {
-                NerMention ne1 = nes.get(i);
-                for (int j = i + 1; j < nes.size(); j++) {
-                    NerMention ne2 = nes.get(j);                    
-                    int numMentsBtwn = RelObsFe.getNumBtwn(sent, ne1, ne2);
-                    if (numMentsBtwn <= prm.maxInterveningEntities) {   
-                        if (rels != null) {
-                            // Only add if negative example, since we already added positive examples.
-                            String relation = getRelation(rels, ne1, ne2);
-                            if (getNoRelationLabel().equals(relation)) {
+            if (prm.nePairsFromNeg) { 
+                // Add negative instances. 
+                //
+                // Iterate over all pairs of mentions, such that ne1 comes before ne2.
+                // This code assumes that the mentions are already in sorted order.
+                for (int i = 0; i < nes.size(); i++) {
+                    NerMention ne1 = nes.get(i);
+                    for (int j = i + 1; j < nes.size(); j++) {
+                        NerMention ne2 = nes.get(j);                    
+                        int numMentsBtwn = RelObsFeatures.getNumBtwn(sent, ne1, ne2);
+                        if (numMentsBtwn <= prm.maxInterveningEntities) {   
+                            if (rels != null) {
+                                // Only add if negative example, since we already added positive examples.
+                                String relation = getRelation(rels, ne1, ne2);
+                                if (getNoRelationLabel().equals(relation)) {
+                                    nePairs.add(new Pair<NerMention,NerMention>(ne1, ne2));
+                                }
+                            } else {
+                                // Add all examples.
                                 nePairs.add(new Pair<NerMention,NerMention>(ne1, ne2));
                             }
-                        } else {
-                            // Add all examples.
-                            nePairs.add(new Pair<NerMention,NerMention>(ne1, ne2));
                         }
                     }
                 }

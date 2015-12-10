@@ -105,7 +105,7 @@ public class LogLikelihoodFactoryTest {
         prm.fgPrm.srlPrm.makeUnknownPredRolesLatent = false;
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
-        prm.fePrm.srlFePrm.biasOnly = true;
+        prm.fgPrm.srlPrm.srlFePrm.biasOnly = true;
         
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
@@ -326,7 +326,7 @@ public class LogLikelihoodFactoryTest {
         prm.fgPrm.dpPrm.useProjDepTreeFactor = true;
         //prm.fgPrm.dpPrm.grandparentFactors = true;
         prm.fgPrm.dpPrm.arbitrarySiblingFactors = true;
-        prm.fePrm.dpFePrm.featureHashMod = featureHashMod;
+        prm.fgPrm.dpPrm.dpFePrm.featureHashMod = featureHashMod;
         //prm.fePrm.dpFePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
         prm.exPrm.cacheType = CacheType.NONE;
         

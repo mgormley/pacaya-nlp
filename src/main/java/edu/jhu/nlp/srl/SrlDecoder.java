@@ -1,5 +1,8 @@
 package edu.jhu.nlp.srl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -23,6 +26,8 @@ import edu.jhu.pacaya.gm.model.VarConfig;
  */
 public class SrlDecoder implements Decoder<AnnoSentence, SrlGraph> {
 
+    private static final Logger log = LoggerFactory.getLogger(SrlDecoder.class);
+
     public static class SrlDecoderPrm {
         public MbrDecoderPrm mbrPrm = new MbrDecoderPrm();
     }
@@ -43,11 +48,10 @@ public class SrlDecoder implements Decoder<AnnoSentence, SrlGraph> {
     }
     
     public static SrlGraph getSrlGraphFromVarConfig(VarConfig vc, int n) {
-        int srlVarCount = 0;
-        
+        int srlVarCount = 0;        
         SrlGraph srlGraph = new SrlGraph(n);
         for (Var v : vc.getVars()) {
-            if (v instanceof RoleVar && v.getType() != VarType.LATENT) {
+            if (v instanceof RoleVar && v.getType() == VarType.PREDICTED) {
                 // Decode the Role var.
                 RoleVar role = (RoleVar) v;
                 String stateName = vc.getStateName(role);
@@ -86,11 +90,8 @@ public class SrlDecoder implements Decoder<AnnoSentence, SrlGraph> {
                 srlVarCount++;
             }
         }
-        if (srlVarCount > 0) {
-            return srlGraph;
-        } else {
-            return null;
-        }
+        log.trace("SRL var count: {}", srlVarCount);
+        return srlGraph;
     }
 
 }

@@ -24,10 +24,13 @@ import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.eval.DepParseAccuracy;
+import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.RelationEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
+import edu.jhu.nlp.fcm.FcmModule;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
@@ -79,9 +82,11 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     private static final Logger log = LoggerFactory.getLogger(JointNlpAnnotator.class);
     private JointNlpAnnotatorPrm prm;   
     private JointNlpFgModel model = null;
+    private Embeddings embeddings; // TODO: Remove this hack.
 
-    public JointNlpAnnotator(JointNlpAnnotatorPrm prm) {
+    public JointNlpAnnotator(JointNlpAnnotatorPrm prm, Embeddings embeddings) {
         this.prm = prm;
+        this.embeddings = embeddings;
     }
     
     @Override
@@ -99,11 +104,12 @@ public class JointNlpAnnotator implements Trainable, Annotator {
             cs = model.getCs();
             ofc.getTemplates().startGrowth();
         }
+        ofc.embeddings = embeddings;
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm.buPrm, ofc, cs, true);
         FgExampleList data = builder.getData(trainInput, trainGold);
         
         if (model == null) {
-            model = new JointNlpFgModel(cs, ofc, prm.buPrm.fePrm);
+            model = new JointNlpFgModel(cs, ofc, prm.buPrm.fgPrm);
             if (prm.initParams == InitParams.RANDOM) {
                 log.info("Initializing model with zero-one Gaussian.");
                 model.setRandomStandardNormal();
@@ -112,6 +118,11 @@ public class JointNlpAnnotator implements Trainable, Annotator {
                 // Do nothing.
             } else {
                 throw new RuntimeException("Parameter initialization method not implemented: " + prm.initParams);
+            }
+            
+            if (embeddings != null) {
+                log.info("Initializing the model with word embeddings.");
+                FcmModule.initModelWithEmbeds(embeddings, model, ofc);
             }
         } else {
             log.info("Using read model as initial parameters for training.");
@@ -130,12 +141,14 @@ public class JointNlpAnnotator implements Trainable, Annotator {
         final Evaluator eval;
         if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))) {
             eval = new DepParseAccuracy(prm.dpSkipPunctuation);
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.POS))) {
+            eval = new PosTagAccuracy();
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) || 
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
             SrlEvaluatorPrm evalPrm = new SrlEvaluatorPrm();
-            evalPrm.evalSense = prm.buPrm.fgPrm.srlPrm.predictSense;
-            evalPrm.evalPredicatePosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
+            evalPrm.evalPredSense = prm.buPrm.fgPrm.srlPrm.predictSense;
+            evalPrm.evalPredPosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
             evalPrm.evalRoles = (prm.buPrm.fgPrm.srlPrm.roleStructure != RoleStructure.NO_ROLES);
             eval = new SrlEvaluator(evalPrm);
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS)) ||
@@ -208,8 +221,8 @@ public class JointNlpAnnotator implements Trainable, Annotator {
     
     public void loadModel(JointNlpFgModel model) {
         this.model = model;
-        // Restore the feature extractor parameters from the serialized model.
-        prm.buPrm.fePrm = model.getFePrm();
+        // Restore the model settings from the serialized model.
+        prm.buPrm.fgPrm = model.getFgPrm();
     }
 
     public void saveModel(File modelOut) {

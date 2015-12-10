@@ -10,6 +10,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.conll.LanguageConstants;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -59,8 +60,8 @@ public class FeaturizedToken {
     private int lowSupportVerb;
     private int highSupportVerb;
     private int[] parents;
-    private ArrayList<Integer> children;
-    private ArrayList<Integer> noFarChildren;
+    private IntArrayList children;
+    private IntArrayList noFarChildren;
     /* Additional features owing to Bjorkelund al. 2009 */
     private boolean cachedSiblings = false;
     private int nearLeftSibling;
@@ -164,65 +165,11 @@ public class FeaturizedToken {
         return sent.getWord(idx);
     }
 
-    public String getPrefix() {
-        if (idx < 0) {
-            return "BEGIN_NO_PREFIX";
-        } else if (idx >= sent.size()) {
-            return "END_NO_PREFIX";
-        }
-        return sent.getPrefix(idx);
-    }
-    
-    public String getLemma() {
-        if (idx < 0) {
-            return "BEGIN_NO_LEMMA";
-        } else if (idx >= sent.size()) {
-            return "END_NO_LEMMA";
-        }
-        return sent.getLemma(idx);
-    }
-    
-    public String getPos() {
-        if (idx < 0) {
-            return "BEGIN_NO_POS";
-        } else if (idx >= sent.size()) {
-            return "END_NO_POS";
-        }
-        return sent.getPosTag(idx);
-    }
-
-    public String getCpos() {
-        if (idx < 0) {
-            return "BEGIN_NO_CPOS";
-        } else if (idx >= sent.size()) {
-            return "END_NO_CPOS";
-        }
-        return sent.getCposTag(idx);
-    }
-    
-    public String getCluster() {
-        if (idx < 0) {
-            return "BEGIN_NO_CLUSTER";
-        } else if (idx >= sent.size()) {
-            return "END_NO_CLUSTER";
-        }
-        return sent.getCluster(idx);
-    }
-    
-    public String getDeprel() {
-        if (idx < 0) {
-            return "BEGIN_NO_DEPREL";
-        } else if (idx >= sent.size()) {
-            return "END_NO_DEPREL";
-        }
-        return sent.getDeprel(idx);
-    }
-
     public int getParent() {
         if (idx < 0) {
             return -2;
         } else if (idx >= sent.size()) {
-            return -1;
+            return -3;
         }
         return sent.getParent(idx);
     }
@@ -244,7 +191,7 @@ public class FeaturizedToken {
         }
     }
     
-    public ArrayList<Integer> getChildren() {
+    public IntArrayList getChildren() {
         ensureChildren();
         return children;
     }
@@ -292,10 +239,11 @@ public class FeaturizedToken {
     private void cacheFarthestNearestChildren() {
         ensureChildren();
         // Farthest and nearest child to the left; farthest and nearest child to the right.
-        ArrayList<Integer> leftChildren = new ArrayList<Integer>();
-        ArrayList<Integer> rightChildren = new ArrayList<Integer>();
+        IntArrayList leftChildren = new IntArrayList();
+        IntArrayList rightChildren = new IntArrayList();
         // Go through children in order
-        for (int child : children) {
+        for (int i=0; i<children.size(); i++) {
+            int child = children.get(i);
             if (child < idx) {
                 leftChildren.add(child);
             } else if (child > idx) {
@@ -322,7 +270,7 @@ public class FeaturizedToken {
 
     }
     
-    public ArrayList<Integer> getNoFarChildren() {
+    public IntArrayList getNoFarChildren() {
         if (noFarChildren == null) {
             cacheNoFarChildren();
         }
@@ -334,7 +282,7 @@ public class FeaturizedToken {
      * excludes the left most and the right most children (noFarChildren). */
     private void cacheNoFarChildren() {
         ensureChildren();
-        this.noFarChildren = new ArrayList<Integer>();
+        this.noFarChildren = new IntArrayList();
         // Go through children in order
         for (int i=0; i<children.size(); i++) {
             int child = children.get(i);
@@ -446,16 +394,6 @@ public class FeaturizedToken {
             }
         }
         cachedSiblings = true;
-    }
-
-    public ParentsArray.Dir getDirection() {
-        return direction;
-    }
-
-    // TODO: Remove this when possible.
-    @Deprecated
-    public void setDirection(ParentsArray.Dir dir) {
-        this.direction = dir;
     }
 
     // Package private accessor for FeaturizedTokenPair

@@ -9,8 +9,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpEncoderPrm;
-import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleList;
@@ -38,8 +37,7 @@ public class JointNlpFgExamplesBuilder {
         private static final long serialVersionUID = 1L;
         public FgExamplesBuilderPrm exPrm = new FgExamplesBuilderPrm();
         // TODO: Switch fgPrm and fePrm to: public JointNlpEncoderPrm jePrm = new JointNlpEncoderPrm();
-        public JointFactorGraphPrm fgPrm = new JointFactorGraphPrm();
-        public JointNlpFeatureExtractorPrm fePrm = new JointNlpFeatureExtractorPrm();
+        public JointNlpFactorGraphPrm fgPrm = new JointNlpFactorGraphPrm();
     }
     
     private static final Logger log = LoggerFactory.getLogger(JointNlpFgExamplesBuilder.class);
@@ -60,7 +58,6 @@ public class JointNlpFgExamplesBuilder {
         this.cs = cs;
         this.labeledExamples = labeledExamples;
         this.jePrm = new JointNlpEncoderPrm();
-        jePrm.fePrm = prm.fePrm;
         jePrm.fgPrm = prm.fgPrm;
     }
     

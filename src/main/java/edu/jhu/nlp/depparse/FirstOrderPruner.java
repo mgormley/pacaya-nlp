@@ -13,22 +13,19 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
-import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.joint.JointNlpFgModel;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
-import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.collections.QSets;
@@ -59,20 +56,8 @@ public class FirstOrderPruner implements Annotator {
         
         ObsFeatureConjoiner ofc = model.getOfc();
         CorpusStatistics cs = model.getCs();
-        JointNlpFeatureExtractorPrm fePrm = model.getFePrm();   
-
-        // Get configuration for first-order pruning model.
-        exPrm.fgPrm.includeSrl = false;
-        exPrm.fgPrm.dpPrm = new DepParseFactorGraphBuilderPrm();
-        exPrm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
-        exPrm.fgPrm.dpPrm.grandparentFactors = false;
-        exPrm.fgPrm.dpPrm.arbitrarySiblingFactors = false;
-        exPrm.fgPrm.dpPrm.unaryFactors = true;
-        exPrm.fgPrm.dpPrm.useProjDepTreeFactor = true;
-        // TODO: This should only be true if we already ran a pruner before this one.
-        exPrm.fgPrm.dpPrm.pruneEdges = true;
-        exPrm.fePrm = fePrm;
-                
+        exPrm.fgPrm = model.getFgPrm();   
+        
         final BeliefPropagationPrm bpPrm = new BeliefPropagationPrm();
         bpPrm.s = LogSemiring.getInstance();
         bpPrm.schedule = BpScheduleType.TREE_LIKE;

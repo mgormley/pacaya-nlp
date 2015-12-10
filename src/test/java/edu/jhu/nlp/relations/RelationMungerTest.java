@@ -36,7 +36,7 @@ public class RelationMungerTest {
         RelationMungerPrm prm = new RelationMungerPrm();
         prm.useRelationSubtype = true;
         prm.predictArgRoles = true;
-        prm.useRelationsForNePairs = false;
+        prm.nePairsFromPos = false;
         RelationMunger munger = new RelationMunger(prm);
         RelationDataPreproc pre = munger.getDataPreproc(); 
         pre.addNePairsAndMaybeRelLabels(sent);
@@ -139,7 +139,7 @@ public class RelationMungerTest {
         }
     }
 
-    private static AnnoSentence getSentWithRelationsAndNer() {
+    public static AnnoSentence getSentWithRelationsAndNer() {
         // Create Sentence with RELATIONS and NER.
         AnnoSentence sent = new AnnoSentence();
         int n = 5;

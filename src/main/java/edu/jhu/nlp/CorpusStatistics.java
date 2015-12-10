@@ -71,6 +71,7 @@ public class CorpusStatistics implements Serializable {
     public List<String> linkStateNames;
     public List<String> roleStateNames;
     public List<String> relationStateNames;
+    public List<String> posTagStateNames;
     // Mapping from predicate form to the set of predicate senses.
     public Map<String,List<String>> predSenseListMap = new HashMap<String,List<String>>();
 
@@ -120,6 +121,7 @@ public class CorpusStatistics implements Serializable {
         // However, removing this messes up what we assume as default.
         knownRoles.add("_");
         int numTruePosRels = 0;
+        int numRels = 0;
         for (AnnoSentence sent : cr) {
             // Need to know max sent length because distance features
             // use these values explicitly; an unknown sentence length in
@@ -155,7 +157,9 @@ public class CorpusStatistics implements Serializable {
                 }
                 for (SrlPred pred : sent.getSrlGraph().getPreds()) {
                     int position = pred.getPosition();
-                    String lemma = sent.getLemma(position);
+                    // If we don't have lemmas, then this is a map from underscore to all possible
+                    // predicate senses.
+                    String lemma = (sent.getLemmas() != null) ? sent.getLemma(position) : "_";
                     Set<String> senses = predSenseSetMap.get(lemma);
                     if (senses == null) {
                         senses = new TreeSet<String>();
@@ -169,8 +173,12 @@ public class CorpusStatistics implements Serializable {
             if (sent.getNamedEntities() != null) {
                 for (int k=0; k<sent.getNamedEntities().size(); k++) {
                     NerMention ne = sent.getNamedEntities().get(k);
-                    knownNeTypes.add(ne.getEntityType());
-                    knownNeSubtypes.add(ne.getEntityType() + ":" + ne.getEntitySubType());
+                    if (ne.getEntityType() != null) {
+                        knownNeTypes.add(ne.getEntityType());
+                        if (ne.getEntitySubType() != null) {
+                            knownNeSubtypes.add(ne.getEntityType() + ":" + ne.getEntitySubType());
+                        }
+                    }
                 }
             }
             
@@ -182,6 +190,7 @@ public class CorpusStatistics implements Serializable {
                     if (!RelationMunger.isNoRelationLabel(relation)) {
                     	numTruePosRels++;
                     }
+                    numRels++;
                 }
             }
         }
@@ -192,9 +201,10 @@ public class CorpusStatistics implements Serializable {
         
         topNWords = getTopNUnigrams(words, prm.topN, prm.cutoff);
         
-        this.linkStateNames = new ArrayList<String>(knownLinks);
-        this.roleStateNames =  new ArrayList<String>(knownRoles);
-        this.relationStateNames =  new ArrayList<String>(knownRelations);
+        this.linkStateNames = new ArrayList<>(knownLinks);
+        this.roleStateNames =  new ArrayList<>(knownRoles);
+        this.relationStateNames =  new ArrayList<>(knownRelations);
+        this.posTagStateNames = new ArrayList<>(knownPostags);
         for (Entry<String,Set<String>> entry : predSenseSetMap.entrySet()) {
             predSenseListMap.put(entry.getKey(), new ArrayList<String>(entry.getValue()));
         }
@@ -206,6 +216,7 @@ public class CorpusStatistics implements Serializable {
         log.info("Found {} NER types: {}", knownNeTypes.size(), knownNeTypes);
         log.info("Found {} Relation types: {}", relationStateNames.size(), relationStateNames);        
         log.info("Num true positive relations: " + numTruePosRels);
+        log.info("Num relations: " + numRels);
     }
     
     // ------------------- private ------------------- //

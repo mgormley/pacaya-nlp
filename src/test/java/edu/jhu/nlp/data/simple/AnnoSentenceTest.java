@@ -42,4 +42,11 @@ public class AnnoSentenceTest {
         return sent;
     }
     
+    @Test
+    public void testSetSrlGraphToNull() {
+        // Check that we can set it to null without an error.
+        AnnoSentence sent = new AnnoSentence();
+        sent.setSrlGraph(null);
+    }
+    
 }

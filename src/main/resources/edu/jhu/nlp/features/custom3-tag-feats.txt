@@ -1,0 +1,32 @@
+# This is a simple feature set defined for POS tagging.
+# 
+# The original feature set here was inspired by Toutenova et al. (2003).
+#
+# The reduced feature set below (i.e. the choice of which features to comment out) 
+# was inspired by Matthew Honnibal's POS tagger in 200 lines of Python.
+#
+# See: https://honnibal.wordpress.com/2013/09/11/a-good-part-of-speechpos-tagger-in-about-200-lines-of-python/
+
+# Words
+word(p)
+word(-1(p))
+word(-2(p))
+word(1(p))
+word(2(p))
+
+# Other properties
+capitalized(p)
+
+# 1-char prefixes
+chpre1(p)
+chpre1(-1(p))
+chpre1(1(p))
+chpre1(-2(p))
+chpre1(2(p))
+
+# 3-char suffixes
+chsuf3(p)
+chsuf3(-1(p))
+chsuf3(1(p))
+chsuf3(-2(p))
+chsuf3(2(p))

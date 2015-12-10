@@ -25,7 +25,6 @@ import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.collections.QMaps;
 import edu.jhu.pacaya.util.semiring.RealAlgebra;
-import edu.jhu.prim.tuple.Pair;
 
 public class DepParseDecoderTest {
     
@@ -35,11 +34,9 @@ public class DepParseDecoderTest {
     FgInferencer inf;
     FactorGraph fg;
     EdgeScores scores;
-    int linkVarCount;
 
     @Before
     public void setUp() {
-        boolean logDomain = true;
         n = 3;       
         margs = new ArrayList<VarTensor>();
         vars = new ArrayList<Var>();
@@ -68,15 +65,18 @@ public class DepParseDecoderTest {
             fg.addVar(var);
         }
         // Create the EdgeScores.
-        Pair<EdgeScores, Integer> pair = DepParseDecoder.getEdgeScores(inf, fg, n);
-        scores = pair.get1();
-        linkVarCount = pair.get2();
+        scores = DepParseDecoder.getEdgeScores(inf, fg, n);
     }
-    
-    @Test 
+
+    @Test
+    public void testGetParents() {
+        int[] parents = DepParseDecoder.getParents(scores);
+        System.out.println(Arrays.toString(parents));
+        Assert.assertArrayEquals(new int[] { 1, -1, 1 }, parents);
+    }
+
+    @Test
     public void testGetEdgeScores() {
-        
-        assertEquals(3*3, linkVarCount);
         assertEquals(0.7, scores.getScore(-1, 1), 1e-13);
         assertEquals(0.7, scores.getScore(1, 0), 1e-13);
         assertEquals(0.7, scores.getScore(1, 2), 1e-13);
@@ -84,13 +84,6 @@ public class DepParseDecoderTest {
         assertEquals(0.3, scores.getScore(-1, 0), 1e-13);
         assertEquals(0.3, scores.getScore(2, 1), 1e-13);
         assertEquals(0.3, scores.getScore(2, 0), 1e-13);
-    }
-    
-    @Test
-    public void testGetParents() { 
-        int[] parents = DepParseDecoder.getParents(scores);
-        System.out.println(Arrays.toString(parents));
-        Assert.assertArrayEquals(new int[]{1, -1, 1}, parents);
     }
     
     @Test

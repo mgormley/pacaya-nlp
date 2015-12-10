@@ -10,6 +10,7 @@ import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseDecoder;
@@ -221,24 +222,21 @@ public class DepParseFirstVsSecondOrderSpeedTest {
 
     public static UFgExample get2ndOrderFg(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc, int numParams, boolean onlyFast) {
         FactorGraph fg = new FactorGraph();
-        DepParseFeatureExtractorPrm fePrm = new DepParseFeatureExtractorPrm();
-        fePrm.featureHashMod = numParams;
-        fePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
-        BitshiftDepParseFeatureExtractorPrm bsFePrm = new BitshiftDepParseFeatureExtractorPrm();
-        bsFePrm.featureHashMod = numParams;
-        bsFePrm.useMstFeats = true;
-        bsFePrm.useCarerrasFeats = true;
-        FeatureExtractor fe = onlyFast?
-                new BitshiftDepParseFeatureExtractor(bsFePrm, sent, cs, ofc) :
-                new DepParseFeatureExtractor(fePrm, sent, cs, ofc.getFeAlphabet());
         
         DepParseFactorGraphBuilderPrm fgPrm = new DepParseFactorGraphBuilderPrm();
         fgPrm.useProjDepTreeFactor = true;        
         fgPrm.grandparentFactors = true;
         fgPrm.arbitrarySiblingFactors = true;    
         fgPrm.pruneEdges = true;
+        fgPrm.dpFePrm.featureHashMod = numParams;
+        fgPrm.dpFePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
+        fgPrm.bsDpFePrm.featureHashMod = numParams;
+        fgPrm.bsDpFePrm.useMstFeats = true;
+        fgPrm.bsDpFePrm.useCarerrasFeats = true;
+        
+        IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
-        builder.build(sent, fe, fg);
+        builder.build(isent, fg, cs, ofc);
         
         UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;
@@ -334,20 +332,17 @@ public class DepParseFirstVsSecondOrderSpeedTest {
     
     public static UFgExample get2ndOrderGraOnlyFg(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc, int numParams, boolean onlyFast) {
         FactorGraph fg = new FactorGraph();
-        DepParseFeatureExtractorPrm fePrm = new DepParseFeatureExtractorPrm();
-        fePrm.featureHashMod = numParams;
-        fePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
-        BitshiftDepParseFeatureExtractorPrm bsFePrm = new BitshiftDepParseFeatureExtractorPrm();
-        bsFePrm.featureHashMod = numParams;
-        FeatureExtractor fe = onlyFast?
-                new BitshiftDepParseFeatureExtractor(bsFePrm, sent, cs, ofc) :
-                new DepParseFeatureExtractor(fePrm, sent, cs, ofc.getFeAlphabet());
-        
+
         DepParseFactorGraphBuilderPrm fgPrm = new DepParseFactorGraphBuilderPrm();
         fgPrm.grandparentFactors = false;
-        fgPrm.arbitrarySiblingFactors = false;    
+        fgPrm.arbitrarySiblingFactors = false;  
+        fgPrm.dpFePrm.featureHashMod = numParams;
+        fgPrm.dpFePrm.firstOrderTpls = TemplateSets.getFromResource(TemplateSets.mcdonaldDepFeatsResource);
+        fgPrm.bsDpFePrm.featureHashMod = numParams;
+
+        IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(fgPrm);
-        builder.build(sent, fe, fg);
+        builder.build(isent, fg, cs, ofc);
         
         UnlabeledFgExample ex = new UnlabeledFgExample(fg);
         return ex;

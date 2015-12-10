@@ -34,7 +34,9 @@ public class TemplateLanguage {
         
     /** Word property. A mapping from a position to a string. */
     public enum TokProperty {
-        INDEX, WORD, LEMMA, POS, CPOS, BC0, BC1, MORPHO, DEPREL, LC, UNK, CHPRE5, CAPITALIZED, WORD_TOP_N,
+        INDEX, WORD, LEMMA, POS, CPOS, BC0, BC1, MORPHO, DEPREL, LC, UNK, CAPITALIZED, WORD_TOP_N,
+        CHPRE1, CHPRE2, CHPRE3, CHPRE4, CHPRE5,
+        CHSUF1, CHSUF2, CHSUF3, CHSUF4, CHSUF5,
         //
         MORPHO1, MORPHO2, MORPHO3;        
     }
@@ -95,7 +97,7 @@ public class TemplateLanguage {
      * feature.
      */
     public enum OtherFeat {
-        RELATIVE, DISTANCE, GENEOLOGY, PATH_LEN, CONTINUITY, PATH_GRAMS, SENT_LEN,
+        RELATIVE, DISTANCE, UNDIR_EDGE, DIR_EDGE, GENEOLOGY, PATH_LEN, CONTINUITY, PATH_GRAMS, SENT_LEN,
         //
         RULE_IS_UNARY;
         // TODO: Not implemented:
@@ -131,7 +133,7 @@ public class TemplateLanguage {
      * be present in order to utilize each structure.
      */
     public enum AT {
-        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED, MORPHO, CHUNKS, DEP_TREE, DEPREL, 
+        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED_IDX, MORPHO, CHUNKS, DEP_TREE, DEPREL, 
         DEP_EDGE_MASK, SRL_PRED_IDX, SRL, NARY_TREE, NER, NE_PAIRS, RELATIONS, REL_LABELS;
     }
         
@@ -221,10 +223,21 @@ public class TemplateLanguage {
         desc(TokProperty.DEPREL, "deprel", "Dependency relation to head", AT.DEPREL);
         desc(TokProperty.LC, "lc", "Lower-cased word", AT.WORD);
         desc(TokProperty.UNK, "unk", "Unknown word class", AT.WORD);
-        desc(TokProperty.CHPRE5, "chpre5", "5-character prefix of a word", AT.WORD);
         desc(TokProperty.CAPITALIZED, "capitalized", "Whether this word starts with a capital letter", AT.WORD);
         desc(TokProperty.WORD_TOP_N, "wordTopN", "Word if it's in the top N", AT.WORD);
         desc(TokProperty.INDEX, "index", "The position itself", AT.WORD);
+
+        desc(TokProperty.CHPRE1, "chpre1", "1-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE2, "chpre2", "2-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE3, "chpre3", "3-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE4, "chpre4", "4-character prefix of a word", AT.WORD);
+        desc(TokProperty.CHPRE5, "chpre5", "5-character prefix of a word", AT.WORD);
+
+        desc(TokProperty.CHSUF1, "chsuf1", "1-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF2, "chsuf2", "2-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF3, "chsuf3", "3-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF4, "chsuf4", "4-character suffix of a word", AT.WORD);
+        desc(TokProperty.CHSUF5, "chsuf5", "5-character suffix of a word", AT.WORD);
         
         desc(TokProperty.MORPHO1, "morpho1", "Morphological feature 1", AT.MORPHO);
         desc(TokProperty.MORPHO2, "morpho2", "Morphological feature 2", AT.MORPHO);
@@ -281,14 +294,17 @@ public class TemplateLanguage {
         /** List Modifiers. Mapping of a list of strings to a new list of strings. */
         desc(ListModifier.SEQ, "seq", "Identity function.");
         desc(ListModifier.BAG, "bag", "List to set.");
-        desc(ListModifier.NO_DUP, "noDup", "Unix “uniq” on original list.");
+        desc(ListModifier.NO_DUP, "noDup", "Unix 'uniq' on original list.");
         desc(ListModifier.UNIGRAM, "1gram", "Creates a separate feature for each element of the list.");
         desc(ListModifier.BIGRAM, "2gram", "Creates a separate feature for each bigram in the list.");
         desc(ListModifier.TRIGRAM, "3gram", "Creates a separate feature for each trigram in the list.");
         
         /** Additional Features. Mapping from parent and child positions to a feature. */
+        // TODO: the first few templates below should be properties of a word pair. 
         desc(OtherFeat.RELATIVE, "relative(p,c)", "Relative position of p and c: before, after, on.", AT.WORD);
         desc(OtherFeat.DISTANCE, "distance(p,c)", "Distance binned into greater than: 2, 5, 10, 20, 30, or 40", AT.WORD);
+        desc(OtherFeat.UNDIR_EDGE, "undiredge(p,c)", "Whether there is an undirected edge connecting p and c", AT.DEP_TREE);
+        desc(OtherFeat.DIR_EDGE, "diredge(p,c)", "Whether there is a directed edge connecting p and c", AT.DEP_TREE);
         desc(OtherFeat.GENEOLOGY, "geneology(p,c)", "geneological relationship between p and c in a syntactic parse: parent, child, ancestor, descendent.", AT.DEP_TREE);
         desc(OtherFeat.PATH_LEN, "len(path(p,c))", "Path length binned into greater than: 2, 5, 10, 20, 30, or 40", AT.DEP_TREE);
         desc(OtherFeat.PATH_GRAMS, "pathGrams", "$1,2,3$-gram path features of words/POS tags", AT.DEP_TREE);
@@ -306,7 +322,7 @@ public class TemplateLanguage {
                 log.warn("Multiple structures with the same name: " + d.getName());
             }
             nameDescMap.put(d.getName(), d);
-        }        
+        }
     }
     
     /** Feature function description. */
@@ -361,6 +377,7 @@ public class TemplateLanguage {
 
     public static abstract class FeatTemplate implements Serializable {
         protected String name;
+        protected int id;
         private static final long serialVersionUID = 1L;
         public FeatTemplate() { }
         public String getName() {
@@ -368,6 +385,13 @@ public class TemplateLanguage {
                 name = getNameFromDesc(this);
             }
             return name;
+        }
+        public int getId() {
+            if (id == 0) {
+                id = getName().hashCode();
+                if (id == 0) { id = -7; }
+            }
+            return id;
         }
         public abstract List<Enum<?>> getStructure();
         public String toString() {
@@ -386,9 +410,9 @@ public class TemplateLanguage {
     
     /**
      * For feature templates of the form: 
-     *     p.bc1
-     *     c_{head}.dr
-     *     first(t, NOUN, path(p, root)).bc0
+     *     bc1(p)
+     *     dr(head(c))
+     *     bc0(first(t, NOUN, path(p, root)))
      */
     public static class FeatTemplate1 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -413,7 +437,7 @@ public class TemplateLanguage {
     
     /**
      * For feature templates of the form: 
-     *     p.morpho
+     *     morpho(p)
      * which extract multiple features of a single token.
      */
     public static class FeatTemplate2 extends FeatTemplate {
@@ -439,9 +463,9 @@ public class TemplateLanguage {
 
     /**
      * For feature templates of the form: 
-     *    path(lca(p,c),root).bc0+dir.noDup
-     *    children(p).bc0.seq
-     *    line(p,c).t.noDup
+     *    noDup(bc0+dir(path(lca(p,c),root)))
+     *    seq(bc0(children(p)))
+     *    noDup(t(line(p,c)))
      */
     public static class FeatTemplate3 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -469,8 +493,8 @@ public class TemplateLanguage {
     
     /**
      * For feature templates of the form: 
-     *     ruleP.tag
-     *     ruleLc.bTag
+     *     tag(ruleP)
+     *     bTag(ruleLc)
      */
     public static class FeatTemplate4 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -515,9 +539,9 @@ public class TemplateLanguage {
         
     /**
      * For n-gram feature templates of the form:
-     *     p.w + c_{-1}.bc0
-     *     p.t + c.t
-     *     p.t + c.t + p.w
+     *     w(p) + bc0(-1(c))
+     *     t(p) + t(c)
+     *     t(p) + t(c) + w(p)
      */
     public static class JoinTemplate extends FeatTemplate {
         private static final long serialVersionUID = 1L;
@@ -618,7 +642,7 @@ public class TemplateLanguage {
     }
 
     /** Filters out feature templates which contain the specified enum. */
-    public static ArrayList<FeatTemplate> filterOutFeats(ArrayList<FeatTemplate> tpls, Enum<?> enumMatch) {
+    public static List<FeatTemplate> filterOutFeats(List<FeatTemplate> tpls, Enum<?> enumMatch) {
         ArrayList<FeatTemplate> tplsNew = new ArrayList<FeatTemplate>();
         for (FeatTemplate tpl : tpls) {
             boolean keep = true;

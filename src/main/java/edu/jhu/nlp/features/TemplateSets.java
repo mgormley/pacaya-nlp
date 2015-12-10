@@ -37,6 +37,9 @@ public class TemplateSets {
     public static final String zhaoCaArgFeatsResource = "/edu/jhu/nlp/features/zhao-ca-arg-feats.txt";
     public static final String zhaoEnSenseFeatsResource = "/edu/jhu/nlp/features/zhao-en-sense-feats.txt";
 
+    public static final String coarse1ArgFeatsResource = "/edu/jhu/nlp/features/coarse1-arg-feats.txt";
+    public static final String coarse1EnArgFeatsResource = "/edu/jhu/nlp/features/coarse1-arg-feats-igconll09en.txt";
+
     // Dependency Parsing feature sets.
     public static final String mcdonaldDepFeatsResource = "/edu/jhu/nlp/features/mcdonald-dep-feats.txt";
     public static final String kooBasicDepFeatsResource = "/edu/jhu/nlp/features/koo-basic-dep-feats.txt";
@@ -48,7 +51,11 @@ public class TemplateSets {
     
     // Constituency Parsing feature sets
     public static final String finkel08FeatsResource = "/edu/jhu/nlp/features/finkel08-parse-feats.txt";
-    
+
+    // Part-of-speech Tagging feature sets
+    public static final String custom2TagFeatsResource = "/edu/jhu/nlp/features/custom2-tag-feats.txt";
+    public static final String custom3TagFeatsResource = "/edu/jhu/nlp/features/custom3-tag-feats.txt";
+        
     private TemplateSets() {
         // Private constructor.
     }
@@ -209,7 +216,7 @@ public class TemplateSets {
     private static List<FeatTemplate> coarseUnigramSetCreator(TokProperty[] coarseTokProps, TokPropList[] coarseTokPropList,
             PositionList[] simplePosLists, ListModifier[] listModifiers, OtherFeat[] otherFeats,
             PositionModifier[] positionModifiers, Position[] positions, TokProperty[] fineTokProps, TokPropList[] fineTokPropLists) {
-        ArrayList<FeatTemplate> tpls = new ArrayList<FeatTemplate>();
+        List<FeatTemplate> tpls = new ArrayList<FeatTemplate>();
         for (Position pos : positions) {
             for (PositionModifier mod : positionModifiers) {
                 if (mod == PositionModifier.IDENTITY) {

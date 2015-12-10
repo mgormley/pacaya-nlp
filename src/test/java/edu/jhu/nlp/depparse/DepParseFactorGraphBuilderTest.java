@@ -156,7 +156,6 @@ public class DepParseFactorGraphBuilderTest {
         DepParseFactorGraphBuilder builder = new DepParseFactorGraphBuilder(prm);
         builder.build(words, depEdgeMask, fe, fg);
         
-        fe.init(new UnlabeledFgExample(fg));
         return fg;
     }
     

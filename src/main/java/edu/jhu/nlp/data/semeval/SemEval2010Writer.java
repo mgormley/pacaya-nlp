@@ -16,7 +16,7 @@ import edu.jhu.nlp.data.NerMention;
 import edu.jhu.pacaya.util.collections.QLists;
 
 /**
- * Writes a single CoNLL-X format file.
+ * Writes a single SemEval 2010 Task 8 format file.
  * 
  * @author mgormley
  *

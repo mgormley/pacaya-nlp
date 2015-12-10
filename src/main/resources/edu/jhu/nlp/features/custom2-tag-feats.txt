@@ -1,0 +1,69 @@
+# This is a simple feature set defined for POS tagging.
+# 
+# The original feature set here was inspired by Toutenova et al. (2003).
+#
+# The reduced feature set below (i.e. the choice of which features to comment out) 
+# was inspired by Matthew Honnibal's POS tagger in 200 lines of Python.
+#
+# See: https://honnibal.wordpress.com/2013/09/11/a-good-part-of-speechpos-tagger-in-about-200-lines-of-python/
+#    add('bias') # This acts sort of like a prior
+#    add('i suffix', word[-3:])
+#    add('i pref1', word[0])
+#    add('i-1 tag', prev)
+#    add('i-2 tag', prev2)
+#    add('i tag+i-2 tag', prev, prev2)
+#    add('i word', context[i])
+#    add('i-1 tag+i word', prev, context[i])
+#    add('i-1 word', context[i-1])
+#    add('i-1 suffix', context[i-1][-3:])
+#    add('i-2 word', context[i-2])
+#    add('i+1 word', context[i+1])
+#    add('i+1 suffix', context[i+1][-3:])
+#    add('i+2 word', context[i+2])
+
+word(p)
+
+# Character prefix/suffix n-grams for n up to 4.
+chpre1(p)
+chsuf3(p)
+
+# Other properties
+bc0(p)
+bc1(p)
+capitalized(p)
+
+# Nearby words
+word(-1(p))
+word(-2(p))
+word(1(p))
+word(2(p))
+
+# 1-char prefixes of nearby words
+chpre1(-1(p))
+chpre1(1(p))
+
+# 3-char suffixes of nearby words
+chsuf3(-1(p))
+chsuf3(1(p))
+
+# Brown clusters of nearby words
+bc0(-1(p))
+bc0(-2(p))
+bc0(1(p))
+bc0(2(p))
+
+# Discarded:
+#chpre2(p)
+#chpre3(p)
+#chpre4(p)
+#chsuf1(p)
+#chsuf2(p)
+#chsuf4(p)
+#chpre1(-2(p))
+#chpre1(2(p))
+#chsuf3(-2(p))
+#chsuf3(2(p))
+#bc1(-1(p))
+#bc1(-2(p))
+#bc1(1(p))
+#bc1(2(p))

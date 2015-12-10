@@ -15,7 +15,7 @@ import edu.jhu.nlp.data.conll.CoNLL09FileReader;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.joint.JointNlpEncoder.JointNlpFeatureExtractorPrm;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
@@ -41,7 +41,7 @@ public class JointNlpFgModelTest {
             ofc.init(null);
             
             // Just test that no exception is thrown.
-            JointNlpFgModel model = new JointNlpFgModel(cs, ofc, new JointNlpFeatureExtractorPrm());
+            JointNlpFgModel model = new JointNlpFgModel(cs, ofc, new JointNlpFactorGraphPrm());
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             ObjectOutputStream out = new ObjectOutputStream(baos);
             out.writeObject(model);

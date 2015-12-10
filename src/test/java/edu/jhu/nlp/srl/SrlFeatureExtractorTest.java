@@ -17,25 +17,21 @@ import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.JointNlpFactorGraph;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
-import edu.jhu.pacaya.gm.feat.FeatureExtractor;
 import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.Factor;
 import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.train.SimpleVCFeatureExtractor;
-import edu.jhu.pacaya.gm.train.SimpleVCObsFeatureExtractor;
-import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.set.IntHashSet;
 
@@ -47,13 +43,14 @@ public class SrlFeatureExtractorTest {
 
     @Test
     public void testCorrectNumFeatures() throws Exception {
-        JointFactorGraphPrm fgPrm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm fgPrm = new JointNlpFactorGraphPrm();
         fgPrm.srlPrm.predictPredPos = true;
         fgPrm.srlPrm.binarySenseRoleFactors = true;
         fgPrm.includeRel = false;
         JointNlpFactorGraph sfg = getSrlFg(fgPrm);
 
         FactorTemplateList fts = new FactorTemplateList();
+        ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
         CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
@@ -67,8 +64,8 @@ public class SrlFeatureExtractorTest {
         SrlFeatureExtractorPrm prm = new SrlFeatureExtractorPrm();
         prm.biasOnly = true;
         prm.featureHashMod = -1; // Disable feature hashing.
-        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, sents.get(0), cs);
-        featExt.init(fts);
+        IntAnnoSentence isent = new IntAnnoSentence(sents.get(0), cs.store);
+        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, isent, cs, ofc);
         for (int a=0; a<sfg.getNumFactors(); a++) {
             Factor f = sfg.getFactor(a);
             if (f instanceof ObsFeExpFamFactor) {
@@ -101,7 +98,7 @@ public class SrlFeatureExtractorTest {
         cs.init(sents);
 
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();        
-        prm.fePrm.srlFePrm.featureHashMod = -1;
+        prm.fgPrm.srlPrm.srlFePrm.featureHashMod = -1;
         
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
@@ -143,7 +140,7 @@ public class SrlFeatureExtractorTest {
         cs.init(simpleSents);
 
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();        
-        prm.fePrm.srlFePrm.featureHashMod = -1;
+        prm.fgPrm.srlPrm.srlFePrm.featureHashMod = -1;
         
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
         prm.fgPrm.dpPrm.linkVarType = VarType.PREDICTED;
@@ -166,11 +163,12 @@ public class SrlFeatureExtractorTest {
     
     @Test
     public void testCorrectNumFeaturesWithFeatureHashing() throws Exception {
-        JointFactorGraphPrm fgPrm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm fgPrm = new JointNlpFactorGraphPrm();
         fgPrm.includeRel = false;
         JointNlpFactorGraph sfg = getSrlFg(fgPrm);
 
         FactorTemplateList fts = new FactorTemplateList();        
+        ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
 
         InputStream inputStream = this.getClass().getResourceAsStream(CoNLL09ReadWriteTest.conll2009Example);
         CoNLL09FileReader cr = new CoNLL09FileReader(inputStream);
@@ -190,11 +188,11 @@ public class SrlFeatureExtractorTest {
         
         SrlFeatureExtractorPrm prm = new SrlFeatureExtractorPrm();
         prm.useTemplates = true;
-        prm.soloTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
-        prm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
+        prm.senseTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
+        prm.argTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();
         prm.featureHashMod = 2; // Enable feature hashing
-        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, simpleSents.get(0), cs);
-        featExt.init(fts);
+        IntAnnoSentence isent = new IntAnnoSentence(simpleSents.get(0), cs.store);
+        SrlFeatureExtractor featExt = new SrlFeatureExtractor(prm, isent, cs, ofc);
         for (int a=0; a<sfg.getNumFactors(); a++) {
             Factor f = sfg.getFactor(a);
             if (f instanceof ObsFeExpFamFactor) {
@@ -208,11 +206,9 @@ public class SrlFeatureExtractorTest {
     }
     
 
-    private static JointNlpFactorGraph getSrlFg(JointFactorGraphPrm prm) {
+    private static JointNlpFactorGraph getSrlFg(JointNlpFactorGraphPrm prm) {
         // --- These won't even be used in these tests ---
         FactorTemplateList fts = new FactorTemplateList();
-        FeatureExtractor fe = new SimpleVCFeatureExtractor(new FeatureNames());
-        ObsFeatureExtractor obsFe = new SimpleVCObsFeatureExtractor(fts);
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(new ObsFeatureConjoinerPrm(), fts);
         // ---        
         IntHashSet knownPreds = IntHashSet.fromArray(0, 2);
@@ -224,11 +220,15 @@ public class SrlFeatureExtractorTest {
         sent.setLemmas(words);
         sent.setKnownPreds(knownPreds);
         sent.setDepEdgeMask(depEdgeMask);
+        AnnoSentenceCollection sents = new AnnoSentenceCollection(QLists.getList(sent));
         
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
+        cs.init(sents);
         cs.roleStateNames = QLists.getList("A1", "A2", "A3");
         
-        return new JointNlpFactorGraph(prm, sent, cs, obsFe, ofc, fe, null);
+        prm.srlPrm.srlFePrm.biasOnly = true;
+        prm.dpPrm.dpFePrm.biasOnly = true;
+        return new JointNlpFactorGraph(prm, sent, cs, ofc);
     }
 
 }

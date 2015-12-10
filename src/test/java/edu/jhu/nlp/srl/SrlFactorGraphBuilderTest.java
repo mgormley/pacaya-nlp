@@ -9,7 +9,7 @@ import java.util.List;
 import org.junit.Test;
 
 import edu.jhu.nlp.joint.JointNlpFactorGraph;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorGraphPrm;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.joint.JointNlpFactorGraphTest;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.gm.model.Factor;
@@ -21,7 +21,7 @@ public class SrlFactorGraphBuilderTest {
 
     @Test
     public void testPredictPredPos() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.includeDp = false;
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.srlPrm.makeUnknownPredRolesLatent = false;
@@ -54,7 +54,7 @@ public class SrlFactorGraphBuilderTest {
     
     @Test
     public void testPredictPredSenseAndPredPos() {
-        JointFactorGraphPrm prm = new JointFactorGraphPrm();
+        JointNlpFactorGraphPrm prm = new JointNlpFactorGraphPrm();
         prm.includeDp = false;
         prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
         prm.srlPrm.makeUnknownPredRolesLatent = false;

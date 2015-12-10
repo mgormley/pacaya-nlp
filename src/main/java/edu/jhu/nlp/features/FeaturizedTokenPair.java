@@ -6,6 +6,7 @@ import java.util.List;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
+import edu.jhu.prim.list.IntArrayList;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -41,9 +42,10 @@ public class FeaturizedTokenPair {
     private FeaturizedToken aTok;    
     private int[] parents;
     
-    private ArrayList<Integer> linePath;
+    private IntArrayList linePath;
+    private IntArrayList btwnPath;
     private List<Pair<Integer, ParentsArray.Dir>> dependencyPath;
-    private ArrayList<Pair<Integer, ParentsArray.Dir>> dpPathShare;
+    private List<Pair<Integer, ParentsArray.Dir>> dpPathShare;
     private List<Pair<Integer, ParentsArray.Dir>> dpPathPred;
     private List<Pair<Integer, ParentsArray.Dir>> dpPathArg;
     
@@ -128,7 +130,7 @@ public class FeaturizedTokenPair {
         }
     }
     
-    public ArrayList<Integer> getLinePath() {
+    public IntArrayList getLinePath() {
         if (linePath == null) {
             cacheLinePath();
         }
@@ -136,7 +138,7 @@ public class FeaturizedTokenPair {
     }
     
     private void cacheLinePath() {
-        this.linePath = new ArrayList<Integer>();        
+        this.linePath = new IntArrayList();        
         if (pidx < aidx) {
             for (int i=pidx; i<=aidx; i++) {
                 this.linePath.add(i);
@@ -147,26 +149,50 @@ public class FeaturizedTokenPair {
             }
         }        
     }
+
+    public IntArrayList getBtwnPath() {
+        if (btwnPath == null) {
+            cacheBtwnPath();
+        }
+        return btwnPath;
+    }
     
-    public String getGeneologicalRelation() {
-        if (pidx == aidx) {
-            return "self";
-        } else if (hasParent(aidx) && pidx == parents[aidx]) {
-            return "parent";
-        } else if (hasParent(pidx) && parents[pidx] == aidx) {
-            return "child";
-        } else if (hasParent(aidx) && hasParent(pidx) && parents[pidx] == parents[aidx]) {
-            return "sibling";
-        } else if (pidx == -1) {
-            return "ancestor";     // Short circuit to avoid ArrayIndexOutOfBounds.
-        } else if (aidx == -1) {
-            return "descendent";   // Short circuit to avoid ArrayIndexOutOfBounds.
-        } else if (ParentsArray.isAncestor(pidx, aidx, parents)) {
-            return "ancestor";
-        } else if (ParentsArray.isAncestor(aidx, pidx, parents)) {
-            return "descendent";
+    private void cacheBtwnPath() {
+        this.btwnPath = new IntArrayList();        
+        if (pidx < aidx) {
+            for (int i=pidx+1; i<aidx; i++) {
+                this.btwnPath.add(i);
+            }
         } else {
-            return "cousin";
+            for (int i=aidx+1; i<pidx; i++) {
+                this.btwnPath.add(i);
+            }
+        }        
+    }
+    
+    public enum GeneologicalRelation {
+        SELF, PARENT, CHILD, SIBLING, ANCESTOR, DESCENDENT, COUSIN
+    }
+    
+    public GeneologicalRelation getGeneologicalRelation() {
+        if (pidx == aidx) {
+            return GeneologicalRelation.SELF;
+        } else if (hasParent(aidx) && pidx == parents[aidx]) {
+            return GeneologicalRelation.PARENT;
+        } else if (hasParent(pidx) && parents[pidx] == aidx) {
+            return GeneologicalRelation.CHILD;
+        } else if (hasParent(aidx) && hasParent(pidx) && parents[pidx] == parents[aidx]) {
+            return GeneologicalRelation.SIBLING;
+        } else if (pidx == -1) {
+            return GeneologicalRelation.ANCESTOR; // Short circuit to avoid ArrayIndexOutOfBounds.
+        } else if (aidx == -1) {
+            return GeneologicalRelation.DESCENDENT;   // Short circuit to avoid ArrayIndexOutOfBounds.
+        } else if (ParentsArray.isAncestor(pidx, aidx, parents)) {
+            return GeneologicalRelation.ANCESTOR;
+        } else if (ParentsArray.isAncestor(aidx, pidx, parents)) {
+            return GeneologicalRelation.DESCENDENT;
+        } else {
+            return GeneologicalRelation.COUSIN;
         }
     }
     
@@ -174,13 +200,15 @@ public class FeaturizedTokenPair {
         return 0 <= aidx && aidx < parents.length;
     }
 
-    public String getRelativePosition() {
+    public enum RelativePosition { ON, BEFORE, AFTER };    
+    
+    public RelativePosition getRelativePosition() {
         if (pidx == aidx) {
-            return "on";
+            return RelativePosition.ON;
         } else if (pidx < aidx) {
-            return "before";
+            return RelativePosition.BEFORE;
         } else {
-            return "after";
+            return RelativePosition.AFTER;
         }
     }
 

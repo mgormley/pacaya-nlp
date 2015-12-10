@@ -1,5 +1,20 @@
 package edu.jhu.nlp.depparse;
 
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureBBBB;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureBBBBB;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureBBBBBB;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureBBB_;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureBB__;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureB___;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSBBBB;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSBB_;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSB__;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSSBB;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSSB_;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSSS_;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSS__;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureS___;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -891,8 +906,8 @@ public class BitshiftDepParseFeatures {
         byte hPos = (head < 0) ? TOK_WALL_INT : sent.getPosTag(head);
         byte mPos = (modifier < 0) ? TOK_WALL_INT : sent.getPosTag(modifier);
         // 5-character prefixes.
-        short hPrefix = (head < 0) ? TOK_WALL_INT : sent.getPrefix(head);
-        short mPrefix = (modifier < 0) ? TOK_WALL_INT : sent.getPrefix(modifier);
+        short hPrefix = (head < 0) ? TOK_WALL_INT : sent.getPrefix(head, 5);
+        short mPrefix = (modifier < 0) ? TOK_WALL_INT : sent.getPrefix(modifier, 5);
         // Whether to include features for the 5-char prefixes.
         AnnoSentence aSent = sent.getAnnoSentence();
         boolean hPrefixFeats = (head < 0) ? false : aSent.getWord(head).length() > 5;
@@ -1512,76 +1527,5 @@ public class BitshiftDepParseFeatures {
         //            ((LongFeatureVector)feats).addLong(feat, 1.0);
         //        }
     }
-
-    private static final long BYTE_MAX =  0xff;
-    private static final long SHORT_MAX = 0xffff;
-    private static final long INT_MAX =   0xffffffff;
-
-    private static long encodeFeatureS___(byte template, byte flags, short s1) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16);
-    }
-    
-    private static long encodeFeatureB___(byte template, byte flags, byte b1) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & BYTE_MAX) << 16);
-    }
-    
-    private static long encodeFeatureSB__(byte template, byte flags, short s1, byte b2) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) | ((b2 & BYTE_MAX) << 32);
-    }
-
-    private static long encodeFeatureSS__(byte template, byte flags, short s1, short s2) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) | ((s2 & SHORT_MAX) << 32);
-    }
-
-    private static long encodeFeatureBB__(byte template, byte flags, byte b1, byte b2) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & SHORT_MAX) << 16) | ((b2 & SHORT_MAX) << 24);
-    }
-
-    private static long encodeFeatureSSB_(byte template, byte flags, short s1, short s2, byte b3) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) | ((s2 & SHORT_MAX) << 32)
-                | ((b3 & BYTE_MAX) << 48);
-    }
-
-    private static long encodeFeatureSSS_(byte template, byte flags, short s1, short s2, short s3) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) | ((s2 & SHORT_MAX) << 32)
-                | ((s3 & SHORT_MAX) << 48);
-    }
-    
-    private static long encodeFeatureSBB_(byte template, byte flags, short s1, byte b2, byte b3) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) 
-                | ((b2 & BYTE_MAX) << 32) | ((b3 & BYTE_MAX) << 40);
-    }
-    
-    private static long encodeFeatureSBBBB(byte template, byte flags, short s1, byte b2, byte b3, byte b4, byte b5) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) 
-                | ((b2 & BYTE_MAX) << 32) | ((b3 & BYTE_MAX) << 40) | ((b4 & BYTE_MAX) << 48) 
-                | ((b5 & BYTE_MAX) << 56); // Full.
-    }
-    
-    private static long encodeFeatureSSBB(byte template, byte flags, short s1, short s2, byte b3, byte b4) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) | ((s2 & SHORT_MAX) << 32)
-                | ((b3 & BYTE_MAX) << 48) | ((b4 & BYTE_MAX) << 56); // Full.
-    }
-
-    private static long encodeFeatureBBB_(byte template, byte flags, byte b1, byte b2, byte b3) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & BYTE_MAX) << 16) | ((b2 & BYTE_MAX) << 24)
-                | ((b3 & BYTE_MAX) << 32);
-    }
-    
-    private static long encodeFeatureBBBB(byte template, byte flags, byte b1, byte b2, byte b3, byte b4) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & BYTE_MAX) << 16) | ((b2 & BYTE_MAX) << 24)
-                | ((b3 & BYTE_MAX) << 32) | ((b4 & BYTE_MAX) << 40);
-    }
-    
-    private static long encodeFeatureBBBBB(byte template, byte flags, byte b1, byte b2, byte b3, byte b4, byte b5) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & BYTE_MAX) << 16) | ((b2 & BYTE_MAX) << 24)
-                | ((b3 & BYTE_MAX) << 32) | ((b4 & BYTE_MAX) << 40) | ((b5 & BYTE_MAX) << 48);
-    }
-    
-    private static long encodeFeatureBBBBBB(byte template, byte flags, byte b1, byte b2, byte b3, byte b4, byte b5, byte b6) {
-        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & BYTE_MAX) << 16) | ((b2 & BYTE_MAX) << 24)
-                | ((b3 & BYTE_MAX) << 32) | ((b4 & BYTE_MAX) << 40) | ((b5 & BYTE_MAX) << 48) | ((b6 & BYTE_MAX) << 56); // Full.
-    }
-
     
 }

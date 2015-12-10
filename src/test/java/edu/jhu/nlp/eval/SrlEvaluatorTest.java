@@ -12,11 +12,16 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.pacaya.util.report.ReporterManager;
 
 public class SrlEvaluatorTest {
 
     AnnoSentenceCollection predSents;
     AnnoSentenceCollection goldSents;
+
+    static {
+        ReporterManager.init(null, true);        
+    }
     
     /**
      * Creates two SRL graphs (predicted and gold) and stores them in AnnoSentenceCollections.
@@ -44,6 +49,7 @@ public class SrlEvaluatorTest {
         predSrl.set(2, 3, "theme");    // Arg (incorrect label)
         predSrl.set(-1, 0, "run.02");  // Pred (extra)
         pred.setSrlGraph(predSrl.toSrlGraph());
+        pred.setKnownPredsFromSrlGraph();
         
         goldSrl.set(-1, 1, "like.01"); // Pred
         goldSrl.set(1, 0, "agent");    // Arg
@@ -53,7 +59,8 @@ public class SrlEvaluatorTest {
         goldSrl.set(2, 0, "agent");    // Arg
         goldSrl.set(2, 3, "patient");  // Arg
         gold.setSrlGraph(goldSrl.toSrlGraph());
-        
+        gold.setKnownPredsFromSrlGraph();
+
         System.out.println(pred.getSrlGraph());
         System.out.println(gold.getSrlGraph());
         
@@ -65,8 +72,8 @@ public class SrlEvaluatorTest {
     public void testZeros() {
         SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
         prm.labeled = true;
-        prm.evalSense = true;
-        prm.evalPredicatePosition = true;
+        prm.evalPredSense = true;
+        prm.evalPredPosition = true;
         SrlEvaluator eval = new SrlEvaluator(prm);
         eval.evaluate(new AnnoSentenceCollection(), new AnnoSentenceCollection(), "empty dataset");
         assertEquals(0.0, eval.getPrecision(), 1e-13);
@@ -130,8 +137,8 @@ public class SrlEvaluatorTest {
         double er = (double) numCorrectPositives / numTruePositives;
         SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
         prm.labeled = labeled;
-        prm.evalSense = evalSense;
-        prm.evalPredicatePosition = evalPredicatePosition;
+        prm.evalPredSense = evalSense;
+        prm.evalPredPosition = evalPredicatePosition;
         prm.evalRoles = evalRoles;
         SrlEvaluator eval = new SrlEvaluator(prm);
         eval.evaluate(predSents, goldSents, "dataset name");

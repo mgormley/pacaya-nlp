@@ -35,10 +35,11 @@ public class DepParseSpeedTest {
      *   ta = Log-add table, ex = Exact log-add, st = high precision log-add table
      *   L = LOG_SEMIRING, R = REAL_ALGEGRA , S = LOG_SIGN_ALGEBRA
      *   co = coarse POS tag feats, nc = no coarse tag feats
-     *   MST = MST features, TUR = Turbo Parser feats
+     *   MST = MST features, TUR = Turbo Parser feats, CAR = Carreras feats
      *   hp = HPROF running, nh = no HPROF
      *   gr = grandparent factors, as = arbitrary sibling
      *   i# = number of iterations
+     *   v# = number of neighbors to do caching at vars
      *   
      * For numParams = 100,000  
      * on 11/03/14        s=2401 n=56427 tot= 848.30 t0=178566.46 t1=4282.88 t2=6269666.67 t3=6388.20 t4=1355.51 t5=22197.88
@@ -66,6 +67,12 @@ public class DepParseSpeedTest {
      * (same no inference) s=701 n=16862 tot=1069.65 t0=16794.82 t1=2066.67 t2=Infinity t3=2557.56 t4=Infinity t5=Infinity
      * (same elemMultiply) s=701 n=16862 tot=  87.08 t0=15329.09 t1=2286.99 t2=2810333.33 t3=2695.76 t4=  94.69 t5=20791.62
      * (BipartiteGraph)    s=701 n=16862 tot=  69.03 t0=14134.12 t1=3966.60 t2=8431000.00 t3= 383.67 t4=  86.76 t5=34133.60
+     * 
+     * ms / tok (keepTape=F, normalizeMessages=F):
+     * st(e-11),L,co,CAR,nh,gr,as,i4,v5    s=701 n=16862 tot= 7.96 t0= 0.05 t1= 0.27 t2= 0.00 t3= 0.30 t4= 7.30 t5= 0.04
+     * st(e-8) ,L,co,CAR,nh,gr,as,i4,v5    s=701 n=16862 tot= 7.53 t0= 0.08 t1= 0.27 t2= 0.00 t3= 0.29 t4= 6.85 t5= 0.04
+     * la      ,L,co,CAR,nh,gr,as,i4,v5    s=701 n=16862 tot= 7.86 t0= 0.08 t1= 0.31 t2= 0.00 t3= 0.34 t4= 7.09 t5= 0.04
+     * st(e-11),L,co,CAR,nh,gr,as,i4       s=701 n=16862 tot= 8.73 t0= 0.08 t1= 0.30 t2= 0.00 t3= 0.29 t4= 8.03 t5= 0.04
      */
     //@Test
     public void testSpeed() {
@@ -154,7 +161,7 @@ public class DepParseSpeedTest {
                             (n/t3.totSec()),
                             (n/t4.totSec()),
                             (n/t5.totSec()));
-                    String secPerTok = String.format("s=%d n=%d tot=%7.2f t0=%7.2f t1=%7.2f t2=%7.2f t3=%7.2f t4=%7.2f t5=%7.2f", s, n, 
+                    String msPerTok = String.format("s=%d n=%d tot=%5.2f t0=%5.2f t1=%5.2f t2=%5.2f t3=%5.2f t4=%5.2f t5=%5.2f", s, n, 
                             (t.totMs()/n), 
                             (t0.totMs()/n),
                             (t1.totMs()/n),
@@ -162,7 +169,7 @@ public class DepParseSpeedTest {
                             (t3.totMs()/n),
                             (t4.totMs()/n),
                             (t5.totMs()/n));
-                    System.out.println(secPerTok);
+                    System.out.println(msPerTok);
                     t.start();
                 }
             }

@@ -12,15 +12,12 @@ import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.Var.VarType;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarTensor;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.hypergraph.depparse.InsideOutsideDepParse;
 import edu.jhu.pacaya.parse.dep.EdgeScores;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
 import edu.jhu.pacaya.parse.dep.ProjectiveDependencyParser;
-import edu.jhu.prim.tuple.Pair;
 
 /**
  * Decodes from the marginals of a factor graph for dependency parsing to an int[] representing
@@ -41,24 +38,19 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
     @Override
     public int[] decode(FgInferencer inf, UFgExample ex, AnnoSentence sent) {
         FactorGraph fg = ex.getFactorGraph();
-        int n = sent.size();
-        
+        int n = sent.size();        
         // Build up the beliefs about the link variables (if present),
         // and compute the MBR dependency parse.
-        Pair<EdgeScores, Integer> pair = getEdgeScores(inf, fg, n);
-        EdgeScores scores = pair.get1();
-        int linkVarCount = pair.get2();
-        
-        if (linkVarCount > 0) {
-            return getParents(scores);
-        } else {
-            return null;
-        }
+        EdgeScores scores = DepParseDecoder.getEdgeScores(inf, fg, n);
+        return DepParseDecoder.getParents(scores);
     }
 
+    /**
+     * Get MBR parse, by finding the argmax tree where we treat the score of a tree as the sum of
+     * the edge scores.
+     */
     public static int[] getParents(EdgeScores scores) {
-        // Get MBR parse, by finding the argmax tree where we treat the
-        // score of a tree as the sum of the edge scores.
+        // 
         int n = scores.root.length;
         int[] parents = new int[n];
         Arrays.fill(parents, ParentsArray.EMPTY_POSITION);
@@ -71,24 +63,24 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
     }
 
     // Package-private for DepEdgeMaskDecoder.
-    static Pair<EdgeScores, Integer> getEdgeScores(FgInferencer inf, FactorGraph fg, int n) {
+    static EdgeScores getEdgeScores(FgInferencer inf, FactorGraph fg, int n) {
         List<Var> vars = fg.getVars();
         int linkVarCount = 0;
         EdgeScores scores = new EdgeScores(n, Double.NEGATIVE_INFINITY);
         for (int varId = 0; varId < vars.size(); varId++) {
             Var var = vars.get(varId);
             VarTensor marg = inf.getMarginals(var);
-            if (var instanceof LinkVar && (var.getType() == VarType.LATENT || var.getType() == VarType.PREDICTED)) {
+            if (var instanceof LinkVar) {
                 LinkVar link = ((LinkVar)var);
                 int c = link.getChild();
                 int p = link.getParent();
-
+    
                 // Using logOdds is the method of MBR decoding prescribed in Smith &
                 // Eisner (2008), but that's a bug in their paper. This breaks the parser
                 // when the log-odds are positive infinity.
                 // INCORRECT: belief = FastMath.log(marg.getValue(LinkVar.TRUE) / marg.getValue(LinkVar.FALSE));
                 double belief = marg.getValue(LinkVar.TRUE);
-
+    
                 if (p == -1) {
                     scores.root[c] = belief;
                 } else {
@@ -97,25 +89,10 @@ public class DepParseDecoder implements Decoder<AnnoSentence, int[]> {
                 linkVarCount++;
             }
         }
-        if (linkVarCount > 0 && n*n != linkVarCount) {
+        if (n*n != linkVarCount) {
             throw new RuntimeException("Currently, EdgeScores only supports decoding all the LinkVars, not a subset.");
         }
-        return new Pair<EdgeScores, Integer>(scores, linkVarCount);
-    }
-
-    /** This method is identical to its counterpart in DepParseEncoder except that it does not ignore LATENT vars. */
-    public static void addDepParseAssignment(int[] parents, DepParseFactorGraphBuilder fg, VarConfig vc) {
-        int n = parents.length;
-        // Update predictions with parse.
-        for (int p=-1; p<n; p++) {
-            for (int c=0; c<n; c++) {
-                if (p == c) { continue; }
-                int state = (parents[c] == p) ? LinkVar.TRUE : LinkVar.FALSE;
-                if (fg.getLinkVar(p, c) != null) {
-                    vc.put(fg.getLinkVar(p, c), state);
-                }
-            }
-        }
+        return scores;
     }
 
 }

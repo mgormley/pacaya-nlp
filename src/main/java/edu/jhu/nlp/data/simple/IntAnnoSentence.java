@@ -3,6 +3,8 @@ package edu.jhu.nlp.data.simple;
 import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhu.nlp.data.simple.AlphabetStore.AffixGetter;
+import edu.jhu.nlp.features.FeaturizedToken;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.list.ByteArrayList;
@@ -12,26 +14,16 @@ import edu.jhu.prim.util.SafeCast;
 
 public class IntAnnoSentence {
 
-    private static final int BYTE_MAX = 0xff;
-    private static final int SHORT_MAX = 0xffff;
-    // TODO: We're missing a bit because our Alphabets always return signed values. 
-    private static final int INT_MAX = Integer.MAX_VALUE; //0xffffffff;
-
-    final static int MAX_WORD = SHORT_MAX;
-    final static int MAX_PREFIX = SHORT_MAX;
-    final static int MAX_LEMMA = SHORT_MAX;
-    final static int MAX_POS = BYTE_MAX;
-    final static int MAX_CPOS = BYTE_MAX;
-    final static int MAX_CLUSTER = SHORT_MAX;
-    final static int MAX_FEAT = SHORT_MAX;
-    final static int MAX_DEPREL = BYTE_MAX;
-    
     private ShortArrayList words;
-    private ShortArrayList prefixes;
+    private ShortArrayList lcWords; // lower-case words
+    private ShortArrayList[] prefixes;
+    private ShortArrayList[] suffixes;
+    private boolean[] isCapitalized;    
     private ShortArrayList lemmas;
     private ByteArrayList posTags;
     private ByteArrayList cposTags;
     private ShortArrayList clusters;
+    private ShortArrayList[] clusterPrefixes;
     private ArrayList<ShortArrayList> feats;
     private ByteArrayList deprels;
     // TODO: private IntNaryTree naryTree;
@@ -49,11 +41,15 @@ public class IntAnnoSentence {
         this.sent = sent;
         this.store = store;
         this.words = getShorts(sent.getWords(), store.words);
-        this.prefixes = getShorts(sent.getPrefixes(), store.prefixes);
+        this.lcWords = getShorts(sent.getLowerCaseWords(), store.lcWords);
+        this.prefixes = getAffixShorts(sent.getWords(), store.prefixes, store.maxPrefixLen, true);
+        this.suffixes = getAffixShorts(sent.getWords(), store.suffixes, store.maxSuffixLen, false);
+        this.isCapitalized = getIsCapitalized(sent.getWords());
         this.lemmas = getShorts(sent.getLemmas(), store.lemmas);
         this.posTags = getBytes(sent.getPosTags(), store.posTags);
         this.cposTags = getBytes(sent.getCposTags(), store.cposTags);
         this.clusters = getShorts(sent.getClusters(), store.clusters);
+        this.clusterPrefixes = getAffixShorts(sent.getClusters(), store.clusterPrefixes, store.maxClusterPrefixLen, true);
         if (sent.getFeats() != null) {
             feats = new ArrayList<>(sent.getFeats().size());
             for (List<String> featList : sent.getFeats()) {
@@ -61,7 +57,7 @@ public class IntAnnoSentence {
             }
         }
         this.deprels = getBytes(sent.getDeprels(), store.deprels);
-        if (StrictPosTag.values().length > BYTE_MAX) {
+        if (StrictPosTag.values().length > AlphabetStore.MAX_STRICT_POS) {
             throw new IllegalStateException("Too many strict POS tags.");
         }
         this.coarserPosTags = getBytesFromEnums(sent.getStrictPosTags());
@@ -70,7 +66,15 @@ public class IntAnnoSentence {
         this.numPuncsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.PUNC);
         this.numConjsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.CONJ);
     }
-    
+
+    private static boolean[] getIsCapitalized(List<String> words) {
+        boolean[] isCapitalized = new boolean[words.size()];
+        for (int i=0; i<words.size(); i++) {
+            isCapitalized[i] = FeaturizedToken.capitalized(words.get(i));
+        }
+        return isCapitalized;
+    }
+
     private static IntArrayList getInts(List<String> tokens, IntObjectBimap<String> alphabet) {
         if (tokens == null) { return null; }
         IntArrayList arr = new IntArrayList(tokens.size());
@@ -123,18 +127,46 @@ public class IntAnnoSentence {
         }
         return arr;
     }
-
+    
+    private static ShortArrayList[] getAffixShorts(List<String> tokens, IntObjectBimap<String> alphabet, int maxLen, boolean isPre) {
+        if (tokens == null) { return null; }
+        // TODO: Simpler? short[][] arr2d = new short[maxLen][tokens.size()];
+        ShortArrayList[] arr = new ShortArrayList[maxLen];
+        for (int k=0; k<maxLen; k++) {
+            arr[k] = new ShortArrayList(tokens.size());
+            for (int i=0; i<tokens.size(); i++) {
+                int idx = AlphabetStore.safeLookup(alphabet, AffixGetter.getAffix(tokens.get(i), k+1, isPre));
+                arr[k].add(SafeCast.safeIntToUnsignedShort(idx));
+            }
+        }
+        return arr;
+    }
     
     /** Gets the i'th word. */
     public short getWord(int i) {
         return words.get(i);
     }
     
-    /** Gets the i'th word. */
-    public short getPrefix(int i) {
-        return prefixes.get(i);
+    /** Gets the i'th lowercased word. */
+    public short getLcWord(int i) {
+        return lcWords.get(i);
+    }
+
+    /** Gets the i'th prefix of length len. */
+    public short getPrefix(int i, int len) {
+        return prefixes[len-1].get(i);
     }
     
+    /** Gets the i'th suffix of length len. */
+    public short getSuffix(int i, int len) {
+        return suffixes[len-1].get(i);
+    }
+    
+    /** Gets whether the i'th word is capitalized. */
+    public boolean isCapitalized(int i) {
+        return isCapitalized[i];
+    }
+        
     /** Gets the i'th lemma. */
     public short getLemma(int i) {
         return lemmas.get(i);
@@ -153,6 +185,11 @@ public class IntAnnoSentence {
     /** Gets the i'th Distributional Similarity Cluster ID. */
     public short getCluster(int i) {
         return clusters.get(i);
+    }
+
+    /** Gets the i'th cluster prefix of length len. */
+    public short getClusterPrefix(int i, int len) {
+        return clusterPrefixes[len-1].get(i);
     }
     
     /** Gets the features (e.g. morphological features) of the i'th word. */
@@ -202,6 +239,10 @@ public class IntAnnoSentence {
     
     public AnnoSentence getAnnoSentence() {
         return sent;
+    }
+    
+    public AlphabetStore getStore() {
+        return store;
     }
 
 }

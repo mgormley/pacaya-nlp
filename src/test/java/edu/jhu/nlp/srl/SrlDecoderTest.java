@@ -36,4 +36,13 @@ public class SrlDecoderTest {
         assertEquals("true", g.getArgAt(2).getEdges().get(1).getLabel());
     }
     
+    @Test
+    public void testGetSrlGraphNoVars() {
+        int n = 3;
+        VarConfig vc = new VarConfig();
+        SrlGraph g = SrlDecoder.getSrlGraphFromVarConfig(vc, n);
+        assertEquals(0, g.getNumPreds());
+        assertEquals(0, g.getNumArgs());
+    }
+        
 }

@@ -4,6 +4,7 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
@@ -14,9 +15,7 @@ import edu.jhu.pacaya.gm.data.LabeledFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
-import edu.jhu.pacaya.gm.feat.ObsFeatureCache;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -58,14 +57,9 @@ public class SrlEncoder implements Encoder<AnnoSentence, SrlGraph> {
     }
 
     private LFgExample getExample(AnnoSentence sent, SrlGraph graph, boolean labeledExample) {
-        // Create a feature extractor for this example.
-        //ObsFeatureExtractor obsFe = new FastSrlFeatureExtractor(sent, cs, prm.srlFePrm.featureHashMod, ofc.getTemplates());
-        ObsFeatureExtractor obsFe = new SrlFeatureExtractor(prm.srlFePrm, sent, cs);
-        obsFe = new ObsFeatureCache(obsFe);
-        
         FactorGraph fg = new FactorGraph();
         SrlFactorGraphBuilder srl = new SrlFactorGraphBuilder(prm.srlPrm);
-        srl.build(sent, cs, obsFe, ofc, fg);
+        srl.build(new IntAnnoSentence(sent, cs.store), cs, ofc, fg);
         
         VarConfig goldConfig = new VarConfig();
         if (labeledExample) {
@@ -74,9 +68,9 @@ public class SrlEncoder implements Encoder<AnnoSentence, SrlGraph> {
 
         FactorTemplateList fts = ofc.getTemplates();
         if (labeledExample) {
-            return new LabeledFgExample(fg, goldConfig, obsFe, fts);
+            return new LabeledFgExample(fg, goldConfig, fts);
         } else {
-            return new UnlabeledFgExample(fg, obsFe, fts);
+            return new UnlabeledFgExample(fg, fts);
         }
     }
     
