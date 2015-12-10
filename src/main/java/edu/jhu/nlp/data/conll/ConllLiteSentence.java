@@ -17,7 +17,7 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 
 /**
- * One sentence from a CoNLL-2009 formatted file.
+ * One sentence from a CoNLL Lite formatted file.
  */
 public class ConllLiteSentence implements Iterable<ConllLiteToken> {
 
