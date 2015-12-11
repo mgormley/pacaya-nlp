@@ -46,6 +46,7 @@ public class AnnoSentence {
     private IntArrayList embedIds;
     private List<List<String>> feats;
     private List<String> chunks;
+    private List<String> neTags;
     private List<String> deprels;
     /**
      * Internal representation of a dependency parse: parents[i] gives the index
@@ -93,6 +94,7 @@ public class AnnoSentence {
         newSent.clusters = QLists.copyOf(this.clusters);
         newSent.embedIds = new IntArrayList(this.embedIds);
         newSent.chunks = QLists.copyOf(this.chunks);
+        newSent.neTags = QLists.copyOf(this.neTags);
         newSent.deprels = QLists.copyOf(this.deprels);
         newSent.parents = IntArrays.copyOf(this.parents);
         newSent.depEdgeMask = (this.depEdgeMask == null) ? null : new DepEdgeMask(this.depEdgeMask);
@@ -131,6 +133,7 @@ public class AnnoSentence {
         case EMBED_IDX: dest.embedIds = src.embedIds; break;
         case MORPHO: dest.feats = src.feats; break;
         case CHUNKS: dest.chunks = src.chunks; break;
+        case NE_TAGS: dest.neTags = src.neTags; break;
         case DEP_TREE: dest.parents = src.parents; break;
         case DEPREL: dest.deprels = src.deprels; break;
         case DEP_EDGE_MASK: dest.depEdgeMask = src.depEdgeMask; break;
@@ -163,6 +166,7 @@ public class AnnoSentence {
         case EMBED_IDX: this.embedIds = null; break;
         case MORPHO: this.feats = null; break;
         case CHUNKS: this.chunks = null; break;
+        case NE_TAGS: this.neTags = null; break;
         case DEP_TREE: this.parents = null; break; // TODO: Should DEP_TREE also remove the labels? Not clear.
         case DEPREL: this.deprels = null; break;
         case DEP_EDGE_MASK: this.depEdgeMask = null; break;
@@ -189,6 +193,7 @@ public class AnnoSentence {
         case EMBED_IDX: return this.embedIds != null;
         case MORPHO: return this.feats != null;
         case CHUNKS: return this.chunks != null;
+        case NE_TAGS: return this.neTags != null;
         case DEP_TREE: return this.parents != null;
         case DEPREL: return this.deprels != null;
         case DEP_EDGE_MASK: return this.depEdgeMask != null;
@@ -217,6 +222,7 @@ public class AnnoSentence {
             }
         }
         QLists.intern(chunks);
+        QLists.intern(neTags);
         QLists.intern(deprels);        
         if (naryTree != null) {
             naryTree.intern();
@@ -251,6 +257,7 @@ public class AnnoSentence {
             sb.append(",\n");
         }
         appendIfNotNull(sb, "chunks", chunks);
+        appendIfNotNull(sb, "neTags", neTags);
         appendIfNotNull(sb, "deprels", deprels);
         appendIfNotNull(sb, "depEdgeMask", depEdgeMask);
         appendIfNotNull(sb, "srlGraph", srlGraph);
@@ -320,6 +327,11 @@ public class AnnoSentence {
     /** Gets the i'th chunk as a String. */
     public String getChunk(int i) {
         return chunks.get(i);
+    }
+    
+    /** Gets the i'th chunk as a String. */
+    public String getNeTag(int i) {
+        return neTags.get(i);
     }
     
     /** Gets the index of the parent of the i'th word. */
@@ -620,13 +632,21 @@ public class AnnoSentence {
     public void setEmbedIds(IntArrayList embedIds) {
         this.embedIds = embedIds;
     }
-    
+
     public List<String> getChunks() {
         return chunks;
     }
 
     public void setChunks(List<String> chunks) {
         this.chunks = chunks;
+    }
+    
+    public List<String> getNeTags() {
+        return neTags;
+    }
+
+    public void setNeTags(List<String> neTags) {
+        this.neTags = neTags;
     }
 
     public int[] getParents() {

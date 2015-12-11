@@ -70,6 +70,7 @@ public class NerAnnotator implements Trainable, Annotator {
             AnnoSentenceCollection devInput, AnnoSentenceCollection devGold) {
         log.info("Initializing corpus statistics.");
         tagLabelSet = new ArrayList<>(getTagLabelSet(trainGold));
+        log.info("Tag set: " + tagLabelSet);
         store = new AlphabetStore(trainInput);
         
         log.info("Initializing model to all zeros.");        
@@ -84,8 +85,7 @@ public class NerAnnotator implements Trainable, Annotator {
     private Set<String> getTagLabelSet(AnnoSentenceCollection trainGold) {
         HashSet<String> labels = new HashSet<>();
         for (AnnoSentence sent : trainGold) {
-            // TODO: Switch from chunks to neTags.
-            labels.addAll(sent.getChunks());
+            labels.addAll(sent.getNeTags());
         }
         return labels;
     }
@@ -121,8 +121,7 @@ public class NerAnnotator implements Trainable, Annotator {
 
     @Override
     public Set<AT> getAnnoTypes() {
-        // TODO: Switch from chunks to neTags.
-        return QSets.getSet(AT.CHUNKS);
+        return QSets.getSet(AT.NE_TAGS);
     }
 
     private FgExampleList getData(final AnnoSentenceCollection inputSents, final AnnoSentenceCollection goldSents) {
@@ -143,7 +142,7 @@ public class NerAnnotator implements Trainable, Annotator {
                 VarConfig goldConfig = null;
                 if (goldSents != null) {
                     goldConfig = new VarConfig();
-                    builder.addVarAssignments(goldSents.get(i).getChunks(), goldConfig);
+                    builder.addVarAssignments(goldSents.get(i).getNeTags(), goldConfig);
                     return new LabeledFgExample(fg, goldConfig);
                 } else {
                     return new UnlabeledFgExample(fg);
@@ -158,8 +157,7 @@ public class NerAnnotator implements Trainable, Annotator {
         mbrDecoder.decode(model, ex);
         List<String> neTags = builder.getTagsFromMbrVarConfig(mbrDecoder.getMbrVarConfig());
         AnnoSentence predSent = inputSent.getShallowCopy();
-        // TODO: Switch from chunks to neTags.
-        predSent.setChunks(neTags);
+        predSent.setNeTags(neTags);
         return predSent;
     }
 

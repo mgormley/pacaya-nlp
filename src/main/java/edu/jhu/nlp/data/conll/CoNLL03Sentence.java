@@ -21,33 +21,33 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
  * One sentence from a CoNLL-2002 formatted file.
  * @author mgormley
  */
-public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
+public class CoNLL03Sentence implements Iterable<CoNLL03Token> {
 
-    private static Logger log = LoggerFactory.getLogger(CoNLL02Sentence.class);
+    private static Logger log = LoggerFactory.getLogger(CoNLL03Sentence.class);
     
-    private ArrayList<CoNLL02Token> tokens;
+    private ArrayList<CoNLL03Token> tokens;
     
-    public CoNLL02Sentence(List<CoNLL02Token> tokens) {
-        this.tokens = new ArrayList<CoNLL02Token>(tokens);
+    public CoNLL03Sentence(List<CoNLL03Token> tokens) {
+        this.tokens = new ArrayList<CoNLL03Token>(tokens);
     }
 
     /** Deep copy constructor. */
-    public CoNLL02Sentence(CoNLL02Sentence sent) {
-        tokens = new ArrayList<CoNLL02Token>(sent.tokens.size());
-        for (CoNLL02Token tok : sent) {
-            tokens.add(new CoNLL02Token(tok));
+    public CoNLL03Sentence(CoNLL03Sentence sent) {
+        tokens = new ArrayList<CoNLL03Token>(sent.tokens.size());
+        for (CoNLL03Token tok : sent) {
+            tokens.add(new CoNLL03Token(tok));
         }
     }
 
-    public static CoNLL02Sentence getInstanceFromTokenStrings(ArrayList<String> sentLines) {
-        List<CoNLL02Token> tokens = new ArrayList<CoNLL02Token>();
+    public static CoNLL03Sentence getInstanceFromTokenStrings(ArrayList<String> sentLines) {
+        List<CoNLL03Token> tokens = new ArrayList<CoNLL03Token>();
         for (String line : sentLines) {
-            tokens.add(new CoNLL02Token(line));
+            tokens.add(new CoNLL03Token(line));
         }
-        return new CoNLL02Sentence(tokens);
+        return new CoNLL03Sentence(tokens);
     }
 
-    public CoNLL02Token get(int i) {
+    public CoNLL03Token get(int i) {
         return tokens.get(i);
     }
 
@@ -56,7 +56,7 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
     }
 
     @Override
-    public Iterator<CoNLL02Token> iterator() {
+    public Iterator<CoNLL03Token> iterator() {
         return tokens.iterator();
     }
     
@@ -65,6 +65,7 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
         s.setSourceSent(this);
         s.setWords(this.getWords());
         s.setPosTags(this.getPosTags());
+        s.setChunks(this.getChunkTags());
         s.setNeTags(this.getNeTags());
         return s;
     }
@@ -83,6 +84,14 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
             posTags.add(tokens.get(i).getPos());            
         }
         return posTags;
+    }
+
+    public List<String> getChunkTags() {
+        List<String> chunkTags = new ArrayList<String>(size());
+        for (int i=0; i<size(); i++) {
+            chunkTags.add(tokens.get(i).getChunk());            
+        }
+        return chunkTags;
     }
 
     public List<String> getNeTags() {
@@ -110,7 +119,7 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        CoNLL02Sentence other = (CoNLL02Sentence) obj;
+        CoNLL03Sentence other = (CoNLL03Sentence) obj;
         if (tokens == null) {
             if (other.tokens != null)
                 return false;
@@ -122,7 +131,7 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
     public String toString() {
         try {
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
-            CoNLL02Writer writer = new CoNLL02Writer(new OutputStreamWriter(baos));
+            CoNLL03Writer writer = new CoNLL03Writer(new OutputStreamWriter(baos));
             writer.write(this);
             writer.close();
             return baos.toString("UTF-8");

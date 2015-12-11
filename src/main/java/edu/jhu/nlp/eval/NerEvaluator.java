@@ -34,8 +34,7 @@ public class NerEvaluator extends F1Evaluator implements Evaluator {
 
     @Override
     protected List<String> getLabels(AnnoSentence sent) {
-        // TODO: Switch from chunks to neTags.
-        return sent.getChunks();
+        return sent.getNeTags();
     }
 
     @Override

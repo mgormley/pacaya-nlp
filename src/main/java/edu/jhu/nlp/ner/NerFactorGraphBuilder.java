@@ -26,6 +26,7 @@ public class NerFactorGraphBuilder {
         public boolean bigramFactors = true;
     }
     
+    /** Carrier for the builder. */
     public static class NerFactorGraph extends FactorGraph {
         private static final long serialVersionUID = 1L;
         private NerFactorGraphBuilder builder;
@@ -47,8 +48,7 @@ public class NerFactorGraphBuilder {
         // Create tag variables.
         tagVars = new ArrayList<>();
         for (int i=0; i<isent.size(); i++) {
-            List<String> stateNames = tagLabelSet;
-            Var v = new Var(VarType.PREDICTED, stateNames.size(), "tag"+i, stateNames);
+            Var v = new Var(VarType.PREDICTED, tagLabelSet.size(), "tag"+i, tagLabelSet);
             tagVars.add(v);
         }
         // Create factors.
