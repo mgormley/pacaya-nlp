@@ -205,8 +205,8 @@ public class SrlFactorGraphBuilder implements Serializable {
             // n**2 model
             for (int i = 0; i < n; i++) {
                 for (int j = 0; j < n; j++) {
-                    if (i == j && !allowPredArgSelfLoops) {
-                        continue;
+                    if (i != j || allowPredArgSelfLoops) {
+                        toReturn.add(new Pair<>(i, j));
                     }
                 }
             }
