@@ -49,8 +49,10 @@ import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.eval.SrlPredIdAccuracy;
 import edu.jhu.nlp.eval.SrlSelfLoops;
+import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
+import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.features.TemplateReader;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector.IGFeatureTemplateSelectorPrm;
@@ -296,6 +298,11 @@ public class JointNlpRunner {
     public static boolean acl14DepFeats = true;
     @Opt(hasArg = true, description = "Whether to use the fast feature set for dep parsing.")
     public static boolean dpFastFeats = true;
+
+    @Opt(hasArg = true, description = "Whether to skip features that look at lemma.")
+    public static boolean noLemma = false;
+    @Opt(hasArg = true, description = "Whether to skip features that look at morpho feats.")
+    public static boolean noMorpho = false;
     
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
@@ -639,7 +646,17 @@ public class JointNlpRunner {
         srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
         srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
-                
+
+        if (noLemma) {
+            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.argTemplates, TokProperty.LEMMA);
+            srlPrm.srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.senseTemplates, TokProperty.LEMMA);
+        }
+
+        if (noMorpho) {
+            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.argTemplates, TokProperty.MORPHO);
+            srlPrm.srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.senseTemplates, TokProperty.MORPHO);
+        }
+
         srlPrm.srlFePrm = srlFePrm;
         return srlPrm;
     }

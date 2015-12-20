@@ -75,6 +75,13 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
                 fg.getSrlBuilder().addVarAssignments(gold.getSrlGraph(), vc);
             }
         }
+
+        if (prm.fgPrm.includeSprl) {
+            if (gold != null && gold.getSprl() != null) {
+                fg.getSprlBuilder().annoToConfig(gold,  vc);
+            }
+        }
+
         if (prm.fgPrm.includeRel && prm.fgPrm.relPrm.relVarType != VarType.LATENT) {
             if (gold != null && gold.getRelLabels() != null) {
                 fg.getRelBuilder().addVarAssignments(sent, gold.getRelLabels(), vc);

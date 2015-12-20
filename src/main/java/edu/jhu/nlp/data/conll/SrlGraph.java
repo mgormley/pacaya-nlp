@@ -2,11 +2,14 @@ package edu.jhu.nlp.data.conll;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.prim.set.IntHashSet;
+import edu.jhu.prim.tuple.Pair;
 
 /**
  * A graph representing SRL annotations on a sentence.
@@ -334,6 +337,16 @@ public class SrlGraph {
             knownPreds.add(pred.getPosition());
         }
         return knownPreds;
+    }
+    
+    public Set<Pair<Integer, Integer>> getKnownSrlPairs() {
+        Set<Pair<Integer, Integer>> knownPairs = new HashSet<>();
+        for (SrlEdge edge : this.getEdges()) {
+            knownPairs.add(new Pair<>(
+                               edge.getPred().getPosition(),
+                               edge.getArg().getPosition()));
+        }
+        return knownPairs;
     }
 
 }

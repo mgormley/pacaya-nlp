@@ -29,6 +29,7 @@ public class TemplateSets {
 
     // Semantic Role Labeling feature sets.
     public static final String bjorkelundArgFeatsResource = "/edu/jhu/nlp/features/bjorkelund-arg-feats.txt";
+    public static final String bjorkelundEnArgFeatsResource = "/edu/jhu/nlp/features/bjorkelund-en-arg-feats.txt";
     public static final String bjorkelundSenseFeatsResource = "/edu/jhu/nlp/features/bjorkelund-sense-feats.txt";
 
     public static final String naradowskyArgFeatsResource = "/edu/jhu/nlp/features/naradowsky-arg-feats.txt";

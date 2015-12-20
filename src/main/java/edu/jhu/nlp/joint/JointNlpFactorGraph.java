@@ -20,6 +20,8 @@ import edu.jhu.nlp.features.TemplateLanguage.PositionModifier;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
+import edu.jhu.nlp.sprl.SprlFactorGraphBuilder;
+import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
@@ -65,6 +67,9 @@ public class JointNlpFactorGraph extends FactorGraph {
         public RelationsFactorGraphBuilderPrm relPrm = new RelationsFactorGraphBuilderPrm();
         /** Whether to use SRL feats for Link-Role factors. */
         public boolean useSrlFeatsForLinkRoleFactors = true;
+        /** Whether to include SPRL */
+        public boolean includeSprl = false;
+        public SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
     }
     
     public enum JointFactorTemplate {
@@ -82,6 +87,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     private DepParseFactorGraphBuilder dp;  
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
+    private SprlFactorGraphBuilder sprl;
 
     public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc) {
         this.prm = prm;
@@ -98,6 +104,10 @@ public class JointNlpFactorGraph extends FactorGraph {
         // TODO: This should move up the stack.
         IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
         
+        if (prm.includeSprl) {
+            sprl = new SprlFactorGraphBuilder(prm.sprlPrm);
+            sprl.build(isent, ofc, fg, cs);
+        }
         if (prm.includePos) {
             pos = new PosTagFactorGraphBuilder(prm.posPrm);
             pos.build(isent, ofc, fg, cs);
@@ -225,6 +235,10 @@ public class JointNlpFactorGraph extends FactorGraph {
 
     public int getSentenceLength() {
         return n;
+    }
+
+    public SprlFactorGraphBuilder getSprlBuilder() {
+        return sprl;
     }
 
     public PosTagFactorGraphBuilder getPosTagBuilder() {

@@ -8,6 +8,7 @@ import static edu.jhu.nlp.features.BitPacking.encodeFeatureSB__;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureSSB_;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureSS__;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureS___;
+
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatures;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
@@ -92,7 +93,7 @@ public class BitshiftTokenFeatures {
         addFeat(feats, mod, encodeFeatureS___(TokTs.BIAS, flags, tagConfig));
     }
     
-    private static void addWordFeatures(IntAnnoSentence sent, int head, FeatureVector feats, int mod, byte featCol, short tagConfig) {
+    public static void addWordFeatures(IntAnnoSentence sent, int head, FeatureVector feats, int mod, byte featCol, short tagConfig) {
         int sentLen = sent.size();
 
         // Flags for the type of feature.
@@ -168,6 +169,14 @@ public class BitshiftTokenFeatures {
         addFeat(feats, mod, encodeFeatureSSB_(TokTs.rrhS, flags, tagConfig, rrhSuf3, len));
     }
 
+    public static void addFeat(FeatureVector feats, int mod, long feat, double value) {
+        int hash = MurmurHash.hash32(feat);
+        if (mod > 0) {
+            hash = FastMath.mod(hash, mod);
+        }
+        feats.add(hash, value);
+    }
+    
     public static void addFeat(FeatureVector feats, int mod, long feat) {
         int hash = MurmurHash.hash32(feat);
         if (mod > 0) {

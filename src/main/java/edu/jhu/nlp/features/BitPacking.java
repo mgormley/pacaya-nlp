@@ -28,6 +28,10 @@ public final class BitPacking {
         return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) | ((s2 & SHORT_MAX) << 32);
     }
 
+    public static final long encodeFeatureI__(byte template, byte flags, int i) {
+        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((i & INT_MAX) << 16);
+    }
+
     public static final long encodeFeatureBB__(byte template, byte flags, byte b1, byte b2) {
         return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((b1 & SHORT_MAX) << 16) | ((b2 & SHORT_MAX) << 24);
     }

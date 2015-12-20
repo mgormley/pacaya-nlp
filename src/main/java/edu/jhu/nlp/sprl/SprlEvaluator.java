@@ -1,25 +1,26 @@
-package edu.jhu.nlp.eval;
+package edu.jhu.nlp.sprl;
 
-import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.Evaluator;
+import edu.jhu.nlp.data.Properties;
+import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.pacaya.gm.app.Loss;
 import edu.jhu.pacaya.util.report.Reporter;
+import edu.jhu.prim.tuple.Pair;
 
 /**
- * Computes the per-token POS tagging accuracy.
- * 
- * @author mgormley
+ * Computes the per-token SPRL tagging accuracy.
  */
-public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
+public class SprlEvaluator implements Loss<AnnoSentence>, Evaluator {
 
-    private static final Logger log = LoggerFactory.getLogger(PosTagAccuracy.class);
-    private static final Reporter rep = Reporter.getReporter(PosTagAccuracy.class);
+    private static final Logger log = LoggerFactory.getLogger(SprlEvaluator.class);
+    private static final Reporter rep = Reporter.getReporter(SprlEvaluator.class);
 
     private double accuracy;
     private int correct;
@@ -28,20 +29,16 @@ public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
     /** Gets the number of incorrect tags. */
     @Override
     public double loss(AnnoSentence pred, AnnoSentence gold) {
-        reset();
+        correct = 0;
+        total = 0;
         evaluate(pred, gold);
         return getErrors();
     }
 
-    private void reset() {
-        correct = 0;
-        total = 0;
-        accuracy = 0;
-    }
-
     /** Computes the number of correct tags, total tags, and accuracy. */
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
-        reset();
+        correct = 0;
+        total = 0;
         assert(predSents.size() == goldSents.size());
         for (int i = 0; i < goldSents.size(); i++) {
             AnnoSentence gold = goldSents.get(i);
@@ -49,26 +46,26 @@ public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
             evaluate(pred, gold);
         }
         accuracy = (double) correct / (double) total;
-        log.info(String.format("POS tag accuracy on %s: %.4f", dataName, accuracy));    
-        rep.report(dataName+"PosAccuracy", accuracy);
-        double error = getErrors();
-        log.info(String.format("POS tag error on %s: %.4f", dataName, error));    
-        return error;
+        log.info(String.format("SPRL accuracy on %s: %.4f", dataName, accuracy));    
+        rep.report(dataName+"SPRLAccuracy", accuracy);
+        return getErrors();
     }
 
     private void evaluate(AnnoSentence pred, AnnoSentence gold) {
-        List<String> goldTags = gold.getPosTags();
-        List<String> predTags  = pred.getPosTags();
-        if (predTags != null) {
-            assert(predTags.size() == goldTags.size());
+        Map<Pair<Integer, Integer>, Properties> goldProps = gold.getSprl();
+        Map<Pair<Integer, Integer>, Properties> predProps = pred.getSprl();
+        if (predProps != null) {
+            assert(predProps.size() == goldProps.size());
         }
-        for (int i = 0; i < goldTags.size(); i++) {
-            if (predTags != null) {
-                if (goldTags.get(i).equals(predTags.get(i))) {
+        for (Pair<Integer, Integer> pair : goldProps.keySet()) {
+            Map<String, Double> gM = goldProps.get(pair).toMap();
+            Map<String, Double> pM = predProps.get(pair).toMap();
+            for (Property q : Property.values()) {
+                if (Math.abs(gM.get(q.name()) - pM.get(q.name())) < 1E-4) {
                     correct++;
                 }
+                total++;
             }
-            total++;            
         }
     }
     

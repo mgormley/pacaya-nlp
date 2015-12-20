@@ -18,10 +18,11 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate;
 import edu.jhu.nlp.relations.FeatureUtils;
+import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorType;
+import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorTemplate;
-import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
@@ -88,7 +89,8 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
         List<FeatTemplate> tpls;
         if (ft == JointFactorTemplate.LINK_ROLE_BINARY || ft == DepParseFactorTemplate.UNARY 
                 || ft == SrlFactorTemplate.ROLE_UNARY || ft == SrlFactorTemplate.SENSE_ROLE_BINARY
-                || ft == JointFactorTemplate.ROLE_C_TAG_BINARY || ft == JointFactorTemplate.ROLE_P_TAG_BINARY) {
+                || ft == JointFactorTemplate.ROLE_C_TAG_BINARY || ft == JointFactorTemplate.ROLE_P_TAG_BINARY
+                || ft == SprlFactorType.SPRL_UNARY) {
             tpls = prm.argTemplates;
             // Look at the variables to determine the parent and child.
             for (int i=0; i<vars.size(); i++) {
@@ -100,6 +102,10 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
                 } else if (var instanceof RoleVar) {
                     parent = ((RoleVar)var).getParent();
                     child = ((RoleVar)var).getChild();
+                    break;
+                } else if (var instanceof SprlVar) {
+                    parent = ((SprlVar) var).getPred();
+                    child = ((SprlVar) var).getArg();
                     break;
                 }
             }

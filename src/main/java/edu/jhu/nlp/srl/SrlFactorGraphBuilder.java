@@ -1,6 +1,7 @@
 package edu.jhu.nlp.srl;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -28,6 +29,7 @@ import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.iter.IntIter;
 import edu.jhu.prim.set.IntSet;
+import edu.jhu.prim.tuple.Pair;
 
 /**
  * A factor graph builder for SRL.
@@ -81,6 +83,12 @@ public class SrlFactorGraphBuilder implements Serializable {
 
     public enum RoleStructure {
         /** Defines Role variables each of the "known" predicates with all possible arguments. */
+        /** Defines Role variables for only known predicate-argument pairs. */
+        PAIRS_GIVEN,
+        /**
+         * Defines Role variables each of the "known" predicates with all
+         * possible arguments.
+         */
         PREDS_GIVEN,
         /** The N**2 model. */
         ALL_PAIRS,
@@ -163,6 +171,54 @@ public class SrlFactorGraphBuilder implements Serializable {
     }
 
     /**
+     * Returns a list of pairs (i,j) for which a role variable should be built
+     * according to the provided roleStructure.
+     * 
+     * @param isent
+     *            Sentence to get pairs for.
+     * @param rS
+     *            RoleStructure describing which pairs to include.
+     * @param allowPredArgSelfLoops
+     *            boolean indicating if pairs (i,i) should be included.
+     * @return
+     */
+    public static List<Pair<Integer, Integer>> getPossibleRolePairs(AnnoSentence sent, RoleStructure rS,
+            boolean allowPredArgSelfLoops) {
+        IntSet knownPreds = sent.getKnownPreds();
+        List<Pair<Integer, Integer>> toReturn = new ArrayList<>();
+        int n = sent.size();
+        if (rS == RoleStructure.PAIRS_GIVEN) {
+            toReturn.addAll(sent.getKnownSrlPairs());
+        } else if (rS == RoleStructure.PREDS_GIVEN) {
+            // CoNLL-friendly model; preds given
+            IntIter iter = knownPreds.iterator();
+            while (iter.hasNext()) {
+                int i = iter.next();
+                for (int j = 0; j < n; j++) {
+                    if (i == j && !allowPredArgSelfLoops) {
+                        continue;
+                    }
+                    toReturn.add(new Pair<>(i, j));
+                }
+            }
+        } else if (rS == RoleStructure.ALL_PAIRS) {
+            // n**2 model
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i == j && !allowPredArgSelfLoops) {
+                        continue;
+                    }
+                }
+            }
+        } else if (rS == RoleStructure.NO_ROLES) {
+            // No role variables.
+        } else {
+            throw new IllegalArgumentException("Unsupported model structure: " + rS);
+        }
+        return toReturn;
+    }
+
+    /**
      * Adds factors and variables to the given factor graph.
      */
     public void build(IntAnnoSentence isent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
@@ -177,6 +233,8 @@ public class SrlFactorGraphBuilder implements Serializable {
         // Create feature extractor.
         obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
         
+        boolean predsOrPairsGiven = (prm.roleStructure == RoleStructure.PREDS_GIVEN)
+                || (prm.roleStructure == RoleStructure.PAIRS_GIVEN);
         // Check for null arguments.
         if (prm.roleStructure == RoleStructure.PREDS_GIVEN && knownPreds == null) {
             throw new IllegalArgumentException("knownPreds must be non-null");
@@ -190,39 +248,18 @@ public class SrlFactorGraphBuilder implements Serializable {
         if (prm.roleStructure == RoleStructure.PREDS_GIVEN && prm.predictPredPos) {
             throw new IllegalStateException("PREDS_GIVEN assumes that the predicate positions are always observed.");
         }
-        
+
         this.n = words.size();
-        
+
         // Create the Role variables.
         roleVars = new RoleVar[n][n];
-        if (prm.roleStructure == RoleStructure.PREDS_GIVEN) {
-            // CoNLL-friendly model; preds given
-            IntIter iter = knownPreds.iterator();
-            while (iter.hasNext()) {
-                int i = iter.next();
-                for (int j = 0; j < n;j++) {
-                    if (i==j && !prm.allowPredArgSelfLoops) {
-                        continue;
-                    }
-                    roleVars[i][j] = createRoleVar(i, j, knownPreds, roleStateNames);
-                }
-            }
-        } else if (prm.roleStructure == RoleStructure.ALL_PAIRS) {
-            // n**2 model
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n;j++) {
-                    if (i==j && !prm.allowPredArgSelfLoops) {
-                        continue;
-                    }
-                    roleVars[i][j] = createRoleVar(i, j, knownPreds, roleStateNames);
-                }
-            }
-        } else if (prm.roleStructure == RoleStructure.NO_ROLES) {
-            // No role variables.
-        } else {
-            throw new IllegalArgumentException("Unsupported model structure: " + prm.roleStructure);
+        for (Pair<Integer, Integer> e : getPossibleRolePairs(isent.getAnnoSentence(), prm.roleStructure,
+                prm.allowPredArgSelfLoops)) {
+            int i = e.get1();
+            int j = e.get2();
+            roleVars[i][j] = createRoleVar(i, j, knownPreds, roleStateNames);
         }
-        
+
         // Create the Sense variables.
         senseVars = new SenseVar[n];
         for (int i = 0; i < n; i++) {
@@ -473,4 +510,8 @@ public class SrlFactorGraphBuilder implements Serializable {
         return srl;
     }
     
+    public SenseVar[] getSenseVars() {
+        return senseVars;
+    }
+
 }

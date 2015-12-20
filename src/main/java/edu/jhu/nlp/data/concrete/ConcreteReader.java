@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -25,6 +26,7 @@ import edu.jhu.hlt.concrete.EntityMention;
 import edu.jhu.hlt.concrete.EntityMentionSet;
 import edu.jhu.hlt.concrete.MentionArgument;
 import edu.jhu.hlt.concrete.Parse;
+import edu.jhu.hlt.concrete.Property;
 import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SituationMention;
@@ -42,9 +44,14 @@ import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.util.TokenizationUtils.TagTypes;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
+//import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.RelationMention;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
+import edu.jhu.nlp.data.conll.SrlGraph;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
@@ -71,6 +78,7 @@ public class ConcreteReader {
         public String parseTool = null;
         public String nerTool = null;
         public String relationTool = null;
+        public String srlTool = null;
     }
     
     private static final Logger log = LoggerFactory.getLogger(ConcreteReader.class);
@@ -79,6 +87,7 @@ public class ConcreteReader {
     private int numEntityMentions = 0;
     private int numOverlapingMentions = 0;
     private int numSituationMentions = 0;
+    private int numSrlPredicates = 0;
     private ConcreteReaderPrm prm;
     
     public ConcreteReader(ConcreteReaderPrm prm) { 
@@ -101,6 +110,7 @@ public class ConcreteReader {
         log.debug("Num entity mentions: " + numEntityMentions);
         log.debug("Num overlapping entity mentions: " + numOverlapingMentions);        
         log.debug("Num situation mentions: " + numSituationMentions);
+        log.debug("Num srl predicates: " + numSrlPredicates);
         return sents;
     }
 
@@ -195,6 +205,7 @@ public class ConcreteReader {
 
             if (comm.getSituationMentionSetListSize() > 0) {
                 addRelationsFromSituationMentions(comm, tmpSents);
+                addSrlFromSituationMentions(comm, tmpSents);
             }
         }
         
@@ -222,8 +233,16 @@ public class ConcreteReader {
         
         for (EntityMention cEm : cEms.getMentionList()) {
             TokenRefSequence cEmToks = cEm.getTokens();
-            Span span = getSpan(cEmToks);
-            
+
+            //TODO: Matt's orinal here just did span = getSpan(cEmToks)
+            Span span = null;
+            if (cEmToks.getTokenIndexList().size() == 0) {
+                log.warn("entity with no tokens: " + cEm);
+                span = new Span(-1, -1);
+            } else {
+                span = getSpan(cEmToks);
+            }
+
             int sentIdx = toksUuid2SentIdx.get(cEmToks.getTokenizationId().getUuidString());
             String entityType = cEm.getEntityType();
             String entitySubtype = null;
@@ -260,6 +279,80 @@ public class ConcreteReader {
         numEntityMentions += cEms.getMentionList().size();
     }
 
+    private void addSrlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents) {
+        SituationMentionSet cSms = ConcreteUtils.getFirstSituationMentionSetWithName(comm, prm.srlTool);
+        if (cSms == null) {
+            return;
+        }
+        
+        for (int i=0; i<tmpSents.size(); i++) {
+            AnnoSentence sent = tmpSents.get(i);
+            sent.setSrlGraph(new SrlGraph(sent.size()));
+            sent.setSprl(new HashMap<>());
+            sent.setSprlPreds(new HashSet<>());
+        }
+        
+        Map<String, NerMention> emId2em = getUuid2ArgsMap(tmpSents);
+        Map<String, Integer> emId2SentIdx = getUuid2SentIdxMap(tmpSents);       
+        
+        for (SituationMention cSm : cSms.getMentionList()) {
+            List<MentionArgument> args = cSm.getArgumentList();
+            if (args.size() < 1) {
+                log.warn("skipping predicate with no args: " + cSm); 
+                continue;
+            }
+                
+            int sentIdx = emId2SentIdx.get(args.get(0).getEntityMentionId().getUuidString());
+            AnnoSentence sent = tmpSents.get(sentIdx);
+            SrlGraph srlGraph = sent.getSrlGraph();
+                
+            // add predicate
+            int predLoc = Collections.min(cSm.getTokens().getTokenIndexList());
+            SrlPred srlPred = srlGraph.getPredAt(predLoc);
+            if (srlPred == null) {
+                srlPred = new SrlPred(predLoc, cSm.getSituationKind());
+                srlGraph.addPred(srlPred);
+            }
+
+            for (MentionArgument cArg : args) {
+                String role = cArg.getRole();
+                String cEmId = cArg.getEntityMentionId().getUuidString();
+                if (sentIdx != emId2SentIdx.get(cEmId)) {
+                    throw new IllegalStateException("pred with args in difference sentences. Orig sent: " + sentIdx + ", cArg: " + cArg.toString());
+                }
+                
+                // add argument
+                int argLoc = emId2em.get(cEmId).getHead();
+                if (argLoc < 0) log.warn("invisible argument. cArg: " + cArg);
+                SrlArg srlArg = srlGraph.getArgAt(argLoc);
+                if (srlArg == null) {
+                    srlArg = new SrlArg(argLoc);
+                    srlGraph.addArg(srlArg);
+                }
+                srlGraph.addEdge(new SrlEdge(srlPred, srlArg, role));
+
+                // add properties
+                if (cArg.getPropertyList().size() > 0) {
+                    Properties props = new Properties();
+                    for (Property prop : cArg.getPropertyList()) {
+                        props.add(prop.getValue(), prop.getPolarity());
+                    }
+                    sent.getSprl().put(new Pair<>(predLoc, argLoc), props); 
+                    sent.getSprlPreds().add(predLoc);
+                }
+            }
+            numSrlPredicates += 1;
+          
+        }        
+        // update known preds and known pairs
+        for (int i=0; i<tmpSents.size(); i++) {
+            AnnoSentence sent = tmpSents.get(i);
+            sent.setKnownPredsFromSrlGraph();
+            sent.setKnownPairsFromSrlGraph();
+        }
+
+    }
+    
     private void addRelationsFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents) {
         SituationMentionSet cSms = ConcreteUtils.getFirstSituationMentionSetWithName(comm, prm.relationTool);
         if (cSms == null) {
@@ -311,7 +404,10 @@ public class ConcreteReader {
             if (cSm.getTokens() != null) {
                 trigger = getSpan(cSm.getTokens());
             }
-            
+            if (sentIdx < 0) {
+                log.warn("situation mention with no args: " + cSm);
+            	continue;
+            }
             RelationMention aSm = new RelationMention(type, subtype, aArgs, trigger);
             AnnoSentence aSent = tmpSents.get(sentIdx);
             RelationMentions aRels = aSent.getRelations();
@@ -389,6 +485,12 @@ public class ConcreteReader {
                 as.setParents(pair.get1());
                 as.setDeprels(pair.get2());
             }
+            /* TODO: deal with getting rid of parents now
+             * int[] parents = getParents(depParse, numWords);
+            as.setParents(parents);
+            String[] deprels = getDeprels(depParse, numWords);
+            as.setDeprels(Arrays.asList(deprels));
+            */
         }
         
         // Constituency Parse
@@ -397,10 +499,9 @@ public class ConcreteReader {
             as.setNaryTree(tree);
         }
         
-        // TODO: Semantic Role Labeling Graph
-        
         return as;
     }
+
 
     private static NaryTree getParse(Parse parse) {
         IntIntHashMap id2idx = new IntIntHashMap();

@@ -3,13 +3,18 @@ package edu.jhu.nlp.data.simple;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
+import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.conll.SrlGraph;
@@ -81,8 +86,12 @@ public class AnnoSentence {
     private List<Pair<NerMention,NerMention>> nePairs;
     // Labels for the pairs of named entities given by nePairs.
     private List<String> relLabels;
-    
-    // The original object (e.g. CoNLL09Sentence) used to create this sentence. 
+
+    // sprl properties for each pred arg pairs
+    private Map<Pair<Integer, Integer>, Properties> sprl;
+    private Set<Integer> sprlPreds;
+         
+    /** The original object (e.g. CoNLL09Sentence) used to create this sentence. */
     private Object sourceSent;
     
     public AnnoSentence() {
@@ -110,6 +119,7 @@ public class AnnoSentence {
         newSent.parents = IntArrays.copyOf(this.parents);
         newSent.depEdgeMask = (this.depEdgeMask == null) ? null : new DepEdgeMask(this.depEdgeMask);
         newSent.knownPreds = (this.knownPreds == null) ? null : new IntHashSet(this.knownPreds);
+        //newSent.knownSrlPairs = (this.knownSrlPairs == null) ? null : new HashSet<>(this.knownSrlPairs);
         newSent.namedEntities = new NerMentions(this.namedEntities);
         newSent.nePairs = QLists.copyOf(nePairs);
         newSent.relLabels = QLists.copyOf(relLabels);
@@ -121,6 +131,8 @@ public class AnnoSentence {
         newSent.srlGraph = this.srlGraph;
         // TODO: this should be a deep copy.
         newSent.naryTree = this.naryTree;
+        newSent.sprl = new HashMap<>(this.sprl);
+        newSent.sprlPreds = new HashSet<>(this.sprlPreds);
         return newSent;
     }
     
@@ -149,12 +161,17 @@ public class AnnoSentence {
         case DEPREL: dest.deprels = src.deprels; break;
         case DEP_EDGE_MASK: dest.depEdgeMask = src.depEdgeMask; break;
         case SRL_PRED_IDX: dest.knownPreds = src.knownPreds; break;
+        case SRL_PAIR_IDX: dest.knownSrlPairs= src.knownSrlPairs; break;
         case SRL: dest.srlGraph = src.srlGraph; break;
         case NARY_TREE: dest.naryTree = src.naryTree; break;
         case NER: dest.namedEntities = src.namedEntities; break;
         case NE_PAIRS: dest.nePairs = src.nePairs; break;
         case REL_LABELS: dest.relLabels = src.relLabels; break;
         case RELATIONS: dest.relations = src.relations; break;
+        case SPRL:
+            dest.sprl = src.sprl;
+            dest.sprlPreds = src.sprlPreds;
+            break;
         default: throw new RuntimeException("not implemented for " + at);
         }
     }
@@ -182,12 +199,14 @@ public class AnnoSentence {
         case DEPREL: this.deprels = null; break;
         case DEP_EDGE_MASK: this.depEdgeMask = null; break;
         case SRL_PRED_IDX: this.knownPreds = null; break;
+        case SRL_PAIR_IDX: this.knownSrlPairs = null; break;
         case SRL: this.srlGraph = null; break;
         case NARY_TREE: this.naryTree = null; break;
         case NER: this.namedEntities = null; break;
         case NE_PAIRS: this.nePairs = null; break;
         case REL_LABELS: this.relLabels = null; break;
         case RELATIONS: this.relations = null; break;
+        case SPRL: this.sprl = null; break;
         default: throw new RuntimeException("not implemented for " + at);
         }
     }
@@ -208,7 +227,9 @@ public class AnnoSentence {
         case DEP_TREE: return this.parents != null;
         case DEPREL: return this.deprels != null;
         case DEP_EDGE_MASK: return this.depEdgeMask != null;
+        case SPRL: return this.sprl != null;        
         case SRL_PRED_IDX: return this.knownPreds != null;
+        case SRL_PAIR_IDX: return this.knownSrlPairs != null;
         case SRL: return this.srlGraph != null;
         case NARY_TREE: return this.naryTree != null;
         case NER: return this.namedEntities != null;
@@ -271,8 +292,11 @@ public class AnnoSentence {
         }
         appendIfNotNull(sb, "deprels", deprels);
         appendIfNotNull(sb, "depEdgeMask", depEdgeMask);
+        appendIfNotNull(sb, "sprl", sprl);
+        appendIfNotNull(sb, "sprlPreds", sprlPreds);
         appendIfNotNull(sb, "srlGraph", srlGraph);
         appendIfNotNull(sb, "knownPreds", knownPreds);
+        appendIfNotNull(sb, "knownSrlPairs", knownSrlPairs);
         appendIfNotNull(sb, "naryTree", naryTree);
         appendIfNotNull(sb, "namedEntities", namedEntities);
         if (namedEntities != null) { appendIfNotNull(sb, "namedEntities (context)", namedEntities.toString(words)); }
@@ -478,7 +502,14 @@ public class AnnoSentence {
             }
         }
     }
-    
+
+    public void setKnownPairsFromSrlGraph() {
+        if (srlGraph == null) {
+            throw new IllegalStateException("This can only be called if srlGraph is non-null.");
+        }
+        knownSrlPairs = srlGraph.getKnownSrlPairs();
+    }
+
     /* ----------- Getters/Setters for internal storage ------------ */
         
     public List<String> getWords() {
@@ -588,6 +619,15 @@ public class AnnoSentence {
     public DepGraph getSrlGraph() {
         return srlGraph;
     }
+    public Set<Pair<Integer, Integer>> getKnownSrlPairs() {
+        return knownSrlPairs;
+    }
+    
+    public void setKnownSrlPreds(Set<Pair<Integer, Integer>> knownSrlPairs) {
+        this.knownSrlPairs = knownSrlPairs;
+    }
+    
+
 
     /** Constructs a new list containing the predicate senses. */
     public List<String> getPredSenses() {
@@ -651,16 +691,32 @@ public class AnnoSentence {
 		return nePairs;
 	}
 
-	public void setNePairs(List<Pair<NerMention, NerMention>> nePairs) {
-		this.nePairs = nePairs;
-	}
-
-	public List<String> getRelLabels() {
+    public void setNePairs(List<Pair<NerMention, NerMention>> nePairs) {
+        this.nePairs = nePairs;
+    }
+    
+    public List<String> getRelLabels() {
         return relLabels;
     }
 
     public void setRelLabels(List<String> relLabels) {
         this.relLabels = relLabels;
+    }
+
+    public Map<Pair<Integer, Integer>, Properties> getSprl() {
+        return sprl;
+    }
+
+    public void setSprl(Map<Pair<Integer, Integer>, Properties> sprl) {
+        this.sprl = sprl;
+    }
+
+    public Set<Integer> getSprlPreds() {
+        return sprlPreds;
+    }
+
+    public void setSprlPreds(Set<Integer> sprlPreds) {
+        this.sprlPreds = sprlPreds;
     }
 
     public RelationMentions getRelations() {

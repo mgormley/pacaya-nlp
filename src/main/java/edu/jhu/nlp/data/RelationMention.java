@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.apache.commons.lang3.ObjectUtils;
-
 import edu.jhu.prim.tuple.Pair;
+import org.apache.commons.lang3.ObjectUtils;
 
 /**
  * A relation mention consisting of:
@@ -58,7 +57,7 @@ public class RelationMention {
     public List<Pair<String, NerMention>> getArgs() {
         return args;
     }
-    
+
     public List<Pair<String, NerMention>> getNerOrderedArgs() {
         List<Pair<String, NerMention>> argsOrd = new ArrayList<>(args);
         Collections.sort(argsOrd, new Comparator<Pair<String,NerMention>>(){

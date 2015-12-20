@@ -37,8 +37,9 @@ public class TemplateLanguage {
      * be present in order to utilize each structure.
      */
     public enum AT {
-        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED_IDX, MORPHO, CHUNKS, DEP_TREE, DEPREL, 
-        DEP_EDGE_MASK, SRL_PRED_IDX, SRL, NARY_TREE, NE_TAGS, NER, NE_PAIRS, RELATIONS, REL_LABELS;
+        LEMMA, PREFIX, CHUNKS, NER, DEPREL, BROWN, WORD, SRL_PAIR_IDX, EMBED_IDX, POS,
+        NE_PAIRS, NE_TAGS, STRICT_POS, DEP_EDGE_MASK, SRL, MORPHO, RELATIONS, SRL_PRED_IDX,
+        CPOS, REL_LABELS, SPRL, NARY_TREE, DEP_TREE;
     }
     
     /** Word property. A mapping from a position to a string. */
@@ -137,7 +138,7 @@ public class TemplateLanguage {
     }
     
     /* -------------------- Descriptions of the Language Elements ---------------- */
-
+        
     public static Description getDescByName(String name) {
         name = Description.normalizeName(name);
         return nameDescMap.get(name);
