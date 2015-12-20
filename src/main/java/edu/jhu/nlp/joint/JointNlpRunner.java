@@ -646,15 +646,16 @@ public class JointNlpRunner {
         srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
         srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
-
+        
+        // TODO: do these for the sprl feature templates, too
         if (noLemma) {
-            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.argTemplates, TokProperty.LEMMA);
-            srlPrm.srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.senseTemplates, TokProperty.LEMMA);
+            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.LEMMA);
+            srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.LEMMA);
         }
 
         if (noMorpho) {
-            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.argTemplates, TokProperty.MORPHO);
-            srlPrm.srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlPrm.srlFePrm.senseTemplates, TokProperty.MORPHO);
+            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.MORPHO);
+            srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.MORPHO);
         }
 
         srlPrm.srlFePrm = srlFePrm;
