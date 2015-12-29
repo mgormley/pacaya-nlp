@@ -105,6 +105,8 @@ public class CorpusHandler {
     public static boolean trainUseCoNLLXPhead = false;
     @Opt(hasArg = true, description = "Tool name of dependency parse for ConcreteReader. (defaults to the first)")
     public static String concreteDepParseTool = null;
+    @Opt(hasArg = true, description = "Tool name of SRL for ConcreteReader (will also be used for NER and Relations).")
+    public static String concreteSrlTool = null;
     
     ////// TODO: use these options... /////
     // @Opt(hasArg=true, description="Whether to normalize and clean words.")
@@ -396,6 +398,9 @@ public class CorpusHandler {
         prm.normalizeRoleNames = normalizeRoleNames;
         prm.useGoldSyntax = useGoldSyntax;
         prm.rePrm.depParseTool = concreteDepParseTool;
+        prm.rePrm.srlTool= concreteSrlTool;
+        prm.rePrm.nerTool= concreteSrlTool;
+        prm.rePrm.relationTool = concreteSrlTool;
         return prm;
     }
     
