@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
+import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
@@ -22,6 +23,7 @@ import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
+import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
@@ -32,10 +34,12 @@ import edu.jhu.nlp.tag.TemplateFeatureFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.tuple.Pair;
 
 /**
  * A factor graph builder for joint dependency parsing and semantic role
@@ -73,7 +77,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     }
     
     public enum JointFactorTemplate {
-        LINK_ROLE_BINARY, ROLE_P_TAG_BINARY, ROLE_C_TAG_BINARY,
+        LINK_ROLE_BINARY, ROLE_P_TAG_BINARY, ROLE_C_TAG_BINARY, ROLE_SPRL_BINARY
     }
     
     // Parameters for constructing the factor graph.
@@ -123,6 +127,23 @@ public class JointNlpFactorGraph extends FactorGraph {
         if (prm.includeRel ) {
             rel = new RelationsFactorGraphBuilder(prm.relPrm);
             rel.build(sent, ofc, fg, cs);
+        }
+        
+        if (prm.includeSrl && prm.includeSprl) {
+            // Add the joint factors between srl and sprl
+            SprlVar[][][] sprlVars = sprl.getSprlVars();
+            RoleVar[][] roleVars = srl.getRoleVars();
+            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
+                    prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
+                int i = e.get1();
+                int j = e.get2();
+                for (Property q : Property.values()) {
+                    Pair<JointFactorTemplate, Property> templateKey = new Pair<>(
+                                JointFactorTemplate.ROLE_SPRL_BINARY, q); 
+                    addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], sprlVars[i][j][q.ordinal()]), 
+                            JointFactorTemplate.ROLE_SPRL_BINARY, templateKey, ofc, srl.getFeatExtractor()));
+                }
+            }
         }
         
         if (prm.includeDp && prm.includeSrl) {

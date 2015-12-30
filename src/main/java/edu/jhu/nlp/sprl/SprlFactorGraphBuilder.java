@@ -43,8 +43,10 @@ public class SprlFactorGraphBuilder {
          * feature-hashing will be disabled.
          */
         public int featureHashMod = 1000000;
-        /** Whether to include unary factors on each tag. */
+        /** Whether to include unary factors on each sprl var. */
         public boolean unaryFactors = true;
+        /** Whether to include pairwise factors between all sprl vars for a given pred-arg pair. */
+        public boolean pairwiseFactors = false;
         /** The structure of the Role variables. */
         public RoleStructure roleStructure = RoleStructure.PREDS_GIVEN;
         /**
@@ -79,7 +81,7 @@ public class SprlFactorGraphBuilder {
     }
     
     public enum SprlFactorType {
-        SPRL_UNARY
+        SPRL_UNARY, SPRL_PAIRWISE
     }
 
     private SprlFactorGraphBuilderPrm prm;
@@ -89,17 +91,20 @@ public class SprlFactorGraphBuilder {
         this.prm = prm;
     }
 
+    public SprlVar[][][] getSprlVars() {
+        return sprlVars;
+    }
+    
     /**
      * Adds factors and variables to the given factor graph.
      */
     public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
         // Create feature extractor.
         SrlFeatureExtractor obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
-        int nq = Property.values().length; // number of questions
         ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
         // create the variables
         int n = isent.size();
-        sprlVars = new SprlVar[n][n][nq];
+        sprlVars = new SprlVar[n][n][Property.values().length];
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
                 prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
@@ -108,7 +113,7 @@ public class SprlFactorGraphBuilder {
             for (Property q : Property.values()) {
                 // 4-way classification
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
-                SprlVar v = new SprlVar(sprlType, nq, name, SprlClassLabel.sprlLabels, i, j);
+                SprlVar v = new SprlVar(sprlType, SprlClassLabel.sprlLabels.size(), name, SprlClassLabel.sprlLabels, i, j);
 
                 // add the variable
                 fg.addVar(v);
@@ -123,6 +128,16 @@ public class SprlFactorGraphBuilder {
                     // these will be separate from factors with any other
                     // FactorType)
                     fg.addFactor(new ObsFeTypedFactor(vars, SprlFactorType.SPRL_UNARY, q, ofc, obsFe));
+                }
+            }
+            if (prm.pairwiseFactors) {
+                for (Property q1 : Property.values()) {
+                    SprlVar v1 = sprlVars[i][j][q1.ordinal()];
+                    for (Property q2 : Property.values()) {                
+                        SprlVar v2 = sprlVars[i][j][q2.ordinal()];
+                        Pair<Property, Property> templateKey = new Pair<>(q1, q2);
+                        fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2), SprlFactorType.SPRL_PAIRWISE, templateKey, ofc, obsFe));
+                    }
                 }
             }
         }
