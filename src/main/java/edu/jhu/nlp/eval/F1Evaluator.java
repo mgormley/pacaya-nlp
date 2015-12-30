@@ -13,7 +13,7 @@ import edu.jhu.prim.tuple.Pair;
 
 /**
  * Computes the micro-averaged precision, recall, and F1.
- * 
+ *
  * @author mgormley
  */
 public abstract class F1Evaluator implements Evaluator {
@@ -38,7 +38,7 @@ public abstract class F1Evaluator implements Evaluator {
 
     /** True iff the label corresponds to the "nil" label. */
     protected abstract boolean isNilLabel(String label);
-    
+
     /** Returns the labels for a given sentence, or null if no labels are present. */
     protected abstract List<String> getLabels(AnnoSentence sent);
 
@@ -58,17 +58,17 @@ public abstract class F1Evaluator implements Evaluator {
         numInstances = 0;
         numMissing = 0;
     }
-    
+
     /** Computes the precision, recall, and micro-averaged F1 of relations mentions. */
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
         accum(predSents, goldSents);
-        
+
         String dataType = getDataType();
-        
+
         log.debug(String.format("%s # correct positives on %s: %d", dataType, dataName, numCorrectPositive));
         log.debug(String.format("%s # predicted positives on %s: %d", dataType, dataName, numPredictPositive));
         log.debug(String.format("%s # true positives on %s: %d", dataType, dataName, numTruePositive));
-        
+
         log.info(String.format("%s # sents not annotated on %s: %d", dataType, dataName, numMissing));
         log.info(String.format("%s # instances on %s: %d", dataType, dataName, numInstances));
 
@@ -76,20 +76,20 @@ public abstract class F1Evaluator implements Evaluator {
         log.info(String.format("%s Precision on %s: %.4f", dataType, dataName, precision));
         log.info(String.format("%s Recall on %s: %.4f", dataType, dataName, recall));
         log.info(String.format("%s F1 on %s: %.4f", dataType, dataName, f1));
-        
+
         rep.report(dataName+dataType+"Precision", precision);
         rep.report(dataName+dataType+"Recall", recall);
         rep.report(dataName+dataType+"F1", f1);
-        
+
         return -f1;
     }
-    
+
     /** Computes the precision, recall, and micro-averaged F1 over all the sentences. */
     public void accum(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents) {
         reset();
-        
+
         assert predSents.size() == goldSents.size();
-        
+
         // For each sentence.
         for (int s = 0; s < goldSents.size(); s++) {
             AnnoSentence goldSent = goldSents.get(s);
@@ -97,7 +97,7 @@ public abstract class F1Evaluator implements Evaluator {
             accum(goldSent, predSent);
         }
     }
-    
+
     /** Accumulate the sufficient statistics for the sentence. */
     public void accum(AnnoSentence goldSent, AnnoSentence predSent) {
         Pair<List<String>, List<String>> pair = getLabels(goldSent, predSent);
@@ -109,12 +109,12 @@ public abstract class F1Evaluator implements Evaluator {
         if (gold == null) { return; }
         if (pred == null) { numMissing++; }
         if (pred != null) { assert gold.size() == pred.size(); }
-        
+
         // For each pair of named entities.
-        for (int k=0; k<gold.size(); k++) {                
+        for (int k=0; k<gold.size(); k++) {
             String goldLabel = gold.get(k);
             String predLabel = (pred == null) ? null : pred.get(k);
-            
+
             boolean goldIsNil = isNilLabel(goldLabel);
             boolean predIsNil = (pred == null) ? false : isNilLabel(predLabel);
 
@@ -132,7 +132,7 @@ public abstract class F1Evaluator implements Evaluator {
                 numPredictPositive++;
             }
             numInstances++;
-            log.trace(String.format("goldLabel=%s predLabel=%s", goldLabel, predLabel));                    
+            log.trace(String.format("goldLabel=%s predLabel=%s", goldLabel, predLabel));
         }
         precision = numPredictPositive == 0 ? 0.0 : (double) numCorrectPositive / numPredictPositive;
         recall = numTruePositive == 0 ? 0.0 :  (double) numCorrectPositive / numTruePositive;
@@ -174,5 +174,5 @@ public abstract class F1Evaluator implements Evaluator {
     public int getNumMissing() {
         return numMissing;
     }
-    
+
 }
