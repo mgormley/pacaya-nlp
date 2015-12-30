@@ -1,5 +1,6 @@
 package edu.jhu.nlp.joint;
 
+import java.io.Serializable;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -38,6 +39,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.SerializablePair;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;
 
@@ -138,7 +140,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                 int i = e.get1();
                 int j = e.get2();
                 for (Property q : Property.values()) {
-                    Pair<JointFactorTemplate, Property> templateKey = new Pair<>(
+                    Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
                                 JointFactorTemplate.ROLE_SPRL_BINARY, q); 
                     addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], sprlVars[i][j][q.ordinal()]), 
                             JointFactorTemplate.ROLE_SPRL_BINARY, templateKey, ofc, srl.getFeatExtractor()));
