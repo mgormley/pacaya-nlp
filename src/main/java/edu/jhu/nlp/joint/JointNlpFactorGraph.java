@@ -76,6 +76,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         /** Whether to include SPRL */
         public boolean includeSprl = false;
         public SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
+        public boolean sprlSrlFactors = false;
     }
     
     public enum JointFactorTemplate {
@@ -131,7 +132,7 @@ public class JointNlpFactorGraph extends FactorGraph {
             rel.build(sent, ofc, fg, cs);
         }
         
-        if (prm.includeSrl && prm.includeSprl) {
+        if (prm.includeSrl && prm.includeSprl && prm.sprlSrlFactors) {
             // Add the joint factors between srl and sprl
             SprlVar[][][] sprlVars = sprl.getSprlVars();
             RoleVar[][] roleVars = srl.getRoleVars();

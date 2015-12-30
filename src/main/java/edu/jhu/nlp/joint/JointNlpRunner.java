@@ -584,6 +584,7 @@ public class JointNlpRunner {
             prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
         }
 
+        prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
         // TODO: probably should decouple the sprl feature extraction from the srl feature extraction
         prm.fgPrm.sprlPrm.srlFePrm = prm.fgPrm.srlPrm.srlFePrm;
