@@ -9,13 +9,13 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 import edu.jhu.hlt.concrete.AnnotationMetadata;
+import edu.jhu.hlt.concrete.Argument;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.Dependency;
 import edu.jhu.hlt.concrete.DependencyParse;
@@ -27,7 +27,9 @@ import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SituationMention;
 import edu.jhu.hlt.concrete.SituationMentionSet;
+import edu.jhu.hlt.concrete.TaggedToken;
 import edu.jhu.hlt.concrete.TokenRefSequence;
+import edu.jhu.hlt.concrete.TokenTagging;
 import edu.jhu.hlt.concrete.Tokenization;
 import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.concrete.serialization.CompactCommunicationSerializer;
@@ -44,11 +46,8 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.prim.tuple.Pair;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Writer of Concrete files from {@link AnnoSentence}s.
@@ -69,6 +68,10 @@ public class ConcreteWriter {
         public boolean addNerMentions = true;
         /** Whether to add relations. */
         public boolean addRelations = true;
+        /** Whether to add pos tags. */
+        public boolean addPos = true;
+        /** Whether to add lemmata. */
+        public boolean addLemmata = true;
         /* ---------------------------------------------------- */
         /**
          * Whether to write out SRL as a labeled dependency tree (i.e. syntax) or as SituationMentions.
@@ -92,7 +95,7 @@ public class ConcreteWriter {
             this.addNerMentions = ats.contains(AT.NER);
             this.addRelations = ats.contains(AT.RELATIONS);
 
-            EnumSet<AT> others = EnumSet.complementOf(EnumSet.of(AT.DEP_TREE, AT.SRL, AT.NER, AT.RELATIONS, AT.SPRL));
+            EnumSet<AT> others = EnumSet.complementOf(EnumSet.of(AT.DEP_TREE, AT.SRL, AT.NER, AT.RELATIONS, AT.SPRL, AT.LEMMA, AT.POS));
             for (AT at : ats) {
                 if (others.contains(at)) {
                     log.warn("Annotations of type {} are not supported by ConcreteWriter and will not be added to Concrete Communications.", at);
@@ -108,6 +111,8 @@ public class ConcreteWriter {
     private static final String REL_TOOL = "Pacaya Relation Extractor";
     public static final String SPRL_TOOL = "Pacaya Semantic Proto-Role Labeler (SPRL)";
     private static final String NER_TOOL = "Pacaya Named Entity Recognizer (NER)";
+    private static final String POS_TOOL = "pos";
+    private static final String LEMMA_TOOL = "lemmata";
 
     private final long timestamp;     // time that every annotation that is processed will get
     private final ConcreteWriterPrm prm;
@@ -159,6 +164,56 @@ public class ConcreteWriter {
         if (prm.addNerMentions || prm.addRelations) {
             addNerMentionsAndRelations(sents, comm);
         }
+        if (prm.addLemmata) {
+            addLemmata(sents, comm);
+        }
+        if (prm.addPos) {
+            addPos(sents, comm);
+        }
+    }
+
+    private void addPos(AnnoSentenceCollection sents, Communication comm) {
+        if (!sents.someHaveAt(AT.POS)) { return; }
+        List<Tokenization> ts = getTokenizationsCorrespondingTo(sents, comm);
+        AnnotationMetadata meta = new AnnotationMetadata();
+        meta.setTool(POS_TOOL);
+        meta.setTimestamp(timestamp);
+        for(int i=0; i<ts.size(); i++) {
+            Tokenization t = ts.get(i);
+            AnnoSentence s = sents.get(i);
+            List<TaggedToken> taggedTokens = new ArrayList<>();
+            for (int j=0; j < s.size(); j++) {
+                TaggedToken taggedToken = new TaggedToken();
+                taggedToken.setTag(s.getPosTag(j));
+                taggedToken.setTokenIndex(j);
+                taggedTokens.add(taggedToken);
+            }
+            TokenTagging tokenTagging = new TokenTagging(getUUID(), meta, taggedTokens);
+            tokenTagging.setTaggingType("POS");
+            t.addToTokenTaggingList(tokenTagging);
+       }
+    }
+
+    private void addLemmata(AnnoSentenceCollection sents, Communication comm) {
+        if (!sents.someHaveAt(AT.LEMMA)) { return; }
+        List<Tokenization> ts = getTokenizationsCorrespondingTo(sents, comm);
+        AnnotationMetadata meta = new AnnotationMetadata();
+        meta.setTool(LEMMA_TOOL);
+        meta.setTimestamp(timestamp);
+        for(int i=0; i<ts.size(); i++) {
+            Tokenization t = ts.get(i);
+            AnnoSentence s = sents.get(i);
+            List<TaggedToken> taggedTokens = new ArrayList<>();
+            for (int j=0; j < s.size(); j++) {
+                TaggedToken taggedToken = new TaggedToken();
+                taggedToken.setTag(s.getLemma(j));
+                taggedToken.setTokenIndex(j);
+                taggedTokens.add(taggedToken);
+            }
+            TokenTagging tokenTagging = new TokenTagging(getUUID(), meta, taggedTokens);
+            tokenTagging.setTaggingType("LEMMA");
+            t.addToTokenTaggingList(tokenTagging);
+       }
     }
 
     /**
@@ -276,7 +331,7 @@ public class ConcreteWriter {
         }
         return p;
     }
-    
+
     private List<SituationMention> makeSitutationMentions(SrlGraph srl, AnnoSentence from, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, Map<Pair<Integer, Integer>, Properties> sprl) {
         AnnotationMetadata sprlMeta = new AnnotationMetadata();
         sprlMeta.setTool(SPRL_TOOL);
@@ -284,9 +339,8 @@ public class ConcreteWriter {
 
     	List<SituationMention> mentions = new ArrayList<SituationMention>();
         for(SrlPred p : srl.getPreds()) {
-            SituationMention sm = new SituationMention();
+            SituationMention sm = new SituationMention(getUUID(), new ArrayList<MentionArgument>());
             sm.setText(from.getWord(p.getPosition()));
-            sm.setArgumentList(new ArrayList<MentionArgument>());
             for(SrlEdge child : p.getEdges()) {
                 int ai = child.getArg().getPosition();
                 MentionArgument a = new MentionArgument();
@@ -306,7 +360,7 @@ public class ConcreteWriter {
                 		a.setPropertyList(props);
                 	}
                 }
-                
+
                 // make an EntityMention
                 EntityMention em = new EntityMention();
                 em.setUuid(getUUID());
@@ -321,7 +375,9 @@ public class ConcreteWriter {
 
                 a.setEntityMentionId(em.getUuid());
                 addEntityMentionsTo.addToMentionList(em);
+                sm.addToArgumentList(a);
             }
+            mentions.add(sm);
         }
         return mentions;
     }

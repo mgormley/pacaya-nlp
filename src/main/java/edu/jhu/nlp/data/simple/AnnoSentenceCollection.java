@@ -210,6 +210,6 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         assert folds.size() == numFolds;
         return folds;
-    }
+   }
     
 }

@@ -323,7 +323,12 @@ public class ConcreteReader {
                 
                 // add argument
                 int argLoc = emId2em.get(cEmId).getHead();
-                if (argLoc < 0) log.warn("invisible argument. cArg: " + cArg);
+                if (argLoc < 0) {
+                    // TODO: consider handling this differently
+                    // the layout of args into an array indexed by position below, doesn't lend itself to empty arguments
+                    log.warn("skipping invisible argument. cArg: " + cArg);
+                    continue;
+                }
                 SrlArg srlArg = srlGraph.getArgAt(argLoc);
                 if (srlArg == null) {
                     srlArg = new SrlArg(argLoc);

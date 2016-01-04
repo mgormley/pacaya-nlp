@@ -10,6 +10,15 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.hlt.concrete.AnnotationMetadata;
+import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.hlt.concrete.Section;
+import edu.jhu.hlt.concrete.Sentence;
+import edu.jhu.hlt.concrete.Tokenization;
+import edu.jhu.hlt.concrete.communications.CommunicationFactory;
+import edu.jhu.hlt.concrete.section.SectionFactory;
+import edu.jhu.hlt.concrete.uuid.UUIDFactory;
+import edu.jhu.nlp.data.concrete.ConcreteUtils;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.data.simple.AnnoSentenceWriter.AnnoSentenceWriterPrm;
@@ -85,7 +94,10 @@ public class CorpusHandler {
     // Options for dependency parse pre-processing.
     @Opt(hasArg = true, description = "Whether to projectivize the training depedendency parses")
     public static boolean trainProjectivize = false;
-    
+
+    @Opt(hasArg = true, description = "Whether to create a fresh communication for the gold train output (only applies trainGoldOut == CONCRETE)")
+    public static boolean createTrainCommunication = false;
+
     // Options for data munging.
     @Opt(hasArg = true, description = "Whether to use gold POS tags.")
     public static boolean useGoldSyntax = false;    
@@ -194,13 +206,23 @@ public class CorpusHandler {
         trainInputSents = trainGoldSents.getWithAtsRemoved(getGoldOnlyAts());
     }
 
+
     public void writeTrainGold() throws IOException {
         if (trainGoldOut != null) {
             // Write gold train data.
             AnnoSentenceWriterPrm wPrm = new AnnoSentenceWriterPrm();
             wPrm.name = "gold train";
             AnnoSentenceWriter writer = new AnnoSentenceWriter(wPrm);
-            writer.write(trainGoldOut, getTrainTypeOut(), trainGoldSents, new HashSet<AT>());
+            if (getTrainTypeOut() == DatasetType.CONCRETE && createTrainCommunication) {
+                Object oldSourceSents = trainGoldSents.getSourceSents();
+                Communication comm = ConcreteUtils.ingestText(trainGoldSents.getText(), "corpus", "corpus", "tokenization");
+                trainGoldSents.setSourceSents(java.util.Collections.singletonList(comm));
+                List<AT> ats = trainGoldSents.get(0).getAts();
+                writer.write(trainGoldOut, getTrainTypeOut(), trainGoldSents, ats);
+                trainGoldSents.setSourceSents(oldSourceSents);
+            } else {
+                writer.write(trainGoldOut, getTrainTypeOut(), trainGoldSents, new HashSet<AT>());
+            }
         }
     }
     

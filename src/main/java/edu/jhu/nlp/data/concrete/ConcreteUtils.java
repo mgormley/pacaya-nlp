@@ -1,19 +1,90 @@
 package edu.jhu.nlp.data.concrete;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhu.hlt.concrete.AnnotationMetadata;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.DependencyParse;
 import edu.jhu.hlt.concrete.EntityMentionSet;
 import edu.jhu.hlt.concrete.Parse;
 import edu.jhu.hlt.concrete.Section;
+import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SituationMentionSet;
+import edu.jhu.hlt.concrete.TextSpan;
+import edu.jhu.hlt.concrete.Token;
+import edu.jhu.hlt.concrete.TokenList;
 import edu.jhu.hlt.concrete.TokenTagging;
 import edu.jhu.hlt.concrete.Tokenization;
+import edu.jhu.hlt.concrete.TokenizationKind;
+import edu.jhu.hlt.concrete.communications.CommunicationFactory;
+import edu.jhu.hlt.concrete.section.SectionFactory;
+import edu.jhu.hlt.concrete.util.ConcreteException;
+import edu.jhu.hlt.concrete.uuid.UUIDFactory;
+import edu.jhu.nlp.data.simple.AnnoSentence;
 
 public class ConcreteUtils {
 
     private ConcreteUtils() { }
+    
+    /**
+     * @return A concrete communication containing the tokens of the text, split into sections by newlines (skipping blank lines), and tokenized on whitespace which are replaced by single spaces
+     * @throws ConcreteException 
+     */
+    public static Communication ingestText(String text, String commId, String commTool, String tokTool) {
+        AnnotationMetadata commMetadata = new AnnotationMetadata();
+        commMetadata.setTimestamp(System.currentTimeMillis());
+        commMetadata.setTool(commTool);
+        AnnotationMetadata tokenizationMetadata = new AnnotationMetadata();
+        tokenizationMetadata.setTimestamp(System.currentTimeMillis());
+        tokenizationMetadata.setTool(tokTool);
+        Communication comm;
+        try {
+            comm = CommunicationFactory.create(commId);
+        } catch (ConcreteException e) {
+            e.printStackTrace();
+            return null;
+        }
+        comm.setType("corpus");
+        comm.setMetadata(commMetadata);
+
+        List<Section> sections = new ArrayList<>();
+        List<String> sentenceStrs = new ArrayList<>();
+        int nchars = 0;
+        for (String sentStr : text.trim().split("\\n")) {
+            sentStr = sentStr.trim();
+            if (sentStr.length() == 0) { continue; }
+            List<String> tokenStrs = new ArrayList<>();
+            List<Token> tokList = new ArrayList<>();
+            int tokIndex = 0;
+            for (String tokStr : sentStr.split("\\s+")) {
+                tokStr = tokStr.trim();
+
+                Token newTok = new Token();
+                newTok.setTokenIndex(tokIndex);
+                newTok.setTextSpan(new TextSpan(nchars, nchars + tokStr.length()));
+                newTok.setText(tokStr);
+
+                tokList.add(newTok);
+                tokenStrs.add(tokStr);
+                tokIndex += 1;
+                nchars += tokStr.length() + 1;  // +1 because of space or newline
+            }
+            Tokenization tok = new Tokenization(UUIDFactory.newUUID(), tokenizationMetadata, TokenizationKind.TOKEN_LIST);
+            Section newSection = new Section(UUIDFactory.newUUID(), "section");
+            Sentence sent = new Sentence(UUIDFactory.newUUID());
+
+            tok.setTokenList(new TokenList(tokList));
+            sent.setTokenization(tok);
+            newSection.addToSentenceList(sent);
+
+            sections.add(newSection);
+            sentenceStrs.add(String.join(" ", tokenStrs));
+        }
+        comm.setSectionList(sections);
+        comm.setText(String.join("\n", sentenceStrs));
+        return comm;
+    }
 
     public static TokenTagging getFirstXTags(Tokenization tokenization, String taggingType) {
         return getFirstXTagsWithName(tokenization, taggingType, null);

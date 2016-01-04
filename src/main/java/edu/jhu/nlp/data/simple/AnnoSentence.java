@@ -181,6 +181,19 @@ public class AnnoSentence {
             removeAt(at);
         }
     }
+    
+    /**
+     * @return a list of the annotation types present in this sentence
+     */
+    public final List<AT> getAts() {
+        List<AT> ats = new ArrayList<>();
+        for (AT at : AT.values()) {
+            if (hasAt(at)) {
+                ats.add(at);
+            }
+        }
+        return ats; 
+    }
 
     public void removeAt(AT at) {
         switch (at) {
