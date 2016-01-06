@@ -337,7 +337,8 @@ public class ConcreteReader {
                 srlGraph.addEdge(new SrlEdge(srlPred, srlArg, role));
 
                 // add properties
-                if (cArg.getPropertyList().size() > 0) {
+                List<Property> propertyList = cArg.getPropertyList();
+                if (propertyList != null && propertyList.size() > 0) {
                     Properties props = new Properties();
                     for (Property prop : cArg.getPropertyList()) {
                         props.add(prop.getValue(), prop.getPolarity());

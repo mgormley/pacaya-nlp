@@ -113,7 +113,7 @@ public class ConcreteWriter {
     private static final String NER_TOOL = "Pacaya Named Entity Recognizer (NER)";
     private static final String POS_TOOL = "pos";
     private static final String LEMMA_TOOL = "lemmata";
-
+    private static final String PRED_TYPE = "PREDICATE";
     private final long timestamp;     // time that every annotation that is processed will get
     private final ConcreteWriterPrm prm;
 
@@ -340,32 +340,40 @@ public class ConcreteWriter {
     	List<SituationMention> mentions = new ArrayList<SituationMention>();
         for(SrlPred p : srl.getPreds()) {
             SituationMention sm = new SituationMention(getUUID(), new ArrayList<MentionArgument>());
+            sm.setSituationType(PRED_TYPE);
+            sm.setSituationKind(p.getLabel());
+            // set the text for the predicate
             sm.setText(from.getWord(p.getPosition()));
+            TokenRefSequence smToks = new TokenRefSequence();
+            smToks.setAnchorTokenIndex(p.getPosition());
+            smToks.setTokenIndexList(Arrays.asList(p.getPosition()));
+            smToks.setTokenizationId(useUUID.getUuid());
+            sm.setTokens(smToks);
             for(SrlEdge child : p.getEdges()) {
                 int ai = child.getArg().getPosition();
                 MentionArgument a = new MentionArgument();
                 a.setRole(child.getLabel());
 
                 if (sprl != null) {
-                	Properties cProps = sprl.get(new Pair<>(p.getPosition(), child.getArg().getPosition()));
-                	if (cProps != null && cProps.get().size() > 0) {
-                		List<Property> props = new ArrayList<>();
-                		for (Pair<String, Double> pair : cProps.get()) {
-                			Property newProp = new Property();
-                			newProp.setValue(pair.get1());
-                			newProp.setPolarity(pair.get2());
-                			newProp.setMetadata(sprlMeta);
-                			props.add(newProp);
-                		}
-                		a.setPropertyList(props);
-                	}
+                    Properties cProps = sprl.get(new Pair<>(p.getPosition(), child.getArg().getPosition()));
+                    if (cProps != null && cProps.get().size() > 0) {
+                        List<Property> props = new ArrayList<>();
+                        for (Pair<String, Double> pair : cProps.get()) {
+                            Property newProp = new Property();
+                            newProp.setValue(pair.get1());
+                            newProp.setPolarity(pair.get2());
+                            newProp.setMetadata(sprlMeta);
+                            props.add(newProp);
+                        }
+                        a.setPropertyList(props);
+                    }
                 }
-
                 // make an EntityMention
                 EntityMention em = new EntityMention();
                 em.setUuid(getUUID());
                 em.setEntityType("UNKNOWN");
                 em.setPhraseType("OTHER");
+                // set the text for the arg
                 em.setText(from.getWord(ai));
                 TokenRefSequence seq = new TokenRefSequence();
                 em.setTokens(seq);
