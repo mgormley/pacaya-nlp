@@ -27,6 +27,7 @@ import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.eval.DepParseAccuracy;
 import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.RelationEvaluator;
+import edu.jhu.nlp.eval.SprlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.fcm.FcmModule;
@@ -155,6 +156,8 @@ public class JointNlpAnnotator implements Trainable {
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS, AT.RELATIONS))
                 ) {
             eval = new RelationEvaluator();
+        } else if (CorpusHandler.getPredAts().contains(AT.SPRL)) {
+            eval = new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops);
         } else {
             log.warn("Validation function not implemented. Skipping.");
             return null;
