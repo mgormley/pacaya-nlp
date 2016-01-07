@@ -8,18 +8,18 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.pacaya.util.report.Reporter;
-import edu.jhu.prim.tuple.Pair;
 
 /**
- * Computes the micro-averaged precision, recall, and F1.
- *
+ * Computes the precision, recall, and micro-averaged F1.
+ * 
  * @author mgormley
  */
-public abstract class F1Evaluator implements Evaluator {
+public abstract class LabelEvaluator implements Evaluator {
 
-    private static final Logger log = LoggerFactory.getLogger(F1Evaluator.class);
-    private static final Reporter rep = Reporter.getReporter(F1Evaluator.class);
+    private static final Logger log = LoggerFactory.getLogger(LabelEvaluator.class);
+    private static final Reporter rep = Reporter.getReporter(LabelEvaluator.class);
 
     private double precision;
     private double recall;
@@ -32,20 +32,19 @@ public abstract class F1Evaluator implements Evaluator {
     private int numTruePositive;
     private int numInstances;
     private int numMissing;
-
-    /** Gets the type of data, which is used as a prefix for reporting. */
-    protected abstract String getDataType();
+    
+    /** Returns the labels for a given sentence. Takes the gold
+     * sentence incase the evaluator need gold information to
+     * determine the order of the labels for example. (returning a map
+     * instead might solve this problem)
+     */
+    protected abstract List<String> getLabels(AnnoSentence sent, AnnoSentence gold);
 
     /** True iff the label corresponds to the "nil" label. */
     protected abstract boolean isNilLabel(String label);
 
-    /** Returns the labels for a given sentence, or null if no labels are present. */
-    protected abstract List<String> getLabels(AnnoSentence sent);
-
-    /** Returns the labels for the gold / predicted sentences, or null if no labels are present. */
-    protected Pair<List<String>,List<String>> getLabels(AnnoSentence goldSent, AnnoSentence predSent) {
-        return new Pair<>(getLabels(goldSent), getLabels(predSent));
-    }
+    /** Gets the type of data, which is used as a prefix for reporting. */
+    protected abstract String getDataType();
 
     protected void reset() {
         precision = 0;
@@ -58,50 +57,41 @@ public abstract class F1Evaluator implements Evaluator {
         numInstances = 0;
         numMissing = 0;
     }
-
+    
     /** Computes the precision, recall, and micro-averaged F1 of relations mentions. */
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
         accum(predSents, goldSents);
-
+        
         String dataType = getDataType();
-
-        log.debug(String.format("%s # correct positives on %s: %d", dataType, dataName, numCorrectPositive));
-        log.debug(String.format("%s # predicted positives on %s: %d", dataType, dataName, numPredictPositive));
-        log.debug(String.format("%s # true positives on %s: %d", dataType, dataName, numTruePositive));
-
-        log.info(String.format("%s # sents not annotated on %s: %d", dataType, dataName, numMissing));
-        log.info(String.format("%s # instances on %s: %d", dataType, dataName, numInstances));
-
-        log.info(String.format("%s Accuracy on %s: %.4f", dataType, dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
-        log.info(String.format("%s Precision on %s: %.4f", dataType, dataName, precision));
-        log.info(String.format("%s Recall on %s: %.4f", dataType, dataName, recall));
-        log.info(String.format("%s F1 on %s: %.4f", dataType, dataName, f1));
-
+        log.info(String.format("Num sents not annotated on %s: %d", dataName, numMissing));
+        log.info(String.format("Accuracy on %s: %.4f", dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
+        log.info(String.format("Num instances on %s: %d", dataName, numInstances));
+        log.info(String.format("Num true positives on %s: %d", dataName, numTruePositive));
+        log.info(String.format("Precision on %s: %.4f", dataName, precision));
+        log.info(String.format("Recall on %s: %.4f", dataName, recall));
+        log.info(String.format("F1 on %s: %.4f", dataName, f1));
+        
         rep.report(dataName+dataType+"Precision", precision);
         rep.report(dataName+dataType+"Recall", recall);
         rep.report(dataName+dataType+"F1", f1);
-
+        
         return -f1;
     }
-
+    
     /** Computes the precision, recall, and micro-averaged F1 over all the sentences. */
     public void accum(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents) {
         reset();
-
+        
         assert predSents.size() == goldSents.size();
-
+        
         // For each sentence.
         for (int s = 0; s < goldSents.size(); s++) {
             AnnoSentence goldSent = goldSents.get(s);
             AnnoSentence predSent = predSents.get(s);
-            accum(goldSent, predSent);
+            List<String> gold = getLabels(goldSent, goldSent);
+            List<String> pred = getLabels(predSent, goldSent);
+            accum(gold, pred);            
         }
-    }
-
-    /** Accumulate the sufficient statistics for the sentence. */
-    public void accum(AnnoSentence goldSent, AnnoSentence predSent) {
-        Pair<List<String>, List<String>> pair = getLabels(goldSent, predSent);
-        accum(pair.get1(), pair.get2());
     }
 
     /** Accumulate the sufficient statistics for the sentence. */
@@ -109,30 +99,27 @@ public abstract class F1Evaluator implements Evaluator {
         if (gold == null) { return; }
         if (pred == null) { numMissing++; }
         if (pred != null) { assert gold.size() == pred.size(); }
-
+        
         // For each pair of named entities.
-        for (int k=0; k<gold.size(); k++) {
+        for (int k=0; k<gold.size(); k++) {                
             String goldLabel = gold.get(k);
             String predLabel = (pred == null) ? null : pred.get(k);
-
-            boolean goldIsNil = isNilLabel(goldLabel);
-            boolean predIsNil = (pred == null) ? false : isNilLabel(predLabel);
-
-            if (pred != null && ((goldIsNil && predIsNil) || (goldLabel != null && goldLabel.equals(predLabel)))){
-                if (!goldIsNil) {
+            
+            if (goldLabel.equals(predLabel)) {
+                if (!isNilLabel(goldLabel)) {
                     numCorrectPositive++;
                 } else {
                     numCorrectNegative++;
                 }
             }
-            if (!goldIsNil) {
+            if (!isNilLabel(goldLabel)) {
                 numTruePositive++;
             }
-            if (pred != null && !predIsNil) {
+            if (!isNilLabel(predLabel)) {
                 numPredictPositive++;
             }
             numInstances++;
-            log.trace(String.format("goldLabel=%s predLabel=%s", goldLabel, predLabel));
+            log.trace(String.format("goldLabel=%s predLabel=%s", goldLabel, predLabel));                    
         }
         precision = numPredictPositive == 0 ? 0.0 : (double) numCorrectPositive / numPredictPositive;
         recall = numTruePositive == 0 ? 0.0 :  (double) numCorrectPositive / numTruePositive;
@@ -174,5 +161,5 @@ public abstract class F1Evaluator implements Evaluator {
     public int getNumMissing() {
         return numMissing;
     }
-
+    
 }

@@ -107,7 +107,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     public void build(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
             FactorGraph fg) {
         this.n = sent.size();
-
+        
         // TODO: This should move up the stack.
         IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
         

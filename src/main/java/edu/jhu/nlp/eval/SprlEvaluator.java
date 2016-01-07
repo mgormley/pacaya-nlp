@@ -18,11 +18,11 @@ import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.prim.tuple.Pair;
 
 /**
- * Computes the precision, recall, and micro-averaged F1 for named entity recognition.
+ * (Fork of F1 evaluator)
+ * Computes the precision, recall, and micro-averaged F1.
  * 
- * @author mgormley
  */
-public class SprlEvaluator extends F1Evaluator implements Evaluator {
+public class SprlEvaluator extends LabelEvaluator implements Evaluator {
 
     private static final Logger log = LoggerFactory.getLogger(SprlEvaluator.class);
     private static final Reporter rep = Reporter.getReporter(SprlEvaluator.class);
@@ -35,10 +35,12 @@ public class SprlEvaluator extends F1Evaluator implements Evaluator {
     }
     
     @Override
-    protected List<String> getLabels(AnnoSentence sent) {
+    protected List<String> getLabels(AnnoSentence sent, AnnoSentence gold) {
         List<String> labels = new ArrayList<>();
         Map<Pair<Integer, Integer>, Properties> sprl = sent.getSprl(); 
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent,  roleStructure,  allowSelfLoops)) {
+        // get the labels according to the pred sent, but including
+        // all and only those possible according to the gold sentence
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold,  roleStructure,  allowSelfLoops)) {
             Properties props = sprl.get(e);
             double[] propMap = (props != null) ? props.toArray() : null; 
             for (Property q : Property.values()) {
