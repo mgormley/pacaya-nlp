@@ -45,7 +45,10 @@ public class SprlFactorGraphBuilder {
         public int featureHashMod = 1000000;
         /** Whether to include unary factors on each sprl var. */
         public boolean unaryFactors = true;
-        /** Whether to include pairwise factors between all sprl vars for a given pred-arg pair. */
+        /**
+         * Whether to include pairwise factors between all sprl vars for a given
+         * pred-arg pair.
+         */
         public boolean pairwiseFactors = false;
         /** The structure of the Role variables. */
         public RoleStructure roleStructure = RoleStructure.PREDS_GIVEN;
@@ -63,7 +66,7 @@ public class SprlFactorGraphBuilder {
         private static final long serialVersionUID = -8752337536058872155L;
         private int pred;
         private int arg;
-        
+
         public SprlVar(VarType type, int numStates, String name, List<String> stateNames, int pred, int arg) {
             super(type, numStates, name, stateNames);
             this.pred = pred;
@@ -79,6 +82,7 @@ public class SprlFactorGraphBuilder {
         }
 
     }
+
     
     public enum SprlFactorType {
         SPRL_UNARY, SPRL_PAIRWISE
@@ -94,13 +98,15 @@ public class SprlFactorGraphBuilder {
     public SprlVar[][][] getSprlVars() {
         return sprlVars;
     }
+
+    private SrlFeatureExtractor obsFe = null;
     
     /**
      * Adds factors and variables to the given factor graph.
      */
     public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
         // Create feature extractor.
-        SrlFeatureExtractor obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
+        this.obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
         ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
         // create the variables
         int n = isent.size();
@@ -113,7 +119,8 @@ public class SprlFactorGraphBuilder {
             for (Property q : Property.values()) {
                 // 4-way classification
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
-                SprlVar v = new SprlVar(sprlType, SprlClassLabel.sprlLabels.size(), name, SprlClassLabel.sprlLabels, i, j);
+                SprlVar v = new SprlVar(sprlType, SprlClassLabel.sprlLabels.size(), name, SprlClassLabel.sprlLabels, i,
+                        j);
 
                 // add the variable
                 fg.addVar(v);
@@ -133,16 +140,21 @@ public class SprlFactorGraphBuilder {
             if (prm.pairwiseFactors) {
                 for (Property q1 : Property.values()) {
                     SprlVar v1 = sprlVars[i][j][q1.ordinal()];
-                    for (Property q2 : Property.values()) {                
+                    for (Property q2 : Property.values()) {
                         SprlVar v2 = sprlVars[i][j][q2.ordinal()];
                         Pair<Property, Property> templateKey = new Pair<>(q1, q2);
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2), SprlFactorType.SPRL_PAIRWISE, templateKey, ofc, obsFe));
+                        fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2), SprlFactorType.SPRL_PAIRWISE, templateKey,
+                                ofc, obsFe));
                     }
                 }
             }
         }
     }
 
+    public SrlFeatureExtractor getFeatExtractor() {
+        return obsFe; 
+    }
+    
     // decode
     public void configToAnno(VarConfig varConfig, AnnoSentence toAnnotate) {
         Map<Pair<Integer, Integer>, Properties> sprl = new HashMap<>();
@@ -152,14 +164,24 @@ public class SprlFactorGraphBuilder {
             int pred = e.get1();
             int arg = e.get2();
             Properties props = new Properties();
+            boolean notAnArg = varConfig.getState(sprlVars[pred][arg][0]) == SprlClassLabel.NOT_AN_ARG.ordinal();
             for (Property q : Property.values()) {
                 // add the variable to the config
                 Var sprlVar = sprlVars[pred][arg][q.ordinal()];
-                double response = SprlClassLabel.getResponse(varConfig.getState(sprlVar));
-                props.add(q.name(), response);
+                if (notAnArg) {
+                    // make sure that they are consistent (joint factor graph builder should have enforced this)
+                    if (varConfig.getState(sprlVar) != SprlClassLabel.NOT_AN_ARG.ordinal()) {                    
+                        log.error("inconsistent arg labeling by sprl (some said not-arg others said yes-arg)");
+                    }
+                } else {
+                    double response = SprlClassLabel.getResponse(varConfig.getState(sprlVar));
+                    props.add(q.name(), response);
+                }
             }
-            sprl.put(new Pair<>(pred, arg), props);
-            sprlPreds.add(pred);
+            if (!notAnArg) {
+                sprl.put(new Pair<>(pred, arg), props);
+                sprlPreds.add(pred);
+            }
         }
         toAnnotate.setSprl(sprl);
         toAnnotate.setSprlPreds(sprlPreds);
@@ -179,7 +201,8 @@ public class SprlFactorGraphBuilder {
             // TODO: we are assuming that if SPRL is missing but the pred is a
             // known pred, then this is not an arg
 
-            // only extract variables for sprl if the pred is one that has been annotated with sprl
+            // only extract variables for sprl if the pred is one that has been
+            // annotated with sprl
             if (goldSent.getSprlPreds().contains(pred)) {
                 boolean isAnArg = goldSent.getKnownSrlPairs().contains(e);
                 for (Property q : Property.values()) {

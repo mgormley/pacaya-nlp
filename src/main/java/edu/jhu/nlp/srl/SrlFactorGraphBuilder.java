@@ -128,6 +128,10 @@ public class SrlFactorGraphBuilder implements Serializable {
             return child;
         }
         
+        public int getNilState() {
+            return getState("_");
+        }
+        
     }
     
     /**
