@@ -41,18 +41,18 @@ public class ObsFeTypedFactorWithNilAgreement extends ObsFeTypedFactor {
      */
     public static boolean allOrNoneNil(VarSet vSet, List<Var> vs, List<Integer> nils, int config) {
         VarConfig vc = vSet.getVarConfig(config);
-        // exactly one of these must always be true
-        boolean atLeastOneIsNil = false; // so far none are nill
-        boolean allAreNil = true; // and all are nil
+        // one of these has to be true
+        boolean allAreNil = true;
+        boolean noneAreNil = true;
         for (int i = 0; i < vs.size(); i++) {
             boolean isNil = (vc.getState(vs.get(i)) == nils.get(i));
             if (isNil) {
-                atLeastOneIsNil = true;
+                noneAreNil= false;
             } else {
                 allAreNil = false;
             }
-            boolean exactlyOne = (atLeastOneIsNil || allAreNil) && !(atLeastOneIsNil && allAreNil);
-            if (!exactlyOne) {
+            boolean allOrNone = allAreNil || noneAreNil;
+            if (!allOrNone) {
                 return false;
             }
         }

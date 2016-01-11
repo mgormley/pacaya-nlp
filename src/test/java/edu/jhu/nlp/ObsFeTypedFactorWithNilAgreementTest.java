@@ -1,5 +1,8 @@
 package edu.jhu.nlp;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -36,9 +39,9 @@ public class ObsFeTypedFactorWithNilAgreementTest {
             VarConfig vc = new VarConfig();
             vc.put(argVar, goodPair.get1().ordinal());
             vc.put(sprlVar, goodPair.get2().ordinal());
-            assert ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(argVar, sprlVar),
+            assertTrue(ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(argVar, sprlVar),
                     Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                    vc.getConfigIndex());
+                    vc.getConfigIndex()));
         }
         List<Pair<Enum<?>, Enum<?>>> badPairs = Arrays.asList(new Pair<>(IsArgLabel.IS_ARG, SprlClassLabel.NOT_AN_ARG),
                 new Pair<>(IsArgLabel.NOT_AN_ARG, SprlClassLabel.UNLIKELY),
@@ -48,9 +51,9 @@ public class ObsFeTypedFactorWithNilAgreementTest {
             VarConfig vc = new VarConfig();
             vc.put(argVar, badPair.get1().ordinal());
             vc.put(sprlVar, badPair.get2().ordinal());
-            assert !ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(argVar, sprlVar),
+            assertFalse(ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(argVar, sprlVar),
                     Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                    vc.getConfigIndex());
+                    vc.getConfigIndex()));
         }
 
     }
@@ -63,6 +66,7 @@ public class ObsFeTypedFactorWithNilAgreementTest {
         int q = 3;
         List<String> stateNames = Arrays.asList("ARG0", "ARG1", "_", "ARG2");
         RoleVar roleVar = new RoleVar(VarType.PREDICTED, stateNames.size(), "role_var", stateNames, i, j);
+        assertTrue(roleVar.getNilState() == 2);
         String sprlName = "sprl_r" + i + "-" + "a" + j + "_" + q;
         SprlVar sprlVar = new SprlVar(null, SprlClassLabel.sprlLabels.size(), sprlName, SprlClassLabel.sprlLabels, i,
                 j);
@@ -80,9 +84,9 @@ public class ObsFeTypedFactorWithNilAgreementTest {
             VarConfig vc = new VarConfig();
             vc.put(roleVar, goodPair.get1());
             vc.put(sprlVar, goodPair.get2().ordinal());
-            assert ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(roleVar, sprlVar),
-                    Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                    vc.getConfigIndex());
+            assertTrue(ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(roleVar, sprlVar),
+                    Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                    vc.getConfigIndex()));
         }
         List<Pair<Integer, Enum<?>>> badPairs = Arrays.asList(new Pair<>(0, SprlClassLabel.NOT_AN_ARG),
                 new Pair<>(1, SprlClassLabel.NOT_AN_ARG), new Pair<>(3, SprlClassLabel.NOT_AN_ARG),
@@ -93,9 +97,9 @@ public class ObsFeTypedFactorWithNilAgreementTest {
             VarConfig vc = new VarConfig();
             vc.put(roleVar, badPair.get1());
             vc.put(sprlVar, badPair.get2().ordinal());
-            assert !ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(roleVar, sprlVar),
-                    Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                    vc.getConfigIndex());
+            assertFalse(ObsFeTypedFactorWithNilAgreement.allOrNoneNil(vSet, Arrays.asList(roleVar, sprlVar),
+                    Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                    vc.getConfigIndex()));
         }
 
     }
