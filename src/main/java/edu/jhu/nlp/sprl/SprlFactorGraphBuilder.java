@@ -59,6 +59,10 @@ public class SprlFactorGraphBuilder {
         public boolean allowPredArgSelfLoops = false;
         /** Feature extractor options for SRL. */
         public SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
+        /**
+         * Whether to enforce that all sprl variables for a particular pred-arg pair agree as to whether it is a pred-arg pair
+         */
+        public boolean enforceSprlNilAgreement = true;
 
     }
 

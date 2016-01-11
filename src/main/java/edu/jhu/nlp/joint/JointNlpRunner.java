@@ -265,6 +265,8 @@ public class JointNlpRunner {
     public static boolean sprlSrlFactors = false;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between all sprl questions for a given pred-arg pair.")
     public static boolean sprlAllPairs = false;
+    @Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
+    public static boolean enforceSprlNilAgreement = true;
 
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
@@ -583,7 +585,7 @@ public class JointNlpRunner {
         } else {
             prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
         }
-
+        prm.fgPrm.sprlPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
         // TODO: probably should decouple the sprl feature extraction from the srl feature extraction

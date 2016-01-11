@@ -162,14 +162,22 @@ public class JointNlpFactorGraph extends FactorGraph {
                     SprlVar sprlVar = sprlVars[i][j][q.ordinal()];
                     Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
                             JointFactorTemplate.ROLE_SPRL_BINARY, q);
-                    addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
-                            Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                            JointFactorTemplate.ROLE_SPRL_BINARY,
-                            templateKey, ofc,
-                            sprl.getFeatExtractor()));
+                    if (prm.sprlPrm.enforceSprlNilAgreement) {
+                        // create the factor in such a way that nil agreement is enforced
+                        addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
+                                Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                                JointFactorTemplate.ROLE_SPRL_BINARY,
+                                templateKey, ofc,
+                                sprl.getFeatExtractor()));
+                    } else {
+                        addFactor(new ObsFeTypedFactor(new VarSet(roleVar, sprlVar),
+                                JointFactorTemplate.ROLE_SPRL_BINARY,
+                                templateKey, ofc,
+                                sprl.getFeatExtractor()));
+                    }
                 }
             }
-        } else if (prm.includeSprl) {
+        } else if (prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement) {
             // add variables to enforce agreement on arg/no-arg distinction
             Var[][] isAnArg = new Var[n][n];
             SprlVar[][][] sprlVars = sprl.getSprlVars();
