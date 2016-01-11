@@ -83,19 +83,6 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
             if (gold != null && gold.getSprl() != null) {
                 fg.getSprlBuilder().annoToConfig(gold,  vc);
             }
-            // add the arg variable if necessary
-            Var isAnArg[][] = fg.getIsArgVars();
-            if (isAnArg != null && gold != null && gold.getSprl() != null) {
-                for (int i = 0; i < isAnArg.length; i++) {                
-                    for (int j = 0; j < isAnArg[i].length; j++) {
-                        Var v = isAnArg[i][j];
-                        if (v != null) {
-                            Pair<Integer, Integer> pair = new Pair<>(i, j);
-                            vc.put(v,(gold.getSprl().containsKey(pair) ? IsArgLabel.IS_ARG : IsArgLabel.NOT_AN_ARG).name());
-                        }
-                    }
-                }
-            }
         }
 
         if (prm.fgPrm.includeRel && prm.fgPrm.relPrm.relVarType != VarType.LATENT) {

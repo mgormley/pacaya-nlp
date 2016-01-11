@@ -116,7 +116,6 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
     private SprlFactorGraphBuilder sprl;
-    private Var isAnArg[][] = null; // variables for deciding if a pred-arg relationship holds (for enforcing agreement among sprl variables)
 
     public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs,
             ObsFeatureConjoiner ofc) {
@@ -190,7 +189,8 @@ public class JointNlpFactorGraph extends FactorGraph {
                 }
             };
             // add variables to enforce agreement on arg/no-arg distinction
-            isAnArg = new Var[n][n];
+            Var isAnArg[][] = new Var[n][n];
+            VarType argVarType = VarType.LATENT;
             SprlVar[][][] sprlVars = sprl.getSprlVars();
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
                     prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
@@ -198,7 +198,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                 int j = e.get2();
                 // add the variable
                 // for some reason, having this be a latent variable causes problems!
-                Var argVar = new Var(null, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
+                Var argVar = new Var(argVarType, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
                 isAnArg[i][j] = argVar;
                 for (Property q : Property.values()) {
                     Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
@@ -357,7 +357,4 @@ public class JointNlpFactorGraph extends FactorGraph {
         return rel;
     }
 
-    public Var[][] getIsArgVars() {
-        return isAnArg;
-    }
 }

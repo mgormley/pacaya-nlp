@@ -119,7 +119,7 @@ public class SprlFactorGraphBuilder {
                 prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
-            VarType sprlType = null; // VarType.PREDICTED;
+            VarType sprlType = VarType.PREDICTED; // TODO: setting this to be null (hoping that inference will figure out what's latent and what isn't causes big problems!)
             for (Property q : Property.values()) {
                 // 4-way classification
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
