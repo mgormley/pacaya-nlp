@@ -1,6 +1,7 @@
 package edu.jhu.nlp.joint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
+import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
 import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
@@ -34,12 +36,10 @@ import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.TemplateFeatureFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
-import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.SerializablePair;
@@ -159,11 +159,14 @@ public class JointNlpFactorGraph extends FactorGraph {
                 int j = e.get2();
                 RoleVar roleVar = roleVars[i][j];
                 for (Property q : Property.values()) {
+                    SprlVar sprlVar = sprlVars[i][j][q.ordinal()];
                     Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
                             JointFactorTemplate.ROLE_SPRL_BINARY, q);
-                    addCostrainedFactor(ofc, roleVars[i][j], sprlVars[i][j][q.ordinal()], roleVar.getNilState(),
-                            SprlClassLabel.NOT_AN_ARG.ordinal(), JointFactorTemplate.ROLE_SPRL_BINARY, templateKey,
-                            srl.getFeatExtractor());
+                    addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
+                            Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                            JointFactorTemplate.ROLE_SPRL_BINARY,
+                            templateKey, ofc,
+                            sprl.getFeatExtractor()));
                 }
             }
         } else if (prm.includeSprl) {
@@ -174,16 +177,17 @@ public class JointNlpFactorGraph extends FactorGraph {
                     prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
                 int j = e.get2();
-                Var argVar = new Var(null, 2, "isarg" + i + "_" + j, IsArgLabel.labels);
+                Var argVar = new Var(VarType.LATENT, 2, "isarg" + i + "_" + j, IsArgLabel.labels);
                 // add the variable
                 isAnArg[i][j] = argVar;
                 for (Property q : Property.values()) {
                     Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
                             JointFactorTemplate.ISARG_SPRL_BINARY, q);
                     Var sprlVar = sprlVars[i][j][q.ordinal()];
-                    addCostrainedFactor(ofc, argVar, sprlVar, IsArgLabel.NOT_AN_ARG.ordinal(),
-                            SprlClassLabel.NOT_AN_ARG.ordinal(), JointFactorTemplate.ISARG_SPRL_BINARY, templateKey,
-                            sprl.getFeatExtractor());
+                    addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVar, sprlVar),
+                            Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                            JointFactorTemplate.ISARG_SPRL_BINARY,
+                            templateKey, ofc, sprl.getFeatExtractor()));
                 }
             }
         }
@@ -257,31 +261,6 @@ public class JointNlpFactorGraph extends FactorGraph {
                 }
             }
         }
-    }
-
-    /**
-     * Adds a factor constrained to have either both or neither varA and varB be
-     * in notArgAState and notArgBState respectively; i.e. they need to agree on
-     * whether or not there is not an arg there
-     */
-    private void addCostrainedFactor(ObsFeatureConjoiner ofc, Var varA, Var varB, int notArgAState, int notArgBState,
-            Enum<?> factorTemplate, Object templateKey, ObsFeatureExtractor obsFeatureExtractor) {
-        addFactor(new ObsFeTypedFactor(new VarSet(varA, varB), factorTemplate, templateKey, ofc, obsFeatureExtractor) {
-            private static final long serialVersionUID = 1L;
-
-            @Override
-            public double getDotProd(int config, FgModel model) {
-                VarConfig vc = getVars().getVarConfig(config);
-                boolean vANoArg = vc.getState(varA) == notArgAState;
-                boolean vBNoArg = vc.getState(varB) == notArgBState;
-                // exclusive or (if they don't agree...)
-                if (vANoArg ^ vBNoArg) {
-                    return Double.NEGATIVE_INFINITY;
-                } else {
-                    return super.getDotProd(config, model);
-                }
-            }
-        });
     }
 
     // ----------------- Creating Variables -----------------

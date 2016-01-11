@@ -124,6 +124,9 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
             tpls = prm.senseTemplates;
             SenseVar var = (SenseVar) vars.iterator().next();
             parent = var.getParent();
+        } else if (ft == JointFactorTemplate.ISARG_SPRL_BINARY) {
+            // no features for isarg_sprl (this is just a hard factor to enforce agreement on isarg label)
+            return new FeatureVector(); 
         } else {
             throw new RuntimeException("Unsupported template: " + ft);
         }
