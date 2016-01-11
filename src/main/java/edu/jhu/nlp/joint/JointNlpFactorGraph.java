@@ -32,10 +32,14 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
+import edu.jhu.nlp.srl.SrlFeatureExtractor;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.TemplateFeatureFactor;
+import edu.jhu.pacaya.gm.feat.FeatureVector;
+import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
@@ -112,6 +116,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
     private SprlFactorGraphBuilder sprl;
+    private Var isAnArg[][] = null; // variables for deciding if a pred-arg relationship holds (for enforcing agreement among sprl variables)
 
     public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs,
             ObsFeatureConjoiner ofc) {
@@ -178,15 +183,22 @@ public class JointNlpFactorGraph extends FactorGraph {
                 }
             }
         } else if (prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement) {
+            ObsFeatureExtractor fe = new ObsFeatureExtractor() {
+                @Override
+                public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
+                    return new FeatureVector();
+                }
+            };
             // add variables to enforce agreement on arg/no-arg distinction
-            Var[][] isAnArg = new Var[n][n];
+            isAnArg = new Var[n][n];
             SprlVar[][][] sprlVars = sprl.getSprlVars();
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
                     prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
                 int j = e.get2();
-                Var argVar = new Var(VarType.LATENT, 2, "isarg" + i + "_" + j, IsArgLabel.labels);
                 // add the variable
+                // for some reason, having this be a latent variable causes problems!
+                Var argVar = new Var(null, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
                 isAnArg[i][j] = argVar;
                 for (Property q : Property.values()) {
                     Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
@@ -195,11 +207,10 @@ public class JointNlpFactorGraph extends FactorGraph {
                     addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVar, sprlVar),
                             Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
                             JointFactorTemplate.ISARG_SPRL_BINARY,
-                            templateKey, ofc, sprl.getFeatExtractor()));
+                            templateKey, ofc, fe));
                 }
             }
         }
-
         if (prm.includeDp && prm.includeSrl) {
             // Add the joint factors.
             TemplateFeatureExtractor fe = null;
@@ -346,4 +357,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         return rel;
     }
 
+    public Var[][] getIsArgVars() {
+        return isAnArg;
+    }
 }

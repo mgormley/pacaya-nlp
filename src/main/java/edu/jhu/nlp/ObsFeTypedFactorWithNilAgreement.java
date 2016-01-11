@@ -67,8 +67,6 @@ public class ObsFeTypedFactorWithNilAgreement extends ObsFeTypedFactor {
         if (allOrNoneNil(getVars(), vars, nilStates, config)) {
             return super.getDotProd(config, model);
         } else {
-            //return -10.0;
-            //return 0.0;
             return Double.NEGATIVE_INFINITY;
         }
 

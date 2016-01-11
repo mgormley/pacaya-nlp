@@ -8,6 +8,7 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.depparse.DepParseEncoder;
 import edu.jhu.nlp.features.TemplateLanguage;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.pacaya.gm.app.Encoder;
 import edu.jhu.pacaya.gm.data.LFgExample;
@@ -16,9 +17,11 @@ import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
+import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.prim.tuple.Pair;
 
 /**
  * Encodes a joint NLP factor graph and its variable assignment.
@@ -79,6 +82,19 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         if (prm.fgPrm.includeSprl) {
             if (gold != null && gold.getSprl() != null) {
                 fg.getSprlBuilder().annoToConfig(gold,  vc);
+            }
+            // add the arg variable if necessary
+            Var isAnArg[][] = fg.getIsArgVars();
+            if (isAnArg != null && gold != null && gold.getSprl() != null) {
+                for (int i = 0; i < isAnArg.length; i++) {                
+                    for (int j = 0; j < isAnArg[i].length; j++) {
+                        Var v = isAnArg[i][j];
+                        if (v != null) {
+                            Pair<Integer, Integer> pair = new Pair<>(i, j);
+                            vc.put(v,(gold.getSprl().containsKey(pair) ? IsArgLabel.IS_ARG : IsArgLabel.NOT_AN_ARG).name());
+                        }
+                    }
+                }
             }
         }
 
