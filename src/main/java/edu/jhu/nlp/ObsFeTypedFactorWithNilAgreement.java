@@ -2,6 +2,7 @@ package edu.jhu.nlp;
 
 import java.util.List;
 
+import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FgModel;
@@ -58,6 +59,15 @@ public class ObsFeTypedFactorWithNilAgreement extends ObsFeTypedFactor {
         }
         return true;
 
+    }
+
+    @Override
+    public FeatureVector getFeatures(int config) {
+        if (allOrNoneNil(getVars(), vars, nilStates, config)) {
+            return super.getFeatures(config);
+        } else {
+            return new FeatureVector();
+        }
     }
 
     @Override
