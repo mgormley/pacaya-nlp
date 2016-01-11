@@ -435,6 +435,7 @@ public class ConcreteWriter {
             cEmSet.setUuid(getUUID());
             cEmSet.setMetadata(cMeta);
             cEmSet.setMentionList(cEms);
+            comm.addToEntityMentionSetList(cEmSet);
         } else {
             assert comm.getEntityMentionSetListSize() == 1;
             // 1.b. Create a mapping from NerMention's to EntityMentions (these will be the existing
