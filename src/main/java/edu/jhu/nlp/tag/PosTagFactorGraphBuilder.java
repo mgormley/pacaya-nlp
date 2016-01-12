@@ -86,6 +86,7 @@ public class PosTagFactorGraphBuilder {
     }
 
     private void addFastFactors(IntAnnoSentence isent, FactorGraph fg) {
+	// TODO: Add unary INIT_TAG factor as in addSlowFactors.
         for (int i=0; i<isent.size(); i++) {
             if (prm.unigramFactors) {
                 // Unary factor for each tag.
