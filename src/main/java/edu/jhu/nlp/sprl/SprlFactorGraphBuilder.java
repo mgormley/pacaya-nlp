@@ -28,6 +28,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.SerializablePair;
 import edu.jhu.prim.tuple.Pair;
 
 public class SprlFactorGraphBuilder {
@@ -146,7 +147,7 @@ public class SprlFactorGraphBuilder {
                     SprlVar v1 = sprlVars[i][j][q1.ordinal()];
                     for (Property q2 : Property.values()) {
                         SprlVar v2 = sprlVars[i][j][q2.ordinal()];
-                        Pair<Property, Property> templateKey = new Pair<>(q1, q2);
+                        Pair<Property, Property> templateKey = new SerializablePair<>(q1, q2);
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2), SprlFactorType.SPRL_PAIRWISE, templateKey,
                                 ofc, obsFe));
                     }
