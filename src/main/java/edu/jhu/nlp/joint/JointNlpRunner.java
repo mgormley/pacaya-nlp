@@ -23,6 +23,7 @@ import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.EvalPipeline;
 import edu.jhu.nlp.TransientAnnotator;
+import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.data.simple.Experiments;
@@ -268,6 +269,8 @@ public class JointNlpRunner {
     public static boolean sprlAllPairs = false;
     @Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
     public static boolean enforceSprlNilAgreement = true;
+    @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
+    public static boolean breakDownSprlEval = true;
 
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
@@ -485,10 +488,16 @@ public class JointNlpRunner {
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
+                if (breakDownSprlEval) {
+                    for (Property q : Property.values()) {
+                        eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true, q));
+                        eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false, q));
+                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, q));
+                    }
+                }
                 eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true));
                 eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false));
                 eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops));
-
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
                 eval.add(new RelationEvaluator());

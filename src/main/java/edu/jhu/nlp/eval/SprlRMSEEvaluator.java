@@ -29,11 +29,20 @@ public class SprlRMSEEvaluator extends RMSEEvaluator implements Evaluator {
     private RoleStructure roleStructure = null;
     private boolean allowSelfLoops;
     private boolean excludeNils;
-    
+    private Property propToScore = null;
+
     public SprlRMSEEvaluator(RoleStructure rS, boolean selfLoops, boolean excludeNils) {
+        this(rS, selfLoops, excludeNils, null);
+    }
+    
+    /**
+     * if propToScore is not null, then only that property will be evaluated 
+     */
+    public SprlRMSEEvaluator(RoleStructure rS, boolean selfLoops, boolean excludeNils, Property propToScore) {
         roleStructure = rS;
         allowSelfLoops = selfLoops;
         this.excludeNils = excludeNils;
+        this.propToScore = propToScore;
     }
     
     @Override
@@ -45,26 +54,33 @@ public class SprlRMSEEvaluator extends RMSEEvaluator implements Evaluator {
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold,  roleStructure,  allowSelfLoops)) {
             Properties props = sprl.get(e);
             double[] propMap = (props != null) ? props.toArray() : null; 
-            for (Property q : Property.values()) {
-                if (propMap == null) {
-                    if (excludeNils) {
-                        // if we exclude nils, then we will just pass null here
-                        values.add(null);
-                    } else {
-                        values.add(0.0);
-                    }
-                } else {
-                    values.add((propMap[q.ordinal()] - 1) / 4.0); 
+            if (propToScore != null) {
+                addLabel(values, propMap, propToScore);
+            } else {
+                for (Property q : Property.values()) {
+                    addLabel(values, propMap, q);
                 }
-                
             }
         }
         return values;
     }
 
+    private void addLabel(List<Double> values, double[] propMap, Property q) {
+        if (propMap == null) {
+            if (excludeNils) {
+                // if we exclude nils, then we will just pass null here
+                values.add(null);
+            } else {
+                values.add(0.0);
+            }
+        } else {
+            values.add((propMap[q.ordinal()] - 1) / 4.0); 
+        }
+    }
+
     @Override
     protected String getDataType() {
-        return String.format("SPRL%s", excludeNils ? "(skippingNils)" : "");
+        return String.format("SPRL-RMSE[%s]%s", propToScore == null ? "ALL" : propToScore.name(), excludeNils ? "(skippingNils)" : "");
     }
     
 }
