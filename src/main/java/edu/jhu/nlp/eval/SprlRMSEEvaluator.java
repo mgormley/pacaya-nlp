@@ -80,7 +80,7 @@ public class SprlRMSEEvaluator extends RMSEEvaluator implements Evaluator {
 
     @Override
     protected String getDataType() {
-        return String.format("SPRL-RMSE[%s]%s", propToScore == null ? "ALL" : propToScore.name(), excludeNils ? "(skippingNils)" : "");
+        return String.format("SPRL-RMSE%s%s", propToScore == null ? "" : ("[" + propToScore.name() + "]"), excludeNils ? "(skippingNils)" : "");
     }
     
 }

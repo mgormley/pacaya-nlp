@@ -80,7 +80,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
 
     @Override
     protected String getDataType() {
-        return String.format("SPRL[%s]", propToScore == null ? "ALL" : propToScore.name());
+        return String.format("SPRL%s", propToScore == null ? "" : ("[" + propToScore.name() + "]"));
     }
 
 }
