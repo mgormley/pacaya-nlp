@@ -46,6 +46,7 @@ import edu.jhu.nlp.eval.ProportionAnnotated;
 import edu.jhu.nlp.eval.PruningEfficiency;
 import edu.jhu.nlp.eval.RelationEvaluator;
 import edu.jhu.nlp.eval.SprlEvaluator;
+import edu.jhu.nlp.eval.SprlRMSEEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.eval.SrlPredIdAccuracy;
@@ -484,6 +485,8 @@ public class JointNlpRunner {
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
+                eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true));
+                eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false));
                 eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops));
 
             }

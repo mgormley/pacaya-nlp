@@ -746,5 +746,9 @@ public class AnnoSentence {
                 .map(x -> x.toLowerCase())
                 .collect(Collectors.toList());
     }
+
+    public void setKnownSrlPairs(Set<Pair<Integer, Integer>> knownPairs) {
+        knownSrlPairs = knownPairs;
+    }
     
 }
