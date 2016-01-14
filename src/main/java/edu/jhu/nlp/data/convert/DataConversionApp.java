@@ -17,12 +17,12 @@ import edu.jhu.pacaya.util.cli.ArgParser;
  * java edu.jhu.nlp.data.convert.DataConversionApp --train /home/adam/data/LDC/LDC2012T04/2009_conll_p2/data/CoNLL2009-ST-English/CoNLL2009-ST-English-trial.txt --trainType CONLL_2009 --trainGoldOut ./train.out.conll --trainTypeOut CONLL_2009 --language en --trainProjectivize False --trainUseCoNLLXPhead True --useGoldSyntax False
  * 
  * TODO: make this more transparent:
- * 
  * Conll data has slots for both gold and automatically predicted POS, FEATS,
  * DEPS, and DEPRELS, by --useGoldSyntax True will use the gold and
  * --useGoldSyntax False will use the automatic labels. Currently, the
  * conll_writer writes the single field in anno_sentence out as both fields.
- * 
+ *
+ * TODO: allow to specify toolnames for concrete meta data writing
  */
 public class DataConversionApp {
 

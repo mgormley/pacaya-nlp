@@ -674,8 +674,6 @@ public class JointNlpRunner {
         srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
         srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
-
-        // TODO: do these for the sprl feature templates, too
         if (noLemma) {
             srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.LEMMA);
             srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.LEMMA);
