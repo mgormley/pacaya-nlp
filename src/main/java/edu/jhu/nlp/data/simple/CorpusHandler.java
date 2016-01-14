@@ -400,6 +400,11 @@ public class CorpusHandler {
         prm.normalizeRoleNames = normalizeRoleNames;
         prm.useGoldSyntax = useGoldSyntax;
         prm.rePrm.depParseTool = concreteDepParseTool;
+        if (concreteSrlTool == null) {
+            log.warn(String.format("Since concrete srl tool is null, using first available tool"));
+        } else {
+            log.info(String.format("Using concrete srl tool: %s", concreteSrlTool));
+        }
         prm.rePrm.srlTool = concreteSrlTool;
         prm.rePrm.nerTool = concreteSrlTool;
         prm.rePrm.relationTool = concreteSrlTool;
