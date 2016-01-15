@@ -79,7 +79,7 @@ public abstract class RMSEEvaluator implements Evaluator {
             accum(gold, pred);
         }
     }
-
+    
     /** Accumulate the sufficient statistics for the sentence. */
     public void accum(List<Double> gold, List<Double> pred) {
         numStructures++;

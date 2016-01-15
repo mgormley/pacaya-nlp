@@ -270,7 +270,7 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
     public static boolean enforceSprlNilAgreement = true;
     @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
-    public static boolean breakDownSprlEval = true;
+    public static boolean breakdownSprlEval = true;
 
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
@@ -488,7 +488,7 @@ public class JointNlpRunner {
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
-                if (breakDownSprlEval) {
+                if (breakdownSprlEval) {
                     for (Property q : Property.values()) {
                         eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true, q));
                         eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false, q));
