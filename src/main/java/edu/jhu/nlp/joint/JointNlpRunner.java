@@ -678,12 +678,6 @@ public class JointNlpRunner {
             srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.LEMMA);
             srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.LEMMA);
         }
-
-        if (noMorpho) {
-            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.MORPHO);
-            srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.MORPHO);
-        }
-
         srlPrm.srlFePrm = srlFePrm;
         return srlPrm;
     }
