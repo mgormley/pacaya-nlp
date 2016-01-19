@@ -72,6 +72,7 @@ public class ConcreteReader {
     public static class ConcreteReaderPrm extends Prm {
         private static final long serialVersionUID = 1L;
         public String posTool = null;
+        public String cposTool = null;
         public String lemmaTool = null;
         public String chunkTool = null;
         public String depParseTool = null; 
@@ -92,6 +93,9 @@ public class ConcreteReader {
     
     public ConcreteReader(ConcreteReaderPrm prm) { 
         this.prm = prm;
+        if (prm.cposTool == null) {
+            log.warn("Using default pos tagging as cpos tagging!");
+        }
     }
 
     /**
@@ -475,9 +479,11 @@ public class ConcreteReader {
 
         // POS tags, Lemmas, and Chunks.
         TokenTagging posTags = ConcreteUtils.getFirstXTagsWithName(tokenization, TagTypes.POS.name(), prm.posTool);
+        TokenTagging cposTags = ConcreteUtils.getFirstXTagsWithName(tokenization, TagTypes.POS.name(), prm.cposTool);
         TokenTagging lemmas = ConcreteUtils.getFirstXTagsWithName(tokenization, TagTypes.LEMMA.name(), prm.lemmaTool);
         TokenTagging chunks = ConcreteUtils.getFirstXTagsWithName(tokenization, "CHUNK", prm.chunkTool);
         as.setPosTags(getTagging(posTags));
+        as.setCposTags(getTagging(cposTags));
         as.setLemmas(getTagging(lemmas));
         as.setChunks(getTagging(chunks));
         
