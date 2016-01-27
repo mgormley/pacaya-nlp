@@ -263,7 +263,7 @@ public class JointNlpRunner {
     public static boolean srlExtraArgFeats = false;
     @Opt(hasArg = true, description = "The type of the SRL role / sense variables.")
     public static VarType srlVarType = VarType.LATENT;
-    @Opt(hasArg = true, description = "Whether to include pairwise factors between srl and sprl.")
+    @Opt(hasArg = true, description = "Whether to include pairwise factors between srl and sprl. If either sprl or srl are not included, then these become unary factors that are tied to the gold labels that are not being predicted.")
     public static boolean sprlSrlFactors = false;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between all sprl questions for a given pred-arg pair.")
     public static boolean sprlAllPairs = false;
@@ -271,7 +271,12 @@ public class JointNlpRunner {
     public static boolean enforceSprlNilAgreement = true;
     @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
     public static boolean breakdownSprlEval = true;
-
+    //@Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
+    //public static int sprlPipelineIndex = -1;
+    // TODO: add different order of property prediction
+    // TODO: have the corpus statistics figure out what the properties instead of having an enum; that way things
+    // still work when the SPRL questions change
+    
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
     public static VarType posTagVarType = VarType.LATENT;
@@ -587,9 +592,9 @@ public class JointNlpRunner {
 
         prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
-        prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL) || sprlSrlFactors;
+        prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
         prm.fgPrm.includeRel = CorpusHandler.getPredLatAts().contains(AT.REL_LABELS);
-        prm.fgPrm.includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL) || sprlSrlFactors;
+        prm.fgPrm.includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);
 
         // Joint features.
         if (acl14DepFeats) {

@@ -130,8 +130,13 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
             throw new RuntimeException("Unsupported template: " + ft);
         }
 
-        FeatureNames alphabet = ofc.getTemplates().getTemplate(f).getAlphabet();
-        return getSrlFeats(alphabet, parent, child, tpls);
+        if (ofc.getTemplates().getTemplateId(f) < 0) {
+            log.warn(String.format("Trying to get templates for a template Id we never saw at train time: %s",  f.getTemplateKey()));
+            return new FeatureVector();
+        } else { 
+            FeatureNames alphabet = ofc.getTemplates().getTemplate(f).getAlphabet();
+            return getSrlFeats(alphabet, parent, child, tpls);
+        }
     }
 
     /**

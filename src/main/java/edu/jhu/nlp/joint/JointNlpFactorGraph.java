@@ -10,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
+import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.Properties.Property;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
@@ -32,7 +34,6 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
-import edu.jhu.nlp.srl.SrlFeatureExtractor;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.TemplateFeatureFactor;
@@ -153,61 +154,88 @@ public class JointNlpFactorGraph extends FactorGraph {
             rel.build(sent, ofc, fg, cs);
         }
 
-        if (prm.includeSrl && prm.includeSprl && prm.sprlSrlFactors) {
-            // Add the joint factors between srl and sprl
-            SprlVar[][][] sprlVars = sprl.getSprlVars();
-            RoleVar[][] roleVars = srl.getRoleVars();
-            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
-                    prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
-                int i = e.get1();
-                int j = e.get2();
-                RoleVar roleVar = roleVars[i][j];
-                for (Property q : Property.values()) {
-                    SprlVar sprlVar = sprlVars[i][j][q.ordinal()];
-                    Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
-                            JointFactorTemplate.ROLE_SPRL_BINARY, q);
-                    if (prm.sprlPrm.enforceSprlNilAgreement) {
-                        // create the factor in such a way that nil agreement is enforced
-                        addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
-                                Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                                JointFactorTemplate.ROLE_SPRL_BINARY,
-                                templateKey, ofc,
-                                sprl.getFeatExtractor()));
-                    } else {
-                        addFactor(new ObsFeTypedFactor(new VarSet(roleVar, sprlVar),
-                                JointFactorTemplate.ROLE_SPRL_BINARY,
-                                templateKey, ofc,
-                                sprl.getFeatExtractor()));
+        // agreement or not
+        // joint factor, unary srl factor, unary sprl factor
+        // additional unary srl or sprl factor;
+        // sprl factor might also include observations from the previous properties
+        // we only do anything here if there are supposed to be sprlSrlFactors
+
+        // we only bother about the information between sprl and srl if one of the two is present
+        boolean sprlSrlFactors = prm.sprlSrlFactors && (prm.includeSprl || prm.includeSrl);
+
+        // if we have sprl variables but they won't be connected to srl variables, then we need
+        // to make variables to enforce nil agreement
+        boolean includeIsArg = prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement && !(prm.sprlSrlFactors && prm.includeSrl); 
+        
+        // we need some coordinating factors for either agreement or sprlSrl interaction
+        if (includeIsArg || sprlSrlFactors) {
+            SprlVar[][][] sprlVars = prm.includeSprl ? sprl.getSprlVars() : null;
+            RoleVar[][] roleVars = prm.includeSrl ? srl.getRoleVars() : null;
+            ObsFeatureExtractor isArgFe = null;
+            if (includeIsArg) {
+                // TODO: replace this with just using the srl feature extractor (we might as well featurize these factors, too)
+                isArgFe = new ObsFeatureExtractor() {
+                    @Override
+                    public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
+                        return new FeatureVector();
                     }
-                }
+                };
             }
-        } else if (prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement) {
-            ObsFeatureExtractor fe = new ObsFeatureExtractor() {
-                @Override
-                public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
-                    return new FeatureVector();
-                }
-            };
-            // add variables to enforce agreement on arg/no-arg distinction
-            Var isAnArg[][] = new Var[n][n];
-            VarType argVarType = VarType.LATENT;
-            SprlVar[][][] sprlVars = sprl.getSprlVars();
+
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
                     prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
                 int j = e.get2();
-                // add the variable
-                // for some reason, having this be a latent variable causes problems!
-                Var argVar = new Var(argVarType, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
-                isAnArg[i][j] = argVar;
+                RoleVar roleVar = prm.includeSrl ? roleVars[i][j] : null;
+                Properties props = sprlSrlFactors && !prm.includeSprl ? sent.getSprl().get(e) : null; 
+                double[] propsArray = props != null ? props.toArray() : null;  
+                // if we have sprl then we need to at least add factors to enforce agreement
                 for (Property q : Property.values()) {
-                    Pair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(
-                            JointFactorTemplate.ISARG_SPRL_BINARY, q);
-                    Var sprlVar = sprlVars[i][j][q.ordinal()];
-                    addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVar, sprlVar),
-                            Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                            JointFactorTemplate.ISARG_SPRL_BINARY,
-                            templateKey, ofc, fe));
+                    SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][q.ordinal()] : null;
+                    if (includeIsArg) {
+                        JointFactorTemplate templateType = JointFactorTemplate.ISARG_SPRL_BINARY; 
+                        SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
+                        Var argVar = new Var(VarType.LATENT, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
+                        addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVar, sprlVar),
+                                Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                                templateType, templateKey, ofc, isArgFe));
+                    }
+                    if (sprlSrlFactors) {
+                        JointFactorTemplate templateType = JointFactorTemplate.ROLE_SPRL_BINARY; 
+                        SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
+                        // factors across sprl-srl 
+                        if (prm.includeSprl && prm.includeSrl) {
+                            // real pairwise factors
+                            if (prm.sprlPrm.enforceSprlNilAgreement) {
+                                // create the factor in such a way that nil agreement is enforced
+                                addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
+                                        Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                                        templateType,
+                                        templateKey, ofc,
+                                        sprl.getFeatExtractor()));
+                            } else {
+                                // ordinary pairwise factor that doesn't enforce nil agreement
+                                addFactor(new ObsFeTypedFactor(new VarSet(roleVar, sprlVar),
+                                        templateType,
+                                        templateKey, ofc,
+                                        sprl.getFeatExtractor()));
+                            }
+                        } else if (prm.includeSprl) {
+                            // we will only include a single variable but we will conjoin the template key with the correct answer for the other
+                            // unary factor with same features as the pairwise one (because srl is being treated as given)
+                            SrlEdge srlEdge = sent.getSrlGraph().getEdge(i, j); 
+                            String goldSrlLabel = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
+                            addFactor(new ObsFeTypedFactor(new VarSet(sprlVar), templateType,
+                                    new SerializablePair<>(templateKey, new SerializablePair<>(RoleVar.class, goldSrlLabel)), ofc,
+                                    sprl.getFeatExtractor()));
+                        } else {
+                            assert prm.includeSrl;
+                            SprlClassLabel goldSprlLabel = propsArray != null ? SprlClassLabel.getLabel(propsArray[q.ordinal()]) : SprlClassLabel.NOT_AN_ARG;
+                            addFactor(new ObsFeTypedFactor(new VarSet(roleVar), templateType,
+                                    new SerializablePair<>(templateKey, goldSprlLabel), ofc,
+                                    srl.getFeatExtractor()));
+                        }
+                    }
                 }
             }
         }
