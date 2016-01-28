@@ -271,6 +271,11 @@ public class JointNlpRunner {
     public static boolean enforceSprlNilAgreement = true;
     @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
     public static boolean breakdownSprlEval = true;
+    @Opt(hasArg = true, description = "Only look at srl in validation function for srl with sprl")
+    public static boolean favorSrlValidation = false;
+    @Opt(hasArg = true, description = "Only look at sprl in validation function for srl with sprl")
+    public static boolean favorSprlValidation = false;
+    
     //@Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
     //public static int sprlPipelineIndex = -1;
     // TODO: add different order of property prediction
@@ -574,6 +579,8 @@ public class JointNlpRunner {
         prm.ofcPrm = getObsFeatureConjoinerPrm();
         prm.dpSkipPunctuation = dpSkipPunctuation;
         prm.buPrm = getJointNlpFgExampleBuilderPrm();
+        prm.favorSprlValidation = favorSprlValidation;
+        prm.favorSrlValidation = favorSrlValidation;
         return prm;
     }
 

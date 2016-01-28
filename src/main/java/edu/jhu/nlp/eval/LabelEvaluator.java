@@ -122,7 +122,7 @@ public abstract class LabelEvaluator implements Evaluator {
         }
         precision = numPredictPositive == 0 ? 0.0 : (double) numCorrectPositive / numPredictPositive;
         recall = numTruePositive == 0 ? 0.0 :  (double) numCorrectPositive / numTruePositive;
-        f1 = (precision == 0.0 && recall == 0.0) ? 0.0 : (double) (2 * precision * recall) / (precision + recall);
+        f1 = harmonicMean(precision, recall);
     }
 
     public double getPrecision() {
@@ -159,6 +159,10 @@ public abstract class LabelEvaluator implements Evaluator {
 
     public int getNumMissing() {
         return numMissing;
+    }
+
+    public final static double harmonicMean(double a, double b) {
+        return (a == 0.0 && b == 0.0) ? 0.0 : 2 * a * b / (a + b);
     }
     
 }

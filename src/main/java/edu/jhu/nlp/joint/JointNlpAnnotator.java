@@ -25,6 +25,7 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.eval.DepParseAccuracy;
+import edu.jhu.nlp.eval.LabelEvaluator;
 import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.RelationEvaluator;
 import edu.jhu.nlp.eval.SprlEvaluator;
@@ -75,7 +76,13 @@ public class JointNlpAnnotator implements Trainable {
         public transient CrfTrainerPrm crfPrm = new CrfTrainerPrm();
         public CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm(); 
         public ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
-        // We also ignore buPrm.fgPrm, which is overwritten by the value in the model.
+        // if srl and sprl are both predicted, only validate with srl 
+        public boolean favorSrlValidation = false;
+        // if srl and sprl are both predicted, only validate with sprl 
+        // only one of these can be true; if both are false and both srl and sprl are
+        // predicted, then the harmonic mean is used
+        public boolean favorSprlValidation = false;
+        // We also ignore buPrm.fePrm, which is overwritten by the value in the model.
         // --------------------------------------------------------------------
     }
     
@@ -146,18 +153,39 @@ public class JointNlpAnnotator implements Trainable {
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) || 
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
-            SrlEvaluatorPrm evalPrm = new SrlEvaluatorPrm();
-            evalPrm.evalPredSense = prm.buPrm.fgPrm.srlPrm.predictSense;
-            evalPrm.evalPredPosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
-            evalPrm.evalRoles = (prm.buPrm.fgPrm.srlPrm.roleStructure != RoleStructure.NO_ROLES);
-            eval = new SrlEvaluator(evalPrm);
+            eval = getSrlEvaluator();
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS)) ||
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.RELATIONS)) ||
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.REL_LABELS, AT.RELATIONS))
                 ) {
             eval = new RelationEvaluator();
-        } else if (CorpusHandler.getPredAts().contains(AT.SPRL)) {
-            eval = new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops);
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SPRL))) {
+            eval = getSprlEvaluator();
+        } else if (CorpusHandler.getPredAts().contains(AT.SPRL) && CorpusHandler.getPredAts().contains(AT.SRL)) {
+            // check the option
+            if (prm.favorSrlValidation) {
+                assert !prm.favorSprlValidation;
+                eval = getSrlEvaluator();
+            } else if (prm.favorSprlValidation) {
+                assert !prm.favorSrlValidation;
+                eval = getSprlEvaluator();
+            } else {
+                final Evaluator srlEval = getSrlEvaluator();
+                final Evaluator sprlEval = getSprlEvaluator();
+                eval = new Evaluator() {
+                    
+                    @Override
+                    public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents,
+                            String name) {
+                        double srlF1 = Math.abs(srlEval.evaluate(predSents, goldSents, name));
+                        double sprlF1 = Math.abs(sprlEval.evaluate(predSents, goldSents, name));
+                        double f1 = LabelEvaluator.harmonicMean(srlF1, sprlF1);
+                        return -f1;
+                    }
+                    
+                };
+            }
+            
         } else {
             log.warn("Validation function not implemented. Skipping.");
             return null;
@@ -179,6 +207,20 @@ public class JointNlpAnnotator implements Trainable {
                 return -1;
             }
         };
+    }
+
+    private SprlEvaluator getSprlEvaluator() {
+        return new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops);
+    }
+
+    private Evaluator getSrlEvaluator() {
+        final Evaluator eval;
+        SrlEvaluatorPrm evalPrm = new SrlEvaluatorPrm();
+        evalPrm.evalPredSense = prm.buPrm.fgPrm.srlPrm.predictSense;
+        evalPrm.evalPredPosition = prm.buPrm.fgPrm.srlPrm.predictPredPos;
+        evalPrm.evalRoles = (prm.buPrm.fgPrm.srlPrm.roleStructure != RoleStructure.NO_ROLES);
+        eval = new SrlEvaluator(evalPrm);
+        return eval;
     }
 
     @Override
