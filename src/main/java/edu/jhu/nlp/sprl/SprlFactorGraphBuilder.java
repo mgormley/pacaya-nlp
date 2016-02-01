@@ -1,7 +1,6 @@
 package edu.jhu.nlp.sprl;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +28,7 @@ import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.SerializablePair;
+import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 
 public class SprlFactorGraphBuilder {
@@ -116,8 +116,9 @@ public class SprlFactorGraphBuilder {
         // create the variables
         int n = isent.size();
         sprlVars = new SprlVar[n][n][Property.values().length];
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
-                prm.roleStructure, prm.allowPredArgSelfLoops)) {
+        AnnoSentence asent = isent.getAnnoSentence();
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.size(),
+                asent.getKnownPreds(), asent.getKnownSrlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
             VarType sprlType = VarType.PREDICTED; // TODO: setting this to be null (hoping that inference will figure out what's latent and what isn't causes big problems!)
@@ -163,9 +164,9 @@ public class SprlFactorGraphBuilder {
     // decode
     public void configToAnno(VarConfig varConfig, AnnoSentence toAnnotate) {
         Map<Pair<Integer, Integer>, Properties> sprl = new HashMap<>();
-        Set<Integer> sprlPreds = new HashSet<>();
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(toAnnotate, prm.roleStructure,
-                prm.allowPredArgSelfLoops)) {
+        IntHashSet sprlPreds = new IntHashSet();
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(toAnnotate.size(),
+                toAnnotate.getKnownPreds(), toAnnotate.getKnownSrlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             Properties props = new Properties();
@@ -194,8 +195,8 @@ public class SprlFactorGraphBuilder {
 
     // encode
     public void annoToConfig(AnnoSentence goldSent, VarConfig addTo) {
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent, prm.roleStructure,
-                prm.allowPredArgSelfLoops)) {
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent.size(),
+                goldSent.getSprlPreds(), goldSent.getSprl().keySet(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             // TODO: there's currently no way to say that the gold says that

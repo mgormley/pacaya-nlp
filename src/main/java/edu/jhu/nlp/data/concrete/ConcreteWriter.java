@@ -106,11 +106,11 @@ public class ConcreteWriter {
 
     private static final Logger log = LoggerFactory.getLogger(ConcreteWriter.class);
 
-    public static final String DEP_PARSE_TOOL = "Pacaya Dependency Parser";
-    public static final String SRL_TOOL = "Pacaya Semantic Role Labeler (SRL)";
-    private static final String REL_TOOL = "Pacaya Relation Extractor";
-    public static final String SPRL_TOOL = "Pacaya Semantic Proto-Role Labeler (SPRL)";
-    private static final String NER_TOOL = "Pacaya Named Entity Recognizer (NER)";
+    public static final String DEP_PARSE_TOOL = "pacaya-depparse";
+    public static final String SRL_TOOL = "pacaya-srl";
+    private static final String REL_TOOL = "pacaya-rel";
+    public static final String SPRL_TOOL = "pacaya-sprl";
+    private static final String NER_TOOL = "pacaya-ner";
     private static final String POS_TOOL = "pos";
     private static final String LEMMA_TOOL = "lemmata";
     private static final String PRED_TYPE = "PREDICATE";
@@ -298,7 +298,7 @@ public class ConcreteWriter {
                 AnnoSentence sent = sents.get(i);
                 Tokenization t = tokenizations.get(i);
                 if (sent.getSrlGraph() != null) {
-                    for(SituationMention sm : makeSitutationMentions(sent.getSrlGraph().toSrlGraph(), sent, t, ems, sent.getSprl())) {
+                    for(SituationMention sm : makeSituationMentions(sent.getSrlGraph().toSrlGraph(), sent, t, ems, sent.getSprl())) {
                         sms.addToMentionList(sm);
                     }
                 }
@@ -331,8 +331,8 @@ public class ConcreteWriter {
         }
         return p;
     }
-
-    private List<SituationMention> makeSitutationMentions(SrlGraph srl, AnnoSentence from, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, Map<Pair<Integer, Integer>, Properties> sprl) {
+    
+    private List<SituationMention> makeSituationMentions(SrlGraph srl, AnnoSentence from, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, Map<Pair<Integer, Integer>, Properties> sprl) {
         AnnotationMetadata sprlMeta = new AnnotationMetadata();
         sprlMeta.setTool(SPRL_TOOL);
         sprlMeta.setTimestamp(timestamp);
@@ -509,7 +509,7 @@ public class ConcreteWriter {
         return ids;
     }
 
-    private List<Tokenization> getTokenizationsCorrespondingTo(AnnoSentenceCollection sentences, Communication from) {
+    private static List<Tokenization> getTokenizationsCorrespondingTo(AnnoSentenceCollection sentences, Communication from) {
         List<Tokenization> ts = new ArrayList<Tokenization>();
         for(Section s : from.getSectionList()) {
             for(Sentence sent : s.getSentenceList()) {
@@ -528,7 +528,7 @@ public class ConcreteWriter {
         return ts;
     }
 
-    private UUID getUUID() {
+    private static UUID getUUID() {
         return UUIDFactory.newUUID();
     }
 

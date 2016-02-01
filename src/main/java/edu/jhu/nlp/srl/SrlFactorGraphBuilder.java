@@ -2,6 +2,7 @@ package edu.jhu.nlp.srl;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -190,13 +191,11 @@ public class SrlFactorGraphBuilder implements Serializable {
      *            boolean indicating if pairs (i,i) should be included.
      * @return
      */
-    public static List<Pair<Integer, Integer>> getPossibleRolePairs(AnnoSentence sent, RoleStructure rS,
+    public static List<Pair<Integer, Integer>> getPossibleRolePairs(int n, IntSet knownPreds, Collection<Pair<Integer, Integer>> knownPairs, RoleStructure rS,
             boolean allowPredArgSelfLoops) {
-        IntSet knownPreds = sent.getKnownPreds();
         List<Pair<Integer, Integer>> toReturn = new ArrayList<>();
-        int n = sent.size();
         if (rS == RoleStructure.PAIRS_GIVEN) {
-            toReturn.addAll(sent.getKnownSrlPairs());
+            toReturn.addAll(knownPairs);
         } else if (rS == RoleStructure.PREDS_GIVEN) {
             // CoNLL-friendly model; preds given
             IntIter iter = knownPreds.iterator();
@@ -261,8 +260,9 @@ public class SrlFactorGraphBuilder implements Serializable {
 
         // Create the Role variables.
         roleVars = new RoleVar[n][n];
-        for (Pair<Integer, Integer> e : getPossibleRolePairs(isent.getAnnoSentence(), prm.roleStructure,
-                prm.allowPredArgSelfLoops)) {
+        AnnoSentence asent = isent.getAnnoSentence();
+        for (Pair<Integer, Integer> e : getPossibleRolePairs(isent.size(), asent.getKnownPreds(),
+                asent.getKnownSrlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
             roleVars[i][j] = createRoleVar(i, j, knownPreds, roleStateNames);

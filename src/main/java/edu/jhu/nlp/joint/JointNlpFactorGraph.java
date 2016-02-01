@@ -181,9 +181,9 @@ public class JointNlpFactorGraph extends FactorGraph {
                     }
                 };
             }
-
-            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.getAnnoSentence(),
-                    prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
+            AnnoSentence asent = isent.getAnnoSentence();
+            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(asent.size(),
+                    asent.getKnownPreds(), asent.getKnownSrlPairs(), prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
                 int j = e.get2();
                 RoleVar roleVar = prm.includeSrl ? roleVars[i][j] : null;

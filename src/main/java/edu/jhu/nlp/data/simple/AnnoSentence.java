@@ -89,7 +89,7 @@ public class AnnoSentence {
 
     // sprl properties for each pred arg pairs
     private Map<Pair<Integer, Integer>, Properties> sprl;
-    private Set<Integer> sprlPreds;
+    private IntHashSet sprlPreds;
          
     /** The original object (e.g. CoNLL09Sentence) used to create this sentence. */
     private Object sourceSent;
@@ -132,7 +132,7 @@ public class AnnoSentence {
         // TODO: this should be a deep copy.
         newSent.naryTree = this.naryTree;
         newSent.sprl = new HashMap<>(this.sprl);
-        newSent.sprlPreds = new HashSet<>(this.sprlPreds);
+        newSent.sprlPreds = new IntHashSet(this.sprlPreds);
         return newSent;
     }
     
@@ -724,11 +724,11 @@ public class AnnoSentence {
         this.sprl = sprl;
     }
 
-    public Set<Integer> getSprlPreds() {
+    public IntHashSet getSprlPreds() {
         return sprlPreds;
     }
 
-    public void setSprlPreds(Set<Integer> sprlPreds) {
+    public void setSprlPreds(IntHashSet sprlPreds) {
         this.sprlPreds = sprlPreds;
     }
 

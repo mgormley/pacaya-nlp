@@ -108,6 +108,12 @@ public class CorpusHandler {
     public static String concreteDepParseTool = null;
     @Opt(hasArg = true, description = "Tool name of SRL for ConcreteReader (will also be used for NER and Relations).")
     public static String concreteSrlTool = null;
+    @Opt(hasArg = true, description = "Tool name of SPRL for ConcreteReader.")
+    public static String concreteSprlTool = null;
+//    @Opt(hasArg = true, description = "Tool name to use when writing dependency parse for ConcreteWriter.")
+//    public static String concreteDepParseOutTool = null;
+//    @Opt(hasArg = true, description = "Tool name to use when writing SRL for ConcreteWriter (will also be used for NER and Relations and SPRL).")
+//    public static String concreteSrlOutTool = null;
 
     ////// TODO: use these options... /////
     // @Opt(hasArg=true, description="Whether to normalize and clean words.")
@@ -395,19 +401,22 @@ public class CorpusHandler {
     }
 
     // -------------------- Helper Methods --------------------------
+    private String checkedTool(String label, String toolFromParams) {
+        if (toolFromParams == null) {
+            log.warn(String.format("Since concrete %s tool is null, using first available tool", label));
+        } else {
+            log.info(String.format("Using concrete %s tool: %s", label, toolFromParams));
+        }
+        return toolFromParams;
+    }
+
     private AnnoSentenceReaderPrm getDefaultReaderPrm() {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.normalizeRoleNames = normalizeRoleNames;
         prm.useGoldSyntax = useGoldSyntax;
-        prm.rePrm.depParseTool = concreteDepParseTool;
-        if (concreteSrlTool == null) {
-            log.warn(String.format("Since concrete srl tool is null, using first available tool"));
-        } else {
-            log.info(String.format("Using concrete srl tool: %s", concreteSrlTool));
-        }
-        prm.rePrm.srlTool = concreteSrlTool;
-        prm.rePrm.nerTool = concreteSrlTool;
-        prm.rePrm.relationTool = concreteSrlTool;
+        prm.rePrm.depParseTool = checkedTool("depParse", concreteDepParseTool);
+        prm.rePrm.srlTool = checkedTool("srl", concreteSrlTool);
+        prm.rePrm.sprlTool = checkedTool("sprl", concreteSprlTool);
         return prm;
     }
 
