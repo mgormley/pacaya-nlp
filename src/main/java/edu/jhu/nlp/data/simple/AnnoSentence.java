@@ -89,7 +89,8 @@ public class AnnoSentence {
 
     // sprl properties for each pred arg pairs
     private Map<Pair<Integer, Integer>, Properties> sprl;
-    private IntHashSet sprlPreds;
+    private IntHashSet knownSprlPreds;
+    private Set<Pair<Integer, Integer>> knownSprlPairs;
          
     /** The original object (e.g. CoNLL09Sentence) used to create this sentence. */
     private Object sourceSent;
@@ -131,8 +132,9 @@ public class AnnoSentence {
         newSent.srlGraph = this.srlGraph;
         // TODO: this should be a deep copy.
         newSent.naryTree = this.naryTree;
-        newSent.sprl = new HashMap<>(this.sprl);
-        newSent.sprlPreds = new IntHashSet(this.sprlPreds);
+        newSent.sprl = (this.sprl == null) ? null : new HashMap<>(this.sprl);
+        newSent.knownSprlPreds = (this.knownSprlPreds == null) ? null : new IntHashSet(this.knownSprlPreds);
+        newSent.knownSprlPairs = (this.knownSprlPairs == null) ? null : new HashSet<>(this.knownSprlPairs);
         return newSent;
     }
     
@@ -163,15 +165,14 @@ public class AnnoSentence {
         case SRL_PRED_IDX: dest.knownPreds = src.knownPreds; break;
         case SRL_PAIR_IDX: dest.knownSrlPairs= src.knownSrlPairs; break;
         case SRL: dest.srlGraph = src.srlGraph; break;
+        case SPRL_PRED_IDX: dest.knownSprlPreds = src.knownSprlPreds; break;
+        case SPRL_PAIR_IDX: dest.knownSprlPairs = src.knownSprlPairs; break;
+        case SPRL: dest.sprl= src.sprl; break;
         case NARY_TREE: dest.naryTree = src.naryTree; break;
         case NER: dest.namedEntities = src.namedEntities; break;
         case NE_PAIRS: dest.nePairs = src.nePairs; break;
         case REL_LABELS: dest.relLabels = src.relLabels; break;
         case RELATIONS: dest.relations = src.relations; break;
-        case SPRL:
-            dest.sprl = src.sprl;
-            dest.sprlPreds = src.sprlPreds;
-            break;
         default: throw new RuntimeException("not implemented for " + at);
         }
     }
@@ -219,6 +220,8 @@ public class AnnoSentence {
         case NE_PAIRS: this.nePairs = null; break;
         case REL_LABELS: this.relLabels = null; break;
         case RELATIONS: this.relations = null; break;
+        case SPRL_PRED_IDX: this.knownSprlPreds = null; break;
+        case SPRL_PAIR_IDX: this.knownSprlPairs = null; break;
         case SPRL: this.sprl = null; break;
         default: throw new RuntimeException("not implemented for " + at);
         }
@@ -240,10 +243,12 @@ public class AnnoSentence {
         case DEP_TREE: return this.parents != null;
         case DEPREL: return this.deprels != null;
         case DEP_EDGE_MASK: return this.depEdgeMask != null;
-        case SPRL: return this.sprl != null;        
         case SRL_PRED_IDX: return this.knownPreds != null;
         case SRL_PAIR_IDX: return this.knownSrlPairs != null;
         case SRL: return this.srlGraph != null;
+        case SPRL_PRED_IDX: return this.knownSprlPreds != null;
+        case SPRL_PAIR_IDX: return this.knownSprlPairs != null;
+        case SPRL: return this.sprl != null;
         case NARY_TREE: return this.naryTree != null;
         case NER: return this.namedEntities != null;
         case NE_PAIRS: return this.nePairs != null;
@@ -306,7 +311,8 @@ public class AnnoSentence {
         appendIfNotNull(sb, "deprels", deprels);
         appendIfNotNull(sb, "depEdgeMask", depEdgeMask);
         appendIfNotNull(sb, "sprl", sprl);
-        appendIfNotNull(sb, "sprlPreds", sprlPreds);
+        appendIfNotNull(sb, "knownSprlPreds", knownSprlPreds);
+        appendIfNotNull(sb, "KnownSprlPairs", knownSprlPairs);
         appendIfNotNull(sb, "srlGraph", srlGraph);
         appendIfNotNull(sb, "knownPreds", knownPreds);
         appendIfNotNull(sb, "knownSrlPairs", knownSrlPairs);
@@ -724,12 +730,12 @@ public class AnnoSentence {
         this.sprl = sprl;
     }
 
-    public IntHashSet getSprlPreds() {
-        return sprlPreds;
+    public IntHashSet getKnownSprlPreds() {
+        return knownSprlPreds;
     }
 
-    public void setSprlPreds(IntHashSet sprlPreds) {
-        this.sprlPreds = sprlPreds;
+    public void setKnownSprlPreds(IntHashSet sprlPreds) {
+        this.knownSprlPreds = sprlPreds;
     }
 
     public RelationMentions getRelations() {
@@ -750,5 +756,14 @@ public class AnnoSentence {
     public void setKnownSrlPairs(Set<Pair<Integer, Integer>> knownPairs) {
         knownSrlPairs = knownPairs;
     }
+
+    public void setKnownSprlPairs(Set<Pair<Integer, Integer>> knownSprlPairs) {
+        this.knownSprlPairs = knownSprlPairs;
+    }
+
+    public Set<Pair<Integer, Integer>> getKnownSprlPairs() {
+        return knownSprlPairs;
+    }
     
+
 }

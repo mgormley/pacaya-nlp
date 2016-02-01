@@ -166,7 +166,7 @@ public class SprlFactorGraphBuilder {
         Map<Pair<Integer, Integer>, Properties> sprl = new HashMap<>();
         IntHashSet sprlPreds = new IntHashSet();
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(toAnnotate.size(),
-                toAnnotate.getKnownPreds(), toAnnotate.getKnownSrlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                toAnnotate.getKnownSprlPreds(), toAnnotate.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             Properties props = new Properties();
@@ -190,13 +190,13 @@ public class SprlFactorGraphBuilder {
             }
         }
         toAnnotate.setSprl(sprl);
-        toAnnotate.setSprlPreds(sprlPreds);
+        toAnnotate.setKnownSprlPreds(sprlPreds);
     }
 
     // encode
     public void annoToConfig(AnnoSentence goldSent, VarConfig addTo) {
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent.size(),
-                goldSent.getSprlPreds(), goldSent.getSprl().keySet(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                goldSent.getKnownSprlPreds(), goldSent.getSprl().keySet(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             // TODO: there's currently no way to say that the gold says that
@@ -209,7 +209,7 @@ public class SprlFactorGraphBuilder {
 
             // only extract variables for sprl if the pred is one that has been
             // annotated with sprl
-            if (goldSent.getSprlPreds().contains(pred)) {
+            if (goldSent.getKnownSprlPreds().contains(pred)) {
                 boolean isAnArg = goldSent.getKnownSrlPairs().contains(e);
                 for (Property q : Property.values()) {
                     // add the variable to the config

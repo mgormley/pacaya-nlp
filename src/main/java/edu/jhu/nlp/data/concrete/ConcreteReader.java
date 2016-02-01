@@ -304,7 +304,8 @@ public class ConcreteReader {
             for (Pair<Integer, Integer> k : sprl.keySet()) {
                 sprlPreds.add(k.get1());
             }
-            sent.setSprlPreds(sprlPreds);
+            sent.setKnownSprlPreds(sprlPreds);
+            sent.setKnownSprlPairs(sprl.keySet());
             i++;
         }
     }

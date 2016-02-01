@@ -3,6 +3,7 @@ package edu.jhu.nlp.joint;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,12 +44,13 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.SerializablePair;
 import edu.jhu.pacaya.util.collections.QLists;
+import edu.jhu.prim.set.IntSet;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -182,8 +184,11 @@ public class JointNlpFactorGraph extends FactorGraph {
                 };
             }
             AnnoSentence asent = isent.getAnnoSentence();
+            IntSet knownPreds = prm.includeSrl ? asent.getKnownPreds() : asent.getKnownSprlPreds(); 
+            Set<Pair<Integer, Integer>> knownPairs = prm.includeSrl ? asent.getKnownSrlPairs() : asent.getKnownSprlPairs(); 
+            
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(asent.size(),
-                    asent.getKnownPreds(), asent.getKnownSrlPairs(), prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
+                    knownPreds, knownPairs, prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
                 int j = e.get2();
                 RoleVar roleVar = prm.includeSrl ? roleVars[i][j] : null;

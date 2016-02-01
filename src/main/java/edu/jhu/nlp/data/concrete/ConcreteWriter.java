@@ -9,13 +9,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.google.common.collect.ImmutableMap;
 import edu.jhu.hlt.concrete.AnnotationMetadata;
-import edu.jhu.hlt.concrete.Argument;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.Dependency;
 import edu.jhu.hlt.concrete.DependencyParse;
@@ -47,6 +48,9 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.prim.iter.IntIter;
+import edu.jhu.prim.set.IntHashSet;
+import edu.jhu.prim.set.IntSet;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -64,6 +68,7 @@ public class ConcreteWriter {
         public boolean addDepParse = true;
         /** Whether to add SRL. */
         public boolean addSrl = true;
+        public boolean addSprl = true;
         /** Whether to add NER mentions. */
         public boolean addNerMentions = true;
         /** Whether to add relations. */
@@ -110,6 +115,7 @@ public class ConcreteWriter {
     public static final String SRL_TOOL = "pacaya-srl";
     private static final String REL_TOOL = "pacaya-rel";
     public static final String SPRL_TOOL = "pacaya-sprl";
+    public static final String SPRL_SRL_TOOL = "pacaya-sprl-srl";
     private static final String NER_TOOL = "pacaya-ner";
     private static final String POS_TOOL = "pos";
     private static final String LEMMA_TOOL = "lemmata";
@@ -159,7 +165,13 @@ public class ConcreteWriter {
             addDependencyParse(sents, comm);
         }
         if (prm.addSrl) {
-            addSrlAnnotations(sents, comm);
+            addSrlAnnotations(sents, comm, true, false, SRL_TOOL);
+        }
+        if (prm.addSprl) {
+            addSrlAnnotations(sents, comm, false, true, SPRL_TOOL);
+        }
+        if (prm.addSrl && prm.addSprl) {
+            addSrlAnnotations(sents, comm, true, true, SPRL_SRL_TOOL);
         }
         if (prm.addNerMentions || prm.addRelations) {
             addNerMentionsAndRelations(sents, comm);
@@ -265,16 +277,17 @@ public class ConcreteWriter {
      */
     public void addSrlAnnotations(
             AnnoSentenceCollection sents,
-            Communication comm) {
-        if (!sents.someHaveAt(AT.SRL)) { return; }
+            Communication comm, boolean includeSrl, boolean includeSprl, String tool) {
+        if (!sents.someHaveAt(AT.SRL) && !sents.someHaveAt(AT.SPRL)) { return; }
 
         AnnotationMetadata meta = new AnnotationMetadata();
-        meta.setTool(SRL_TOOL);
+        meta.setTool(tool);
         meta.setTimestamp(timestamp);
 
         List<Tokenization> tokenizations = getTokenizationsCorrespondingTo(sents, comm);
 
         if(prm.srlIsSyntax) {
+            assert includeSrl;
             // make a dependency parse for every sentence / SRL
             for(int i=0; i<tokenizations.size(); i++) {
                 AnnoSentence sent = sents.get(i);
@@ -297,10 +310,10 @@ public class ConcreteWriter {
             for(int i=0; i<sents.size(); i++) {
                 AnnoSentence sent = sents.get(i);
                 Tokenization t = tokenizations.get(i);
-                if (sent.getSrlGraph() != null) {
-                    for(SituationMention sm : makeSituationMentions(sent.getSrlGraph().toSrlGraph(), sent, t, ems, sent.getSprl())) {
-                        sms.addToMentionList(sm);
-                    }
+                for(SituationMention sm : makeSituationMentions(
+                        includeSrl ? sent.getSrlGraph().toSrlGraph() : null,
+                        includeSprl ? sent.getSprl() : null, sent.getWords(), t, ems, tool)) {
+                    sms.addToMentionList(sm);
                 }
             }
             comm.addToEntityMentionSetList(ems);
@@ -331,61 +344,99 @@ public class ConcreteWriter {
         }
         return p;
     }
-    
-    private List<SituationMention> makeSituationMentions(SrlGraph srl, AnnoSentence from, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, Map<Pair<Integer, Integer>, Properties> sprl) {
+
+    private List<SituationMention> makeSituationMentions(SrlGraph srl, Map<Pair<Integer, Integer>, Properties> sprl, List<String> words, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, String tool) {
+        List<SituationMention> mentions = new ArrayList<SituationMention>();
+
         AnnotationMetadata sprlMeta = new AnnotationMetadata();
-        sprlMeta.setTool(SPRL_TOOL);
+        sprlMeta.setTool(tool);
         sprlMeta.setTimestamp(timestamp);
 
-    	List<SituationMention> mentions = new ArrayList<SituationMention>();
-        for(SrlPred p : srl.getPreds()) {
-            SituationMention sm = new SituationMention(getUUID(), new ArrayList<MentionArgument>());
+    	IntSet combinedPreds = new IntHashSet();
+        Set<Pair<Integer, Integer>> combinedPairs = new HashSet<>();
+
+        // add preds and pairs from srl
+        if (srl != null) {
+    	    combinedPreds.add(srl.getKnownPreds().toNativeArray());
+            combinedPairs.addAll(srl.getKnownSrlPairs());
+    	}
+
+        // add preds and pairs from sprl
+    	if (sprl != null) {
+            for (Pair<Integer, Integer> p : sprl.keySet()) {
+                combinedPreds.add(p.get1());
+            }
+            combinedPairs.addAll(sprl.keySet());
+        }
+
+    	// hold onto the preds so that we can add the arguments
+    	SituationMention[] cPreds = new SituationMention[words.size()];
+
+        IntIter predLocItr = combinedPreds.iterator();
+    	while (predLocItr.hasNext()) {
+                        //for(SrlPred p : srl.getPreds()) {
+            int predLoc = predLocItr.next();
+    	    SituationMention sm = new SituationMention(getUUID(), new ArrayList<MentionArgument>());
             sm.setSituationType(PRED_TYPE);
-            sm.setSituationKind(p.getLabel());
+            if (srl != null) {
+                SrlPred p = srl.getPredAt(predLoc);
+                if (p != null) {
+                    sm.setSituationKind(p.getLabel());
+                }
+            }
+
             // set the text for the predicate
-            sm.setText(from.getWord(p.getPosition()));
+            sm.setText(words.get(predLoc));
             TokenRefSequence smToks = new TokenRefSequence();
-            smToks.setAnchorTokenIndex(p.getPosition());
-            smToks.setTokenIndexList(Arrays.asList(p.getPosition()));
+            smToks.setAnchorTokenIndex(predLoc);
+            // todo: include subtree?
+            smToks.setTokenIndexList(Arrays.asList(predLoc));
             smToks.setTokenizationId(useUUID.getUuid());
             sm.setTokens(smToks);
-            for(SrlEdge child : p.getEdges()) {
-                int ai = child.getArg().getPosition();
-                MentionArgument a = new MentionArgument();
-                a.setRole(child.getLabel());
-
-                if (sprl != null) {
-                    Properties cProps = sprl.get(new Pair<>(p.getPosition(), child.getArg().getPosition()));
-                    if (cProps != null && cProps.get().size() > 0) {
-                        List<Property> props = new ArrayList<>();
-                        for (Pair<String, Double> pair : cProps.get()) {
-                            Property newProp = new Property();
-                            newProp.setValue(pair.get1());
-                            newProp.setPolarity(pair.get2());
-                            newProp.setMetadata(sprlMeta);
-                            props.add(newProp);
-                        }
-                        a.setPropertyList(props);
-                    }
-                }
-                // make an EntityMention
-                EntityMention em = new EntityMention();
-                em.setUuid(getUUID());
-                em.setEntityType("UNKNOWN");
-                em.setPhraseType("OTHER");
-                // set the text for the arg
-                em.setText(from.getWord(ai));
-                TokenRefSequence seq = new TokenRefSequence();
-                em.setTokens(seq);
-                seq.setAnchorTokenIndex(ai);
-                seq.setTokenIndexList(Arrays.asList(ai));
-                seq.setTokenizationId(useUUID.getUuid());
-
-                a.setEntityMentionId(em.getUuid());
-                addEntityMentionsTo.addToMentionList(em);
-                sm.addToArgumentList(a);
-            }
+            cPreds[predLoc] = sm;
             mentions.add(sm);
+    	}
+
+        for (Pair<Integer, Integer> pair : combinedPairs) {
+            MentionArgument a = new MentionArgument();
+            int predLoc = pair.get1();
+            int argLoc = pair.get2();
+            SrlEdge child = (srl == null) ? null : srl.getEdge(pair.get1(), pair.get2());
+            if (child != null) {
+                a.setRole(child.getLabel());
+            } else {
+                a.setRole("UNKNOWN");
+    	    }
+    	    if (sprl != null) {
+    	        Properties cProps = sprl.get(new Pair<>(predLoc, argLoc));
+    	        if (cProps != null && cProps.get().size() > 0) {
+    	            List<Property> props = new ArrayList<>();
+    	            for (Pair<String, Double> keyAndValue : cProps.get()) {
+    	                Property newProp = new Property();
+    	                newProp.setValue(keyAndValue.get1());
+    	                newProp.setPolarity(keyAndValue.get2());
+    	                newProp.setMetadata(sprlMeta);
+    	                props.add(newProp);
+    	            }
+    	            a.setPropertyList(props);
+                }
+    	    }
+    	    // make an EntityMention
+    	    EntityMention em = new EntityMention();
+    	    em.setUuid(getUUID());
+    	    em.setEntityType("UNKNOWN");
+    	    em.setPhraseType("OTHER");
+    	    // set the text for the arg
+    	    em.setText(words.get(argLoc));
+    	    TokenRefSequence seq = new TokenRefSequence();
+    	    em.setTokens(seq);
+    	    seq.setAnchorTokenIndex(argLoc);
+    	    seq.setTokenIndexList(Arrays.asList(argLoc));
+    	    seq.setTokenizationId(useUUID.getUuid());
+
+    	    a.setEntityMentionId(em.getUuid());
+    	    addEntityMentionsTo.addToMentionList(em);
+    	    cPreds[predLoc].addToArgumentList(a);
         }
         return mentions;
     }
@@ -518,11 +569,13 @@ public class ConcreteWriter {
         }
         // make sure that the sentences line up
         if(ts.size() != sentences.size()) {
-            throw new RuntimeException("Number of sentences don't match");
+            log.error("Number of sentences don't match");
+            //throw new RuntimeException("Number of sentences don't match");
         }
-        for(int i=0; i<ts.size(); i++) {
+        for(int i=0; i<sentences.size(); i++) {
             if(ts.get(i).getTokenList().getTokenListSize() != sentences.get(i).size()) {
-                throw new RuntimeException("Sentence lengths don't match");
+                log.error("Sentence lengths don't match");
+                //throw new RuntimeException("Sentence lengths don't match");
             }
         }
         return ts;

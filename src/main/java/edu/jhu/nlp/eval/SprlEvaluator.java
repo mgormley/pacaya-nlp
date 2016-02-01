@@ -49,7 +49,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
         Map<Pair<Integer, Integer>, Properties> sprl = sent.getSprl();
         // get the labels according to the pred sent, but including
         // all and only those possible according to the gold sentence
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(), gold.getSprlPreds(),
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(), gold.getKnownSprlPreds(),
                 gold.getSprl().keySet(), roleStructure, allowSelfLoops)) {
             Properties props = sprl.get(e);
             double[] propMap = (props != null) ? props.toArray() : null;

@@ -138,6 +138,11 @@ public class TemplateLanguage {
     }
     
     /* -------------------- Descriptions of the Language Elements ---------------- */
+
+    /**
+     * Annotation Type. These describe which part of a AnnoSentence must
+     * be present in order to utilize each structure.
+     */
         
     public static Description getDescByName(String name) {
         name = Description.normalizeName(name);
