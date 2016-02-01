@@ -118,7 +118,7 @@ public class SprlFactorGraphBuilder {
         sprlVars = new SprlVar[n][n][Property.values().length];
         AnnoSentence asent = isent.getAnnoSentence();
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.size(),
-                asent.getKnownPreds(), asent.getKnownSrlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                asent.getKnownSprlPreds(), asent.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
             VarType sprlType = VarType.PREDICTED; // TODO: setting this to be null (hoping that inference will figure out what's latent and what isn't causes big problems!)
