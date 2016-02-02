@@ -63,6 +63,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
 
         // Get the variable assignments given in the training data.
         VarConfig vc = new VarConfig();
+
         if (prm.fgPrm.includePos && prm.fgPrm.posPrm.posTagVarType != VarType.LATENT) {
             if (gold != null && gold.getPosTags() != null) {
                 fg.getPosTagBuilder().addVarAssignments(gold.getPosTags(), vc);;

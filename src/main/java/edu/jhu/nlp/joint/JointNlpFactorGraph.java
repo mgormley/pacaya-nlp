@@ -101,6 +101,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         public boolean includeSprl = false;
         public SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
         public boolean sprlSrlFactors = false;
+        public boolean enforceSprlNilAgreement = true;
     }
 
     public enum JointFactorTemplate {
@@ -135,6 +136,10 @@ public class JointNlpFactorGraph extends FactorGraph {
         // TODO: This should move up the stack.
         IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
 
+        // if we have sprl variables but they won't be connected to srl variables, then we need
+        // to make variables to enforce nil agreement
+        //boolean includeIsArg = prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement && !(prm.sprlSrlFactors && prm.includeSrl); 
+
         if (prm.includeSprl) {
             sprl = new SprlFactorGraphBuilder(prm.sprlPrm);
             sprl.build(isent, ofc, fg, cs);
@@ -165,28 +170,13 @@ public class JointNlpFactorGraph extends FactorGraph {
         // we only bother about the information between sprl and srl if one of the two is present
         boolean sprlSrlFactors = prm.sprlSrlFactors && (prm.includeSprl || prm.includeSrl);
 
-        // if we have sprl variables but they won't be connected to srl variables, then we need
-        // to make variables to enforce nil agreement
-        boolean includeIsArg = prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement && !(prm.sprlSrlFactors && prm.includeSrl); 
-        
         // we need some coordinating factors for either agreement or sprlSrl interaction
-        if (includeIsArg || sprlSrlFactors) {
+        if (sprlSrlFactors) {
             SprlVar[][][] sprlVars = prm.includeSprl ? sprl.getSprlVars() : null;
             RoleVar[][] roleVars = prm.includeSrl ? srl.getRoleVars() : null;
-            ObsFeatureExtractor isArgFe = null;
-            if (includeIsArg) {
-                // TODO: replace this with just using the srl feature extractor (we might as well featurize these factors, too)
-                isArgFe = new ObsFeatureExtractor() {
-                    @Override
-                    public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
-                        return new FeatureVector();
-                    }
-                };
-            }
             AnnoSentence asent = isent.getAnnoSentence();
             IntSet knownPreds = prm.includeSrl ? asent.getKnownPreds() : asent.getKnownSprlPreds(); 
             Set<Pair<Integer, Integer>> knownPairs = prm.includeSrl ? asent.getKnownSrlPairs() : asent.getKnownSprlPairs(); 
-            
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(asent.size(),
                     knownPreds, knownPairs, prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
@@ -197,21 +187,13 @@ public class JointNlpFactorGraph extends FactorGraph {
                 // if we have sprl then we need to at least add factors to enforce agreement
                 for (Property q : Property.values()) {
                     SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][q.ordinal()] : null;
-                    if (includeIsArg) {
-                        JointFactorTemplate templateType = JointFactorTemplate.ISARG_SPRL_BINARY; 
-                        SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
-                        Var argVar = new Var(VarType.LATENT, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
-                        addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVar, sprlVar),
-                                Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                                templateType, templateKey, ofc, isArgFe));
-                    }
                     if (sprlSrlFactors) {
                         JointFactorTemplate templateType = JointFactorTemplate.ROLE_SPRL_BINARY; 
                         SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
                         // factors across sprl-srl 
                         if (prm.includeSprl && prm.includeSrl) {
                             // real pairwise factors
-                            if (prm.sprlPrm.enforceSprlNilAgreement) {
+                            if (prm.enforceSprlNilAgreement) {
                                 // create the factor in such a way that nil agreement is enforced
                                 addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
                                         Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),

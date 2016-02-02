@@ -191,7 +191,7 @@ public class ConcreteWriter {
         AnnotationMetadata meta = new AnnotationMetadata();
         meta.setTool(POS_TOOL);
         meta.setTimestamp(timestamp);
-        for(int i=0; i<ts.size(); i++) {
+        for(int i=0; i<sents.size(); i++) {
             Tokenization t = ts.get(i);
             AnnoSentence s = sents.get(i);
             List<TaggedToken> taggedTokens = new ArrayList<>();
@@ -213,7 +213,7 @@ public class ConcreteWriter {
         AnnotationMetadata meta = new AnnotationMetadata();
         meta.setTool(LEMMA_TOOL);
         meta.setTimestamp(timestamp);
-        for(int i=0; i<ts.size(); i++) {
+        for(int i=0; i<sents.size(); i++) {
             Tokenization t = ts.get(i);
             AnnoSentence s = sents.get(i);
             List<TaggedToken> taggedTokens = new ArrayList<>();
@@ -238,7 +238,7 @@ public class ConcreteWriter {
             Communication comm) {
         if (!sents.someHaveAt(AT.DEP_TREE)) { return; }
         List<Tokenization> ts = getTokenizationsCorrespondingTo(sents, comm);
-        for(int i=0; i<ts.size(); i++) {
+        for(int i=0; i<sents.size(); i++) {
             Tokenization t = ts.get(i);
             AnnoSentence s = sents.get(i);
             List<String> depTypes = s.getDeprels();

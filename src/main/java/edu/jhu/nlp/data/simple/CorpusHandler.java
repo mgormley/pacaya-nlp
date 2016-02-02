@@ -216,7 +216,7 @@ public class CorpusHandler {
             if (outType == DatasetType.CONCRETE && createNewCommunication) {
                 writeNewConcrete(writer, outFile, sents, sents.get(0).getAts());
             } else {
-                writer.write(outFile, outType, sents, new HashSet<AT>());
+                writer.write(outFile, outType, sents, sents.get(0).getAts()); //new HashSet<AT>());
             }
 
         }

@@ -275,13 +275,13 @@ public class JointNlpRunner {
     public static boolean favorSrlValidation = false;
     @Opt(hasArg = true, description = "Only look at sprl in validation function for srl with sprl")
     public static boolean favorSprlValidation = false;
-    
+
     //@Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
     //public static int sprlPipelineIndex = -1;
     // TODO: add different order of property prediction
     // TODO: have the corpus statistics figure out what the properties instead of having an enum; that way things
     // still work when the SPRL questions change
-    
+
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
     public static VarType posTagVarType = VarType.LATENT;
@@ -597,11 +597,15 @@ public class JointNlpRunner {
             prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
 
+        boolean includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);
+        boolean includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
+        boolean includeIsArgVars = includeSprl && enforceSprlNilAgreement && !(sprlSrlFactors && includeSrl);
+
         prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
-        prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
         prm.fgPrm.includeRel = CorpusHandler.getPredLatAts().contains(AT.REL_LABELS);
-        prm.fgPrm.includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);
+        prm.fgPrm.includeSrl = includeSrl;
+        prm.fgPrm.includeSprl = includeSprl;
 
         // Joint features.
         if (acl14DepFeats) {
@@ -609,9 +613,12 @@ public class JointNlpRunner {
         } else {
             prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
         }
-        prm.fgPrm.sprlPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
+
+        prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
+        prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;
+
         // TODO: probably should decouple the sprl feature extraction from the srl feature extraction
         prm.fgPrm.sprlPrm.srlFePrm = prm.fgPrm.srlPrm.srlFePrm;
         // Example construction and storage.
