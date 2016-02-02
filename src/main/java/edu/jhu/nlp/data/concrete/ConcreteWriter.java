@@ -96,7 +96,8 @@ public class ConcreteWriter {
         /** Sets the include flag for each annotation type to true, or warns if it's not supported. */
         public void addAnnoTypes(Collection<AT> ats) {
             this.addDepParse = ats.contains(AT.DEP_TREE);
-            this.addSrl = ats.contains(AT.SRL) || ats.contains(AT.SPRL);
+            this.addSrl = ats.contains(AT.SRL);
+            this.addSprl = ats.contains(AT.SPRL);
             this.addNerMentions = ats.contains(AT.NER);
             this.addRelations = ats.contains(AT.RELATIONS);
 
