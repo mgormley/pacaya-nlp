@@ -7,7 +7,7 @@
 # pos(dir(seq(path(p,c)))) + lemmaSense(p) ### NOT SUPPORTED
 # pos(lns(c)) + lemmaSense(p) ### NOT SUPPORTED
 # relative(p,c) + lemmaSense(p) ### NOT SUPPORTED
-# this was in a different order: path(p,c).dir.pos.seq
+##this was in a different order: path(p,c).dir.pos.seq
 # word(bag(children(p))) + lemmaSense(p) ### NOT SUPPORTED
 # word(c) + lemmaSense(p) ### NOT SUPPORTED
 
@@ -19,7 +19,7 @@ pos(c) + bc1(p) ### ADDED
 pos(dir(seq(path(p,c)))) + bc1(p) ### ADDED
 pos(lns(c)) + bc1(p) ### ADDED
 relative(p,c) + bc1(p) ### ADDED
-this was in a different order: path(p,c).dir.pos.seq
+# this was in a different order: path(p,c).dir.pos.seq
 word(bag(children(p))) + bc1(p) ### ADDED
 word(c) + bc1(p) ### ADDED
 
