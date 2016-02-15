@@ -83,14 +83,14 @@ public class OptimizerFactory {
             log.warn("Ignoring stopTrainingBy by setting it to null.");
             OptimizerFactory.stopTrainingBy = null;
         }
-        
+
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
         if (optimizer == OptimizerType.LBFGS) {
             LBFGSPrm prm = new LBFGSPrm();
             prm.max_iterations = lbfgsMaxIters;
             prm.m = lbfgsCachedIters;
-            opt = DifferentiableFunctionOpts.getRegularizedOptimizer(new LBFGS(prm), l1Lambda, l2Lambda);            
+            opt = DifferentiableFunctionOpts.getRegularizedOptimizer(new LBFGS(prm), l1Lambda, l2Lambda);
             batchOpt = null;
         } else if (optimizer == OptimizerType.SGD || optimizer == OptimizerType.ASGD  ||
                 optimizer == OptimizerType.ADAGRAD || optimizer == OptimizerType.ADADELTA) {
@@ -156,15 +156,15 @@ public class OptimizerFactory {
             BottouSchedulePrm boPrm = new BottouSchedulePrm();
             boPrm.initialLr = sgdInitialLr;
             boPrm.lambda = l1Lambda + l2Lambda;
-            sgdPrm.sched = new BottouSchedule(boPrm);  
+            sgdPrm.sched = new BottouSchedule(boPrm);
             opt = null;
             batchOpt = new SGDFobos(sgdPrm);
         } else {
             throw new RuntimeException("Optimizer not supported: " + optimizer);
-        }        
+        }
         return new Pair<>(opt, batchOpt);
     }
-    
+
     private static SGDPrm getSgdPrm() {
         SGDPrm prm = new SGDPrm();
         setSgdPrm(prm);
@@ -179,11 +179,11 @@ public class OptimizerFactory {
         prm.autoSelectLr = sgdAutoSelectLr;
         prm.autoSelectFreq = sgdAutoSelecFreq;
         prm.computeValueOnNonFinalIter = sgdComputeValueOnNonFinalIter;
-        prm.averaging = sgdAveraging; 
-        prm.earlyStopping = sgdEarlyStopping; 
+        prm.averaging = sgdAveraging;
+        prm.earlyStopping = sgdEarlyStopping;
         // Make sure we correctly set the schedule somewhere else.
         prm.sched = null;
     }
 
-    
+
 }

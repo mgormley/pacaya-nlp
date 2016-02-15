@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
@@ -275,9 +276,11 @@ public class JointNlpRunner {
     public static boolean favorSrlValidation = false;
     @Opt(hasArg = true, description = "Only look at sprl in validation function for srl with sprl")
     public static boolean favorSprlValidation = false;
+    @Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
+    public static int sprlPipelineIndex = -1;
+    // the order of the sprl questions
+    //public static List<Property> sprlPipelineOrder = Arrays.asList(Property.values());
 
-    //@Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
-    //public static int sprlPipelineIndex = -1;
     // TODO: add different order of property prediction
     // TODO: have the corpus statistics figure out what the properties instead of having an enum; that way things
     // still work when the SPRL questions change
@@ -615,6 +618,7 @@ public class JointNlpRunner {
         }
 
         prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
+        //prm.fgPrm.sprlPrm.sprlPipelineIndex = sprlPipelineIndex;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
         prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;
