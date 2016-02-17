@@ -15,6 +15,7 @@ import edu.jhu.prim.tuple.Pair;
 public class Properties implements Iterable<Pair<String, Double>> {
 
     private List<Pair<String, Double>> props;
+
     public static enum Property {
         awareness,
         change_of_location,

@@ -1,0 +1,124 @@
+package edu.jhu.nlp.sprl;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Map;
+
+import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import edu.jhu.nlp.AbstractParallelAnnotator;
+import edu.jhu.nlp.data.Properties;
+import edu.jhu.nlp.data.Properties.Property;
+import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.data.simple.AnnoSentenceReader;
+import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
+import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
+import edu.jhu.pacaya.util.cli.ArgParser;
+import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.prim.tuple.Pair;
+
+public class SprlConcreteEvaluator {
+
+    private static final Logger log = LoggerFactory.getLogger(SprlConcreteEvaluator.class);
+
+    @Opt(hasArg = true, description = "concrete file containing predicted sprl judgments")
+    public static File pred = null;
+
+    @Opt(hasArg = true, description = "concrete tool to use for predicted sprl judgements")
+    public static String predTool = null;
+
+    @Opt(hasArg = true, description = "concrete file containing gold sprl judgments")
+    public static File gold = null;
+
+    @Opt(hasArg = true, description = "concrete tool to use for gold sprl judgements")
+    public static String goldTool = null;
+
+    private static AnnoSentenceCollection loadSents(String name, File comm, String tool) throws IOException {
+        AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
+        prm.name = name;
+        prm.rePrm.depParseTool = null;
+        prm.rePrm.srlTool = null;
+        prm.rePrm.sprlTool = tool;
+        // prm.maxNumSentences = trainMaxNumSentences;
+        // prm.maxSentenceLength = trainMaxSentenceLength;
+        // prm.minSentenceLength = trainMinSentenceLength;
+        // prm.useCoNLLXPhead = trainUseCoNLLXPhead;
+        // prm.normalizeRoleNames = normalizeRoleNames;
+        // prm.useGoldSyntax = useGoldSyntax;
+        AnnoSentenceReader reader = new AnnoSentenceReader(prm);
+        reader.loadSents(comm, DatasetType.CONCRETE);
+        return reader.getData();
+    }
+
+    public static enum EvalType {
+        AllPairs, KnownPreds, KnownPairs,
+    }
+
+    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred) {
+        ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(
+                SprlClassLabel.NOT_AN_ARG);
+        int nSentences = pred.size();
+        for (int i = 0; i < nSentences; i++) {
+            Map<Pair<Integer, Integer>, Properties> p = pred.get(i).getSprl();
+            Map<Pair<Integer, Integer>, Properties> g = gold.get(i).getSprl();
+            // gold Preds
+            HashSet<Integer> goldPreds = new HashSet<>();
+            for (Pair<Integer, Integer> k : g.keySet()) {
+                goldPreds.add(k.get1());
+            }
+            for (int predicate : goldPreds) {
+                for (int argument = 0; argument < pred.get(i).size(); argument++) {
+                    Pair<Integer, Integer> k = new Pair<>(predicate, argument);
+                    Properties pProps = p.get(k);
+                    Map<String, Double> pMap = pProps == null ? null : pProps.toMap();
+                    Properties gProps = g.get(k);
+                    Map<String, Double> gMap = gProps == null ? null : gProps.toMap();
+                    for (Property q : Property.values()) {
+                        cms.recordPrediction(
+                                gProps == null ? SprlClassLabel.NOT_AN_ARG
+                                        : SprlClassLabel.getLabel(gMap.get(q.name())),
+                                pProps == null ? SprlClassLabel.NOT_AN_ARG
+                                        : SprlClassLabel.getLabel(pMap.get(q.name())),
+                                q);
+                    }
+                }
+            }
+        }
+        System.out.println();
+        System.out.println("Total:");
+        System.out.println(cms.getTotal().formatMatrix(Arrays.asList(SprlClassLabel.values())));
+        for (Property k : cms.getCategories()) {
+            System.out.println();
+            System.out.println(k.name());
+            System.out.println(cms.getConfusionMatrix(k).formatMatrix(Arrays.asList(SprlClassLabel.values())));
+        }
+    }
+
+    public static void main(String[] args) {
+        int exitCode = 0;
+        ArgParser parser = null;
+        try {
+            parser = new ArgParser(SprlConcreteEvaluator.class);
+            parser.registerClass(SprlConcreteEvaluator.class);
+            parser.parseArgs(args);
+            AnnoSentenceCollection predSents = loadSents("pred", pred, predTool);
+            AnnoSentenceCollection goldSents = loadSents("gold", gold, goldTool);
+            evalSprl(goldSents, predSents);
+        } catch (ParseException e1) {
+            log.error(e1.getMessage());
+            if (parser != null) {
+                parser.printUsage();
+            }
+            exitCode = 1;
+        } catch (Throwable t) {
+            AbstractParallelAnnotator.logThrowable(log, t);
+            exitCode = 1;
+        }
+        System.exit(exitCode);
+    }
+
+}
