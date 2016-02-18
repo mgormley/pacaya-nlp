@@ -85,12 +85,12 @@ public enum SprlClassLabel {
         } else if (label == UNKNOWN.ordinal()) {
             // make sure that unknown is allowed
             if (splitMode == SplitMode.Split_123_45 || splitMode == SplitMode.Split_1234_5) {
-                log.warn("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
+                log.debug("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
             }
             return 3;
         } else {
             if (label == NA.ordinal() && !modelNA) {
-                log.warn("getting response for NA but not modeling NA");
+                log.debug("getting response for NA but not modeling NA");
             }
             // includes NA and NOT_AN_ARG
             return 0;

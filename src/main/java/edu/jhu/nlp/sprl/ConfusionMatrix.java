@@ -140,6 +140,7 @@ public class ConfusionMatrix<L> {
         return sw.toString();
     }
 
+    // TODO: add a precision row and a recall column to get label specific precision and recall
     public String formatMatrix(Collection<L> keys, String cellSep, String lineSep) {
 
         // get the number of rows and columns

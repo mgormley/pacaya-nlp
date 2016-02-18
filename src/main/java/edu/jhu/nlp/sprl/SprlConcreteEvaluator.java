@@ -1,7 +1,10 @@
 package edu.jhu.nlp.sprl;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -39,6 +42,9 @@ public class SprlConcreteEvaluator {
     @Opt(hasArg = true, description = "concrete tool to use for gold sprl judgements")
     public static String goldTool = null;
 
+    @Opt(hasArg = true, description = "output file for confusion matrices")
+    public static File outFile = null;
+    
     private static AnnoSentenceCollection loadSents(String name, File comm, String tool) throws IOException {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.name = name;
@@ -96,7 +102,16 @@ public class SprlConcreteEvaluator {
                 labelOrder.remove(k);
             }
         }
-        cms.print(labelOrder);
+
+        // write the confusion map to a file
+        try {
+            Writer fw = new PrintWriter(outFile);
+            cms.print(labelOrder, fw);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {

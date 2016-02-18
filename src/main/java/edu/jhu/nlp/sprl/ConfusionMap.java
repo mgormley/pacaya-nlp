@@ -1,5 +1,7 @@
 package edu.jhu.nlp.sprl;
 
+import java.io.IOException;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
@@ -48,11 +50,12 @@ public class ConfusionMap<L, C> {
         return cm;
     }
 
-    public void print(Collection<L> labelOrder) {
-        System.out.println(total.format("total", labelOrder));
+    public void print(Collection<L> labelOrder, Writer out) throws IOException {
+        out.write(total.format("total", labelOrder));
         for (C k : counts.keySet()) {
-            System.out.println(counts.get(k).format(k.toString(), labelOrder));
+            out.write(counts.get(k).format(k.toString(), labelOrder));
         }
+        out.write("\n");
     }
     
 }

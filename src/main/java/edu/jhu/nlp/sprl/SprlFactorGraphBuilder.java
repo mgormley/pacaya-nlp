@@ -211,7 +211,7 @@ public class SprlFactorGraphBuilder {
                 if (notAnArg) {
                     // make sure that they are consistent (joint factor graph builder should have enforced this)
                     if (varConfig.getState(sprlVar) != SprlClassLabel.NOT_AN_ARG.ordinal()) {                    
-                        log.error("inconsistent arg labeling by sprl (some said not-arg others said yes-arg)");
+                        log.debug("inconsistent arg labeling by sprl (some said not-arg others said yes-arg)");
                     }
                 } else {
                     double response = SprlClassLabel.getResponse(varConfig.getState(sprlVar));
