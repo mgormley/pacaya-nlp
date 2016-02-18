@@ -44,7 +44,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
     }
 
     @Override
-    protected List<String> getLabels(AnnoSentence sent, AnnoSentence gold) {
+    public List<String> getLabels(AnnoSentence sent, AnnoSentence gold) {
         List<String> labels = new ArrayList<>();
         Map<Pair<Integer, Integer>, Properties> sprl = sent.getSprl();
         // get the labels according to the pred sent, but including

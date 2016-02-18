@@ -115,16 +115,23 @@ public class SprlFactorGraphBuilder {
         return sprlVars;
     }
 
+    public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+        build(isent.getAnnoSentence(), ofc, fg, cs, new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc));    
+    }
+    
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
+    public void build(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs, SrlFeatureExtractor fe) {
         // Create feature extractor.
-        this.obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
-        ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
+        this.obsFe = fe;
+        if (ofc != null) {
+            // allow for it to be null in the case that no factors are being constructed and it isn't used
+            ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
+        }
 
         // create the variables
-        int n = isent.size();
+        int n = sent.size();
         sprlVars = new SprlVar[n][n][Property.values().length];
         
         // set up isArg feature extractor and a place for the extra variables
@@ -139,9 +146,8 @@ public class SprlFactorGraphBuilder {
             };
         }
         
-        AnnoSentence asent = isent.getAnnoSentence();
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(isent.size(),
-                asent.getKnownSprlPreds(), asent.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(),
+                sent.getKnownSprlPreds(), sent.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
             VarType sprlType = VarType.PREDICTED; // TODO: setting this to be null (hoping that inference will figure out what's latent and what isn't causes big problems!)

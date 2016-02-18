@@ -22,8 +22,11 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
+import edu.jhu.nlp.eval.SprlEvaluator;
+import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
@@ -75,34 +78,33 @@ public class SprlConcreteEvaluator {
     }
 
     public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred) {
-        ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(
-                SprlClassLabel.NOT_AN_ARG);
+        ConfusionMap<String, Property> cms = new ConfusionMap<String, Properties.Property>(
+                SprlClassLabel.NOT_AN_ARG.name());
+
         int nSentences = pred.size();
+
         for (int i = 0; i < nSentences; i++) {
-            AnnoSentence goldSent = gold.get(i);
-            Map<Pair<Integer, Integer>, Properties> p = pred.get(i).getSprl();
-            Map<Pair<Integer, Integer>, Properties> g = goldSent.getSprl();
-            for (Pair<Integer, Integer> k : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                    goldSent.getKnownSprlPreds(), g.keySet(), roleStructure, allowPredArgSelfLoops)) {
-                Properties pProps = p.get(k);
-                Map<String, Double> pMap = pProps == null ? null : pProps.toMap();
-                Properties gProps = g.get(k);
-                Map<String, Double> gMap = gProps == null ? null : gProps.toMap();
-                for (Property q : Property.values()) {
-                    cms.recordPrediction(
-                            gProps == null ? SprlClassLabel.NOT_AN_ARG : SprlClassLabel.getLabel(gMap.get(q.name())),
-                            pProps == null ? SprlClassLabel.NOT_AN_ARG : SprlClassLabel.getLabel(pMap.get(q.name())),
-                            q);
+            AnnoSentence g = gold.get(i);
+            AnnoSentence p = pred.get(i);
+            for (Property q : Property.values()) {
+                SprlEvaluator eval = new SprlEvaluator(roleStructure, allowPredArgSelfLoops, q);
+                List<String> gLabels = eval.getLabels(g, g);
+                List<String> pLabels = eval.getLabels(p, g);
+                assert pLabels.size() == gLabels.size();
+                for (int j = 0; j < pLabels.size(); j++) {
+                    cms.recordPrediction(gLabels.get(j), pLabels.get(j), q);
                 }
             }
         }
 
-        List<SprlClassLabel> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY, SprlClassLabel.UNKNOWN,
-                SprlClassLabel.UNLIKELY, SprlClassLabel.NA, SprlClassLabel.NOT_AN_ARG));
+        // set the order
+        List<String> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY.name(), SprlClassLabel.UNKNOWN.name(),
+                SprlClassLabel.UNLIKELY.name(), SprlClassLabel.NA.name(), SprlClassLabel.NOT_AN_ARG.name()));
 
+        // but only include things we saw
         for (SprlClassLabel k : SprlClassLabel.values()) {
-            if (!cms.total.keySet().contains(k)) {
-                labelOrder.remove(k);
+            if (!cms.total.keySet().contains(k.name())) {
+                labelOrder.remove(k.name());
             }
         }
 
