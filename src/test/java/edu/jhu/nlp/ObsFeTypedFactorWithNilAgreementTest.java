@@ -28,7 +28,7 @@ public class ObsFeTypedFactorWithNilAgreementTest {
         int q = 3;
         Var argVar = new Var(VarType.LATENT, 2, "isarg" + i + "_" + j, IsArgLabel.labels);
         String sprlName = "sprl_r" + i + "-" + "a" + j + "_" + q;
-        SprlVar sprlVar = new SprlVar(null, SprlClassLabel.sprlLabels.size(), sprlName, SprlClassLabel.sprlLabels, i,
+        SprlVar sprlVar = new SprlVar(null, SprlClassLabel.getLabels().size(), sprlName, SprlClassLabel.getLabels(), i,
                 j);
         VarSet vSet = new VarSet(argVar, sprlVar);
         List<Pair<Enum<?>, Enum<?>>> goodPairs = Arrays.asList(new Pair<>(IsArgLabel.IS_ARG, SprlClassLabel.UNLIKELY),
@@ -68,7 +68,7 @@ public class ObsFeTypedFactorWithNilAgreementTest {
         RoleVar roleVar = new RoleVar(VarType.PREDICTED, stateNames.size(), "role_var", stateNames, i, j);
         assertTrue(roleVar.getNilState() == 2);
         String sprlName = "sprl_r" + i + "-" + "a" + j + "_" + q;
-        SprlVar sprlVar = new SprlVar(null, SprlClassLabel.sprlLabels.size(), sprlName, SprlClassLabel.sprlLabels, i,
+        SprlVar sprlVar = new SprlVar(null, SprlClassLabel.getLabels().size(), sprlName, SprlClassLabel.getLabels(), i,
                 j);
         VarSet vSet = new VarSet(roleVar, sprlVar);
         List<Pair<Integer, Enum<?>>> goodPairs = Arrays.asList(new Pair<>(0, SprlClassLabel.UNKNOWN),

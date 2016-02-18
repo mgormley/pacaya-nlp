@@ -157,7 +157,7 @@ public class SprlFactorGraphBuilder {
             for (Property q : Property.values()) {
                 // 4-way classification
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
-                SprlVar v = new SprlVar(sprlType, SprlClassLabel.sprlLabels.size(), name, SprlClassLabel.sprlLabels, i,
+                SprlVar v = new SprlVar(sprlType, SprlClassLabel.getLabels().size(), name, SprlClassLabel.getLabels(), i,
                         j);
 
                 // add the variable
@@ -221,7 +221,7 @@ public class SprlFactorGraphBuilder {
                         log.debug("inconsistent arg labeling by sprl (some said not-arg others said yes-arg)");
                     }
                 } else {
-                    double response = SprlClassLabel.getResponse(varConfig.getState(sprlVar));
+                    double response = SprlClassLabel.getResponse(SprlClassLabel.valueOf(varConfig.getStateName(sprlVar)));
                     props.add(q.name(), response);
                 }
             }

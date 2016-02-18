@@ -1,6 +1,7 @@
 package edu.jhu.nlp.sprl;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,13 +24,16 @@ public enum SprlClassLabel {
     public static boolean modelNA = false;
     
     // add the labels as string names
-    public static ArrayList<String> sprlLabels;
-
-    static {
-        sprlLabels = new ArrayList<>();
-        for (SprlClassLabel label : values()) {
-            sprlLabels.add(label.name());
+    private static ArrayList<String> sprlLabels = null;
+    
+    public static List<String> getLabels() {
+        if (sprlLabels == null) {
+            sprlLabels = new ArrayList<>();
+            for (SprlClassLabel label : values()) {
+                sprlLabels.add(label.name());
+            }
         }
+        return sprlLabels;
     }
 
     public static SprlClassLabel getLabel(Double p) {
@@ -72,24 +76,22 @@ public enum SprlClassLabel {
     }
 
     public static double getResponse(SprlClassLabel label) {
-        return getResponse(label.ordinal());
-    }
-
-    public static double getResponse(int label) {
-        if (label == NA.ordinal() && modelNA) {
+        if (label == NA && modelNA) {
             return -1;
-        } else if (label == UNLIKELY.ordinal()) {
+        } else if (label == UNLIKELY) {
             return 1;
-        } else if (label == LIKELY.ordinal()) {
+        } else if (label == LIKELY) {
             return 5;
-        } else if (label == UNKNOWN.ordinal()) {
+        } else if (label == UNKNOWN) {
             // make sure that unknown is allowed
             if (splitMode == SplitMode.Split_123_45 || splitMode == SplitMode.Split_1234_5) {
+                // this happens especially at the beginning of learning before the fact that
+                // this is never observed influences the parameters
                 log.debug("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
             }
             return 3;
         } else {
-            if (label == NA.ordinal() && !modelNA) {
+            if (label == NA && !modelNA) {
                 log.debug("getting response for NA but not modeling NA");
             }
             // includes NA and NOT_AN_ARG
