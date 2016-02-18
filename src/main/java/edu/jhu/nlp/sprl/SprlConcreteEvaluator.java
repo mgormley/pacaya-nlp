@@ -107,6 +107,8 @@ public class SprlConcreteEvaluator {
         try {
             Writer fw = new PrintWriter(outFile);
             cms.print(labelOrder, fw);
+            log.info(String.format("Writing to: %s", outFile.getAbsolutePath()));
+            fw.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         } catch (IOException e) {
