@@ -2,6 +2,9 @@ package edu.jhu.nlp.sprl;
 
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.pacaya.util.cli.Opt;
 
 public enum SprlClassLabel {
@@ -10,6 +13,8 @@ public enum SprlClassLabel {
     public static enum SplitMode {
         Split_12_3_45, Split_123_45, Split_1_234_5, Split_1234_5,
     }
+
+    private static final Logger log = LoggerFactory.getLogger(SprlClassLabel.class);
 
     @Opt(hasArg = true, description = "how to convert likert scale responses to class labels")
     public static SplitMode splitMode = SplitMode.Split_12_3_45;
@@ -49,7 +54,7 @@ public enum SprlClassLabel {
                 return UNKNOWN;
             }
         case Split_1234_5:
-            if (p < 4) {
+            if (p < 5) {
                 return UNLIKELY;
             } else {
                 return LIKELY;
@@ -71,7 +76,7 @@ public enum SprlClassLabel {
     }
 
     public static double getResponse(int label) {
-        if (label == SprlClassLabel.NA.ordinal() && modelNA) {
+        if (label == NA.ordinal() && modelNA) {
             return -1;
         } else if (label == UNLIKELY.ordinal()) {
             return 1;
@@ -79,9 +84,15 @@ public enum SprlClassLabel {
             return 5;
         } else if (label == UNKNOWN.ordinal()) {
             // make sure that unknown is allowed
-            assert splitMode != SplitMode.Split_123_45 && splitMode != SplitMode.Split_1234_5; 
+            if (splitMode == SplitMode.Split_123_45 || splitMode == SplitMode.Split_1234_5) {
+                log.warn("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
+            }
             return 3;
         } else {
+            if (label == NA.ordinal() && !modelNA) {
+                log.warn("getting response for NA but not modeling NA");
+            }
+            // includes NA and NOT_AN_ARG
             return 0;
         }
     }
