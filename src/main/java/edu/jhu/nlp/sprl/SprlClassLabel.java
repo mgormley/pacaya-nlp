@@ -5,7 +5,7 @@ import java.util.ArrayList;
 import edu.jhu.pacaya.util.cli.Opt;
 
 public enum SprlClassLabel {
-    UNLIKELY, LIKELY, NOT_AN_ARG, UNKNOWN;
+    UNLIKELY, LIKELY, NOT_AN_ARG, UNKNOWN, NA;
 
     public static enum SplitMode {
         Split_12_3_45, Split_123_45, Split_1_234_5, Split_1234_5,
@@ -14,6 +14,9 @@ public enum SprlClassLabel {
     @Opt(hasArg = true, description = "how to convert likert scale responses to class labels")
     public static SplitMode splitMode = SplitMode.Split_12_3_45;
 
+    @Opt(hasArg = true, description = "whether to treat non-positive scores as NA")
+    public static boolean modelNA = false;
+    
     // add the labels as string names
     public static ArrayList<String> sprlLabels;
 
@@ -27,6 +30,9 @@ public enum SprlClassLabel {
     public static SprlClassLabel getLabel(Double p) {
         // if (p == null)
         // return SPRLClassLabel.UNKNOWN;
+        if (p < 0 && modelNA) {
+            return SprlClassLabel.NA;
+        }
         switch (splitMode) {
         case Split_123_45:
             if (p < 4) {
@@ -65,7 +71,9 @@ public enum SprlClassLabel {
     }
 
     public static double getResponse(int label) {
-        if (label == UNLIKELY.ordinal()) {
+        if (label == SprlClassLabel.NA.ordinal() && modelNA) {
+            return -1;
+        } else if (label == UNLIKELY.ordinal()) {
             return 1;
         } else if (label == LIKELY.ordinal()) {
             return 5;

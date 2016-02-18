@@ -44,7 +44,7 @@ public class ConfusionMatrixTest {
         assertEquals(cm.getPredCount(3), 2);
         assertEquals(cm.getPredCount(5), 1);
         assertEquals(cm.getPredCount(6), 0);
-
+        assertEquals(cm.getCorrect(), 4); 
         StringWriter sw = new StringWriter();
         sw.write("gold \\ pred  &  0  &  1  &  2  &  3  &  5  &  total  \\\\\n");
         sw.write("          0  &  2  &  2  &  1  &  0  &  0  &      5  \\\\\n");

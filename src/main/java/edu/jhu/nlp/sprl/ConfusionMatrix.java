@@ -4,7 +4,9 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import edu.jhu.prim.tuple.Pair;
 
@@ -16,6 +18,8 @@ public class ConfusionMatrix<L> {
     Counter<Pair<L, L>> goldPredPairCounts;
     Counter<L> goldCounts;
     Counter<L> predCounts;
+    Set<L> keys;
+    L nilLabel;
 
     /**
      * unlabeled confusion matrix (coarsen labels to binary based on whether or
@@ -24,9 +28,15 @@ public class ConfusionMatrix<L> {
     // Counter<Pair<Boolean, Boolean>> predGoldHitPaircounts;
 
     public ConfusionMatrix() {
+        this(null);
+    }
+
+    public ConfusionMatrix(L nilLabel) {
+        this.nilLabel = nilLabel;
         goldPredPairCounts = new Counter<>();
         goldCounts = new Counter<>();
         predCounts = new Counter<>();
+        keys = new HashSet<>();
     }
 
     public void recordPrediction(L gold, L pred) {
@@ -34,8 +44,48 @@ public class ConfusionMatrix<L> {
         goldPredPairCounts.add(new Pair<>(gold, pred));
         goldCounts.add(gold);
         predCounts.add(pred);
+        // keep track of keys
+        keys.add(gold);
+        keys.add(pred);
     }
 
+    public int getCorrect() {
+        int total = 0;
+        for (L k : goldCounts.keySet()) {
+            total += getCount(k, k);
+        }
+        return total;
+    }
+
+    public int getCorrectHits() {
+        return getCorrect() - getCount(nilLabel, nilLabel);
+    }
+    
+    public double recall() {
+        int possible = getTotal() - getGoldCount(nilLabel);
+        return ((double) getCorrectHits()) / possible; 
+    }
+
+    public double precision() {
+        int predicted = getTotal() - getPredCount(nilLabel);
+        return ((double) getCorrectHits()) / predicted; 
+    }
+
+    public double f1() {
+        double p = precision();
+        double r = recall();
+        if (p == 0.0 && r == 0.0) {
+            return 0.0;
+        } else {
+            return 2 * p * r / (p + r);
+        }
+    }
+    
+    public double accuracy() {
+        return ((double) getCorrect()) / getTotal(); 
+    }
+
+    
     /**
      * rows correspond to the desired label; columns correspond to the predicted
      * label
@@ -78,7 +128,20 @@ public class ConfusionMatrix<L> {
         return goldPredPairCounts.getTotal();
     }
     
+    public String format(String name, Collection<L> labelOrder) {
+        StringWriter sw = new StringWriter();
+        sw.write("\n");
+        sw.write(String.format("==%s==\n", name));
+        sw.write(String.format("Accuracy: %s\n", accuracy()));
+        sw.write(String.format("Precision: %s\n", precision()));
+        sw.write(String.format("Recall: %s\n", recall()));
+        sw.write(String.format("F1: %s\n", f1()));
+        sw.write(formatMatrix(labelOrder));
+        return sw.toString();
+    }
+
     public String formatMatrix(Collection<L> keys, String cellSep, String lineSep) {
+
         // get the number of rows and columns
         List<L> rows = new ArrayList<L>(keys == null ? goldCounts.keySet() : keys);
         List<L> cols = new ArrayList<L>(keys == null ? predCounts.keySet() : keys);
@@ -146,5 +209,9 @@ public class ConfusionMatrix<L> {
 
         return sw.toString();
 
+    }
+
+    public Set<L> keySet() {
+        return keys;
     }
 }

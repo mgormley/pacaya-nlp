@@ -1,5 +1,6 @@
 package edu.jhu.nlp.sprl;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
@@ -21,8 +22,8 @@ public class ConfusionMap<L, C> {
 
     public ConfusionMap(L inNilValue) {
         counts = new HashMap<>();
-        total = new ConfusionMatrix<>();
         nilValue = inNilValue;
+        total = new ConfusionMatrix<>(nilValue);
     }
 
     public void recordPrediction(L gold, L pred, C category) {
@@ -41,10 +42,17 @@ public class ConfusionMap<L, C> {
     public ConfusionMatrix<L> getConfusionMatrix(C category) {
         ConfusionMatrix<L> cm = counts.get(category);
         if (cm == null) {
-            cm = new ConfusionMatrix<>();
+            cm = new ConfusionMatrix<>(nilValue);
             counts.put(category, cm);
         }
         return cm;
     }
 
+    public void print(Collection<L> labelOrder) {
+        System.out.println(total.format("total", labelOrder));
+        for (C k : counts.keySet()) {
+            System.out.println(counts.get(k).format(k.toString(), labelOrder));
+        }
+    }
+    
 }

@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.cli.ParseException;
@@ -88,14 +90,13 @@ public class SprlConcreteEvaluator {
                 }
             }
         }
-        System.out.println();
-        System.out.println("Total:");
-        System.out.println(cms.getTotal().formatMatrix(Arrays.asList(SprlClassLabel.values())));
-        for (Property k : cms.getCategories()) {
-            System.out.println();
-            System.out.println(k.name());
-            System.out.println(cms.getConfusionMatrix(k).formatMatrix(Arrays.asList(SprlClassLabel.values())));
+        List<SprlClassLabel> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY, SprlClassLabel.UNKNOWN, SprlClassLabel.UNLIKELY, SprlClassLabel.NA, SprlClassLabel.NOT_AN_ARG));
+        for (SprlClassLabel k : SprlClassLabel.values()) {
+            if (!cms.total.keySet().contains(k)) {
+                labelOrder.remove(k);
+            }
         }
+        cms.print(labelOrder);
     }
 
     public static void main(String[] args) {
@@ -104,6 +105,7 @@ public class SprlConcreteEvaluator {
         try {
             parser = new ArgParser(SprlConcreteEvaluator.class);
             parser.registerClass(SprlConcreteEvaluator.class);
+            parser.registerClass(SprlClassLabel.class);
             parser.parseArgs(args);
             AnnoSentenceCollection predSents = loadSents("pred", pred, predTool);
             AnnoSentenceCollection goldSents = loadSents("gold", gold, goldTool);
