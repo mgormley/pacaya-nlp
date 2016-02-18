@@ -622,7 +622,9 @@ public class JointNlpRunner {
         //prm.fgPrm.sprlPrm.sprlPipelineIndex = sprlPipelineIndex;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
-        prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;
+        prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;  
+        prm.fgPrm.sprlPrm.roleStructure = roleStructure;
+        prm.fgPrm.sprlPrm.allowPredArgSelfLoops= allowPredArgSelfLoops;
 
         // TODO: probably should decouple the sprl feature extraction from the srl feature extraction
         prm.fgPrm.sprlPrm.srlFePrm = prm.fgPrm.srlPrm.srlFePrm;

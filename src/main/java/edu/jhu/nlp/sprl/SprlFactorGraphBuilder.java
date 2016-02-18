@@ -201,6 +201,7 @@ public class SprlFactorGraphBuilder {
     }
     
     // decode
+    // read the values of the sprl variables in the var config and add the corresponding sprl info to the sentence
     public void configToAnno(VarConfig varConfig, AnnoSentence toAnnotate) {
         Map<Pair<Integer, Integer>, Properties> sprl = new HashMap<>();
         IntHashSet sprlPreds = new IntHashSet();
@@ -241,16 +242,20 @@ public class SprlFactorGraphBuilder {
     }
 
     // encode
+    // add sprl variables with values as found in the gold sentence
     public void annoToConfig(AnnoSentence goldSent, VarConfig addTo) {
+        // we will create some sprl variables possibly looking at the known sprl predicates and pairs
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent.size(),
-                goldSent.getKnownSprlPreds(), goldSent.getSprl().keySet(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                goldSent.getKnownSprlPreds(), goldSent.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             // TODO: there's currently no way to say that the gold says that
             // some of the labels are NOT possible (this would give more
             // negative evidence)
             Properties props = goldSent.getSprl().get(new Pair<>(pred, arg));
+
             double responses[] = props != null ? props.toArray() : null;
+            
             // TODO: we are assuming that if SPRL is missing but the pred is a
             // known pred, then this is not an arg
 
