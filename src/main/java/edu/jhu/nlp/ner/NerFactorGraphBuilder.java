@@ -13,6 +13,7 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.prim.util.SafeCast;
 
 public class NerFactorGraphBuilder {
 
@@ -33,6 +34,11 @@ public class NerFactorGraphBuilder {
         public NerFactorGraph(NerFactorGraphBuilder builder) { this.builder = builder; }
         public NerFactorGraphBuilder getBuilder() { return builder; }
     }
+
+    // TODO: These should move to a shared constants class, so as to avoid conflicts 
+    // with other HashObsFeatsFactors (e.g. for POS tagging).
+    private static final short UNIGRAM_FACTOR = 4;
+    private static final short BIGRAM_FACTOR = 5;
     
     private NerFactorGraphBuilderPrm prm;
     private List<Var> tagVars;
@@ -62,14 +68,14 @@ public class NerFactorGraphBuilder {
                 VarSet vars = new VarSet(tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
                 BitshiftTokenFeatures.addUnigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
-                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, UNIGRAM_FACTOR, prm.featureHashMod));
             }
             if (i > 0 && prm.bigramFactors) {
                 // Binary factor for each pair of tags.
                 VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
                 BitshiftTokenFeatures.addBigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
-                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, BIGRAM_FACTOR, prm.featureHashMod));
             }
         }
     }

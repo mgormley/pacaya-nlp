@@ -61,6 +61,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
     /**
      * Do feature selection and update fePrm with the chosen feature templates.
      */
+    // TODO: This method does far more than feature selection and should be simplified.
     private static void featureSelection(AnnoSentenceCollection inputSents, AnnoSentenceCollection goldSents, JointNlpFactorGraphPrm fgPrm)  {
         SrlFeatureExtractorPrm srlFePrm = fgPrm.srlPrm.srlFePrm;
         // Remove annotation types from the features which are explicitly excluded.

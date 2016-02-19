@@ -79,8 +79,11 @@ public final class BitPacking {
     }
 
     public static final long encodeFeatureII__(int f1, int f2) {
-        long feat =  (f1 & INT_MAX) | ((f2 & INT_MAX) << 32);
-        return feat;
+        return (f1 & INT_MAX) | ((f2 & INT_MAX) << 32);
+    }
+
+    public static final long encodeFeatureISS_(int f1, short f2, short f3) {
+        return (f1 & INT_MAX) | ((f2 & SHORT_MAX) << 32) | ((f3 & SHORT_MAX) << 48);
     }
     
 }

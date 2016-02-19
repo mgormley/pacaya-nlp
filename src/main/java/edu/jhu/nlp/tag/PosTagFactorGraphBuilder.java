@@ -6,6 +6,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.primitives.Bytes;
+
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
@@ -23,6 +25,7 @@ import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives;
+import edu.jhu.prim.util.SafeCast;
 
 public class PosTagFactorGraphBuilder {
 
@@ -47,7 +50,7 @@ public class PosTagFactorGraphBuilder {
     public enum PosTagFactorType {
         TAG_BIGRAM, INIT_TAG, TAG_UNIGRAM
     }
-    
+        
     private PosTagFactorGraphBuilderPrm prm;
     private List<Var> tagVars;
     
@@ -93,14 +96,16 @@ public class PosTagFactorGraphBuilder {
                 VarSet vars = new VarSet(tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
                 BitshiftTokenFeatures.addUnigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
-                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, 
+                        SafeCast.safeIntToShort(PosTagFactorType.TAG_UNIGRAM.ordinal()), prm.featureHashMod));
             }
             if (i > 0 && prm.bigramFactors) {
                 // Binary factor for each pair of tags.
                 VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
                 BitshiftTokenFeatures.addBigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
-                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, 
+                        SafeCast.safeIntToShort(PosTagFactorType.TAG_UNIGRAM.ordinal()), prm.featureHashMod));
             }
         }
     }
