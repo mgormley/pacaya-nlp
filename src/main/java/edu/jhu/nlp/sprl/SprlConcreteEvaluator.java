@@ -69,16 +69,10 @@ public class SprlConcreteEvaluator {
         return reader.getData();
     }
 
-    public static enum EvalType {
-        AllPairs, KnownPreds, KnownPairs,
-    }
-
     public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred) {
-        ConfusionMap<String, Property> cms = new ConfusionMap<String, Properties.Property>(
-                SprlClassLabel.NOT_AN_ARG.name());
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();
+        ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
         int nSentences = pred.size();
-
         for (int i = 0; i < nSentences; i++) {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
@@ -88,14 +82,17 @@ public class SprlConcreteEvaluator {
                 List<String> pLabels = eval.getLabels(p, g);
                 assert pLabels.size() == gLabels.size();
                 for (int j = 0; j < pLabels.size(); j++) {
-                    cms.recordPrediction(gLabels.get(j), pLabels.get(j), q);
+                    cms.recordPrediction(
+                            SprlClassLabel.valueOf(gLabels.get(j)),
+                            SprlClassLabel.valueOf(pLabels.get(j)),
+                            q);
                 }
             }
         }
 
         // set the order
-        List<String> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY.name(), SprlClassLabel.UNKNOWN.name(),
-                SprlClassLabel.UNLIKELY.name(), SprlClassLabel.NA.name(), SprlClassLabel.NOT_AN_ARG.name()));
+        List<SprlClassLabel> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY, SprlClassLabel.UNKNOWN,
+                SprlClassLabel.UNLIKELY, SprlClassLabel.NA, SprlClassLabel.NOT_AN_ARG));
 
         // but only include things we saw
         for (SprlClassLabel k : SprlClassLabel.values()) {

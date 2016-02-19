@@ -92,12 +92,12 @@ public enum SprlClassLabel {
             if (splitMode == SplitMode.Split_123_45 || splitMode == SplitMode.Split_1234_5) {
                 // this happens especially at the beginning of learning before the fact that
                 // this is never observed influences the parameters
-                log.debug("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
+                // log.debug("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
             }
             return 3;
         } else {
             if (label == NA && !modelNA) {
-                log.debug("getting response for NA but not modeling NA");
+                // log.debug("getting response for NA but not modeling NA");
             }
             // includes NA and NOT_AN_ARG
             return 0;

@@ -19,7 +19,7 @@ public class ConfusionMatrix<L> {
     Counter<L> goldCounts;
     Counter<L> predCounts;
     Set<L> keys;
-    L nilLabel;
+    Set<L> nilLabels;
 
     /**
      * unlabeled confusion matrix (coarsen labels to binary based on whether or
@@ -31,8 +31,8 @@ public class ConfusionMatrix<L> {
         this(null);
     }
 
-    public ConfusionMatrix(L nilLabel) {
-        this.nilLabel = nilLabel;
+    public ConfusionMatrix(Set<L> nilLabels) {
+        this.nilLabels = nilLabels;
         goldPredPairCounts = new Counter<>();
         goldCounts = new Counter<>();
         predCounts = new Counter<>();
@@ -57,18 +57,42 @@ public class ConfusionMatrix<L> {
         return total;
     }
 
-    public int getCorrectHits() {
-        return getCorrect() - getCount(nilLabel, nilLabel);
+    public int getCorrectNils() {
+        int total = 0;
+        for (L k : nilLabels) {
+            total += getCount(k, k);
+        }
+        return total;
     }
-    
+
+    public int getExpectedNils() {
+        int total = 0;
+        for (L k : nilLabels) {
+            total += getGoldCount(k);
+        }
+        return total;
+    }
+
+    public int getPredictedNils() {
+        int total = 0;
+        for (L k : nilLabels) {
+            total += getPredCount(k);
+        }
+        return total;
+    }
+
+    public int getCorrectHits() {
+        return getCorrect() - getCorrectNils();
+    }
+
     public double recall() {
-        int possible = getTotal() - getGoldCount(nilLabel);
-        return ((double) getCorrectHits()) / possible; 
+        int possible = getTotal() - getExpectedNils();
+        return ((double) getCorrectHits()) / possible;
     }
 
     public double precision() {
-        int predicted = getTotal() - getPredCount(nilLabel);
-        return ((double) getCorrectHits()) / predicted; 
+        int predicted = getTotal() - getPredictedNils();
+        return ((double) getCorrectHits()) / predicted;
     }
 
     public double f1() {
@@ -80,12 +104,11 @@ public class ConfusionMatrix<L> {
             return 2 * p * r / (p + r);
         }
     }
-    
+
     public double accuracy() {
-        return ((double) getCorrect()) / getTotal(); 
+        return ((double) getCorrect()) / getTotal();
     }
 
-    
     /**
      * rows correspond to the desired label; columns correspond to the predicted
      * label
@@ -127,7 +150,7 @@ public class ConfusionMatrix<L> {
     public int getTotal() {
         return goldPredPairCounts.getTotal();
     }
-    
+
     public String format(String name, Collection<L> labelOrder) {
         StringWriter sw = new StringWriter();
         sw.write("\n");
@@ -141,7 +164,8 @@ public class ConfusionMatrix<L> {
         return sw.toString();
     }
 
-    // TODO: add a precision row and a recall column to get label specific precision and recall
+    // TODO: add a precision row and a recall column to get label specific
+    // precision and recall
     public String formatMatrix(Collection<L> keys, String cellSep, String lineSep) {
 
         // get the number of rows and columns

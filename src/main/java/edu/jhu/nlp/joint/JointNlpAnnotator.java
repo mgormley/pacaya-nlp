@@ -143,7 +143,7 @@ public class JointNlpAnnotator implements Trainable {
         ofc.getTemplates().stopGrowth();
     }
     
-    private Function getValidationFn(final AnnoSentenceCollection devInput, final AnnoSentenceCollection devGold) {
+    public Function getValidationFn(final AnnoSentenceCollection devInput, final AnnoSentenceCollection devGold) {
         if (devInput == null || devGold == null) { return null; }
         final JointNlpAnnotator anno = this;
         final Evaluator eval;
@@ -191,7 +191,6 @@ public class JointNlpAnnotator implements Trainable {
             log.warn("Validation function not implemented. Skipping.");
             return null;
         }
-
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm.buPrm, model.getOfc(), model.getCs(), false);
         final FgExampleList devData = builder.getData(devInput, null);
         return new Function() {
@@ -256,6 +255,10 @@ public class JointNlpAnnotator implements Trainable {
                 }
             }
         });
+    }
+    
+    public JointNlpFgModel getModel() {
+        return model;
     }
     
     public void loadModel(File modelIn) {

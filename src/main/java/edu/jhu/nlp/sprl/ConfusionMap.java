@@ -20,12 +20,12 @@ public class ConfusionMap<L, C> {
      */
     HashMap<C, ConfusionMatrix<L>> counts;
     ConfusionMatrix<L> total;
-    L nilValue;
+    Set<L> nilLabels;
 
-    public ConfusionMap(L inNilValue) {
+    public ConfusionMap(Set<L> nilLabels) {
         counts = new HashMap<>();
-        nilValue = inNilValue;
-        total = new ConfusionMatrix<>(nilValue);
+        this.nilLabels = nilLabels;
+        total = new ConfusionMatrix<>(nilLabels);
     }
 
     public void recordPrediction(L gold, L pred, C category) {
@@ -44,7 +44,7 @@ public class ConfusionMap<L, C> {
     public ConfusionMatrix<L> getConfusionMatrix(C category) {
         ConfusionMatrix<L> cm = counts.get(category);
         if (cm == null) {
-            cm = new ConfusionMatrix<>(nilValue);
+            cm = new ConfusionMatrix<>(nilLabels);
             counts.put(category, cm);
         }
         return cm;
