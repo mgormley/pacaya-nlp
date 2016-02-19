@@ -1,7 +1,9 @@
 package edu.jhu.nlp.sprl;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +25,9 @@ public enum SprlClassLabel {
     @Opt(hasArg = true, description = "whether to treat non-positive scores as NA")
     public static boolean modelNA = false;
     
+    @Opt(hasArg = true, description = "Comma separated list of sprl labels to consider as nils in computing precision and recall")
+    public static String sprlNils = "NOT_AN_ARG";
+
     // add the labels as string names
     private static ArrayList<String> sprlLabels = null;
     
@@ -97,6 +102,15 @@ public enum SprlClassLabel {
             // includes NA and NOT_AN_ARG
             return 0;
         }
+    }
+    
+    public static Set<SprlClassLabel> getNils() {
+        String[] splits = sprlNils.split(",");
+        HashSet<SprlClassLabel> nils = new HashSet<>();
+        for (String s : splits) {
+            nils.add(SprlClassLabel.valueOf(s));
+        }
+        return nils;
     }
 
 }

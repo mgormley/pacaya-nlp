@@ -4,10 +4,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -502,16 +502,17 @@ public class JointNlpRunner {
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
+                Set<SprlClassLabel> nils = SprlClassLabel.getNils();
                 if (breakdownSprlEval) {
                     for (Property q : Property.values()) {
                         eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true, q));
                         eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false, q));
-                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, q));
+                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils, q));
                     }
                 }
                 eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true));
                 eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false));
-                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops));
+                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
                 eval.add(new RelationEvaluator());
@@ -874,4 +875,5 @@ public class JointNlpRunner {
 
     }
 
+    
 }

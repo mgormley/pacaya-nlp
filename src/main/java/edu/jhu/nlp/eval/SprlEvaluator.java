@@ -3,6 +3,7 @@ package edu.jhu.nlp.eval;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,18 +30,20 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
     private Property propToScore = null; // if not null, only include labels
                                          // for the particular property
     private boolean allowSelfLoops;
+    private Set<SprlClassLabel> nilLabels;
 
     /**
      * Evaluator for all properties
      */
-    public SprlEvaluator(RoleStructure rS, boolean selfLoops) {
-        this(rS, selfLoops, null);
+    public SprlEvaluator(RoleStructure rS, boolean selfLoops, Set<SprlClassLabel> nilLabels) {
+        this(rS, selfLoops, nilLabels, null);
     }
 
-    public SprlEvaluator(RoleStructure rS, boolean selfLoops, Property propertyToScore) {
+    public SprlEvaluator(RoleStructure rS, boolean selfLoops, Set<SprlClassLabel> nilLabels, Property propertyToScore) {
         roleStructure = rS;
         allowSelfLoops = selfLoops;
         this.propToScore = propertyToScore;
+        this.nilLabels = nilLabels;
     }
 
     @Override
@@ -75,7 +78,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
 
     @Override
     protected boolean isNilLabel(String label) {
-        return SprlClassLabel.NOT_AN_ARG.name().equals(label);
+        return nilLabels.contains(SprlClassLabel.valueOf(label)); 
     }
 
     @Override
