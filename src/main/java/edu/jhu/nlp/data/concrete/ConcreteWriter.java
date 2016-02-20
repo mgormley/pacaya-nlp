@@ -410,9 +410,9 @@ public class ConcreteWriter {
     	    }
     	    if (sprl != null) {
     	        Properties cProps = sprl.get(new Pair<>(predLoc, argLoc));
-    	        if (cProps != null && cProps.get().size() > 0) {
+    	        if (cProps != null && cProps.size() > 0) {
     	            List<Property> props = new ArrayList<>();
-    	            for (Pair<String, Double> keyAndValue : cProps.get()) {
+    	            for (Pair<String, Double> keyAndValue : cProps) {
     	                Property newProp = new Property();
     	                newProp.setValue(keyAndValue.get1());
     	                newProp.setPolarity(keyAndValue.get2());

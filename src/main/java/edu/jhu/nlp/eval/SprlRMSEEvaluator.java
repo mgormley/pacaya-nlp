@@ -54,7 +54,7 @@ public class SprlRMSEEvaluator extends RMSEEvaluator implements Evaluator {
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
                 gold.getKnownSprlPreds(), gold.getSprl().keySet(), roleStructure,  allowSelfLoops)) {
             Properties props = sprl.get(e);
-            double[] propMap = (props != null) ? props.toArray() : null; 
+            Double[] propMap = (props != null) ? props.toArray() : null; 
             if (propToScore != null) {
                 addLabel(values, propMap, propToScore);
             } else {
@@ -66,7 +66,7 @@ public class SprlRMSEEvaluator extends RMSEEvaluator implements Evaluator {
         return values;
     }
 
-    private void addLabel(List<Double> values, double[] propMap, Property q) {
+    private void addLabel(List<Double> values, Double[] propMap, Property q) {
         if (propMap == null) {
             if (excludeNils) {
                 // if we exclude nils, then we will just pass null here

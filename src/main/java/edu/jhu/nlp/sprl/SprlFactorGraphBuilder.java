@@ -210,22 +210,16 @@ public class SprlFactorGraphBuilder {
             int pred = e.get1();
             int arg = e.get2();
             Properties props = new Properties();
-            boolean notAnArg = varConfig.getState(sprlVars[pred][arg][0]) == SprlClassLabel.NOT_AN_ARG.ordinal();
             // we don't need to worry about decoding the argVar since we get that information from the sprl anyway
             for (Property q : Property.values()) {
                 // add the variable to the config
                 Var sprlVar = sprlVars[pred][arg][q.ordinal()];
-                if (notAnArg) {
-                    // make sure that they are consistent (joint factor graph builder should have enforced this)
-                    if (varConfig.getState(sprlVar) != SprlClassLabel.NOT_AN_ARG.ordinal()) {                    
-                        log.debug("inconsistent arg labeling by sprl (some said not-arg others said yes-arg)");
-                    }
-                } else {
-                    double response = SprlClassLabel.getResponse(SprlClassLabel.valueOf(varConfig.getStateName(sprlVar)));
+                Double response = SprlClassLabel.getResponse(SprlClassLabel.valueOf(varConfig.getStateName(sprlVar)));
+                if (response != null) {
                     props.add(q.name(), response);
                 }
             }
-            if (!notAnArg) {
+            if (props.size() > 0) {
                 sprl.put(new Pair<>(pred, arg), props);
                 sprlPreds.add(pred);
             }
@@ -253,25 +247,23 @@ public class SprlFactorGraphBuilder {
             // some of the labels are NOT possible (this would give more
             // negative evidence)
             Properties props = goldSent.getSprl().get(new Pair<>(pred, arg));
-
-            double responses[] = props != null ? props.toArray() : null;
+            List<SprlClassLabel> labels = null;
+            boolean isAnArg = false;
+            if (props != null) {
+                isAnArg = true;
+                labels = props.toLabels();
+            }
             
             // TODO: we are assuming that if SPRL is missing but the pred is a
             // known pred, then this is not an arg
-
-            // only extract variables for sprl if the pred is one that has been
-            // annotated with sprl
-            //if (goldSent.getKnownSprlPreds().contains(pred)) {
-            boolean isAnArg = goldSent.getKnownSprlPairs().contains(e);
             if (prm.extraVariablesForNilAgreement) {
                 addTo.put(argVars[pred][arg], isAnArg ? IsArgLabel.IS_ARG.ordinal() : IsArgLabel.NOT_AN_ARG.ordinal());
             }
             for (Property q : Property.values()) {
                 // add the variable to the config
                 Var sprlVar = sprlVars[pred][arg][q.ordinal()];
-                SprlClassLabel label = isAnArg ? SprlClassLabel.getLabel(responses[q.ordinal()])
-                        : SprlClassLabel.NOT_AN_ARG;
-                addTo.put(sprlVar, label.ordinal());
+                SprlClassLabel label = isAnArg ? labels.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG; 
+                addTo.put(sprlVar, label.name());
             }
         }
     }

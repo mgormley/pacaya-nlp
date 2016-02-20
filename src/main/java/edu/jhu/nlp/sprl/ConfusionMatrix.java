@@ -95,14 +95,16 @@ public class ConfusionMatrix<L> {
         return ((double) getCorrectHits()) / predicted;
     }
 
-    public double f1() {
-        double p = precision();
-        double r = recall();
+    public static double harmonicMean(double p, double r) {
         if (p == 0.0 && r == 0.0) {
             return 0.0;
         } else {
             return 2 * p * r / (p + r);
         }
+    }
+
+    public double f1() {
+        return harmonicMean(precision(), recall());
     }
 
     public double accuracy() {

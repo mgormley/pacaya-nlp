@@ -42,9 +42,9 @@ public enum SprlClassLabel {
     }
 
     public static SprlClassLabel getLabel(Double p) {
-        // if (p == null)
-        // return SPRLClassLabel.UNKNOWN;
-        if (p < 0 && modelNA) {
+        if (p == null) {
+            return SprlClassLabel.NOT_AN_ARG;
+        } else if (p < 0 && modelNA) {
             return SprlClassLabel.NA;
         }
         switch (splitMode) {
@@ -80,13 +80,11 @@ public enum SprlClassLabel {
         }
     }
 
-    public static double getResponse(SprlClassLabel label) {
-        if (label == NA && modelNA) {
-            return -1;
-        } else if (label == UNLIKELY) {
-            return 1;
+    public static Double getResponse(SprlClassLabel label) {
+        if (label == UNLIKELY) {
+            return 1.0;
         } else if (label == LIKELY) {
-            return 5;
+            return 5.0;
         } else if (label == UNKNOWN) {
             // make sure that unknown is allowed
             if (splitMode == SplitMode.Split_123_45 || splitMode == SplitMode.Split_1234_5) {
@@ -94,13 +92,15 @@ public enum SprlClassLabel {
                 // this is never observed influences the parameters
                 // log.debug("getting response for UNKNOWN but split mode doesn't have a slot for UNKNOWN");
             }
-            return 3;
-        } else {
-            if (label == NA && !modelNA) {
-                // log.debug("getting response for NA but not modeling NA");
+            return 3.0;
+        } else if (label == NA) {
+            if (modelNA) {
+                return -1.0;
+            } else {
+                return 1.0;
             }
-            // includes NA and NOT_AN_ARG
-            return 0;
+        } else {
+            return null;
         }
     }
     

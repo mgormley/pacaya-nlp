@@ -183,7 +183,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                 int j = e.get2();
                 RoleVar roleVar = prm.includeSrl ? roleVars[i][j] : null;
                 Properties props = sprlSrlFactors && !prm.includeSprl ? sent.getSprl().get(e) : null; 
-                double[] propsArray = props != null ? props.toArray() : null;  
+                List<SprlClassLabel> propsArray = props != null ? props.toLabels() : null;  
                 // if we have sprl then we need to at least add factors to enforce agreement
                 for (Property q : Property.values()) {
                     SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][q.ordinal()] : null;
@@ -217,7 +217,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                                     sprl.getFeatExtractor()));
                         } else {
                             assert prm.includeSrl;
-                            SprlClassLabel goldSprlLabel = propsArray != null ? SprlClassLabel.getLabel(propsArray[q.ordinal()]) : SprlClassLabel.NOT_AN_ARG;
+                            SprlClassLabel goldSprlLabel = propsArray != null ? propsArray.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
                             addFactor(new ObsFeTypedFactor(new VarSet(roleVar), templateType,
                                     new SerializablePair<>(templateKey, goldSprlLabel), ofc,
                                     srl.getFeatExtractor()));

@@ -5,9 +5,13 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.cli.ParseException;
@@ -17,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.Properties.Property;
+import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
@@ -26,6 +31,9 @@ import edu.jhu.nlp.eval.SprlEvaluator;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
+import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.tuple.Quadruple;
+import edu.jhu.prim.tuple.Triple;
 
 public class SprlConcreteEvaluator {
 
@@ -45,6 +53,9 @@ public class SprlConcreteEvaluator {
 
     @Opt(hasArg = true, description = "output file for confusion matrices")
     public static File outFile = null;
+
+    @Opt(hasArg = true, description = "output file for examples")
+    public static File examplesOut= null;
 
     @Opt(hasArg = true, description = "The structure of the Role variables.")
     public static RoleStructure roleStructure = RoleStructure.PREDS_GIVEN;
@@ -69,6 +80,136 @@ public class SprlConcreteEvaluator {
         return reader.getData();
     }
 
+    private static List<SprlClassLabel> propList(AnnoSentence a, Pair<Integer, Integer> pair) {
+        return a.getSprl().get(pair).toLabels();
+    }
+
+    public static void findSprlExamples(AnnoSentenceCollection gold, AnnoSentenceCollection pred, File outFile) {
+        // I want to find two pred-arg pairs such that they are in two different
+        // sentences, they have the same predicate and the same gold SRL label,
+        // but different predicted sprl and different gold sprl
+        // for each satisfying pair, I can compute the F1 of the sprl for just
+        // that pair and then return the list of these sorted by F1
+        // build a list of Pair<PairF1, Triple<AnnoSentence, PredIndex,
+        // ArgIndex>> o those pairs that satisfy the constraints
+        // first find all pairs that match a particular predicate, argLabel
+        // Map[(predWord, argLabel) -> Map[(sentenceId) ->
+        // list[(pred,arg,goldSprl,predSprl)]]]
+        int nSentences = pred.size();
+        Map<Pair<String, String>, Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>>> sprlListsByPredAndSrl = new HashMap<>();
+        for (int i = 0; i < nSentences; i++) {
+            AnnoSentence g = gold.get(i);
+            AnnoSentence p = pred.get(i);
+            for (Pair<Integer, Integer> pair : g.getKnownSprlPairs()) {
+                int predIx = pair.get1();
+                int argIx = pair.get2();
+                String predWord = g.getWord(predIx);
+                String argLabel = g.getSrlGraph().getEdge(predIx, argIx).getLabel();
+                Pair<String, String> predAndSrl = new Pair<>(predWord, argLabel);
+                Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>> sentToPairs = sprlListsByPredAndSrl
+                        .get(predAndSrl);
+                if (sentToPairs == null) {
+                    sentToPairs = new HashMap<>();
+                    sprlListsByPredAndSrl.put(predAndSrl, sentToPairs);
+                }
+                List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> pairs = sentToPairs
+                        .get(i);
+                if (pairs == null) {
+                    pairs = new LinkedList<>();
+                    sentToPairs.put(i, pairs);
+                }
+                pairs.add(new Quadruple<>(i, pair, propList(g, pair), propList(p, pair)));
+            }
+        }
+
+        // score, <sentence, pred, arg>
+        List<Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>> scoredExamples = new ArrayList<>();
+        // now collect the scores of each by type
+        for (Pair<String, String> predAndSrl : sprlListsByPredAndSrl.keySet()) {
+            Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>> sentToPairs = sprlListsByPredAndSrl
+                    .get(predAndSrl);
+            for (Integer sent1Ix : sentToPairs.keySet()) {
+                for (Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> pair1 : sentToPairs
+                        .get(sent1Ix)) {
+                    for (Integer sent2Ix : sentToPairs.keySet()) {
+                        if (sent2Ix <= sent1Ix) {
+                            // skip matches and avoid getting both orders
+                            continue;
+                        }
+                        for (Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> pair2 : sentToPairs
+                                .get(sent2Ix)) {
+                            // only keep if the gold and predicted properties
+                            // don't match
+                            if (pair1.get3().equals(pair2.get3()) || pair1.get4().equals(pair2.get4())) {
+                                continue;
+                            }
+                            // compute the score as the harmonic mean o the two
+                            // F1's
+                            double pair1F1 = getF1(pair1.get3(), pair1.get4());
+                            double pair2F1 = getF1(pair2.get3(), pair1.get4());
+                            double score = ConfusionMatrix.harmonicMean(pair1F1, pair2F1);
+                            scoredExamples.add(new Triple<>(score, pair1, pair2));
+                        }
+                    }
+
+                }
+            }
+        }
+
+        scoredExamples.sort(Comparator.comparingDouble(t -> -t.get1()));
+
+        // write the confusion map to a file
+        try {
+            log.info(String.format("Writing examples to: %s", outFile));
+            Writer fw = new PrintWriter(outFile);
+            
+            int nExamples = 10;
+            int i = 0;
+            for (Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> example : scoredExamples) {
+                printExample(gold, example.get2(), fw);
+                printExample(gold, example.get3(), fw);
+                fw.write("\n");
+                i++;
+                if (i >= nExamples) {
+                    break;
+                }
+            }
+            fw.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void printExample(AnnoSentenceCollection gold, 
+            Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> example, Writer fw) throws IOException {
+        int i = example.get1();
+        Pair<Integer, Integer> pair = example.get2();
+        AnnoSentence g = gold.get(i);
+        fw.write(g.getWordsStr(new Span(0, g.size())));
+        fw.write("\n");
+        int predIx = pair.get1();
+        int argIx = pair.get2();
+        fw.write(String.format("Predicate at %s: %s\n", predIx, g.getWord(predIx)));
+        fw.write(String.format("Argument at %s (%s): %s\n", argIx, g.getWord(argIx),
+                g.getSrlGraph().getEdge(predIx, argIx).getLabel()));
+        fw.write(String.format("%30s\t%15s\t%15s\n", "Property", "Gold", "Predicted"));
+        for (Property q : Property.values()) {
+            fw.write(String.format("%30s\t%15s\t%15s\n", q, example.get3().get(q.ordinal()), example.get4().get(q.ordinal())));
+        }
+        fw.write("\n");
+    }
+
+    private static double getF1(List<SprlClassLabel> gold, List<SprlClassLabel> pred) {
+        Set<SprlClassLabel> nils = SprlClassLabel.getNils();
+        ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
+        for (int i = 0; i < gold.size(); i++) {
+            cms.recordPrediction(gold.get(i), pred.get(i), Property.values()[i]);
+        }
+        return cms.getTotal().f1();
+    }
+
     public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred) {
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();
         ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
@@ -82,9 +223,7 @@ public class SprlConcreteEvaluator {
                 List<String> pLabels = eval.getLabels(p, g);
                 assert pLabels.size() == gLabels.size();
                 for (int j = 0; j < pLabels.size(); j++) {
-                    cms.recordPrediction(
-                            SprlClassLabel.valueOf(gLabels.get(j)),
-                            SprlClassLabel.valueOf(pLabels.get(j)),
+                    cms.recordPrediction(SprlClassLabel.valueOf(gLabels.get(j)), SprlClassLabel.valueOf(pLabels.get(j)),
                             q);
                 }
             }
@@ -126,6 +265,9 @@ public class SprlConcreteEvaluator {
             AnnoSentenceCollection predSents = loadSents("pred", pred, predTool);
             AnnoSentenceCollection goldSents = loadSents("gold", gold, goldTool);
             evalSprl(goldSents, predSents);
+            if (examplesOut != null) {
+                findSprlExamples(goldSents, predSents, examplesOut);
+            }
         } catch (ParseException e1) {
             log.error(e1.getMessage());
             if (parser != null) {

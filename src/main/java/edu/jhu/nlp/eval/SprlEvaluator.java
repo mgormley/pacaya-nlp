@@ -52,33 +52,32 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
         Map<Pair<Integer, Integer>, Properties> sprl = sent.getSprl();
         // get the labels according to the pred sent, but including
         // all and only those possible according to the gold sentence
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(), gold.getKnownSprlPreds(),
-                gold.getSprl().keySet(), roleStructure, allowSelfLoops)) {
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
+                gold.getKnownSprlPreds(), gold.getSprl().keySet(), roleStructure, allowSelfLoops)) {
             Properties props = sprl.get(e);
-            double[] propMap = (props != null) ? props.toArray() : null;
+            List<SprlClassLabel> propList = (props != null) ? props.toLabels() : null;
             if (propToScore != null) {
-                addLabel(labels, propMap, propToScore);
+                addLabel(labels, propList, propToScore);
             } else {
                 for (Property q : Property.values()) {
-                    addLabel(labels, propMap, q);
+                    addLabel(labels, propList, q);
                 }
             }
         }
         return labels;
     }
 
-    private void addLabel(List<String> labels, double[] propMap, Property q) {
-        if (propMap == null) {
+    private void addLabel(List<String> labels, List<SprlClassLabel> propList, Property q) {
+        if (propList == null) {
             labels.add(SprlClassLabel.NOT_AN_ARG.name());
         } else {
-            SprlClassLabel label = SprlClassLabel.getLabel(propMap[q.ordinal()]);
-            labels.add(label.name());
+            labels.add(propList.get(q.ordinal()).name());
         }
     }
 
     @Override
     protected boolean isNilLabel(String label) {
-        return nilLabels.contains(SprlClassLabel.valueOf(label)); 
+        return nilLabels.contains(SprlClassLabel.valueOf(label));
     }
 
     @Override
