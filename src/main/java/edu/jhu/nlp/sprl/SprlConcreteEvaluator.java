@@ -181,9 +181,12 @@ public class SprlConcreteEvaluator {
                 AnnoSentence s2 = gold.get(ex2.get1());
                 String ex2Str = formatExample(s2, ex2.get2(), ex2.get3(), ex2.get4(), propertyOrder);
 
-                fw.write(String.format("%s\n", getSentence(s1)));
-                fw.write(String.format("%s\n", getSentence(s2)));
-                fw.write(String.format("%s\n", hStack(ex1Str, ex2Str)));
+                fw.write(String.format("Example A:\n%s\n\n", getSentence(s1)));
+                fw.write(String.format("Example B:\n%s\n\n", getSentence(s2)));
+                fw.write(String.format("%s\n", hStack(
+                        String.format("Example A:\n%s", ex1Str),
+                        String.format("Example B:\n%s", ex2Str))));
+                fw.write("\n");
                 i++;
                 if (i >= nExamples) {
                     break;
@@ -288,9 +291,9 @@ public class SprlConcreteEvaluator {
         sw.write(String.format("Predicate at %s: %s\n", predIx, gold.getWord(predIx)));
         sw.write(String.format("Argument at %s (%s): %s\n", argIx, gold.getWord(argIx),
                 gold.getSrlGraph().getEdge(predIx, argIx).getLabel()));
-        sw.write(String.format("%30s\t%15s\t%15s\n", "Property", "Gold", "Predicted"));
+        sw.write(String.format("%30s %15s %15s\n", "Property", "Gold", "Predicted"));
         for (int q = 0; q < propertyOrder.size(); q++) {
-            sw.write(String.format("%30s\t%15s\t%15s\n", propertyOrder.get(q), goldLabels.get(q),
+            sw.write(String.format("%30s %15s %15s\n", propertyOrder.get(q), goldLabels.get(q),
                     predicatedLabels.get(q)));
         }
         sw.write("\n");
@@ -326,7 +329,7 @@ public class SprlConcreteEvaluator {
                 int predIx = example.get1();
                 int argIx = example.get2();
                 String exStr = cms.hasExample(gL, pL, q) ? null
-                        : String.format("%s\n%s\n", getSentence(g), formatExample(g, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+                        : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, new Pair<>(predIx, argIx), Collections.singletonList(gL),
                                 Collections.singletonList(pL), Collections.singletonList(q)));
                 cms.recordPrediction(gL, pL, q, exStr);
             }
