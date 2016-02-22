@@ -311,6 +311,7 @@ public class SprlConcreteEvaluator {
     }
 
     public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred) {
+        int numExamples = 2;  // the number of examples per cell
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();
         ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
         int nSentences = pred.size();
@@ -329,7 +330,7 @@ public class SprlConcreteEvaluator {
                 Property q = example.get3();
                 int predIx = example.get1();
                 int argIx = example.get2();
-                String exStr = cms.hasExample(gL, pL, q) ? null
+                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
                         : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, new Pair<>(predIx, argIx), Collections.singletonList(gL),
                                 Collections.singletonList(pL), Collections.singletonList(q)));
                 cms.recordPrediction(gL, pL, q, exStr);

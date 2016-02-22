@@ -196,8 +196,13 @@ public class ConfusionMatrix<L> {
         return examples.get(new Pair<>(gold, pred));
     }
 
-    public boolean hasExamples(L gold, L pred) {
-        return getExamples(gold, pred) != null && getExamples(gold, pred).size() > 0;
+    public int numExamples(L gold, L pred) {
+        List<String> examples = getExamples(gold, pred);
+        if (examples == null) {
+            return 0;
+        } else {
+            return examples.size();
+        }
     }
 
     // TODO: add a precision row and a recall column to get label specific

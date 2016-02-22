@@ -41,8 +41,8 @@ public class ConfusionMap<L, C> {
         total.recordPrediction(gold, pred);
     }
 
-    public boolean hasExample(L gold, L pred, C category) {
-        return getConfusionMatrix(category).hasExamples(gold, pred);
+    public int numExamples(L gold, L pred, C category) {
+        return getConfusionMatrix(category).numExamples(gold, pred);
     }
 
     public Set<C> getCategories() {
