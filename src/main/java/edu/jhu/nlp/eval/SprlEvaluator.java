@@ -17,6 +17,7 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.tuple.Triple;
 
 /**
  * (Fork of F1 evaluator) Computes the precision, recall, and micro-averaged F1.
@@ -46,32 +47,39 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
         this.nilLabels = nilLabels;
     }
 
+    public List<Triple<Integer, Integer, Property>> getExamples(AnnoSentence sent, AnnoSentence gold) {
+        List<Triple<Integer, Integer, Property>> examples = new ArrayList<>();
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
+                gold.getKnownSprlPreds(), gold.getSprl().keySet(), roleStructure, allowSelfLoops)) {
+            if (propToScore != null) {
+                examples.add(new Triple<>(e.get1(), e.get2(), propToScore));
+            } else {
+                for (Property q : Property.values()) {
+                    examples.add(new Triple<>(e.get1(), e.get2(), q));
+                }
+            }
+        }
+        return examples;
+    }
+
     @Override
     public List<String> getLabels(AnnoSentence sent, AnnoSentence gold) {
         List<String> labels = new ArrayList<>();
         Map<Pair<Integer, Integer>, Properties> sprl = sent.getSprl();
         // get the labels according to the pred sent, but including
         // all and only those possible according to the gold sentence
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                gold.getKnownSprlPreds(), gold.getSprl().keySet(), roleStructure, allowSelfLoops)) {
-            Properties props = sprl.get(e);
-            List<SprlClassLabel> propList = (props != null) ? props.toLabels() : null;
-            if (propToScore != null) {
-                addLabel(labels, propList, propToScore);
-            } else {
-                for (Property q : Property.values()) {
-                    addLabel(labels, propList, q);
-                }
-            }
+        for (Triple<Integer, Integer, Property> e : getExamples(sent, gold)) {
+            SprlClassLabel label = getLabel(sprl.get(new Pair<>(e.get1(), e.get2())), e.get3());
+            labels.add(label.name());
         }
         return labels;
     }
 
-    private void addLabel(List<String> labels, List<SprlClassLabel> propList, Property q) {
-        if (propList == null) {
-            labels.add(SprlClassLabel.NOT_AN_ARG.name());
+    private SprlClassLabel getLabel(Properties props, Property q) {
+        if (props == null) {
+            return SprlClassLabel.NOT_AN_ARG;
         } else {
-            labels.add(propList.get(q.ordinal()).name());
+            return props.getLabel(q.name());
         }
     }
 

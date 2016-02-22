@@ -4,9 +4,11 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -55,7 +57,7 @@ public class SprlConcreteEvaluator {
     public static File outFile = null;
 
     @Opt(hasArg = true, description = "output file for examples")
-    public static File examplesOut= null;
+    public static File examplesOut = null;
 
     @Opt(hasArg = true, description = "The structure of the Role variables.")
     public static RoleStructure roleStructure = RoleStructure.PREDS_GIVEN;
@@ -157,17 +159,17 @@ public class SprlConcreteEvaluator {
         }
 
         scoredExamples.sort(Comparator.comparingDouble(t -> -t.get1()));
-
+        List<Property> propertyOrder = Arrays.asList(Property.values());
         // write the confusion map to a file
         try {
             log.info(String.format("Writing examples to: %s", outFile));
             Writer fw = new PrintWriter(outFile);
-            
+
             int nExamples = 10;
             int i = 0;
             for (Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> example : scoredExamples) {
-                printExample(gold, example.get2(), fw);
-                printExample(gold, example.get3(), fw);
+                fw.write(formatExample(gold, example.get2(), propertyOrder));
+                fw.write(formatExample(gold, example.get3(), propertyOrder));
                 fw.write("\n");
                 i++;
                 if (i >= nExamples) {
@@ -182,23 +184,27 @@ public class SprlConcreteEvaluator {
         }
     }
 
-    private static void printExample(AnnoSentenceCollection gold, 
-            Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> example, Writer fw) throws IOException {
+    private static String formatExample(AnnoSentenceCollection gold,
+            Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> example,
+            List<Property> propertyOrder) {
         int i = example.get1();
         Pair<Integer, Integer> pair = example.get2();
         AnnoSentence g = gold.get(i);
-        fw.write(g.getWordsStr(new Span(0, g.size())));
-        fw.write("\n");
+        StringWriter sw = new StringWriter();
+        sw.write(g.getWordsStr(new Span(0, g.size())));
+        sw.write("\n");
         int predIx = pair.get1();
         int argIx = pair.get2();
-        fw.write(String.format("Predicate at %s: %s\n", predIx, g.getWord(predIx)));
-        fw.write(String.format("Argument at %s (%s): %s\n", argIx, g.getWord(argIx),
+        sw.write(String.format("Predicate at %s: %s\n", predIx, g.getWord(predIx)));
+        sw.write(String.format("Argument at %s (%s): %s\n", argIx, g.getWord(argIx),
                 g.getSrlGraph().getEdge(predIx, argIx).getLabel()));
-        fw.write(String.format("%30s\t%15s\t%15s\n", "Property", "Gold", "Predicted"));
-        for (Property q : Property.values()) {
-            fw.write(String.format("%30s\t%15s\t%15s\n", q, example.get3().get(q.ordinal()), example.get4().get(q.ordinal())));
+        sw.write(String.format("%30s\t%15s\t%15s\n", "Property", "Gold", "Predicted"));
+        for (int q = 0; q < propertyOrder.size(); q++) {
+            sw.write(String.format("%30s\t%15s\t%15s\n", propertyOrder.get(q), example.get3().get(q),
+                    example.get4().get(q)));
         }
-        fw.write("\n");
+        sw.write("\n");
+        return sw.toString();
     }
 
     private static double getF1(List<SprlClassLabel> gold, List<SprlClassLabel> pred) {
@@ -217,15 +223,23 @@ public class SprlConcreteEvaluator {
         for (int i = 0; i < nSentences; i++) {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
-            for (Property q : Property.values()) {
-                SprlEvaluator eval = new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils, q);
-                List<String> gLabels = eval.getLabels(g, g);
-                List<String> pLabels = eval.getLabels(p, g);
-                assert pLabels.size() == gLabels.size();
-                for (int j = 0; j < pLabels.size(); j++) {
-                    cms.recordPrediction(SprlClassLabel.valueOf(gLabels.get(j)), SprlClassLabel.valueOf(pLabels.get(j)),
-                            q);
-                }
+            SprlEvaluator eval = new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils);
+            List<Triple<Integer, Integer, Property>> examples = eval.getExamples(p, g);
+            List<String> gLabels = eval.getLabels(g, g);
+            List<String> pLabels = eval.getLabels(p, g);
+            assert gLabels.size() == pLabels.size() && gLabels.size() == examples.size();
+            for (int x = 0; x < examples.size(); x++) {
+                Triple<Integer, Integer, Property> example = examples.get(x);
+                SprlClassLabel gL = SprlClassLabel.valueOf(gLabels.get(x));
+                SprlClassLabel pL = SprlClassLabel.valueOf(pLabels.get(x));
+                Property q = example.get3();
+                int predIx = example.get1();
+                int argIx = example.get2();
+                String exStr = cms.hasExample(gL, pL, q) ? null
+                        : formatExample(gold, new Quadruple<>(i, new Pair<>(predIx, argIx),
+                                Collections.singletonList(gL), Collections.singletonList(pL)),
+                                Collections.singletonList(q));
+                cms.recordPrediction(gL, pL, q, exStr);
             }
         }
 
@@ -235,7 +249,7 @@ public class SprlConcreteEvaluator {
 
         // but only include things we saw
         for (SprlClassLabel k : SprlClassLabel.values()) {
-            if (!cms.total.keySet().contains(k.name())) {
+            if (!cms.getTotal().keySet().contains(k.name())) {
                 labelOrder.remove(k.name());
             }
         }

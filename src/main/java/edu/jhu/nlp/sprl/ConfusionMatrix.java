@@ -4,8 +4,10 @@ import java.io.StringWriter;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import edu.jhu.prim.tuple.Pair;
@@ -15,11 +17,17 @@ public class ConfusionMatrix<L> {
     /**
      * labeled confusion matrix
      */
-    Counter<Pair<L, L>> goldPredPairCounts;
-    Counter<L> goldCounts;
-    Counter<L> predCounts;
-    Set<L> keys;
-    Set<L> nilLabels;
+    private Counter<Pair<L, L>> goldPredPairCounts;
+
+    /**
+     * optional example for non-zero cells
+     */
+    private HashMap<Pair<L, L>, List<String>> examples;
+
+    private Counter<L> goldCounts;
+    private Counter<L> predCounts;
+    private Set<L> keys;
+    private Set<L> nilLabels;
 
     /**
      * unlabeled confusion matrix (coarsen labels to binary based on whether or
@@ -36,10 +44,18 @@ public class ConfusionMatrix<L> {
         goldPredPairCounts = new Counter<>();
         goldCounts = new Counter<>();
         predCounts = new Counter<>();
+        examples = new HashMap<>();
         keys = new HashSet<>();
     }
 
+    /**
+     * record the prediction without an example
+     */
     public void recordPrediction(L gold, L pred) {
+        recordPrediction(gold, pred, null);
+    }
+    
+    public void recordPrediction(L gold, L pred, String example) {
         // count the pair
         goldPredPairCounts.add(new Pair<>(gold, pred));
         goldCounts.add(gold);
@@ -47,6 +63,16 @@ public class ConfusionMatrix<L> {
         // keep track of keys
         keys.add(gold);
         keys.add(pred);
+
+        // record the example if there is one
+        if (example != null) {
+            List<String> exampleList = examples.get(new Pair<>(gold, pred));
+            if (exampleList == null) {
+                exampleList = new ArrayList<>();
+                examples.put(new Pair<>(gold, pred), exampleList);
+            }
+            exampleList.add(example);
+        }
     }
 
     public int getCorrect() {
@@ -96,7 +122,7 @@ public class ConfusionMatrix<L> {
     }
 
     public static double harmonicMean(double p, double r) {
-        if (p == 0.0 && r == 0.0) {
+        if (p == 0.0 || r == 0.0) {
             return 0.0;
         } else {
             return 2 * p * r / (p + r);
@@ -164,6 +190,14 @@ public class ConfusionMatrix<L> {
         sw.write(String.format("F1: %s\n", f1()));
         sw.write(formatMatrix(labelOrder));
         return sw.toString();
+    }
+
+    public List<String> getExamples(L gold, L pred) {
+        return examples.get(new Pair<>(gold, pred));
+    }
+
+    public boolean hasExamples(L gold, L pred) {
+        return getExamples(gold, pred) != null && getExamples(gold, pred).size() > 0;
     }
 
     // TODO: add a precision row and a recall column to get label specific
@@ -237,6 +271,10 @@ public class ConfusionMatrix<L> {
 
         return sw.toString();
 
+    }
+
+    public Map<Pair<L, L>, List<String>> getExamples() {
+        return examples;
     }
 
     public Set<L> keySet() {
