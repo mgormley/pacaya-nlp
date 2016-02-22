@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
@@ -240,13 +241,23 @@ public class SprlConcreteEvaluator {
     public static String hStack(String... a) {
         List<List<String>> lines = new ArrayList<List<String>>(a.length);
         List<Integer> maxWidths = new ArrayList<Integer>(a.length);
+        int totalWidth = 0;
+        int maxLines = 0;
         for (String s : a) {
             List<String> sLines = getLines(s);
             lines.add(sLines);
+
+            // keep track of how wide each bloack is
             maxWidths.add(maxWidth(sLines));
+
+            // keep track of the total max width
+            totalWidth += 0;
+
+            // keep track of how many total lines
+            maxLines = Math.max(maxLines, sLines.size());
         }
-        int totalWidth = maxWidths.stream().mapToInt(Integer::intValue).sum();
-        int maxLines = lines.stream().mapToInt(List::size).max().getAsInt();
+        
+        // now paste the blocks together
         StringWriter sw = new StringWriter(maxLines * (totalWidth + 2));
         for (int i = 0; i < maxLines; i++) {
             // for each line number, print out the corresponding line from each
