@@ -183,11 +183,11 @@ public class ConfusionMatrix<L> {
         StringWriter sw = new StringWriter();
         sw.write("\n");
         // making it easier to sort by f1
-        sw.write(String.format("==%s==\t%s\n", name, f1()));
-        sw.write(String.format("Accuracy: %s\n", accuracy()));
-        sw.write(String.format("Precision: %s\n", precision()));
-        sw.write(String.format("Recall: %s\n", recall()));
-        sw.write(String.format("F1: %s\n", f1()));
+        sw.write(String.format("===\t%s\t%s\t%s\t%s\n", name, precision(), recall(), f1()));
+        sw.write(String.format("==%s Precision: %s\n", name, precision()));
+        sw.write(String.format("==%s Recall: %s\n", name, recall()));
+        sw.write(String.format("==%s F1: %s\n", name, f1()));
+        sw.write(String.format("==%s Accuracy: %s\n", name, accuracy()));
         sw.write(formatMatrix(labelOrder));
         return sw.toString();
     }
