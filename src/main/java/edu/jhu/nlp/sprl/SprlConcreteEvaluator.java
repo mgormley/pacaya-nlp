@@ -181,10 +181,9 @@ public class SprlConcreteEvaluator {
                 AnnoSentence s2 = gold.get(ex2.get1());
                 String ex2Str = formatExample(s2, ex2.get2(), ex2.get3(), ex2.get4(), propertyOrder);
 
-                fw.write(getSentence(s1));
-                fw.write(getSentence(s2));
-                fw.write(hStack(ex1Str, ex2Str));
-                fw.write("\n");
+                fw.write(String.format("%s\n", getSentence(s1)));
+                fw.write(String.format("%s\n", getSentence(s2)));
+                fw.write(String.format("%s\n", hStack(ex1Str, ex2Str)));
                 i++;
                 if (i >= nExamples) {
                     break;
@@ -263,10 +262,13 @@ public class SprlConcreteEvaluator {
             // for each line number, print out the corresponding line from each
             // string
             for (int j = 0; j < maxWidths.size(); j++) {
-                // for the jth string, print the ith line with the max width
-                String formatString = "%-" + maxWidths.get(j) + "s";
-                String line = getLine(lines.get(j), i);
-                sw.write(String.format(formatString, line));
+                int maxW = maxWidths.get(j);
+                if (maxW > 0) {
+                    // for the jth string, print the ith line with the max width
+                    String formatString = "%-" + maxW + "s";
+                    String line = getLine(lines.get(j), i);
+                    sw.write(String.format(formatString, line));
+                }
             }
             sw.write("\n");
         }
