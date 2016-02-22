@@ -185,6 +185,7 @@ public class SprlConcreteEvaluator {
                 fw.write(String.format("Example B:\n%s\n\n", getSentence(s2)));
                 fw.write(String.format("%s\n", hStack(
                         String.format("Example A:\n%s", ex1Str),
+                        "     ",
                         String.format("Example B:\n%s", ex2Str))));
                 fw.write("\n");
                 i++;
