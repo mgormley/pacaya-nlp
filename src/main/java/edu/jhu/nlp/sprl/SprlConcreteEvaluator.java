@@ -245,12 +245,13 @@ public class SprlConcreteEvaluator {
         for (String s : a) {
             List<String> sLines = getLines(s);
             lines.add(sLines);
-
+            int maxW = maxWidth(sLines);
+            
             // keep track of how wide each bloack is
-            maxWidths.add(maxWidth(sLines));
+            maxWidths.add(maxW);
 
             // keep track of the total max width
-            totalWidth += 0;
+            totalWidth += maxW;
 
             // keep track of how many total lines
             maxLines = Math.max(maxLines, sLines.size());
