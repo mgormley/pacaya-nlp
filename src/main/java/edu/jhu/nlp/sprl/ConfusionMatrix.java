@@ -54,7 +54,7 @@ public class ConfusionMatrix<L> {
     public void recordPrediction(L gold, L pred) {
         recordPrediction(gold, pred, null);
     }
-    
+
     public void recordPrediction(L gold, L pred, String example) {
         // count the pair
         goldPredPairCounts.add(new Pair<>(gold, pred));
@@ -113,19 +113,28 @@ public class ConfusionMatrix<L> {
 
     public double recall() {
         int possible = getTotal() - getExpectedNils();
-        return ((double) getCorrectHits()) / possible;
+        if (possible == 0) {
+            return 1.0;
+        } else {
+            return ((double) getCorrectHits()) / possible;
+        }
     }
 
     public double precision() {
         int predicted = getTotal() - getPredictedNils();
-        return ((double) getCorrectHits()) / predicted;
+        if (predicted == 0) {
+            return 1.0;
+        } else {
+            return ((double) getCorrectHits()) / predicted;
+        }
     }
 
     public static double harmonicMean(double p, double r) {
-        if (p == 0.0 || r == 0.0) {
+        double denom = p + r;
+        if (denom == 0.0) {
             return 0.0;
         } else {
-            return 2 * p * r / (p + r);
+            return 2 * p * r / denom;
         }
     }
 
