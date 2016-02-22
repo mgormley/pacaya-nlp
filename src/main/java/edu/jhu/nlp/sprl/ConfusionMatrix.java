@@ -143,7 +143,12 @@ public class ConfusionMatrix<L> {
     }
 
     public double accuracy() {
-        return ((double) getCorrect()) / getTotal();
+        int total = getTotal();
+        if (total == 0) {
+            return 1.0;
+        } else {
+            return ((double) getCorrect()) / getTotal();
+        }
     }
 
     /**
@@ -192,7 +197,7 @@ public class ConfusionMatrix<L> {
         StringWriter sw = new StringWriter();
         sw.write("\n");
         // making it easier to sort by f1
-        sw.write(String.format("===\t%s\t%s\t%s\t%s\n", name, precision(), recall(), f1()));
+        sw.write(String.format("===\t%s\t%s\t%s\t%s\t%s\n", name, precision(), recall(), f1(), accuracy()));
         sw.write(String.format("==%s Precision: %s\n", name, precision()));
         sw.write(String.format("==%s Recall: %s\n", name, recall()));
         sw.write(String.format("==%s F1: %s\n", name, f1()));
