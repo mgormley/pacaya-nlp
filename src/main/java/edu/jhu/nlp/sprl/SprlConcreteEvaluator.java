@@ -1,9 +1,11 @@
 package edu.jhu.nlp.sprl;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
@@ -168,8 +170,19 @@ public class SprlConcreteEvaluator {
             int nExamples = 10;
             int i = 0;
             for (Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> example : scoredExamples) {
-                fw.write(formatExample(gold, example.get2(), propertyOrder));
-                fw.write(formatExample(gold, example.get3(), propertyOrder));
+                Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> ex1 = example
+                        .get2();
+                AnnoSentence s1 = gold.get(ex1.get1());
+                String ex1Str = formatExample(s1, ex1.get2(), ex1.get3(), ex1.get4(), propertyOrder);
+
+                Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> ex2 = example
+                        .get3();
+                AnnoSentence s2 = gold.get(ex2.get1());
+                String ex2Str = formatExample(s2, ex2.get2(), ex2.get3(), ex2.get4(), propertyOrder);
+
+                fw.write(getSentence(s1));
+                fw.write(getSentence(s2));
+                fw.write(hStack(ex1Str, ex2Str));
                 fw.write("\n");
                 i++;
                 if (i >= nExamples) {
@@ -184,24 +197,87 @@ public class SprlConcreteEvaluator {
         }
     }
 
-    private static String formatExample(AnnoSentenceCollection gold,
-            Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> example,
-            List<Property> propertyOrder) {
-        int i = example.get1();
-        Pair<Integer, Integer> pair = example.get2();
-        AnnoSentence g = gold.get(i);
+    /**
+     * does not include the line terminating characters
+     * 
+     * @param s
+     * @return
+     */
+    private static List<String> getLines(String s) {
+        // adapted from
+        // http://stackoverflow.com/questions/13464954/how-do-i-split-a-string-by-line-break
+        List<String> lines = new ArrayList<String>();
+        try {
+            BufferedReader rdr = new BufferedReader(new StringReader(s));
+            for (String line = rdr.readLine(); line != null; line = rdr.readLine()) {
+                lines.add(line);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lines;
+    }
+
+    private static int maxWidth(List<String> lines) {
+        int w = 0;
+        for (String line : lines) {
+            w = Math.max(w, line.length());
+        }
+        return w;
+    }
+
+    private static String getLine(List<String> lines, int i) {
+        if (i < lines.size()) {
+            return lines.get(i);
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Horizontally stack the lines of the two strings
+     */
+    public static String hStack(String... a) {
+        List<List<String>> lines = new ArrayList<List<String>>(a.length);
+        List<Integer> maxWidths = new ArrayList<Integer>(a.length);
+        for (String s : a) {
+            List<String> sLines = getLines(s);
+            lines.add(sLines);
+            maxWidths.add(maxWidth(sLines));
+        }
+        int totalWidth = maxWidths.stream().mapToInt(Integer::intValue).sum();
+        int maxLines = lines.stream().mapToInt(List::size).max().getAsInt();
+        StringWriter sw = new StringWriter(maxLines * (totalWidth + 2));
+        for (int i = 0; i < maxLines; i++) {
+            // for each line number, print out the corresponding line from each
+            // string
+            for (int j = 0; j < maxWidths.size(); j++) {
+                // for the jth string, print the ith line with the max width
+                String formatString = "%-" + maxWidths.get(j) + "s";
+                String line = getLine(lines.get(j), i);
+                sw.write(String.format(formatString, line));
+            }
+            sw.write("\n");
+        }
+        return sw.toString();
+    }
+
+    private static String getSentence(AnnoSentence s) {
+        return s.getWordsStr(new Span(0, s.size()));
+    }
+
+    private static String formatExample(AnnoSentence gold, Pair<Integer, Integer> pair, List<SprlClassLabel> goldLabels,
+            List<SprlClassLabel> predicatedLabels, List<Property> propertyOrder) {
         StringWriter sw = new StringWriter();
-        sw.write(g.getWordsStr(new Span(0, g.size())));
-        sw.write("\n");
         int predIx = pair.get1();
         int argIx = pair.get2();
-        sw.write(String.format("Predicate at %s: %s\n", predIx, g.getWord(predIx)));
-        sw.write(String.format("Argument at %s (%s): %s\n", argIx, g.getWord(argIx),
-                g.getSrlGraph().getEdge(predIx, argIx).getLabel()));
+        sw.write(String.format("Predicate at %s: %s\n", predIx, gold.getWord(predIx)));
+        sw.write(String.format("Argument at %s (%s): %s\n", argIx, gold.getWord(argIx),
+                gold.getSrlGraph().getEdge(predIx, argIx).getLabel()));
         sw.write(String.format("%30s\t%15s\t%15s\n", "Property", "Gold", "Predicted"));
         for (int q = 0; q < propertyOrder.size(); q++) {
-            sw.write(String.format("%30s\t%15s\t%15s\n", propertyOrder.get(q), example.get3().get(q),
-                    example.get4().get(q)));
+            sw.write(String.format("%30s\t%15s\t%15s\n", propertyOrder.get(q), goldLabels.get(q),
+                    predicatedLabels.get(q)));
         }
         sw.write("\n");
         return sw.toString();
@@ -236,9 +312,8 @@ public class SprlConcreteEvaluator {
                 int predIx = example.get1();
                 int argIx = example.get2();
                 String exStr = cms.hasExample(gL, pL, q) ? null
-                        : formatExample(gold, new Quadruple<>(i, new Pair<>(predIx, argIx),
-                                Collections.singletonList(gL), Collections.singletonList(pL)),
-                                Collections.singletonList(q));
+                        : String.format("%s\n%s\n", getSentence(g), formatExample(g, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+                                Collections.singletonList(pL), Collections.singletonList(q)));
                 cms.recordPrediction(gL, pL, q, exStr);
             }
         }
