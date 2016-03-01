@@ -342,8 +342,8 @@ public class SprlConcreteEvaluator {
     public static String getSrlLabel(Pair<Integer, Integer> predArgPair, AnnoSentence s) {
         SrlGraph srl = s.getSrlGraph();
         if (srl != null) {
-            SrlEdge edge = srl.getEdge(predArgPair.get1(), predArgPair.get2());
-            if (edge != null) {
+            if (srl.getKnownSrlPairs().contains(predArgPair)) {
+                SrlEdge edge = srl.getEdge(predArgPair.get1(), predArgPair.get2());
                 return edge.getLabel();
             }
         }
