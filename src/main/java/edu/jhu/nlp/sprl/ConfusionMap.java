@@ -66,14 +66,7 @@ public class ConfusionMap<L, C> {
         out.write(total.format("total", labelOrder));
         for (Map.Entry<C, ConfusionMatrix<L>> e : counts.entrySet()) {
             String category = e.getKey().toString();
-            out.write(e.getValue().format(category, labelOrder));
-            // write out an example for each non-zero cell in the matrix
-            for (Map.Entry<Pair<L, L>, List<String>> exList : e.getValue().getExamples().entrySet()) {
-                for (String ex : exList.getValue()) {
-                    out.write(String.format("%s %s %s:\n%s\n", category, exList.getKey().get1().toString(),
-                            exList.getKey().get2().toString(), ex));
-                }
-            }
+            e.getValue().print(category, labelOrder, out);
         }
         out.write("\n");
     }

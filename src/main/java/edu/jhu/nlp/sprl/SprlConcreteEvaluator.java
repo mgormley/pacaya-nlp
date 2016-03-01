@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.stream.IntStream;
 
 import org.apache.commons.cli.ParseException;
@@ -27,12 +28,18 @@ import edu.jhu.nlp.AbstractParallelAnnotator;
 import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.Span;
+import edu.jhu.nlp.data.conll.SrlGraph;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.eval.SprlEvaluator;
+import edu.jhu.nlp.eval.SrlEvaluator;
+import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
+import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
@@ -43,6 +50,16 @@ import edu.jhu.prim.tuple.Triple;
 public class SprlConcreteEvaluator {
 
     private static final Logger log = LoggerFactory.getLogger(SprlConcreteEvaluator.class);
+    public static final String srlNil = "_";
+
+    @Opt(hasArg = true, description = "the number of examples per confusion matrix cell")
+    public static int numExamples = 2;
+
+    @Opt(hasArg = true, description = "eval sprl")
+    public static boolean includeSprl = true;
+
+    @Opt(hasArg = true, description = "eval srl")
+    public static boolean includeSrl = false;
 
     @Opt(hasArg = true, description = "concrete file containing predicted sprl judgments")
     public static File pred = null;
@@ -72,7 +89,7 @@ public class SprlConcreteEvaluator {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.name = name;
         prm.rePrm.depParseTool = null;
-        prm.rePrm.srlTool = null;
+        prm.rePrm.srlTool = tool;
         prm.rePrm.sprlTool = tool;
         // prm.maxNumSentences = trainMaxNumSentences;
         // prm.maxSentenceLength = trainMaxSentenceLength;
@@ -174,12 +191,12 @@ public class SprlConcreteEvaluator {
                 Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> ex1 = example
                         .get2();
                 AnnoSentence s1 = gold.get(ex1.get1());
-                String ex1Str = formatExample(s1, ex1.get2(), ex1.get3(), ex1.get4(), propertyOrder);
+                String ex1Str = formatExample(s1, null, ex1.get2(), ex1.get3(), ex1.get4(), propertyOrder);
 
                 Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> ex2 = example
                         .get3();
                 AnnoSentence s2 = gold.get(ex2.get1());
-                String ex2Str = formatExample(s2, ex2.get2(), ex2.get3(), ex2.get4(), propertyOrder);
+                String ex2Str = formatExample(s2, null, ex2.get2(), ex2.get3(), ex2.get4(), propertyOrder);
 
                 fw.write(String.format("Example A:\n%s\n\n", getSentence(s1)));
                 fw.write(String.format("Example B:\n%s\n\n", getSentence(s2)));
@@ -284,18 +301,23 @@ public class SprlConcreteEvaluator {
         return s.getWordsStr(new Span(0, s.size()));
     }
 
-    private static String formatExample(AnnoSentence gold, Pair<Integer, Integer> pair, List<SprlClassLabel> goldLabels,
+    private static String formatExample(AnnoSentence gold, AnnoSentence pred, Pair<Integer, Integer> pair, List<SprlClassLabel> goldLabels,
             List<SprlClassLabel> predicatedLabels, List<Property> propertyOrder) {
         StringWriter sw = new StringWriter();
         int predIx = pair.get1();
         int argIx = pair.get2();
         sw.write(String.format("Predicate at %s: %s\n", predIx, gold.getWord(predIx)));
         sw.write(String.format("Argument at %s (%s): %s\n", argIx, gold.getWord(argIx),
-                gold.getSrlGraph().getEdge(predIx, argIx).getLabel()));
-        sw.write(String.format("%30s %15s %15s\n", "Property", "Gold", "Predicted"));
-        for (int q = 0; q < propertyOrder.size(); q++) {
-            sw.write(String.format("%30s %15s %15s\n", propertyOrder.get(q), goldLabels.get(q),
-                    predicatedLabels.get(q)));
+                getSrlLabel(pair, gold)));
+        if (pred != null) {
+            sw.write(String.format("Predicted SRL: %s\n", getSrlLabel(pair, pred)));
+        }
+        if (propertyOrder.size() > 0) {
+            sw.write(String.format("%30s %15s %15s\n", "Property", "Gold", "Predicted"));
+            for (int q = 0; q < propertyOrder.size(); q++) {
+                sw.write(String.format("%30s %15s %15s\n", propertyOrder.get(q), goldLabels.get(q),
+                        predicatedLabels.get(q)));
+            }
         }
         sw.write("\n");
         return sw.toString();
@@ -310,8 +332,40 @@ public class SprlConcreteEvaluator {
         return cms.getTotal().f1();
     }
 
-    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred) {
-        int numExamples = 2;  // the number of examples per cell
+    public static String getSrlLabel(Pair<Integer, Integer> predArgPair, AnnoSentence s) {
+        SrlGraph srl = s.getSrlGraph();
+        if (srl != null) {
+            SrlEdge edge = srl.getEdge(predArgPair.get1(), predArgPair.get2());
+            if (edge != null) {
+                return edge.getLabel();
+            }
+        }
+        return srlNil; 
+    }
+
+    public static void evalSrl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw) throws IOException {
+        Set<String> nils = Collections.singleton(srlNil);
+        ConfusionMatrix<String> cm = new ConfusionMatrix<>(nils);
+        int nSentences = pred.size();
+        for (int i = 0; i < nSentences; i++) {
+            AnnoSentence g = gold.get(i);
+            AnnoSentence p = pred.get(i);
+            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
+                    g.getKnownPreds(), g.getKnownSrlPairs(), roleStructure, allowPredArgSelfLoops)) {
+                String gL = getSrlLabel(e,  g);
+                String pL = getSrlLabel(e,  p);
+                String exStr = cm.numExamples(gL, pL) >= numExamples ? null
+                    : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, p, e, Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
+                cm.recordPrediction(gL, pL, exStr);
+            }
+        }
+
+        // write the confusion map to a file
+        cm.print("SRL", new TreeSet<>(cm.keySet()), fw);
+
+    }
+    
+    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw) throws IOException {
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();
         ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
         int nSentences = pred.size();
@@ -331,7 +385,7 @@ public class SprlConcreteEvaluator {
                 int predIx = example.get1();
                 int argIx = example.get2();
                 String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
-                        : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+                        : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
                                 Collections.singletonList(pL), Collections.singletonList(q)));
                 cms.recordPrediction(gL, pL, q, exStr);
             }
@@ -348,23 +402,14 @@ public class SprlConcreteEvaluator {
             }
         }
 
-        // write the confusion map to a file
-        try {
-            Writer fw = new PrintWriter(outFile);
-            cms.print(labelOrder, fw);
-            log.info(String.format("Writing to: %s", outFile.getAbsolutePath()));
-            fw.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        cms.print(labelOrder, fw);
 
     }
 
     public static void main(String[] args) {
         int exitCode = 0;
         ArgParser parser = null;
+        
         try {
             parser = new ArgParser(SprlConcreteEvaluator.class);
             parser.registerClass(SprlConcreteEvaluator.class);
@@ -372,10 +417,24 @@ public class SprlConcreteEvaluator {
             parser.parseArgs(args);
             AnnoSentenceCollection predSents = loadSents("pred", pred, predTool);
             AnnoSentenceCollection goldSents = loadSents("gold", gold, goldTool);
-            evalSprl(goldSents, predSents);
-            if (examplesOut != null) {
-                findSprlExamples(goldSents, predSents, examplesOut);
+            
+            log.info(String.format("Writing confusions to: %s", outFile.getAbsolutePath()));
+            Writer fw = new PrintWriter(outFile);
+
+            // SRL confusions
+            if (includeSrl && predSents.someHaveAt(AT.SRL)) {
+                evalSrl(goldSents, predSents, fw);
+                fw.write("\n");
             }
+            
+            // SPRL confusions
+            if (includeSprl && predSents.someHaveAt(AT.SPRL)) {
+                evalSprl(goldSents, predSents, fw);
+                if (examplesOut != null) {
+                    findSprlExamples(goldSents, predSents, examplesOut);
+                }
+            }
+            fw.close();
         } catch (ParseException e1) {
             log.error(e1.getMessage());
             if (parser != null) {

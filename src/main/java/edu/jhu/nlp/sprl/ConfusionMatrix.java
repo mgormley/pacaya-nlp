@@ -1,6 +1,8 @@
 package edu.jhu.nlp.sprl;
 
+import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -298,5 +300,16 @@ public class ConfusionMatrix<L> {
 
     public Set<L> keySet() {
         return keys;
+    }
+
+    public void print(String category, Collection<L> labelOrder, Writer out) throws IOException {
+        out.write(format(category, labelOrder));
+        // write out an example for each non-zero cell in the matrix
+        for (Map.Entry<Pair<L, L>, List<String>> exList : getExamples().entrySet()) {
+            for (String ex : exList.getValue()) {
+                out.write(String.format("%s %s %s:\n%s\n", category, exList.getKey().get1().toString(),
+                        exList.getKey().get2().toString(), ex));
+            }
+        }
     }
 }
