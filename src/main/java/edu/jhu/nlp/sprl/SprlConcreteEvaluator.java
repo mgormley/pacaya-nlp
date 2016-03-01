@@ -103,7 +103,14 @@ public class SprlConcreteEvaluator {
     }
 
     private static List<SprlClassLabel> propList(AnnoSentence a, Pair<Integer, Integer> pair) {
-        return a.getSprl().get(pair).toLabels();
+        Map<Pair<Integer, Integer>, Properties> sprl = a.getSprl();
+        if (sprl != null) {
+            Properties props = sprl.get(pair);
+            if (props != null) {
+                return props.toLabels();
+            }
+        }
+        return Properties.nilPropLabels();
     }
 
     public static void findSprlExamples(AnnoSentenceCollection gold, AnnoSentenceCollection pred, File outFile) {

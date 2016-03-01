@@ -117,4 +117,12 @@ public class Properties implements Iterable<Pair<String, Double>> {
         };
     }
 
+    public static List<SprlClassLabel> nilPropLabels() {
+        List<SprlClassLabel> returnList = new ArrayList<>();
+        for (String k : Property.labels) {
+            returnList.add(SprlClassLabel.getLabel(null));
+        }
+        return returnList;
+    }
+
 }
