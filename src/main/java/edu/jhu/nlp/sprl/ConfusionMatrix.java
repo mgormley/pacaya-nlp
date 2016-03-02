@@ -54,10 +54,15 @@ public class ConfusionMatrix<L> {
      * record the prediction without an example
      */
     public void recordPrediction(L gold, L pred) {
-        recordPrediction(gold, pred, null);
+        recordPrediction(gold, pred, null, Integer.MAX_VALUE);
     }
 
     public void recordPrediction(L gold, L pred, String example) {
+        recordPrediction(gold, pred, example, Integer.MAX_VALUE);
+    }
+
+    // TODO: allow to provide a number of examples so that the longest example is evicted if we have too many
+    public void recordPrediction(L gold, L pred, String example, int numExamplesCap) {
         // count the pair
         goldPredPairCounts.add(new Pair<>(gold, pred));
         goldCounts.add(gold);
@@ -73,7 +78,20 @@ public class ConfusionMatrix<L> {
                 exampleList = new ArrayList<>();
                 examples.put(new Pair<>(gold, pred), exampleList);
             }
-            exampleList.add(example);
+            if (exampleList.size() > 0 && exampleList.size() >= numExamplesCap) {
+                int ixOfMaxLength = 0;
+                int maxLength = 0;
+                for (int i = 0; i < exampleList.size(); i++) {
+                    int exLen = exampleList.get(i).length();
+                    if (exLen > maxLength) {
+                        maxLength = exLen;
+                        ixOfMaxLength = i;
+                    }
+                }
+                exampleList.set(ixOfMaxLength, example);
+            } else {
+                exampleList.add(example);
+            }
         }
     }
 

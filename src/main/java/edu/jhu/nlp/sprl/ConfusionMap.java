@@ -37,8 +37,12 @@ public class ConfusionMap<L, C> {
     }
 
     public void recordPrediction(L gold, L pred, C category, String example) {
-        getConfusionMatrix(category).recordPrediction(gold, pred, example);
-        total.recordPrediction(gold, pred);
+        recordPrediction(gold, pred, category, example, Integer.MAX_VALUE);
+    }
+    
+    public void recordPrediction(L gold, L pred, C category, String example, int maxNumExamples) {
+        getConfusionMatrix(category).recordPrediction(gold, pred, example, maxNumExamples);
+        total.recordPrediction(gold, pred, example, maxNumExamples);
     }
 
     public int numExamples(L gold, L pred, C category) {
@@ -63,7 +67,7 @@ public class ConfusionMap<L, C> {
     }
 
     public void print(Collection<L> labelOrder, Writer out) throws IOException {
-        out.write(total.format("total", labelOrder));
+        total.print("total", labelOrder, out);
         for (Map.Entry<C, ConfusionMatrix<L>> e : counts.entrySet()) {
             String category = e.getKey().toString();
             e.getValue().print(category, labelOrder, out);

@@ -403,12 +403,16 @@ public class SprlConcreteEvaluator {
     }
 
     private static double getF1(List<SprlClassLabel> gold, List<SprlClassLabel> pred) {
+        return getConfusion(gold, pred).f1();
+    }
+
+    private static ConfusionMatrix<SprlClassLabel> getConfusion(List<SprlClassLabel> gold, List<SprlClassLabel> pred) {
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();
-        ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
+        ConfusionMatrix<SprlClassLabel> cm = new ConfusionMatrix<>(nils);
         for (int i = 0; i < gold.size(); i++) {
-            cms.recordPrediction(gold.get(i), pred.get(i), Property.values()[i]);
+            cm.recordPrediction(gold.get(i), pred.get(i));
         }
-        return cms.getTotal().f1();
+        return cm;
     }
 
     public static String getSrlLabel(Pair<Integer, Integer> predArgPair, AnnoSentence s) {
@@ -433,10 +437,13 @@ public class SprlConcreteEvaluator {
                     g.getKnownSrlPairs(), roleStructure, allowPredArgSelfLoops)) {
                 String gL = getSrlLabel(e, g);
                 String pL = getSrlLabel(e, p);
-                String exStr = cm.numExamples(gL, pL) >= numExamples ? null
-                        : String.format("%s\n\n%s\n", getMarkedSentence(g, e.get1(), e.get2(), g), formatExample(g, p,
+                // TODO: if this example is shorter, I'd like to replace the longest previous examples
+//                String exStr = cm.numExamples(gL, pL) >= numExamples ? null
+//                        : String.format("%s\n\n%s\n", getMarkedSentence(g, e.get1(), e.get2(), g), formatExample(g, p,
+//                                e, Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
+                String exStr = String.format("%s\n\n%s\n", getMarkedSentence(g, e.get1(), e.get2(), g), formatExample(g, p,
                                 e, Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
-                cm.recordPrediction(gL, pL, exStr);
+                cm.recordPrediction(gL, pL, exStr, numExamples);
             }
         }
 
@@ -465,11 +472,14 @@ public class SprlConcreteEvaluator {
                 Property q = example.get3();
                 int predIx = example.get1();
                 int argIx = example.get2();
-                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
-                        : String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
+//                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
+//                        : String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
+//                                formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+//                                        Collections.singletonList(pL), Collections.singletonList(q)));
+                String exStr = String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
                                 formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
                                         Collections.singletonList(pL), Collections.singletonList(q)));
-                cms.recordPrediction(gL, pL, q, exStr);
+                cms.recordPrediction(gL, pL, q, exStr, numExamples);
             }
         }
 
