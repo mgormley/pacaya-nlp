@@ -505,13 +505,13 @@ public class JointNlpRunner {
                 Set<SprlClassLabel> nils = SprlClassLabel.getNils();
                 if (breakdownSprlEval) {
                     for (Property q : Property.values()) {
-                        eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true, q));
-                        eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false, q));
+                        //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true, q));
+                        //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false, q));
                         eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils, q));
                     }
                 }
-                eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true));
-                eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false));
+                //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true));
+                //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false));
                 eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
