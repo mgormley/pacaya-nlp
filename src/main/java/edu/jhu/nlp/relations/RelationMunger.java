@@ -53,7 +53,9 @@ public class RelationMunger implements Serializable {
         @Opt(description="Whether to shorten entity mention spans following Zhou et al. (2005)")
         public boolean shortenEntityMentions = true;      
         @Opt(hasArg = true, description = "Whether ReConcreteReader should create a separate sentence for each relation.")
-        public boolean makeRelSingletons = true;    
+        public boolean makeRelSingletons = true;      
+        @Opt(hasArg = true, description = "Whether to shuffle the sentences if making singletons.")
+        public boolean shuffle = true;   
         @Opt(hasArg = true, description = "Whether to look at the positive relations when constructing the named entity pairs.")
         public boolean nePairsFromPos = true;
         @Opt(hasArg = true, description = "Whether to add pairs of entities with no relation when constructing the named entity pairs.")
@@ -140,8 +142,10 @@ public class RelationMunger implements Serializable {
             }
             if (prm.makeRelSingletons) {
                 AnnoSentenceCollection tmpSents = getSingletons(aSents);
-                // Deterministically shuffle the positive and negative examples for this communication.
-                Collections.shuffle(tmpSents, new Random(1234567890));
+                if (prm.shuffle) {
+                    // Deterministically shuffle the positive and negative examples for this communication.
+                    Collections.shuffle(tmpSents, new Random(1234567890));
+                }
                 aSents.clear();
                 aSents.addAll(tmpSents);
             }
@@ -249,6 +253,8 @@ public class RelationMunger implements Serializable {
                     AnnoSentence single = sent.getShallowCopy();
                     single.setNePairs(QLists.getList(sent.getNePairs().get(k)));
                     single.setRelLabels(QLists.getList(sent.getRelLabels().get(k)));
+                    single.setNamedEntities(null);
+                    single.setRelations(null);
                     singles.add(single);
                 }
             }
