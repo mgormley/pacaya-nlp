@@ -78,6 +78,9 @@ public class AnnoSentenceWriter {
             cwPrm.addAnnoTypes(addAnnoTypes);
             ConcreteWriter w = new ConcreteWriter(cwPrm);
             w.write(sents, out);
+        } else if (type == DatasetType.SIMPLE_TEXT) {
+            SimpleTextWriter w = new SimpleTextWriter(out);
+            w.write(sents);
         } else {
             throw new IllegalStateException("Unsupported data type: " + type);
         }

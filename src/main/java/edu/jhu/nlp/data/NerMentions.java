@@ -70,12 +70,12 @@ public class NerMentions implements Iterable<NerMention> {
 
     @Override
     public String toString() {
-        return "LabeledSpans [n=" + n + ", spans=" + ments + "]";
+        return "NerMentions [n=" + n + ", spans=" + ments + "]";
     }
 
     public String toString(List<String> words) {
         StringBuilder sb = new StringBuilder();
-        sb.append("LabeledSpans [");
+        sb.append("NerMentions [");
         for (int i = 0; i < words.size(); i++) {
             if (i != 0) {
                 sb.append(" ");

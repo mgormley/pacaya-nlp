@@ -245,19 +245,19 @@ public class AnnoSentence {
         appendIfNotNull(sb, "words", words);
         appendIfNotNull(sb, "prefixes", prefixes);
         appendIfNotNull(sb, "lemmas", lemmas);
-        appendIfNotNull(sb, "tags", posTags);
+        appendIfNotNull(sb, "posTags", posTags);
         appendIfNotNull(sb, "cposTags", cposTags);
         appendIfNotNull(sb, "strictPosTags", strictPosTags);
         appendIfNotNull(sb, "clusters", clusters);
         appendIfNotNull(sb, "embedIds", embedIds);
         appendIfNotNull(sb, "feats", feats);
+        appendIfNotNull(sb, "chunks", chunks);
+        appendIfNotNull(sb, "neTags", neTags);
         if (parents != null) {
             sb.append("parents=");
             sb.append(Arrays.toString(parents));
             sb.append(",\n");
         }
-        appendIfNotNull(sb, "chunks", chunks);
-        appendIfNotNull(sb, "neTags", neTags);
         appendIfNotNull(sb, "deprels", deprels);
         appendIfNotNull(sb, "depEdgeMask", depEdgeMask);
         appendIfNotNull(sb, "srlGraph", srlGraph);

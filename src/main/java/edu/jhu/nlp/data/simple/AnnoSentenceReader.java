@@ -46,9 +46,12 @@ public class AnnoSentenceReader {
         /** Concrete options. */
         public ConcreteReaderPrm rePrm = new ConcreteReaderPrm();        
     }
-    
-    public enum DatasetType { SYNTHETIC, PTB, CONLL_2002, CONLL_X, CONLL_2008, CONLL_2009, CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK };
-    
+
+    public enum DatasetType {
+        SYNTHETIC, PTB, CONLL_2002, CONLL_X, CONLL_2008, CONLL_2009, 
+        CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK, SIMPLE_TEXT
+    };
+
     public interface SASReader extends Iterable<AnnoSentence> {
         public void close();        
     }
@@ -76,7 +79,7 @@ public class AnnoSentenceReader {
             loadSents(reader);
             sents.setSourceSents(csents.getSourceSents());
             reader.close();
-            logSentStats();
+            logSentStats(sents, log, prm.name);
         } else {
             InputStream fis = new FileInputStream(dataFile);
             loadSents(fis, type);
@@ -109,6 +112,8 @@ public class AnnoSentenceReader {
                 reader = ConvCloseableIterable.getInstance(new CoNLL02Reader(fis), new CoNLL022Anno());
             } else if (type == DatasetType.SEMEVAL_2010) {
                 reader = ConvCloseableIterable.getInstance(new SemEval2010Reader(fis), new SemEval20102Anno());
+            } else if (type == DatasetType.SIMPLE_TEXT) {
+                reader = new SimpleTextReader(fis);
             //} else if (type == DatasetType.PTB) {
                 //reader = new Ptb2Anno(new PtbFileReader(dataFile));
             } else {
@@ -119,12 +124,12 @@ public class AnnoSentenceReader {
         loadSents(reader);
         sents.setSourceSents(sourceSents);
         reader.close();
-        logSentStats();
+        logSentStats(sents, log, prm.name);
     }
 
-    private void logSentStats() {
-        log.info("Num " + prm.name + " sentences: " + sents.size());   
-        log.info("Num " + prm.name + " tokens: " + sents.getNumTokens());
+    public static void logSentStats(AnnoSentenceCollection sents, Logger log, String name) {
+        log.info("Num " + name + " sentences: " + sents.size());   
+        log.info("Num " + name + " tokens: " + sents.getNumTokens());
         log.info("Longest sentence: " + sents.getMaxLength());
         log.info("Average sentence length: " + sents.getAvgLength());
     }

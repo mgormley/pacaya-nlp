@@ -109,8 +109,12 @@ public class RelationMention {
             argsStr.append(p.get2().getSpan().getString(words, " "));
         }
         argsStr.append("]");
+        String triggerStr = null;
+        if (trigger != null) {
+            triggerStr = trigger.getString(words, " ");
+        }
         return "SituationMent [type=" + type + ", subType=" + subType + ", args=" + argsStr + ", trigger="
-                + trigger.getString(words, " ") + "]";
+                + triggerStr + "]";
     }
 
     @Override
