@@ -35,6 +35,7 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
         public boolean evalRoles = true;
         /** Mimic eval09.pl definition of predicate sense equality. */
         public boolean mimicEval09pl = true;
+        public boolean evalAmbiguousSrlLabels = false;
         public SrlEvaluatorPrm() { }
         public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
             this.labeled = labeled;

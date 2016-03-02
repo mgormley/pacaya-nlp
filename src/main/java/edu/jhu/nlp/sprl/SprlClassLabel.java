@@ -20,7 +20,8 @@ public enum SprlClassLabel {
     private static final Logger log = LoggerFactory.getLogger(SprlClassLabel.class);
 
     @Opt(hasArg = true, description = "how to convert likert scale responses to class labels")
-    public static SplitMode splitMode = SplitMode.Split_12_3_45;
+    //public static SplitMode splitMode = SplitMode.Split_12_3_45;
+    public static SplitMode splitMode = SplitMode.Split_123_45;
 
     @Opt(hasArg = true, description = "whether to treat non-positive scores as NA")
     public static boolean modelNA = false;

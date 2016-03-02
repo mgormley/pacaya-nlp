@@ -118,7 +118,9 @@ public class SprlConcreteEvaluator {
         // sentences, they have the same predicate and the same gold SRL label,
         // but different predicted sprl and different gold sprl
         // for each satisfying pair, I can compute the F1 of the sprl for just
-        // that pair and then return the list of these sorted by F1
+        // that pair and then return the list of these sorted [by first -F1
+        // between gold and pred, then F1 between gold and other gold, then
+        // sentence length]
         // build a list of Pair<PairF1, Triple<AnnoSentence, PredIndex,
         // ArgIndex>> o those pairs that satisfy the constraints
         // first find all pairs that match a particular predicate, argLabel
@@ -184,12 +186,39 @@ public class SprlConcreteEvaluator {
                 }
             }
         }
-
-        scoredExamples.sort(Comparator.comparingDouble(t -> -t.get1()));
+        scoredExamples.sort(
+                new Comparator<Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>>() {
+                    @Override
+                    public int compare(
+                            Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> o1,
+                            Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> o2) {
+                        // sort first by F1 between gold and predicted (harmonic
+                        // mean of this across the two instance)
+                        double s1 = o1.get1();
+                        double s2 = o2.get1();
+                        if (s1 != s2) {
+                            return Double.compare(-s1, -s2);
+                        } else {
+                            // then sort by the difference between the two gold
+                            // property vectors
+                            double exampleSim1 = getF1(o1.get2().get3(), o1.get3().get3());
+                            double exampleSim2 = getF1(o2.get2().get3(), o2.get3().get3());
+                            if (exampleSim1 != exampleSim2) {
+                                // bigger diff is better
+                                return Double.compare(exampleSim1, exampleSim2);
+                            } else {
+                                // then sort to put shorter examples first
+                                int len1 = gold.get(o1.get2().get1()).size() * gold.get(o1.get3().get1()).size();
+                                int len2 = gold.get(o2.get2().get1()).size() * gold.get(o2.get3().get1()).size();
+                                return Integer.compare(len1, len2);
+                            }
+                        }
+                    }
+                });
         List<Property> propertyOrder = Arrays.asList(Property.values());
         // write the confusion map to a file
         try {
-            log.info(String.format("Writing examples to: %s", outFile));
+            log.info(String.format("Writing examples to: %s", outFile.getAbsolutePath()));
             Writer fw = new PrintWriter(outFile);
 
             int nExamples = 10;
@@ -205,11 +234,11 @@ public class SprlConcreteEvaluator {
                 AnnoSentence s2 = gold.get(ex2.get1());
                 String ex2Str = formatExample(s2, null, ex2.get2(), ex2.get3(), ex2.get4(), propertyOrder);
 
-                fw.write(String.format("Example A:\n%s\n\n", getSentence(s1)));
-                fw.write(String.format("Example B:\n%s\n\n", getSentence(s2)));
-                fw.write(String.format("%s\n", hStack(
-                        String.format("Example A:\n%s", ex1Str),
-                        "     ",
+                fw.write(String.format("Example A:\n%s\n\n",
+                        getMarkedSentence(s1, ex1.get2().get1(), ex1.get2().get2(), s1)));
+                fw.write(String.format("Example B:\n%s\n\n",
+                        getMarkedSentence(s2, ex2.get2().get1(), ex2.get2().get2(), s2)));
+                fw.write(String.format("%s\n", hStack(String.format("Example A:\n%s", ex1Str), "     ",
                         String.format("Example B:\n%s", ex2Str))));
                 fw.write("\n");
                 i++;
@@ -274,7 +303,7 @@ public class SprlConcreteEvaluator {
             List<String> sLines = getLines(s);
             lines.add(sLines);
             int maxW = maxWidth(sLines);
-            
+
             // keep track of how wide each bloack is
             maxWidths.add(maxW);
 
@@ -284,7 +313,7 @@ public class SprlConcreteEvaluator {
             // keep track of how many total lines
             maxLines = Math.max(maxLines, sLines.size());
         }
-        
+
         // now paste the blocks together
         StringWriter sw = new StringWriter(maxLines * (totalWidth + 2));
         for (int i = 0; i < maxLines; i++) {
@@ -308,14 +337,57 @@ public class SprlConcreteEvaluator {
         return s.getWordsStr(new Span(0, s.size()));
     }
 
-    private static String formatExample(AnnoSentence gold, AnnoSentence pred, Pair<Integer, Integer> pair, List<SprlClassLabel> goldLabels,
-            List<SprlClassLabel> predicatedLabels, List<Property> propertyOrder) {
+    private static Span getSpan(int head, AnnoSentence goldDepTree) {
+        List<Integer> toks = goldDepTree == null ? Collections.singletonList(head) : goldDepTree.getDescendents(head);
+        // end is the last token index plus one
+        Span span = new Span(toks.get(0), toks.get(toks.size() - 1) + 1);
+        if (span.size() != toks.size()) {
+            log.warn(String.format("marked span includes non-descendant tokens. toks: %s, span: %s", toks.toString(),
+                    span.toString()));
+        }
+        return span;
+    }
+
+    /**
+     * Returns a string representation of the sentence with the boldHead marked
+     * and the emphHeadMarked with its descendents in the goldDepTree if given
+     * (if goldDepTree is null then only the heads are marked)
+     */
+    private static String getMarkedSentence(AnnoSentence s, int boldHead, int emphHead, AnnoSentence goldDepTree) {
+        Span boldSpan = getSpan(boldHead, null);
+        Span emphSpan = getSpan(emphHead, goldDepTree);
+        Span firstSpan;
+        Span secondSpan;
+        String firstMark;
+        String secondMark;
+        String boldMark = "***";
+        String emphMark = "===";
+        if (boldHead < emphHead) {
+            firstSpan = boldSpan;
+            firstMark = boldMark;
+            secondSpan = emphSpan;
+            secondMark = emphMark;
+        } else {
+            firstSpan = emphSpan;
+            firstMark = emphMark;
+            secondSpan = boldSpan;
+            secondMark = boldMark;
+        }
+
+        return String.join(" ", s.getWordsStr(new Span(0, firstSpan.start())),
+                firstMark + s.getWordsStr(firstSpan) + firstMark,
+                s.getWordsStr(new Span(firstSpan.end(), secondSpan.start())),
+                secondMark + s.getWordsStr(secondSpan) + secondMark,
+                s.getWordsStr(new Span(secondSpan.end(), s.size())));
+    }
+
+    private static String formatExample(AnnoSentence gold, AnnoSentence pred, Pair<Integer, Integer> pair,
+            List<SprlClassLabel> goldLabels, List<SprlClassLabel> predicatedLabels, List<Property> propertyOrder) {
         StringWriter sw = new StringWriter();
         int predIx = pair.get1();
         int argIx = pair.get2();
         sw.write(String.format("Predicate at %s: %s\n", predIx, gold.getWord(predIx)));
-        sw.write(String.format("Argument at %s (%s): %s\n", argIx, gold.getWord(argIx),
-                getSrlLabel(pair, gold)));
+        sw.write(String.format("Argument at %s (%s): %s\n", argIx, gold.getWord(argIx), getSrlLabel(pair, gold)));
         if (pred != null) {
             sw.write(String.format("Predicted SRL: %s\n", getSrlLabel(pair, pred)));
         }
@@ -347,7 +419,7 @@ public class SprlConcreteEvaluator {
                 return edge.getLabel();
             }
         }
-        return srlNil; 
+        return srlNil;
     }
 
     public static void evalSrl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw) throws IOException {
@@ -357,12 +429,13 @@ public class SprlConcreteEvaluator {
         for (int i = 0; i < nSentences; i++) {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
-            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                    g.getKnownPreds(), g.getKnownSrlPairs(), roleStructure, allowPredArgSelfLoops)) {
-                String gL = getSrlLabel(e,  g);
-                String pL = getSrlLabel(e,  p);
+            for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(), g.getKnownPreds(),
+                    g.getKnownSrlPairs(), roleStructure, allowPredArgSelfLoops)) {
+                String gL = getSrlLabel(e, g);
+                String pL = getSrlLabel(e, p);
                 String exStr = cm.numExamples(gL, pL) >= numExamples ? null
-                    : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, p, e, Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
+                        : String.format("%s\n\n%s\n", getMarkedSentence(g, e.get1(), e.get2(), g), formatExample(g, p,
+                                e, Collections.emptyList(), Collections.emptyList(), Collections.emptyList()));
                 cm.recordPrediction(gL, pL, exStr);
             }
         }
@@ -371,8 +444,9 @@ public class SprlConcreteEvaluator {
         cm.print("SRL", new TreeSet<>(cm.keySet()), fw);
 
     }
-    
-    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw) throws IOException {
+
+    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw)
+            throws IOException {
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();
         ConfusionMap<SprlClassLabel, Property> cms = new ConfusionMap<SprlClassLabel, Properties.Property>(nils);
         int nSentences = pred.size();
@@ -392,8 +466,9 @@ public class SprlConcreteEvaluator {
                 int predIx = example.get1();
                 int argIx = example.get2();
                 String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
-                        : String.format("%s\n\n%s\n", getSentence(g), formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
-                                Collections.singletonList(pL), Collections.singletonList(q)));
+                        : String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
+                                formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+                                        Collections.singletonList(pL), Collections.singletonList(q)));
                 cms.recordPrediction(gL, pL, q, exStr);
             }
         }
@@ -416,7 +491,7 @@ public class SprlConcreteEvaluator {
     public static void main(String[] args) {
         int exitCode = 0;
         ArgParser parser = null;
-        
+
         try {
             parser = new ArgParser(SprlConcreteEvaluator.class);
             parser.registerClass(SprlConcreteEvaluator.class);
@@ -424,7 +499,7 @@ public class SprlConcreteEvaluator {
             parser.parseArgs(args);
             AnnoSentenceCollection predSents = loadSents("pred", pred, predTool);
             AnnoSentenceCollection goldSents = loadSents("gold", gold, goldTool);
-            
+
             log.info(String.format("Writing confusions to: %s", outFile.getAbsolutePath()));
             Writer fw = new PrintWriter(outFile);
 
@@ -433,7 +508,7 @@ public class SprlConcreteEvaluator {
                 evalSrl(goldSents, predSents, fw);
                 fw.write("\n");
             }
-            
+
             // SPRL confusions
             if (includeSprl && predSents.someHaveAt(AT.SPRL)) {
                 evalSprl(goldSents, predSents, fw);
