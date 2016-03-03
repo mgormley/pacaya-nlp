@@ -131,8 +131,16 @@ public class ConfusionMatrix<L> {
         return getCorrect() - getCorrectNils();
     }
 
+    public int getPredictedeHits() {
+        return getTotal() - getPredictedNils();
+    }
+
+    public int getPossibleHits() {
+        return getTotal() - getExpectedNils();
+    }
+    
     public double recall() {
-        int possible = getTotal() - getExpectedNils();
+        int possible = getPossibleHits();
         if (possible == 0) {
             return 1.0;
         } else {
@@ -141,7 +149,7 @@ public class ConfusionMatrix<L> {
     }
 
     public double precision() {
-        int predicted = getTotal() - getPredictedNils();
+        int predicted = getPredictedeHits();
         if (predicted == 0) {
             return 1.0;
         } else {
@@ -222,8 +230,29 @@ public class ConfusionMatrix<L> {
         sw.write(String.format("==%s Recall: %s\n", name, recall()));
         sw.write(String.format("==%s F1: %s\n", name, f1()));
         sw.write(String.format("==%s Accuracy: %s\n", name, accuracy()));
+        sw.write(String.format("==%s MarjoirtyNonNilBaseline: %s\n", name, majorityNonNilF1()));
         sw.write(formatMatrix(labelOrder));
         return sw.toString();
+    }
+
+    private L majorityNonNilLabel() {
+        L maxLabel = null;
+        int maxCount = 0;
+        for (L k : keys) {
+            if (nilLabels.contains(k)) {
+                continue;
+            }
+            int goldCount = goldCounts.get(k);
+            if (goldCount >= maxCount) {
+                maxCount = goldCount;
+                maxLabel = k;
+            }
+        }
+        return maxLabel;
+    }
+    
+    public double majorityNonNilF1() {
+        return ((double) goldCounts.get(majorityNonNilLabel())) / getPossibleHits(); 
     }
 
     public List<String> getExamples(L gold, L pred) {
