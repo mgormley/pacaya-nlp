@@ -3,26 +3,23 @@ package edu.jhu.nlp.data.simple;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.Reader;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
-
-import javax.json.Json;
-import javax.json.JsonArray;
-import javax.json.JsonObject;
-import javax.json.JsonReader;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonStreamParser;
 
 import edu.jhu.nlp.data.semeval.SemEval2010Reader;
@@ -33,7 +30,8 @@ public class JsonSentReader implements CloseableIterable<AnnoSentence>, Iterator
     
     private static final Logger log = LoggerFactory.getLogger(SemEval2010Reader.class);
     private AnnoSentence sentence;
-    private BufferedReader reader;
+    private Reader reader;
+    private JsonStreamParser parser;
 
     public JsonSentReader(File file) throws IOException {        
         this(new FileInputStream(file));
@@ -43,46 +41,51 @@ public class JsonSentReader implements CloseableIterable<AnnoSentence>, Iterator
         this(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
     }
 
-    private JsonSentReader(BufferedReader reader) {
+    private JsonSentReader(Reader reader) {
         this.reader = reader;
+        this.parser = new JsonStreamParser(reader);
         next();
     }
     
-    public static AnnoSentence readSentence(BufferedReader reader) throws IOException {
-        JsonReader r = Json.createReader(reader);
-        JsonObject jo = r.readObject();
+    public static AnnoSentence readSentence(JsonStreamParser reader) throws IOException {
+        if(!reader.hasNext()) {
+            return null;
+        }
+        JsonObject jo = reader.next().getAsJsonObject();
         AnnoSentence sent = new AnnoSentence();
-        for (String key : jo.keySet()) {
+        for (Entry<String,JsonElement> entry : jo.entrySet()) {
+            String key = entry.getKey();
+            JsonElement val = entry.getValue();
             // Process each key in this sentence.
             if (key.equals("words")) {
-                sent.setWords(getListOfStrings(jo, key));
+                sent.setWords(getListOfStrings(key, val));
             } else if (key.equals("prefixes")) {
-                sent.setPrefixes(getListOfStrings(jo, key));
+                sent.setPrefixes(getListOfStrings(key, val));
             } else if (key.equals("lemmas")) {
-                sent.setLemmas(getListOfStrings(jo, key));
+                sent.setLemmas(getListOfStrings(key, val));
             } else if (key.equals("posTags")) {
-                sent.setPosTags(getListOfStrings(jo, key));
+                sent.setPosTags(getListOfStrings(key, val));
             } else if (key.equals("cposTags")) {
-                sent.setCposTags(getListOfStrings(jo, key));
+                sent.setCposTags(getListOfStrings(key, val));
             } else if (key.equals("strictPosTags")) {
-                List<String> tags = getListOfStrings(jo, key);
+                List<String> tags = getListOfStrings(key, val);
                 sent.setStrictPosTags(tags.stream().map(x -> StrictPosTag.valueOf(x)).collect(Collectors.toList()));
             } else if (key.equals("clusters")) {
-                sent.setClusters(getListOfStrings(jo, key));
+                sent.setClusters(getListOfStrings(key, val));
             } else if (key.equals("chunks")) {
-                sent.setChunks(getListOfStrings(jo, key));
+                sent.setChunks(getListOfStrings(key, val));
             } else if (key.equals("neTags")) {
-                sent.setNeTags(getListOfStrings(jo, key));
+                sent.setNeTags(getListOfStrings(key, val));
             } else if (key.equals("parents")) {
-                sent.setParents(getIntArray(jo, key));
+                sent.setParents(getIntArray(key, val));
             } else if (key.equals("deprels")) {
-                sent.setDeprels(getListOfStrings(jo, key));
+                sent.setDeprels(getListOfStrings(key, val));
             } else if (key.equals("naryTree")) {
-                sent.setNaryTree(NaryTree.fromTreeInPtbFormat(jo.getString(key)));
+                sent.setNaryTree(NaryTree.fromTreeInPtbFormat(val.getAsString()));
             } else if (key.equals("nePairs")) {
-                sent.setNePairs(SimpleTextWriter.nePairsFromJson(jo.getString(key)));
+                sent.setNePairs(SimpleTextWriter.nePairsFromJson(val.getAsString()));
             } else if (key.equals("relLabels")) {
-                sent.setRelLabels(getListOfStrings(jo, key));
+                sent.setRelLabels(getListOfStrings(key, val));
             } else{
                 // Not supported: 
                 // - embedIds (IntArrayList)
@@ -101,20 +104,20 @@ public class JsonSentReader implements CloseableIterable<AnnoSentence>, Iterator
         return sent;
     }
 
-    private static int[] getIntArray(JsonObject jo, String key) {
-        JsonArray a = jo.getJsonArray(key);
+    private static int[] getIntArray(String key, JsonElement val) {
+        JsonArray a = val.getAsJsonArray();
         int[] ints = new int[a.size()];
         for (int i=0; i<a.size(); i++) {
-            ints[i] = a.getInt(i);
+            ints[i] = a.get(i).getAsInt();
         }
         return ints;
     }
 
-    private static List<String> getListOfStrings(JsonObject jo, String key) {
-        JsonArray a = jo.getJsonArray(key);
+    private static List<String> getListOfStrings(String key, JsonElement val) {
+        JsonArray a = val.getAsJsonArray();
         List<String> strs = new ArrayList<>(a.size());
         for (int i=0; i<a.size(); i++) {
-            strs.add(a.getString(i));    
+            strs.add(a.get(i).getAsString());    
         }
         return strs;
     }
@@ -128,7 +131,7 @@ public class JsonSentReader implements CloseableIterable<AnnoSentence>, Iterator
     public AnnoSentence next() {
         try {
             AnnoSentence curSent = sentence;
-            sentence = readSentence(reader);
+            sentence = readSentence(parser);
             if (curSent != null) {
                 curSent.intern();
             }
@@ -151,6 +154,5 @@ public class JsonSentReader implements CloseableIterable<AnnoSentence>, Iterator
     public void close() throws IOException {
         reader.close();
     }
-
 
 }
