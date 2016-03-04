@@ -1,9 +1,19 @@
 package edu.jhu.nlp.data.simple;
 
 import static org.junit.Assert.assertEquals;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.NOUN;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.OTHER;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.PUNC;
+import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.VERB;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.Test;
 
+import edu.jhu.nlp.relations.RelationMungerTest;
+import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.stanford.nlp.io.StringOutputStream;
 
 public class JsonConcatWriterTest {
@@ -40,7 +50,7 @@ public class JsonConcatWriterTest {
 
     @Test
     public void testWriteOnly() throws Exception {
-        AnnoSentence sent = SimpleTextWriterTest.get6WordAnnoSentence();
+        AnnoSentence sent = get6WordAnnoSentence();
         sent.setRelations(null);
         sent.setNamedEntities(null);
         
@@ -54,5 +64,29 @@ public class JsonConcatWriterTest {
         System.out.println(str);
         assertEquals(expectedStr, str);
     }
+    
+    public static AnnoSentence get6WordAnnoSentence() {
+        AnnoSentence sent = RelationMungerTest.getSentWithRelationsAndNer();
+        sent.setPrefixes(getStringList("prefixes", "", sent.size()));
+        sent.setLemmas(getStringList("lemmas", "", sent.size()));
+        sent.setPosTags(getStringList("posTags", "", sent.size()));
+        sent.setCposTags(getStringList("cposTags", "", sent.size()));
+        sent.setStrictPosTags(Arrays.asList(new StrictPosTag[]{NOUN, OTHER, NOUN, VERB, PUNC, NOUN}));
+        sent.setClusters(getStringList("clusters", "", sent.size()));
+        sent.setChunks(getStringList("chunks", "", sent.size()));
+        sent.setNeTags(getStringList("neTags", "", sent.size()));
+        sent.setParents(new int[]{-1, 0, 1, 2, 3});
+        sent.setDeprels(getStringList("deprels", "", sent.size()));        
+        return sent;
+    }
+
+    public static List<String> getStringList(String prefix, String suffix, int len) {
+        ArrayList<String> l = new ArrayList<>(len);
+        for (int i=0; i<len; i++) {
+            l.add(prefix + i + suffix);
+        }
+        return l;
+    }
+
 
 }

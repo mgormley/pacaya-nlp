@@ -49,7 +49,7 @@ public class AnnoSentenceReader {
 
     public enum DatasetType {
         SYNTHETIC, PTB, CONLL_2002, CONLL_X, CONLL_2008, CONLL_2009, 
-        CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK, SIMPLE_TEXT
+        CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK, JSON
     };
 
     public interface SASReader extends Iterable<AnnoSentence> {
@@ -112,8 +112,8 @@ public class AnnoSentenceReader {
                 reader = ConvCloseableIterable.getInstance(new CoNLL02Reader(fis), new CoNLL022Anno());
             } else if (type == DatasetType.SEMEVAL_2010) {
                 reader = ConvCloseableIterable.getInstance(new SemEval2010Reader(fis), new SemEval20102Anno());
-            } else if (type == DatasetType.SIMPLE_TEXT) {
-                reader = new SimpleTextReader(fis);
+            } else if (type == DatasetType.JSON) {
+                reader = new JsonConcatReader(fis);
             //} else if (type == DatasetType.PTB) {
                 //reader = new Ptb2Anno(new PtbFileReader(dataFile));
             } else {

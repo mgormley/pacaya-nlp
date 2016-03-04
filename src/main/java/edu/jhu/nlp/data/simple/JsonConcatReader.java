@@ -91,7 +91,7 @@ public class JsonConcatReader implements CloseableIterable<AnnoSentence>, Iterat
             } else if (key.equals("naryTree")) {
                 sent.setNaryTree(NaryTree.fromTreeInPtbFormat(val.getAsString()));
             } else if (key.equals("nePairs")) {
-                sent.setNePairs(SimpleTextWriter.nePairsFromJson(val.getAsString()));
+                sent.setNePairs(JsonConcatWriter.nePairsFromJson(val.getAsString()));
             } else if (key.equals("relLabels")) {
                 sent.setRelLabels(getListOfStrings(key, val));
             } else{
