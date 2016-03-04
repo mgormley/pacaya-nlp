@@ -26,22 +26,30 @@ import edu.jhu.nlp.data.semeval.SemEval2010Reader;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 
-public class JsonSentReader implements CloseableIterable<AnnoSentence>, Iterator<AnnoSentence> {
+/**
+ * Reads annotated sentences from a Concatenated JSON file.
+ * 
+ * See a description of concatenated JSON here:
+ * https://en.wikipedia.org/wiki/JSON_Streaming#Concatenated_JSON.
+ * 
+ * @author mgormley
+ */
+public class JsonConcatReader implements CloseableIterable<AnnoSentence>, Iterator<AnnoSentence> {
     
     private static final Logger log = LoggerFactory.getLogger(SemEval2010Reader.class);
     private AnnoSentence sentence;
     private Reader reader;
     private JsonStreamParser parser;
 
-    public JsonSentReader(File file) throws IOException {        
+    public JsonConcatReader(File file) throws IOException {        
         this(new FileInputStream(file));
     }
 
-    public JsonSentReader(InputStream inputStream) throws UnsupportedEncodingException {
+    public JsonConcatReader(InputStream inputStream) throws UnsupportedEncodingException {
         this(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
     }
 
-    private JsonSentReader(Reader reader) {
+    private JsonConcatReader(Reader reader) {
         this.reader = reader;
         this.parser = new JsonStreamParser(reader);
         next();

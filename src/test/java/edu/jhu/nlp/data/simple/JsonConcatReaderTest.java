@@ -10,12 +10,12 @@ import org.junit.Test;
 
 import edu.stanford.nlp.io.StringOutputStream;
 
-public class JsonSentReaderTest {
+public class JsonConcatReaderTest {
 
     @Test
     public void testReadWriteSentence() throws Exception {
-        ByteArrayInputStream bais = new ByteArrayInputStream(JsonSentWriterTest.expectedStr.getBytes("UTF-8"));
-        JsonSentReader r = new JsonSentReader(bais);
+        ByteArrayInputStream bais = new ByteArrayInputStream(JsonConcatWriterTest.expectedStr.getBytes("UTF-8"));
+        JsonConcatReader r = new JsonConcatReader(bais);
         assertTrue(r.hasNext());
         AnnoSentence sent1 = r.next();
         assertTrue(r.hasNext());
@@ -28,14 +28,14 @@ public class JsonSentReaderTest {
         // expectedSent.setNamedEntities(null);
         
         StringOutputStream os = new StringOutputStream();
-        JsonSentWriter w = new JsonSentWriter(os);
+        JsonConcatWriter w = new JsonConcatWriter(os);
         w.write(sent1);
         w.write(sent2);
         w.close();
         String str = os.toString();
         
         System.out.println(str);
-        assertEquals(JsonSentWriterTest.expectedStr, str);
+        assertEquals(JsonConcatWriterTest.expectedStr, str);
     }
 
 }

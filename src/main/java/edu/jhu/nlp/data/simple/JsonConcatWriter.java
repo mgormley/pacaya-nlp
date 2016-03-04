@@ -32,22 +32,25 @@ import edu.jhu.nlp.data.Span;
 import edu.jhu.prim.tuple.Pair;
 
 /**
- * Writes a simple text format representing an annotated sentence.
+ * Writes annotated sentences to a Concatentated JSON file.  
+ * 
+ * See a description of concatenated JSON here:
+ * https://en.wikipedia.org/wiki/JSON_Streaming#Concatenated_JSON.
  * 
  * @author mgormley
  */
-public class JsonSentWriter implements Closeable {
+public class JsonConcatWriter implements Closeable {
 
-    private static final Logger log = LoggerFactory.getLogger(JsonSentWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(JsonConcatWriter.class);
     private JsonGenerator g;
     private Writer writer;    
     private int count;
     
-    public JsonSentWriter(File path) throws IOException {
+    public JsonConcatWriter(File path) throws IOException {
         this(new FileOutputStream(path));
     }
     
-    public JsonSentWriter(OutputStream os) throws IOException {
+    public JsonConcatWriter(OutputStream os) throws IOException {
         writer = new OutputStreamWriter(os, "UTF-8");
         this.count = 0;
     }

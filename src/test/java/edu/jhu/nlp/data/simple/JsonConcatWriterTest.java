@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import edu.stanford.nlp.io.StringOutputStream;
 
-public class JsonSentWriterTest {
+public class JsonConcatWriterTest {
 
     public static final String expectedStr = "{\"words\":[\"dog\",\"spied\",\"the\",\"cat\",\"from\",\"MD\"]\n"
             + ",\"prefixes\":[\"prefixes0\",\"prefixes1\",\"prefixes2\",\"prefixes3\",\"prefixes4\",\"prefixes5\"]\n"
@@ -45,7 +45,7 @@ public class JsonSentWriterTest {
         sent.setNamedEntities(null);
         
         StringOutputStream os = new StringOutputStream();
-        JsonSentWriter w = new JsonSentWriter(os);
+        JsonConcatWriter w = new JsonConcatWriter(os);
         w.write(sent);
         w.write(sent);
         w.close();
