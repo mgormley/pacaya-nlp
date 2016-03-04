@@ -86,28 +86,29 @@ public class JsonConcatWriter implements Closeable {
         appendIfNotNull("cposTags", sent.getCposTags());
         appendIfNotNull("strictPosTags", sent.getStrictPosTags());
         appendIfNotNull("clusters", sent.getClusters());
-        appendIfNotNull("embedIds", sent.getEmbedIds());
         appendIfNotNull("feats", sent.getFeats());
         appendIfNotNull("chunks", sent.getChunks());
         appendIfNotNull("neTags", sent.getNeTags());
         appendIfNotNull("parents", sent.getParents());
         appendIfNotNull("deprels", sent.getDeprels());
-        appendIfNotNull("depEdgeMask", sent.getDepEdgeMask());
-        appendIfNotNull("srlGraph", sent.getSrlGraph());
-        appendIfNotNull("knownPreds", sent.getKnownPreds());
         appendIfNotNull("naryTree", sent.getNaryTree() == null ? null : sent.getNaryTree().getAsOneLineString());
-        appendIfNotNull("namedEntities", sent.getNamedEntities());
-        if (sent.getNamedEntities() != null) { 
-            appendIfNotNull("namedEntities-InContext", sent.getNamedEntities().toString(sent.getWords())); 
-        }
         appendIfNotNull("nePairs", nePairsToJson(sent.getNePairs()).toString());
         appendIfNotNull("relLabels", sent.getRelLabels());
-        appendIfNotNull("relations", sent.getRelations());
-        if (sent.getRelations() != null) {
-            appendIfNotNull("relations-InContext", sent.getRelations().toString(sent.getWords())); 
-        }
+        
         // Not included:
-        // - sent.getSourceSent()
+        //appendIfNotNull("embedIds", sent.getEmbedIds());
+        //appendIfNotNull("depEdgeMask", sent.getDepEdgeMask());
+        //appendIfNotNull("srlGraph", sent.getSrlGraph());
+        //appendIfNotNull("knownPreds", sent.getKnownPreds());
+        //appendIfNotNull("namedEntities", sent.getNamedEntities());
+        //if (sent.getNamedEntities() != null) { 
+        // appendIfNotNull("namedEntities-InContext", sent.getNamedEntities().toString(sent.getWords())); 
+        //}
+        //appendIfNotNull("relations", sent.getRelations());
+        //if (sent.getRelations() != null) {
+        //   appendIfNotNull("relations-InContext", sent.getRelations().toString(sent.getWords())); 
+        //}
+        
         g.writeEnd();
         forceNewline();
         forceNewline();
@@ -127,7 +128,9 @@ public class JsonConcatWriter implements Closeable {
     }
 
     private static JsonValue toJson(Object o) {
-        if (o instanceof JsonValue) {
+        if (o == null) {
+            return JsonValue.NULL;
+        } else if (o instanceof JsonValue) {
             return (JsonValue) o;
         } else if (o instanceof List) {
             List<?> l = (List<?>) o;
@@ -143,8 +146,10 @@ public class JsonConcatWriter implements Closeable {
                 b.add(l[i]);
             }
             return b.build();
+        } else if (o instanceof String) {
+            return safeStringToJson((String)o);
         } else {
-            return safeStringToJson(o.toString());
+            throw new RuntimeException("Unsupported type: " + o);
         }
     }
     
@@ -204,6 +209,5 @@ public class JsonConcatWriter implements Closeable {
     private static JsonValue safeStringToJson(String s) {
         return (s == null) ? JsonValue.NULL : Json.createObjectBuilder().add("temp", s).build().getJsonString("temp");
     }
-
     
 }
