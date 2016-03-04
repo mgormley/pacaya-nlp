@@ -6,9 +6,18 @@ import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.PUNC;
 import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.VERB;
 import static org.junit.Assert.assertEquals;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
+import javax.json.Json;
+import javax.json.JsonArray;
+import javax.json.JsonWriter;
+import javax.json.JsonWriterFactory;
+import javax.json.stream.JsonGenerator;
 
 import org.junit.Test;
 
@@ -86,6 +95,21 @@ public class SimpleTextWriterTest {
             l.add(prefix + i + suffix);
         }
         return l;
+    }
+
+    @Test
+    public void testNePairsToJson() throws Exception {
+        // TODO: This test only pretty prints the result.
+        JsonArray pairs = SimpleTextWriter.nePairsToJson(get6WordAnnoSentence().getNePairs());
+        
+        StringWriter sw = new StringWriter();
+        Map<String, Object> properties = new HashMap<>(1);
+        properties.put(JsonGenerator.PRETTY_PRINTING, true);
+        JsonWriterFactory wf = Json.createWriterFactory(properties);
+        JsonWriter w = wf.createWriter(sw);
+        w.writeArray(pairs);
+        w.close();
+        System.out.println(sw.toString());
     }
     
 }
