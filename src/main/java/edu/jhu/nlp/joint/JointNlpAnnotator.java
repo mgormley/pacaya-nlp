@@ -54,7 +54,7 @@ import edu.jhu.prim.vector.IntDoubleVector;
 
 /**
  * Joint annotator for SRL and syntactic dependency parsing.
- * 
+ *
  * @author mgormley
  */
 public class JointNlpAnnotator implements Trainable {
@@ -64,7 +64,7 @@ public class JointNlpAnnotator implements Trainable {
 
     public static class JointNlpAnnotatorPrm extends Prm {
         private static final long serialVersionUID = 1L;
-        
+
         public JointNlpFgExampleBuilderPrm buPrm = new JointNlpFgExampleBuilderPrm();
         public JointNlpDecoderPrm dePrm = new JointNlpDecoderPrm();
         // How to initialize the parameters of the model
@@ -75,20 +75,20 @@ public class JointNlpAnnotator implements Trainable {
         // These parameters are only used if a NEW model is created. If a model
         // is loaded from disk, these are ignored.
         public transient CrfTrainerPrm crfPrm = new CrfTrainerPrm();
-        public CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm(); 
+        public CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         public ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
-        // if srl and sprl are both predicted, only validate with srl 
+        // if srl and sprl are both predicted, only validate with srl
         public boolean favorSrlValidation = false;
-        // if srl and sprl are both predicted, only validate with sprl 
+        // if srl and sprl are both predicted, only validate with sprl
         // only one of these can be true; if both are false and both srl and sprl are
         // predicted, then the harmonic mean is used
         public boolean favorSprlValidation = false;
         // We also ignore buPrm.fePrm, which is overwritten by the value in the model.
         // --------------------------------------------------------------------
     }
-    
+
     private static final Logger log = LoggerFactory.getLogger(JointNlpAnnotator.class);
-    private JointNlpAnnotatorPrm prm;   
+    private JointNlpAnnotatorPrm prm;
     private JointNlpFgModel model = null;
     private Embeddings embeddings; // TODO: Remove this hack.
 
@@ -96,9 +96,9 @@ public class JointNlpAnnotator implements Trainable {
         this.prm = prm;
         this.embeddings = embeddings;
     }
-    
+
     @Override
-    public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold, 
+    public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold,
             AnnoSentenceCollection devInput, AnnoSentenceCollection devGold) {
         log.info("Initializing data.");
         CorpusStatistics cs;
@@ -115,7 +115,7 @@ public class JointNlpAnnotator implements Trainable {
         ofc.embeddings = embeddings;
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm.buPrm, ofc, cs, true);
         FgExampleList data = builder.getData(trainInput, trainGold);
-        
+
         if (model == null) {
             model = new JointNlpFgModel(cs, ofc, prm.buPrm.fgPrm);
             if (prm.initParams == InitParams.RANDOM) {
@@ -127,7 +127,7 @@ public class JointNlpAnnotator implements Trainable {
             } else {
                 throw new RuntimeException("Parameter initialization method not implemented: " + prm.initParams);
             }
-            
+
             if (embeddings != null) {
                 log.info("Initializing the model with word embeddings.");
                 FcmModule.initModelWithEmbeds(embeddings, model, ofc);
@@ -136,13 +136,13 @@ public class JointNlpAnnotator implements Trainable {
             log.info("Using read model as initial parameters for training.");
         }
         log.info(String.format("Num model params: %d", model.getNumParams()));
-        
+
         log.info("Training model.");
         CrfTrainer trainer = new CrfTrainer(prm.crfPrm);
         trainer.train(model, data, getValidationFn(devInput, devGold, "dev"));
         ofc.getTemplates().stopGrowth();
     }
-    
+
     public Function getValidationFn(final AnnoSentenceCollection devInput, final AnnoSentenceCollection devGold, String devName) {
         if (devInput == null || devGold == null) { return null; }
         final JointNlpAnnotator anno = this;
@@ -151,7 +151,7 @@ public class JointNlpAnnotator implements Trainable {
             eval = new DepParseAccuracy(prm.dpSkipPunctuation);
         } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.POS))) {
             eval = new PosTagAccuracy();
-        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) || 
+        } else if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL)) ||
                 CorpusHandler.getPredAts().equals(QSets.getSet(AT.SRL_PRED_IDX, AT.SRL))
                 ) {
             eval = getSrlEvaluator();
@@ -174,7 +174,7 @@ public class JointNlpAnnotator implements Trainable {
                 final Evaluator srlEval = getSrlEvaluator();
                 final Evaluator sprlEval = getSprlEvaluator();
                 eval = new Evaluator() {
-                    
+
                     @Override
                     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents,
                             String name) {
@@ -183,10 +183,10 @@ public class JointNlpAnnotator implements Trainable {
                         double f1 = LabelEvaluator.harmonicMean(srlF1, sprlF1);
                         return -f1;
                     }
-                    
+
                 };
             }
-            
+
         } else {
             log.warn("Validation function not implemented. Skipping.");
             return null;
@@ -194,14 +194,14 @@ public class JointNlpAnnotator implements Trainable {
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm.buPrm, model.getOfc(), model.getCs(), false);
         final FgExampleList devData = builder.getData(devInput, null);
         return new Function() {
-            
+
             @Override
             public double getValue(IntDoubleVector point) {
                 AnnoSentenceCollection devPred = devInput.getShallowCopy();
                 anno.annotate(devPred, devData);
-                return eval.evaluate(devPred, devGold, "dev");
+                return eval.evaluate(devPred, devGold, devName);
             }
-            
+
             @Override
             public int getNumDimensions() {
                 return -1;
@@ -228,12 +228,12 @@ public class JointNlpAnnotator implements Trainable {
         if (model == null) {
             throw new IllegalStateException("No model exists. Must call train() or loadModel() before annotate().");
         }
-        
+
         log.info("Running the decoder");
         Timer timer = new Timer();
         timer.start();
         JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm.buPrm, model.getOfc(), model.getCs(), false);
-        FgExampleList data = builder.getData(sents, null);  
+        FgExampleList data = builder.getData(sents, null);
         annotate(sents, data);
         timer.stop();
         log.info(String.format("Decoded at %.2f tokens/sec with %d threads", sents.getNumTokens() / timer.totSec(), Threads.numThreads));
@@ -241,7 +241,7 @@ public class JointNlpAnnotator implements Trainable {
 
     private void annotate(final AnnoSentenceCollection sents, final FgExampleList data) {
         // Add the new predictions to the input sentences.
-        Threads.forEach(0, sents.size(), new FnIntToVoid() {            
+        Threads.forEach(0, sents.size(), new FnIntToVoid() {
             @Override
             public void call(int i) {
                 try {
@@ -256,17 +256,17 @@ public class JointNlpAnnotator implements Trainable {
             }
         });
     }
-    
+
     public JointNlpFgModel getModel() {
         return model;
     }
-    
+
     public void loadModel(File modelIn) {
         // Read a model from a file.
         log.info("Reading model from file: " + modelIn);
         loadModel((JointNlpFgModel) QFiles.deserialize(modelIn));
     }
-    
+
     public void loadModel(JointNlpFgModel model) {
         this.model = model;
         // Restore the model settings from the serialized model.
@@ -281,7 +281,7 @@ public class JointNlpAnnotator implements Trainable {
 
     public void printModel(File printModel) throws IOException {
         // Print the model to a file.
-        log.info("Printing human readable model to file: " + printModel);            
+        log.info("Printing human readable model to file: " + printModel);
         OutputStream os = new FileOutputStream(printModel);
         if (printModel.getName().endsWith(".gz")) {
             os = new GZIPOutputStream(os);
@@ -305,5 +305,5 @@ public class JointNlpAnnotator implements Trainable {
         }
         return ats;
     }
-    
+
 }
