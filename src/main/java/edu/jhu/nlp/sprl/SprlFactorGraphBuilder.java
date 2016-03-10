@@ -1,7 +1,7 @@
 package edu.jhu.nlp.sprl;
 
-import static edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate.ISARG_SPRL_BINARY;
 import static edu.jhu.nlp.joint.JointNlpFactorGraph.makeKey;
+import static edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate.ISARG_SPRL_BINARY;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -19,8 +19,6 @@ import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
-import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
-import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
@@ -46,12 +44,12 @@ public class SprlFactorGraphBuilder {
     public static class SprlFactorGraphBuilderPrm extends Prm {
         private static final long serialVersionUID = 1L;
         /** Feature templates. */
-        public List<FeatTemplate> templates = TemplateSets.getFromResource(TemplateSets.naradowskyArgFeatsResource);
+        //public List<FeatTemplate> templates = TemplateSets.getFromResource(TemplateSets.naradowskyArgFeatsResource);
         /**
          * The value of the mod for use in the feature hashing trick. If <= 0,
          * feature-hashing will be disabled.
          */
-        public int featureHashMod = 1000000;
+        //public int featureHashMod = 1000000;
         /** Whether to include unary factors on each sprl var. */
         public boolean unaryFactors = true;
         /**

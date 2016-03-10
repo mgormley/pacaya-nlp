@@ -621,6 +621,7 @@ public class JointNlpRunner {
         prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
         //prm.fgPrm.sprlPrm.sprlPipelineIndex = sprlPipelineIndex;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
+        prm.fgPrm.sprlPrm.unaryFactors = unaryFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
         prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;  
         prm.fgPrm.sprlPrm.roleStructure = roleStructure;
