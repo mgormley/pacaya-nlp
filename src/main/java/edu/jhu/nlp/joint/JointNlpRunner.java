@@ -48,7 +48,6 @@ import edu.jhu.nlp.eval.ProportionAnnotated;
 import edu.jhu.nlp.eval.PruningEfficiency;
 import edu.jhu.nlp.eval.RelationEvaluator;
 import edu.jhu.nlp.eval.SprlEvaluator;
-import edu.jhu.nlp.eval.SprlRMSEEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.eval.SrlPredIdAccuracy;

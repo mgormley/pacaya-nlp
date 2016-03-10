@@ -1,7 +1,9 @@
 package edu.jhu.nlp.joint;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -38,17 +40,12 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.TemplateFeatureFactor;
-import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
-import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.SerializablePair;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.set.IntSet;
 import edu.jhu.prim.tuple.Pair;
@@ -103,6 +100,11 @@ public class JointNlpFactorGraph extends FactorGraph {
         public boolean sprlSrlFactors = false;
         public boolean enforceSprlNilAgreement = true;
     }
+
+    public static LinkedList<Serializable> makeKey(Serializable... args) {
+        return new LinkedList<Serializable>(Arrays.asList(args));
+    }
+
 
     public enum JointFactorTemplate {
         LINK_ROLE_BINARY, ROLE_P_TAG_BINARY, ROLE_C_TAG_BINARY, ROLE_SPRL_BINARY, ISARG_SPRL_BINARY
@@ -187,8 +189,6 @@ public class JointNlpFactorGraph extends FactorGraph {
                 // if we have sprl then we need to at least add factors to enforce agreement
                 for (Property q : Property.values()) {
                     SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][q.ordinal()] : null;
-                    JointFactorTemplate templateType = JointFactorTemplate.ROLE_SPRL_BINARY; 
-                    SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
                     // factors across sprl-srl 
                     if (prm.includeSprl && prm.includeSrl) {
                         // real pairwise factors
@@ -196,14 +196,14 @@ public class JointNlpFactorGraph extends FactorGraph {
                             // create the factor in such a way that nil agreement is enforced
                             addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
                                     Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                                    templateType,
-                                    templateKey, ofc,
+                                    JointFactorTemplate.ROLE_SPRL_BINARY,
+                                    makeKey(JointFactorTemplate.ROLE_SPRL_BINARY, q), ofc,
                                     sprl.getFeatExtractor()));
                         } else {
                             // ordinary pairwise factor that doesn't enforce nil agreement
                             addFactor(new ObsFeTypedFactor(new VarSet(roleVar, sprlVar),
-                                    templateType,
-                                    templateKey, ofc,
+                                    JointFactorTemplate.ROLE_SPRL_BINARY,
+                                    makeKey(JointFactorTemplate.ROLE_SPRL_BINARY, q), ofc,
                                     sprl.getFeatExtractor()));
                         }
                     } else if (prm.includeSprl) {
@@ -211,14 +211,14 @@ public class JointNlpFactorGraph extends FactorGraph {
                         // unary factor with same features as the pairwise one (because srl is being treated as given)
                         SrlEdge srlEdge = sent.getSrlGraph().getEdge(i, j); 
                         String goldSrlLabel = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
-                        addFactor(new ObsFeTypedFactor(new VarSet(sprlVar), templateType,
-                                new SerializablePair<>(templateKey, new SerializablePair<>(RoleVar.class, goldSrlLabel)), ofc,
+                        addFactor(new ObsFeTypedFactor(new VarSet(sprlVar), JointFactorTemplate.ROLE_SPRL_BINARY,
+                                makeKey(JointFactorTemplate.ROLE_SPRL_BINARY, RoleVar.class, goldSrlLabel), ofc,
                                 sprl.getFeatExtractor()));
                     } else {
                         assert prm.includeSrl;
                         SprlClassLabel goldSprlLabel = propsArray != null ? propsArray.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
-                        addFactor(new ObsFeTypedFactor(new VarSet(roleVar), templateType,
-                                new SerializablePair<>(templateKey, goldSprlLabel), ofc,
+                        addFactor(new ObsFeTypedFactor(new VarSet(roleVar), JointFactorTemplate.ROLE_SPRL_BINARY,
+                                makeKey(JointFactorTemplate.ROLE_SPRL_BINARY, SprlVar.class, q, goldSprlLabel), ofc,
                                 srl.getFeatExtractor()));
                     }
                 }

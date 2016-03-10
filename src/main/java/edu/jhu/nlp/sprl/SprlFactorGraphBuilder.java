@@ -1,5 +1,8 @@
 package edu.jhu.nlp.sprl;
 
+import static edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate.ISARG_SPRL_BINARY;
+import static edu.jhu.nlp.joint.JointNlpFactorGraph.makeKey;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,7 +22,6 @@ import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFeatureExtractor;
@@ -34,7 +36,6 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.pacaya.util.SerializablePair;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 
@@ -118,7 +119,7 @@ public class SprlFactorGraphBuilder {
     public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
         build(isent.getAnnoSentence(), ofc, fg, cs, new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc));
     }
-
+    
     /**
      * Adds factors and variables to the given factor graph.
      */
@@ -181,15 +182,13 @@ public class SprlFactorGraphBuilder {
                     // there will be different parameters for each question (and
                     // these will be separate from factors with any other
                     // FactorType)
-                    fg.addFactor(new ObsFeTypedFactor(vars, SprlFactorType.SPRL_UNARY, q, ofc, obsFe));
+                    fg.addFactor(new ObsFeTypedFactor(vars, SprlFactorType.SPRL_UNARY,
+                            makeKey(SprlFactorType.SPRL_UNARY, q), ofc, obsFe));
                 }
                 if (prm.extraVariablesForNilAgreement) {
-                    JointFactorTemplate templateType = JointFactorTemplate.ISARG_SPRL_BINARY;
-                    SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType,
-                            q);
                     fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVars[i][j], v),
                             Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                            templateType, templateKey, ofc, isArgFe));
+                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, isArgFe));
                 }
             }
             if (prm.pairwiseFactors) {
@@ -197,9 +196,9 @@ public class SprlFactorGraphBuilder {
                     SprlVar v1 = sprlVars[i][j][q1.ordinal()];
                     for (Property q2 : Property.values()) {
                         SprlVar v2 = sprlVars[i][j][q2.ordinal()];
-                        Pair<Property, Property> templateKey = new SerializablePair<>(q1, q2);
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2),
-                                SprlFactorType.SPRL_PAIRWISE, templateKey,
+                                SprlFactorType.SPRL_PAIRWISE,
+                                makeKey(SprlFactorType.SPRL_PAIRWISE, q1, q2),
                                 ofc, obsFe));
                     }
                 }
