@@ -872,7 +872,6 @@ public class JointNlpRunner {
 
         JointNlpRunner pipeline = new JointNlpRunner();
         pipeline.run();
-
     }
 
     

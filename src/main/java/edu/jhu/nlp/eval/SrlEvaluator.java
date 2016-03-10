@@ -12,6 +12,7 @@ import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.prim.tuple.Pair;
 
@@ -23,6 +24,9 @@ import edu.jhu.prim.tuple.Pair;
 // TODO: Support other options: predictSense = true, predictPredicatePosition = true.
 public class SrlEvaluator extends F1Evaluator implements Evaluator {
 
+    @Opt(hasArg = true, description = "Should SRL labels beginning and ending with * be skipped.")
+    public static boolean skipMissingLabels = true;
+    
     public static class SrlEvaluatorPrm extends Prm {
         private static final long serialVersionUID = 1L;
         /** Whether to do labeled or unlabeled evaluation. */

@@ -504,6 +504,7 @@ public class SprlConcreteEvaluator {
 
         try {
             parser = new ArgParser(SprlConcreteEvaluator.class);
+            parser.registerClass(SrlEvaluator.class);
             parser.registerClass(SprlConcreteEvaluator.class);
             parser.registerClass(SprlClassLabel.class);
             parser.parseArgs(args);

@@ -55,6 +55,7 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
@@ -323,7 +324,7 @@ public class ConcreteReader {
             sent.setKnownPredsFromSrlGraph();
             numSrlPredicates += g.getNumPreds();
             sent.setKnownPairsFromSrlGraph();
-            if (CorpusHandler.skipMissingLabels) {
+            if (SrlEvaluator.skipMissingLabels) {
                 HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
                 for (Pair<Integer, Integer> pair : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(), sent.getKnownPreds(), sent.getKnownSrlPairs(), null, RoleStructure.PAIRS_GIVEN, true)) {
                     SrlEdge e = sent.getSrlGraph().getEdge(pair.get1(), pair.get2());
