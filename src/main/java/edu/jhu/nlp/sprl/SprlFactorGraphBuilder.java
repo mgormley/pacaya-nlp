@@ -126,11 +126,11 @@ public class SprlFactorGraphBuilder {
             SrlFeatureExtractor fe) {
         // Create feature extractor.
         this.obsFe = fe;
-        if (ofc != null) {
-            // allow for it to be null in the case that no factors are being
-            // constructed and it isn't used
-            ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
-        }
+//        if (ofc != null) {
+//             allow for it to be null in the case that no factors are being
+//             constructed and it isn't used
+//            ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
+//        }
 
         // create the variables
         int n = sent.size();
@@ -164,7 +164,7 @@ public class SprlFactorGraphBuilder {
                         IsArgLabel.labels);
             }
             for (Property q : Property.values()) {
-                // 4-way classification
+                // variable for label on property for this pair
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
                 SprlVar v = new SprlVar(sprlType, SprlClassLabel.getLabels().size(), name, SprlClassLabel.getLabels(),
                         i, j);
@@ -175,7 +175,7 @@ public class SprlFactorGraphBuilder {
                 // keep track of which variable for this slot
                 sprlVars[i][j][q.ordinal()] = v;
 
-                // Add unary factors on Roles.
+                // Add unary factors on properties.
                 if (prm.unaryFactors) {
                     VarSet vars = new VarSet(v);
                     // there will be different parameters for each question (and
@@ -198,7 +198,8 @@ public class SprlFactorGraphBuilder {
                     for (Property q2 : Property.values()) {
                         SprlVar v2 = sprlVars[i][j][q2.ordinal()];
                         Pair<Property, Property> templateKey = new SerializablePair<>(q1, q2);
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2), SprlFactorType.SPRL_PAIRWISE, templateKey,
+                        fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2),
+                                SprlFactorType.SPRL_PAIRWISE, templateKey,
                                 ofc, obsFe));
                     }
                 }

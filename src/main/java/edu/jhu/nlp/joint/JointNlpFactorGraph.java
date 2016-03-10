@@ -187,41 +187,39 @@ public class JointNlpFactorGraph extends FactorGraph {
                 // if we have sprl then we need to at least add factors to enforce agreement
                 for (Property q : Property.values()) {
                     SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][q.ordinal()] : null;
-                    if (sprlSrlFactors) {
-                        JointFactorTemplate templateType = JointFactorTemplate.ROLE_SPRL_BINARY; 
-                        SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
-                        // factors across sprl-srl 
-                        if (prm.includeSprl && prm.includeSrl) {
-                            // real pairwise factors
-                            if (prm.enforceSprlNilAgreement) {
-                                // create the factor in such a way that nil agreement is enforced
-                                addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
-                                        Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                                        templateType,
-                                        templateKey, ofc,
-                                        sprl.getFeatExtractor()));
-                            } else {
-                                // ordinary pairwise factor that doesn't enforce nil agreement
-                                addFactor(new ObsFeTypedFactor(new VarSet(roleVar, sprlVar),
-                                        templateType,
-                                        templateKey, ofc,
-                                        sprl.getFeatExtractor()));
-                            }
-                        } else if (prm.includeSprl) {
-                            // we will only include a single variable but we will conjoin the template key with the correct answer for the other
-                            // unary factor with same features as the pairwise one (because srl is being treated as given)
-                            SrlEdge srlEdge = sent.getSrlGraph().getEdge(i, j); 
-                            String goldSrlLabel = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
-                            addFactor(new ObsFeTypedFactor(new VarSet(sprlVar), templateType,
-                                    new SerializablePair<>(templateKey, new SerializablePair<>(RoleVar.class, goldSrlLabel)), ofc,
+                    JointFactorTemplate templateType = JointFactorTemplate.ROLE_SPRL_BINARY; 
+                    SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
+                    // factors across sprl-srl 
+                    if (prm.includeSprl && prm.includeSrl) {
+                        // real pairwise factors
+                        if (prm.enforceSprlNilAgreement) {
+                            // create the factor in such a way that nil agreement is enforced
+                            addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleVar, sprlVar),
+                                    Arrays.asList(roleVar.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+                                    templateType,
+                                    templateKey, ofc,
                                     sprl.getFeatExtractor()));
                         } else {
-                            assert prm.includeSrl;
-                            SprlClassLabel goldSprlLabel = propsArray != null ? propsArray.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
-                            addFactor(new ObsFeTypedFactor(new VarSet(roleVar), templateType,
-                                    new SerializablePair<>(templateKey, goldSprlLabel), ofc,
-                                    srl.getFeatExtractor()));
+                            // ordinary pairwise factor that doesn't enforce nil agreement
+                            addFactor(new ObsFeTypedFactor(new VarSet(roleVar, sprlVar),
+                                    templateType,
+                                    templateKey, ofc,
+                                    sprl.getFeatExtractor()));
                         }
+                    } else if (prm.includeSprl) {
+                        // we will only include a single variable but we will conjoin the template key with the correct answer for the other
+                        // unary factor with same features as the pairwise one (because srl is being treated as given)
+                        SrlEdge srlEdge = sent.getSrlGraph().getEdge(i, j); 
+                        String goldSrlLabel = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
+                        addFactor(new ObsFeTypedFactor(new VarSet(sprlVar), templateType,
+                                new SerializablePair<>(templateKey, new SerializablePair<>(RoleVar.class, goldSrlLabel)), ofc,
+                                sprl.getFeatExtractor()));
+                    } else {
+                        assert prm.includeSrl;
+                        SprlClassLabel goldSprlLabel = propsArray != null ? propsArray.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
+                        addFactor(new ObsFeTypedFactor(new VarSet(roleVar), templateType,
+                                new SerializablePair<>(templateKey, goldSprlLabel), ofc,
+                                srl.getFeatExtractor()));
                     }
                 }
             }
