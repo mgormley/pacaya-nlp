@@ -139,11 +139,11 @@ public class JointNlpAnnotator implements Trainable {
         
         log.info("Training model.");
         CrfTrainer trainer = new CrfTrainer(prm.crfPrm);
-        trainer.train(model, data, getValidationFn(devInput, devGold));
+        trainer.train(model, data, getValidationFn(devInput, devGold, "dev"));
         ofc.getTemplates().stopGrowth();
     }
     
-    public Function getValidationFn(final AnnoSentenceCollection devInput, final AnnoSentenceCollection devGold) {
+    public Function getValidationFn(final AnnoSentenceCollection devInput, final AnnoSentenceCollection devGold, String devName) {
         if (devInput == null || devGold == null) { return null; }
         final JointNlpAnnotator anno = this;
         final Evaluator eval;

@@ -178,7 +178,7 @@ public class JointNlpFactorGraph extends FactorGraph {
             IntSet knownPreds = prm.includeSrl ? asent.getKnownPreds() : asent.getKnownSprlPreds(); 
             Set<Pair<Integer, Integer>> knownPairs = prm.includeSrl ? asent.getKnownSrlPairs() : asent.getKnownSprlPairs(); 
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(asent.size(),
-                    knownPreds, knownPairs, prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
+                    knownPreds, knownPairs, sent.getPairsToSkip(), prm.sprlPrm.roleStructure, prm.sprlPrm.allowPredArgSelfLoops)) {
                 int i = e.get1();
                 int j = e.get2();
                 RoleVar roleVar = prm.includeSrl ? roleVars[i][j] : null;

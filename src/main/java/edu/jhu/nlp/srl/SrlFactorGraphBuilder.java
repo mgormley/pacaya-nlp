@@ -191,7 +191,7 @@ public class SrlFactorGraphBuilder implements Serializable {
      *            boolean indicating if pairs (i,i) should be included.
      * @return
      */
-    public static List<Pair<Integer, Integer>> getPossibleRolePairs(int n, IntSet knownPreds, Collection<Pair<Integer, Integer>> knownPairs, RoleStructure rS,
+    public static List<Pair<Integer, Integer>> getPossibleRolePairs(int n, IntSet knownPreds, Collection<Pair<Integer, Integer>> knownPairs, Collection<Pair<Integer, Integer>> pairsToSkip, RoleStructure rS,
             boolean allowPredArgSelfLoops) {
         List<Pair<Integer, Integer>> toReturn = new ArrayList<>();
         if (rS == RoleStructure.PAIRS_GIVEN) {
@@ -221,6 +221,9 @@ public class SrlFactorGraphBuilder implements Serializable {
             // No role variables.
         } else {
             throw new IllegalArgumentException("Unsupported model structure: " + rS);
+        }
+        if (pairsToSkip != null) {
+            toReturn.removeAll(pairsToSkip);
         }
         return toReturn;
     }
@@ -262,7 +265,7 @@ public class SrlFactorGraphBuilder implements Serializable {
         roleVars = new RoleVar[n][n];
         AnnoSentence asent = isent.getAnnoSentence();
         for (Pair<Integer, Integer> e : getPossibleRolePairs(isent.size(), asent.getKnownPreds(),
-                asent.getKnownSrlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                asent.getKnownSrlPairs(), asent.getPairsToSkip(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
             roleVars[i][j] = createRoleVar(i, j, knownPreds, roleStateNames);

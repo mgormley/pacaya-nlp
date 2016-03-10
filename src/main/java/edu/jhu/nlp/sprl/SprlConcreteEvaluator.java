@@ -434,7 +434,7 @@ public class SprlConcreteEvaluator {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
             for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(), g.getKnownPreds(),
-                    g.getKnownSrlPairs(), roleStructure, allowPredArgSelfLoops)) {
+                    g.getKnownSrlPairs(), g.getPairsToSkip(), roleStructure, allowPredArgSelfLoops)) {
                 String gL = getSrlLabel(e, g);
                 String pL = getSrlLabel(e, p);
                 // TODO: if this example is shorter, I'd like to replace the longest previous examples

@@ -68,7 +68,8 @@ public class SprlFactorGraphBuilder {
         /** Feature extractor options for SRL. */
         public SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
         /**
-         * Whether to enforce that all sprl variables for a particular pred-arg pair agree as to whether it is a pred-arg pair
+         * Whether to enforce that all sprl variables for a particular pred-arg
+         * pair agree as to whether it is a pred-arg pair
          */
         public boolean extraVariablesForNilAgreement = true;
 
@@ -95,7 +96,6 @@ public class SprlFactorGraphBuilder {
 
     }
 
-    
     public enum SprlFactorType {
         SPRL_UNARY, SPRL_PAIRWISE
     }
@@ -116,28 +116,31 @@ public class SprlFactorGraphBuilder {
     }
 
     public void build(IntAnnoSentence isent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
-        build(isent.getAnnoSentence(), ofc, fg, cs, new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc));    
+        build(isent.getAnnoSentence(), ofc, fg, cs, new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc));
     }
-    
+
     /**
      * Adds factors and variables to the given factor graph.
      */
-    public void build(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs, SrlFeatureExtractor fe) {
+    public void build(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs,
+            SrlFeatureExtractor fe) {
         // Create feature extractor.
         this.obsFe = fe;
         if (ofc != null) {
-            // allow for it to be null in the case that no factors are being constructed and it isn't used
+            // allow for it to be null in the case that no factors are being
+            // constructed and it isn't used
             ofc.takeNoteOfFeatureHashMod(prm.featureHashMod);
         }
 
         // create the variables
         int n = sent.size();
         sprlVars = new SprlVar[n][n][Property.values().length];
-        
+
         // set up isArg feature extractor and a place for the extra variables
         if (prm.extraVariablesForNilAgreement) {
             argVars = new Var[n][n];
-            // TODO: replace this with just using the srl feature extractor (we might as well featurize these factors, too)
+            // TODO: replace this with just using the srl feature extractor (we
+            // might as well featurize these factors, too)
             isArgFe = new ObsFeatureExtractor() {
                 @Override
                 public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
@@ -145,20 +148,26 @@ public class SprlFactorGraphBuilder {
                 }
             };
         }
-        
+
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(),
-                sent.getKnownSprlPreds(), sent.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                sent.getKnownSprlPreds(), sent.getKnownSprlPairs(), sent.getPairsToSkip(), prm.roleStructure,
+                prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
-            VarType sprlType = VarType.PREDICTED; // TODO: setting this to be null (hoping that inference will figure out what's latent and what isn't causes big problems!)
+            VarType sprlType = VarType.PREDICTED; // TODO: setting this to be
+                                                  // null (hoping that inference
+                                                  // will figure out what's
+                                                  // latent and what isn't
+                                                  // causes big problems!)
             if (prm.extraVariablesForNilAgreement) {
-                argVars[i][j] = new Var(VarType.PREDICTED, IsArgLabel.values().length, "isarg" + i + "_" + j, IsArgLabel.labels);
+                argVars[i][j] = new Var(VarType.PREDICTED, IsArgLabel.values().length, "isarg" + i + "_" + j,
+                        IsArgLabel.labels);
             }
             for (Property q : Property.values()) {
                 // 4-way classification
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
-                SprlVar v = new SprlVar(sprlType, SprlClassLabel.getLabels().size(), name, SprlClassLabel.getLabels(), i,
-                        j);
+                SprlVar v = new SprlVar(sprlType, SprlClassLabel.getLabels().size(), name, SprlClassLabel.getLabels(),
+                        i, j);
 
                 // add the variable
                 fg.addVar(v);
@@ -175,8 +184,9 @@ public class SprlFactorGraphBuilder {
                     fg.addFactor(new ObsFeTypedFactor(vars, SprlFactorType.SPRL_UNARY, q, ofc, obsFe));
                 }
                 if (prm.extraVariablesForNilAgreement) {
-                    JointFactorTemplate templateType = JointFactorTemplate.ISARG_SPRL_BINARY; 
-                    SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType, q);
+                    JointFactorTemplate templateType = JointFactorTemplate.ISARG_SPRL_BINARY;
+                    SerializablePair<JointFactorTemplate, Property> templateKey = new SerializablePair<>(templateType,
+                            q);
                     fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVars[i][j], v),
                             Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
                             templateType, templateKey, ofc, isArgFe));
@@ -197,20 +207,23 @@ public class SprlFactorGraphBuilder {
     }
 
     public SrlFeatureExtractor getFeatExtractor() {
-        return obsFe; 
+        return obsFe;
     }
-    
+
     // decode
-    // read the values of the sprl variables in the var config and add the corresponding sprl info to the sentence
+    // read the values of the sprl variables in the var config and add the
+    // corresponding sprl info to the sentence
     public void configToAnno(VarConfig varConfig, AnnoSentence toAnnotate) {
         Map<Pair<Integer, Integer>, Properties> sprl = new HashMap<>();
         IntHashSet sprlPreds = new IntHashSet();
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(toAnnotate.size(),
-                toAnnotate.getKnownSprlPreds(), toAnnotate.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                toAnnotate.getKnownSprlPreds(), toAnnotate.getKnownSprlPairs(), toAnnotate.getPairsToSkip(),
+                prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             Properties props = new Properties();
-            // we don't need to worry about decoding the argVar since we get that information from the sprl anyway
+            // we don't need to worry about decoding the argVar since we get
+            // that information from the sprl anyway
             for (Property q : Property.values()) {
                 // add the variable to the config
                 Var sprlVar = sprlVars[pred][arg][q.ordinal()];
@@ -238,9 +251,11 @@ public class SprlFactorGraphBuilder {
     // encode
     // add sprl variables with values as found in the gold sentence
     public void annoToConfig(AnnoSentence goldSent, VarConfig addTo) {
-        // we will create some sprl variables possibly looking at the known sprl predicates and pairs
+        // we will create some sprl variables possibly looking at the known sprl
+        // predicates and pairs
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent.size(),
-                goldSent.getKnownSprlPreds(), goldSent.getKnownSprlPairs(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+                goldSent.getKnownSprlPreds(), goldSent.getKnownSprlPairs(), goldSent.getPairsToSkip(),
+                prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
             // TODO: there's currently no way to say that the gold says that
@@ -253,7 +268,7 @@ public class SprlFactorGraphBuilder {
                 isAnArg = true;
                 labels = props.toLabels();
             }
-            
+
             // TODO: we are assuming that if SPRL is missing but the pred is a
             // known pred, then this is not an arg
             if (prm.extraVariablesForNilAgreement) {
@@ -262,7 +277,7 @@ public class SprlFactorGraphBuilder {
             for (Property q : Property.values()) {
                 // add the variable to the config
                 Var sprlVar = sprlVars[pred][arg][q.ordinal()];
-                SprlClassLabel label = isAnArg ? labels.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG; 
+                SprlClassLabel label = isAnArg ? labels.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
                 addTo.put(sprlVar, label.name());
             }
         }

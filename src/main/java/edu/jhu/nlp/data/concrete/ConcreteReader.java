@@ -54,6 +54,9 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
@@ -320,6 +323,16 @@ public class ConcreteReader {
             sent.setKnownPredsFromSrlGraph();
             numSrlPredicates += g.getNumPreds();
             sent.setKnownPairsFromSrlGraph();
+            if (CorpusHandler.skipMissingLabels) {
+                HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
+                for (Pair<Integer, Integer> pair : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(), sent.getKnownPreds(), sent.getKnownSrlPairs(), null, RoleStructure.PAIRS_GIVEN, true)) {
+                    SrlEdge e = sent.getSrlGraph().getEdge(pair.get1(), pair.get2());
+                    if (e.getLabel().startsWith("*") && e.getLabel().endsWith("*")) {
+                        missingLabels.add(pair);
+                    }
+                }
+                sent.setPairsToSkip(missingLabels);
+            }
             i++;
         }
     }

@@ -92,6 +92,7 @@ public class AnnoSentence {
     private Map<Pair<Integer, Integer>, Properties> sprl;
     private IntHashSet knownSprlPreds;
     private Set<Pair<Integer, Integer>> knownSprlPairs;
+    private Set<Pair<Integer, Integer>> pairsToSkip;
          
     /** The original object (e.g. CoNLL09Sentence) used to create this sentence. */
     private Object sourceSent;
@@ -136,6 +137,7 @@ public class AnnoSentence {
         newSent.sprl = (this.sprl == null) ? null : new HashMap<>(this.sprl);
         newSent.knownSprlPreds = (this.knownSprlPreds == null) ? null : new IntHashSet(this.knownSprlPreds);
         newSent.knownSprlPairs = (this.knownSprlPairs == null) ? null : new HashSet<>(this.knownSprlPairs);
+        newSent.pairsToSkip = (this.pairsToSkip == null) ? null : new HashSet<>(this.pairsToSkip);
         return newSent;
     }
     
@@ -168,6 +170,7 @@ public class AnnoSentence {
         case SRL: dest.srlGraph = src.srlGraph; break;
         case SPRL_PRED_IDX: dest.knownSprlPreds = src.knownSprlPreds; break;
         case SPRL_PAIR_IDX: dest.knownSprlPairs = src.knownSprlPairs; break;
+        case PAIRS_TO_SKIP: dest.pairsToSkip = src.pairsToSkip; break;
         case SPRL: dest.sprl= src.sprl; break;
         case NARY_TREE: dest.naryTree = src.naryTree; break;
         case NER: dest.namedEntities = src.namedEntities; break;
@@ -223,6 +226,7 @@ public class AnnoSentence {
         case RELATIONS: this.relations = null; break;
         case SPRL_PRED_IDX: this.knownSprlPreds = null; break;
         case SPRL_PAIR_IDX: this.knownSprlPairs = null; break;
+        case PAIRS_TO_SKIP: this.pairsToSkip = null; break;
         case SPRL: this.sprl = null; break;
         default: throw new RuntimeException("not implemented for " + at);
         }
@@ -246,6 +250,7 @@ public class AnnoSentence {
         case DEP_EDGE_MASK: return this.depEdgeMask != null;
         case SRL_PRED_IDX: return this.knownPreds != null;
         case SRL_PAIR_IDX: return this.knownSrlPairs != null;
+        case PAIRS_TO_SKIP: return this.pairsToSkip != null;
         case SRL: return this.srlGraph != null;
         case SPRL_PRED_IDX: return this.knownSprlPreds != null;
         case SPRL_PAIR_IDX: return this.knownSprlPairs != null;
@@ -314,6 +319,7 @@ public class AnnoSentence {
         appendIfNotNull(sb, "sprl", sprl);
         appendIfNotNull(sb, "knownSprlPreds", knownSprlPreds);
         appendIfNotNull(sb, "KnownSprlPairs", knownSprlPairs);
+        appendIfNotNull(sb, "pairsToSkip", pairsToSkip);
         appendIfNotNull(sb, "srlGraph", srlGraph);
         appendIfNotNull(sb, "knownPreds", knownPreds);
         appendIfNotNull(sb, "knownSrlPairs", knownSrlPairs);
@@ -800,6 +806,14 @@ public class AnnoSentence {
         }
         return new ArrayList<>(descendents);
     }
-    
+
+    public void setPairsToSkip(Set<Pair<Integer, Integer>> missingLabels) {
+        pairsToSkip = missingLabels;
+    }
+
+    public Set<Pair<Integer, Integer>> getPairsToSkip() {
+        return pairsToSkip;
+    }
+
 
 }

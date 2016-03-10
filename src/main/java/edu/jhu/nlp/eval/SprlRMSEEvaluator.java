@@ -52,7 +52,7 @@ public class SprlRMSEEvaluator extends RMSEEvaluator implements Evaluator {
         // get the labels according to the pred sent, but including
         // all and only those possible according to the gold sentence
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                gold.getKnownSprlPreds(), gold.getSprl().keySet(), roleStructure,  allowSelfLoops)) {
+                gold.getKnownSprlPreds(), gold.getSprl().keySet(), gold.getPairsToSkip(), roleStructure,  allowSelfLoops)) {
             Properties props = sprl.get(e);
             Double[] propMap = (props != null) ? props.toArray() : null; 
             if (propToScore != null) {

@@ -115,6 +115,8 @@ public class CorpusHandler {
 //    @Opt(hasArg = true, description = "Tool name to use when writing SRL for ConcreteWriter (will also be used for NER and Relations and SPRL).")
 //    public static String concreteSrlOutTool = null;
 
+    public static boolean skipMissingLabels = false;
+
     ////// TODO: use these options... /////
     // @Opt(hasArg=true, description="Whether to normalize and clean words.")
     // public static boolean normalizeWords = false;

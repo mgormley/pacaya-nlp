@@ -50,7 +50,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
     public List<Triple<Integer, Integer, Property>> getExamples(AnnoSentence sent, AnnoSentence gold) {
         List<Triple<Integer, Integer, Property>> examples = new ArrayList<>();
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                gold.getKnownSprlPreds(), gold.getSprl().keySet(), roleStructure, allowSelfLoops)) {
+                gold.getKnownSprlPreds(), gold.getSprl().keySet(), gold.getPairsToSkip(), roleStructure, allowSelfLoops)) {
             if (propToScore != null) {
                 examples.add(new Triple<>(e.get1(), e.get2(), propToScore));
             } else {

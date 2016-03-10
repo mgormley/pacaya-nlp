@@ -94,6 +94,10 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
                 continue;
             }
             for (int c=0; c < n; c++) {                      
+                // in some cases, some pairs that are known don't have labels that we can evaluate on; skip those
+                if (goldSent.getPairsToSkip().contains(new Pair<>(p, c))) {
+                    continue;
+                }
                 if (!prm.evalPredPosition && !hasPredicateForEdge(gold, p, c)) {
                     // Only consider predicates which appear in the gold annotations.
                     continue;
