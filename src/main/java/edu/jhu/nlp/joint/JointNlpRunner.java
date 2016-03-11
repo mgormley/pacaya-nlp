@@ -278,6 +278,9 @@ public class JointNlpRunner {
     public static boolean favorSprlValidation = false;
     @Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
     public static int sprlPipelineIndex = -1;
+    @Opt(hasArg=true, description="Prefix path to where to print libda formated factor graphs for training data")
+    public static String exportGraphsPath = null;
+    
     // the order of the sprl questions
     //public static List<Property> sprlPipelineOrder = Arrays.asList(Property.values());
 
@@ -585,6 +588,7 @@ public class JointNlpRunner {
         prm.buPrm = getJointNlpFgExampleBuilderPrm();
         prm.favorSprlValidation = favorSprlValidation;
         prm.favorSrlValidation = favorSrlValidation;
+        prm.exportTrainToLibDAI = exportGraphsPath;
         return prm;
     }
 

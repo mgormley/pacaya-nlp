@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
@@ -38,10 +41,13 @@ import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
 import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.gm.data.FgExampleList;
+import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LibDaiFgIo;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
+import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.train.CrfTrainer;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.pacaya.util.Prm;
@@ -85,6 +91,8 @@ public class JointNlpAnnotator implements Trainable {
         public boolean favorSprlValidation = false;
         // We also ignore buPrm.fePrm, which is overwritten by the value in the model.
         // --------------------------------------------------------------------
+        // for debugging (path if any to export the train factor graphs be written to libdai format before and after training)
+        public String exportTrainToLibDAI = null;
     }
 
     private static final Logger log = LoggerFactory.getLogger(JointNlpAnnotator.class);
@@ -95,6 +103,29 @@ public class JointNlpAnnotator implements Trainable {
     public JointNlpAnnotator(JointNlpAnnotatorPrm prm, Embeddings embeddings) {
         this.prm = prm;
         this.embeddings = embeddings;
+    }
+
+    private void maybeWriteGraphs(FgExampleList data, JointNlpFgModel model, String category) {
+        if (prm.exportTrainToLibDAI != null) {
+            Path outDir = Paths.get(prm.exportTrainToLibDAI, category);
+            // create directory if doesn't already exist
+            if (!Files.exists(outDir)) {
+                try {
+                    Files.createDirectories(outDir);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            // write out each fg
+            log.info(String.format("Writing libdai formatted factor graph files to: %s",  outDir.toAbsolutePath().toString()));
+            for (int i = 0; i < data.size(); i++) {
+                LFgExample example = data.get(i);
+                FactorGraph fg = example.getFactorGraph();
+                fg.updateFromModel(model);
+                LibDaiFgIo.write(fg, Paths.get(outDir.toString(), String.format("%d.fg", i)));
+            }
+        }
     }
 
     @Override
@@ -139,7 +170,9 @@ public class JointNlpAnnotator implements Trainable {
 
         log.info("Training model.");
         CrfTrainer trainer = new CrfTrainer(prm.crfPrm);
+        maybeWriteGraphs(data, model, "before");
         trainer.train(model, data, getValidationFn(devInput, devGold, "dev"));
+        maybeWriteGraphs(data, model, "after");
         ofc.getTemplates().stopGrowth();
     }
 
