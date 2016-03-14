@@ -2,7 +2,6 @@ package edu.jhu.nlp.eval;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
     private static final Reporter rep = Reporter.getReporter(SprlEvaluator.class);
     private RoleStructure roleStructure = null;
     private boolean allowSelfLoops;
-    private Set<SprlClassLabel> nilLabels;
+    private Set<String> nilLabels;
     private Collection<String> propsToScore;
 
     public SprlEvaluator(RoleStructure rS, boolean selfLoops, Set<SprlClassLabel> nilLabels) {
@@ -43,7 +42,10 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
         roleStructure = rS;
         allowSelfLoops = selfLoops;
         this.propsToScore = propsToScore;
-        this.nilLabels = nilLabels;
+        this.nilLabels = new HashSet<String>();
+        for (SprlClassLabel nilLabel : nilLabels) {
+            this.nilLabels.add(nilLabel.name());
+        }
     }
 
 //    public void setPropsToScore(Collection<String> propsToScore) {
@@ -99,8 +101,8 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
     }
 
     @Override
-    protected boolean isNilLabel(String label) {
-        return nilLabels.contains(SprlClassLabel.valueOf(label));
+    protected Set<String> getNilLabels() {
+        return nilLabels;
     }
 
     @Override

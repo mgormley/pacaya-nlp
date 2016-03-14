@@ -1,6 +1,7 @@
 package edu.jhu.nlp.eval;
 
 import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.sprl.ConfusionMatrix;
 import edu.jhu.pacaya.util.report.Reporter;
 
 /**
@@ -20,16 +22,7 @@ public abstract class LabelEvaluator implements Evaluator {
     private static final Logger log = LoggerFactory.getLogger(LabelEvaluator.class);
     private static final Reporter rep = Reporter.getReporter(LabelEvaluator.class);
 
-    private double precision;
-    private double recall;
-    private double f1;
-    // Precision = # correctly predicted positive / # predicted positive
-    // Recall = # correctly predicted positive / # true positive
-    private int numCorrectPositive;
-    private int numCorrectNegative;
-    private int numPredictPositive;
-    private int numTruePositive;
-    private int numInstances;
+    private ConfusionMatrix<String> cm;
     private int numMissing;
     
     /** Returns the labels for a given sentence. Takes the gold
@@ -40,20 +33,13 @@ public abstract class LabelEvaluator implements Evaluator {
     protected abstract List<String> getLabels(AnnoSentence sent, AnnoSentence gold);
 
     /** True iff the label corresponds to the "nil" label. */
-    protected abstract boolean isNilLabel(String label);
+    protected abstract Set<String> getNilLabels();
 
     /** Gets the type of data, which is used as a prefix for reporting. */
     protected abstract String getDataType();
 
     protected void reset() {
-        precision = 0;
-        recall = 0;
-        f1 = 0;
-        numCorrectPositive = 0;
-        numCorrectNegative = 0;
-        numPredictPositive = 0;
-        numTruePositive = 0;
-        numInstances = 0;
+        cm  = new ConfusionMatrix<>(getNilLabels());
         numMissing = 0;
     }
     
@@ -63,18 +49,19 @@ public abstract class LabelEvaluator implements Evaluator {
         
         String dataType = getDataType();
         log.info(String.format("Num sents not annotated on %s: %d", dataName, numMissing));
-        log.info(String.format("Accuracy on %s: %.4f", dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
-        log.info(String.format("Num instances on %s: %d", dataName, numInstances));
-        log.info(String.format("Num true positives on %s: %d", dataName, numTruePositive));
-        log.info(String.format("Precision on %s: %.4f", dataName, precision));
-        log.info(String.format("Recall on %s: %.4f", dataName, recall));
-        log.info(String.format("F1 on %s: %.4f", dataName, f1));
+        log.info(String.format("Accuracy on %s: %.4f", dataName, (double) getAccuracy()));
+        log.info(String.format("Num instances on %s: %d", dataName, cm.getTotal()));
+        log.info(String.format("Num true positives on %s: %d", dataName, cm.getCorrectHits()));
+        log.info(String.format("Precision on %s: %.4f", dataName, getPrecision()));
+        log.info(String.format("Recall on %s: %.4f", dataName, getRecall()));
+        log.info(String.format("F1 on %s: %.4f", dataName, getF1()));
         
-        rep.report(dataName+dataType+"Precision", precision);
-        rep.report(dataName+dataType+"Recall", recall);
-        rep.report(dataName+dataType+"F1", f1);
+        rep.report(dataName+dataType+"Accuracy", getAccuracy());
+        rep.report(dataName+dataType+"Precision", getPrecision());
+        rep.report(dataName+dataType+"Recall", getRecall());
+        rep.report(dataName+dataType+"F1", getF1());
         
-        return -f1;
+        return -getF1();
     }
     
     /** Computes the precision, recall, and micro-averaged F1 over all the sentences. */
@@ -101,60 +88,44 @@ public abstract class LabelEvaluator implements Evaluator {
         
         // For each pair of named entities.
         for (int k=0; k<gold.size(); k++) {                
-            String goldLabel = gold.get(k);
-            String predLabel = (pred == null) ? null : pred.get(k);
-            
-            if (goldLabel.equals(predLabel)) {
-                if (!isNilLabel(goldLabel)) {
-                    numCorrectPositive++;
-                } else {
-                    numCorrectNegative++;
-                }
-            }
-            if (!isNilLabel(goldLabel)) {
-                numTruePositive++;
-            }
-            if (!isNilLabel(predLabel)) {
-                numPredictPositive++;
-            }
-            numInstances++;
-            log.trace(String.format("goldLabel=%s predLabel=%s", goldLabel, predLabel));                    
+            cm.recordPrediction(gold.get(k), pred.get(k));
         }
-        precision = numPredictPositive == 0 ? 0.0 : (double) numCorrectPositive / numPredictPositive;
-        recall = numTruePositive == 0 ? 0.0 :  (double) numCorrectPositive / numTruePositive;
-        f1 = harmonicMean(precision, recall);
+    }
+
+    public double getAccuracy() {
+        return cm.accuracy();
     }
 
     public double getPrecision() {
-        return precision;
+        return cm.precision();
     }
 
     public double getRecall() {
-        return recall;
+        return cm.recall();
     }
 
     public double getF1() {
-        return f1;
+        return cm.f1();
     }
 
     public int getNumCorrectPositive() {
-        return numCorrectPositive;
+        return cm.getCorrectHits();
     }
 
     public int getNumCorrectNegative() {
-        return numCorrectNegative;
+        return cm.getCorrectNils();
     }
 
     public int getNumPredictPositive() {
-        return numPredictPositive;
+        return cm.getPredictedeHits();
     }
 
     public int getNumTruePositive() {
-        return numTruePositive;
+        return cm.getPossibleHits();
     }
 
     public int getNumInstances() {
-        return numInstances;
+        return cm.getTotal();
     }
 
     public int getNumMissing() {

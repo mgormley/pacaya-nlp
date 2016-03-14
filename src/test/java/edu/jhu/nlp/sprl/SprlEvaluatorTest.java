@@ -49,11 +49,13 @@ public class SprlEvaluatorTest {
         eval.evaluate(sents, sents, "gold");
         assertEquals(1.0, eval.getF1(), 1E-6);
         assertEquals(2, eval.getNumCorrectPositive());
+        assertEquals(2, eval.getNumTruePositive());
         assertEquals(4, eval.getNumCorrectNegative());
         SprlEvaluator eval2 = new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, SprlClassLabel.getNils(), Arrays.asList("awareness"));
         eval2.evaluate(sents, sents, "gold");
         assertEquals(1.0, eval2.getF1(), 1E-6);
         assertEquals(2, eval2.getNumCorrectPositive());
+        assertEquals(2, eval2.getNumTruePositive());
         assertEquals(1, eval2.getNumCorrectNegative());
 
         AnnoSentenceCollection sentsBad = r.sentsFromCommFile(f);
@@ -61,6 +63,7 @@ public class SprlEvaluatorTest {
         SprlEvaluator eval3 = new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, SprlClassLabel.getNils());
         eval3.evaluate(sentsBad, sents, "bad");
         assertEquals(1, eval3.getNumCorrectPositive());
+        assertEquals(2, eval3.getNumTruePositive());
         assertEquals(6, eval3.getNumInstances());
         assertEquals(0, eval3.getNumMissing());
         assertEquals(1, eval3.getNumPredictPositive());
