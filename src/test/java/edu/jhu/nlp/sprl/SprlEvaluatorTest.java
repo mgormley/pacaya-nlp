@@ -4,18 +4,17 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
 import org.junit.Test;
 
 import edu.jhu.nlp.data.concrete.ConcreteReader;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.eval.SprlEvaluator;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.util.report.ReporterManager;
+import edu.jhu.prim.tuple.Pair;
 
 public class SprlEvaluatorTest {
     private static String concreteFilename = "/edu/jhu/nlp/data/concrete/sprlexample.comm";
@@ -47,8 +46,25 @@ public class SprlEvaluatorTest {
         assertEquals(0, sents.get(8).getSprl().size()); 
 //        List<String> propsToScore = new ArrayList<>(CorpusHandler.getKnownSprlProperties(sents));
         SprlEvaluator eval = new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, SprlClassLabel.getNils());
-        assertEquals(-1.0, eval.evaluate(sents, sents, "gold"), 1E-6);
+        eval.evaluate(sents, sents, "gold");
+        assertEquals(1.0, eval.getF1(), 1E-6);
         assertEquals(2, eval.getNumCorrectPositive());
         assertEquals(4, eval.getNumCorrectNegative());
+        SprlEvaluator eval2 = new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, SprlClassLabel.getNils(), Arrays.asList("awareness"));
+        eval2.evaluate(sents, sents, "gold");
+        assertEquals(1.0, eval2.getF1(), 1E-6);
+        assertEquals(2, eval2.getNumCorrectPositive());
+        assertEquals(1, eval2.getNumCorrectNegative());
+
+        AnnoSentenceCollection sentsBad = r.sentsFromCommFile(f);
+        sentsBad.get(3).getSprl().get(new Pair<>(1,0)).add("awareness", 2.0);
+        SprlEvaluator eval3 = new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, SprlClassLabel.getNils());
+        eval3.evaluate(sentsBad, sents, "bad");
+        assertEquals(1, eval3.getNumCorrectPositive());
+        assertEquals(6, eval3.getNumInstances());
+        assertEquals(0, eval3.getNumMissing());
+        assertEquals(1, eval3.getNumPredictPositive());
+        assertEquals(4, eval3.getNumCorrectNegative());
+        
     }
 }
