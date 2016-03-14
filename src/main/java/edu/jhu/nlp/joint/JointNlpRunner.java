@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -24,7 +25,6 @@ import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.EvalPipeline;
 import edu.jhu.nlp.TransientAnnotator;
-import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.data.simple.Experiments;
@@ -505,15 +505,11 @@ public class JointNlpRunner {
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
                 Set<SprlClassLabel> nils = SprlClassLabel.getNils();
-                if (breakdownSprlEval) {
-                    for (Property q : Property.values()) {
-                        //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true, q));
-                        //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false, q));
-                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils, q));
+                if (breakdownSprlEval && corpus.hasTrain()) {
+                    for (String q : CorpusHandler.getKnownSprlProperties(corpus.getTrainGold())) {
+                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils, Collections.singleton(q)));
                     }
                 }
-                //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, true));
-                //eval.add(new SprlRMSEEvaluator(roleStructure, allowPredArgSelfLoops, false));
                 eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {

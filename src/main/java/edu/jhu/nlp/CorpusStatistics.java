@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
+import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationMunger;
@@ -63,6 +64,7 @@ public class CorpusStatistics implements Serializable {
     
     public List<String> linkStateNames;
     public List<String> roleStateNames;
+    public List<String> sprlPropertyNames;
     public List<String> relationStateNames;
     public List<String> posTagStateNames;
     // Mapping from predicate form to the set of predicate senses.
@@ -90,6 +92,7 @@ public class CorpusStatistics implements Serializable {
         }      
         
         Map<String,Set<String>> predSenseSetMap = new HashMap<String,Set<String>>();
+        Set<String> knownSprlProperties = new HashSet<String>();
         Set<String> knownRoles = new HashSet<String>();
         Set<String> knownLinks = new HashSet<String>();
         Set<String> knownNeTypes = new TreeSet<String>();
@@ -153,6 +156,13 @@ public class CorpusStatistics implements Serializable {
                 }
             }
 
+            // SPRL stats.
+            if (sent.getSprl() != null) {
+                for (Map.Entry<Pair<Integer, Integer>, Properties> e : sent.getSprl().entrySet()) {
+                    knownSprlProperties.addAll(e.getValue().getMap().keySet());
+                }
+            }
+            
             // Named Entity stats.
             if (sent.getNamedEntities() != null) {
                 for (int k=0; k<sent.getNamedEntities().size(); k++) {
@@ -186,6 +196,7 @@ public class CorpusStatistics implements Serializable {
         
         this.linkStateNames = new ArrayList<>(knownLinks);
         this.roleStateNames =  new ArrayList<>(knownRoles);
+        this.sprlPropertyNames =  new ArrayList<>(knownSprlProperties);
         this.relationStateNames =  new ArrayList<>(knownRelations);
         this.posTagStateNames = new ArrayList<>(knownPostags);
         for (Entry<String,Set<String>> entry : predSenseSetMap.entrySet()) {

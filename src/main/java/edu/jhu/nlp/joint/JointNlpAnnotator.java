@@ -10,6 +10,7 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
@@ -205,7 +206,7 @@ public class JointNlpAnnotator implements Trainable {
                 eval = getSprlEvaluator();
             } else {
                 final Evaluator srlEval = getSrlEvaluator();
-                final Evaluator sprlEval = getSprlEvaluator();
+                final SprlEvaluator sprlEval = getSprlEvaluator();
                 eval = new Evaluator() {
 
                     @Override

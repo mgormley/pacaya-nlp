@@ -18,7 +18,7 @@ public class Properties implements Iterable<Pair<String, Double>> {
 
     private Map<String, Double> props;
 
-    public static enum Property {
+/*    public static enum Property {
         awareness, change_of_location, change_of_state, changes_possession, created, destroyed, existed_after, existed_before, existed_during, exists_as_physical, instigation, location_of_event, makes_physical_contact, manipulated_by_another, predicate_changed_argument, sentient, stationary, volition;
 
         // add the labels as string names
@@ -33,6 +33,7 @@ public class Properties implements Iterable<Pair<String, Double>> {
     };
 
     public static final int nquestions = Property.labels.size();
+*/
 
     public Properties() {
         props = new TreeMap<>();
@@ -50,6 +51,10 @@ public class Properties implements Iterable<Pair<String, Double>> {
         return SprlClassLabel.getLabel(props.get(property));
     }
 
+    public Map<String, Double> getMap() {
+        return props;
+    }
+    
     @Override
     public String toString() {
         StringBuilder argsStr = new StringBuilder();
@@ -81,19 +86,19 @@ public class Properties implements Iterable<Pair<String, Double>> {
         return this.props.equals(rhs.props);
     }
 
-    public Double[] toArray() {
-        Double a[] = new Double[Property.labels.size()];
+    public Double[] toArray(List<String> propOrder) {
+        Double a[] = new Double[propOrder.size()];
         int i = 0;
-        for (String k : Property.labels) {
+        for (String k : propOrder) {
             a[i] = props.get(k);
             i++;
         }
         return a;
     }
 
-    public List<SprlClassLabel> toLabels() {
+    public List<SprlClassLabel> toLabels(List<String> propOrder) {
         List<SprlClassLabel> returnList = new ArrayList<>();
-        for (String k : Property.labels) {
+        for (String k : propOrder) {
             returnList.add(getLabel(k));
         }
         return returnList;
@@ -117,9 +122,9 @@ public class Properties implements Iterable<Pair<String, Double>> {
         };
     }
 
-    public static List<SprlClassLabel> nilPropLabels() {
+    public static List<SprlClassLabel> nilPropLabels(List<String> propOrder) {
         List<SprlClassLabel> returnList = new ArrayList<>();
-        for (String k : Property.labels) {
+        for (String k : propOrder) {
             returnList.add(SprlClassLabel.getLabel(null));
         }
         return returnList;

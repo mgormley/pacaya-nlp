@@ -16,7 +16,6 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
 import edu.jhu.nlp.data.Properties;
-import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
@@ -102,7 +101,8 @@ public class SprlFactorGraphBuilder {
     private SprlFactorGraphBuilderPrm prm;
     private SrlFeatureExtractor obsFe = null;
     private SprlVar[][][] sprlVars;
-
+    private CorpusStatistics cs = null;
+    
     private ObsFeatureExtractor isArgFe = null;
     private Var[][] argVars = null;
 
@@ -125,6 +125,8 @@ public class SprlFactorGraphBuilder {
             SrlFeatureExtractor fe) {
         // Create feature extractor.
         this.obsFe = fe;
+        // hold on to the corpus statistics which we will need for decoding
+        this.cs = cs;
 //        if (ofc != null) {
 //             allow for it to be null in the case that no factors are being
 //             constructed and it isn't used
@@ -133,7 +135,7 @@ public class SprlFactorGraphBuilder {
 
         // create the variables
         int n = sent.size();
-        sprlVars = new SprlVar[n][n][Property.values().length];
+        sprlVars = new SprlVar[n][n][cs.sprlPropertyNames.size()];
 
         // set up isArg feature extractor and a place for the extra variables
         if (prm.extraVariablesForNilAgreement) {
@@ -162,7 +164,8 @@ public class SprlFactorGraphBuilder {
                 argVars[i][j] = new Var(VarType.PREDICTED, IsArgLabel.values().length, "isarg" + i + "_" + j,
                         IsArgLabel.labels);
             }
-            for (Property q : Property.values()) {
+            for (int qix = 0; qix < cs.sprlPropertyNames.size(); qix++) {
+                String q = cs.sprlPropertyNames.get(qix);
                 // variable for label on property for this pair
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
                 SprlVar v = new SprlVar(sprlType, SprlClassLabel.getLabels().size(), name, SprlClassLabel.getLabels(),
@@ -172,7 +175,7 @@ public class SprlFactorGraphBuilder {
                 fg.addVar(v);
 
                 // keep track of which variable for this slot
-                sprlVars[i][j][q.ordinal()] = v;
+                sprlVars[i][j][qix] = v;
 
                 // Add unary factors on properties.
                 if (prm.unaryFactors) {
@@ -190,10 +193,12 @@ public class SprlFactorGraphBuilder {
                 }
             }
             if (prm.pairwiseFactors) {
-                for (Property q1 : Property.values()) {
-                    SprlVar v1 = sprlVars[i][j][q1.ordinal()];
-                    for (Property q2 : Property.values()) {
-                        SprlVar v2 = sprlVars[i][j][q2.ordinal()];
+                for (int qix1 = 0; qix1 < cs.sprlPropertyNames.size(); qix1++) {
+                    String q1 = cs.sprlPropertyNames.get(qix1);
+                    SprlVar v1 = sprlVars[i][j][qix1];
+                    for (int qix2 = 0; qix2 < cs.sprlPropertyNames.size(); qix2++) {
+                        String q2 = cs.sprlPropertyNames.get(qix2);
+                        SprlVar v2 = sprlVars[i][j][qix2];
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2),
                                 SprlFactorType.SPRL_PAIRWISE,
                                 makeKey(SprlFactorType.SPRL_PAIRWISE, q1, q2),
@@ -222,12 +227,13 @@ public class SprlFactorGraphBuilder {
             Properties props = new Properties();
             // we don't need to worry about decoding the argVar since we get
             // that information from the sprl anyway
-            for (Property q : Property.values()) {
+            for (int qix = 0; qix < cs.sprlPropertyNames.size(); qix++) {
+                String q = cs.sprlPropertyNames.get(qix);
                 // add the variable to the config
-                Var sprlVar = sprlVars[pred][arg][q.ordinal()];
+                Var sprlVar = sprlVars[pred][arg][qix];
                 Double response = SprlClassLabel.getResponse(SprlClassLabel.valueOf(varConfig.getStateName(sprlVar)));
                 if (response != null) {
-                    props.add(q.name(), response);
+                    props.add(q, response);
                 }
             }
             if (props.size() > 0) {
@@ -264,7 +270,7 @@ public class SprlFactorGraphBuilder {
             boolean isAnArg = false;
             if (props != null) {
                 isAnArg = true;
-                labels = props.toLabels();
+                labels = props.toLabels(cs.sprlPropertyNames);
             }
 
             // TODO: we are assuming that if SPRL is missing but the pred is a
@@ -272,10 +278,10 @@ public class SprlFactorGraphBuilder {
             if (prm.extraVariablesForNilAgreement) {
                 addTo.put(argVars[pred][arg], isAnArg ? IsArgLabel.IS_ARG.ordinal() : IsArgLabel.NOT_AN_ARG.ordinal());
             }
-            for (Property q : Property.values()) {
+            for (int qix = 0; qix < cs.sprlPropertyNames.size(); qix++) {
                 // add the variable to the config
-                Var sprlVar = sprlVars[pred][arg][q.ordinal()];
-                SprlClassLabel label = isAnArg ? labels.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
+                Var sprlVar = sprlVars[pred][arg][qix];
+                SprlClassLabel label = isAnArg ? labels.get(qix) : SprlClassLabel.NOT_AN_ARG;
                 addTo.put(sprlVar, label.name());
             }
         }

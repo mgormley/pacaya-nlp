@@ -14,7 +14,6 @@ import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
 import edu.jhu.nlp.data.Properties;
-import edu.jhu.nlp.data.Properties.Property;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
@@ -185,10 +184,11 @@ public class JointNlpFactorGraph extends FactorGraph {
                 int j = e.get2();
                 RoleVar roleVar = prm.includeSrl ? roleVars[i][j] : null;
                 Properties props = sprlSrlFactors && !prm.includeSprl ? sent.getSprl().get(e) : null; 
-                List<SprlClassLabel> propsArray = props != null ? props.toLabels() : null;  
+                List<SprlClassLabel> propsArray = props != null ? props.toLabels(cs.sprlPropertyNames) : null;  
                 // if we have sprl then we need to at least add factors to enforce agreement
-                for (Property q : Property.values()) {
-                    SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][q.ordinal()] : null;
+                for (int qix = 0; qix < cs.sprlPropertyNames.size(); qix++) {
+                    String q = cs.sprlPropertyNames.get(qix);
+                    SprlVar sprlVar = prm.includeSprl ? sprlVars[i][j][qix] : null;
                     // factors across sprl-srl 
                     if (prm.includeSprl && prm.includeSrl) {
                         // real pairwise factors
@@ -216,7 +216,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                                 sprl.getFeatExtractor()));
                     } else {
                         assert prm.includeSrl;
-                        SprlClassLabel goldSprlLabel = propsArray != null ? propsArray.get(q.ordinal()) : SprlClassLabel.NOT_AN_ARG;
+                        SprlClassLabel goldSprlLabel = propsArray != null ? propsArray.get(qix) : SprlClassLabel.NOT_AN_ARG;
                         addFactor(new ObsFeTypedFactor(new VarSet(roleVar), JointFactorTemplate.ROLE_SPRL_BINARY,
                                 makeKey(JointFactorTemplate.ROLE_SPRL_BINARY, SprlVar.class, q, goldSprlLabel), ofc,
                                 srl.getFeatExtractor()));

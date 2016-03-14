@@ -5,12 +5,15 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
+import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.concrete.ConcreteUtils;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
@@ -20,6 +23,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.sample.Sample;
+import edu.jhu.prim.tuple.Pair;
 
 public class CorpusHandler {
     private static final Logger log = LoggerFactory.getLogger(CorpusHandler.class);
@@ -484,4 +488,34 @@ public class CorpusHandler {
         return words;
     }
 
+    public static Set<String> getKnownSprlProperties(AnnoSentenceCollection... data) {
+        Set<String> props = new TreeSet<>();
+        for (AnnoSentenceCollection collection : data) {
+            for (AnnoSentence sent : collection) {
+                if (sent.getSprl() != null) {
+                    for (Map.Entry<Pair<Integer, Integer>, Properties> e : sent.getSprl().entrySet()) {
+                        props.addAll(e.getValue().getMap().keySet());
+                    }
+                }
+            }
+        }
+        return props;
+    }
+    
+    /** Gets a set containing all the words appearing in train/dev/test. */
+    public Set<String> getAllKnownSprlProperties() throws IOException {
+        log.info("Reading all data to build known words set.");
+        Set<String> props = new TreeSet<>();
+        if (this.hasTrain()) {
+            props.addAll(getKnownSprlProperties(getTrainInput()));
+        }
+        if (this.hasDev()) {
+            props.addAll(getKnownSprlProperties(getDevInput()));
+        }
+        if (this.hasTest()) {
+            props.addAll(getKnownSprlProperties(getTestInput()));
+        }
+        return props;
+    }
+    
 }
