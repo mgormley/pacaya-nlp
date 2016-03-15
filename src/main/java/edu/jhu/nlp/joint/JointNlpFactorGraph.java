@@ -106,7 +106,7 @@ public class JointNlpFactorGraph extends FactorGraph {
 
 
     public enum JointFactorTemplate {
-        LINK_ROLE_BINARY, ROLE_P_TAG_BINARY, ROLE_C_TAG_BINARY, ROLE_SPRL_BINARY, ISARG_SPRL_BINARY
+        LINK_ROLE_BINARY, ROLE_P_TAG_BINARY, ROLE_C_TAG_BINARY, ROLE_SPRL_BINARY, ISARG_SPRL_BINARY, ROLE_SPRL_SPRL
     }
 
     // Parameters for constructing the factor graph.
@@ -220,6 +220,17 @@ public class JointNlpFactorGraph extends FactorGraph {
                         addFactor(new ObsFeTypedFactor(new VarSet(roleVar), JointFactorTemplate.ROLE_SPRL_BINARY,
                                 makeKey(JointFactorTemplate.ROLE_SPRL_BINARY, SprlVar.class, q, goldSprlLabel), ofc,
                                 srl.getFeatExtractor()));
+                        // if SPRL is observed but we want pairwise sprl factors, then include unary potentials on the srl variables
+                        // that look at pairs of properties
+                        if (prm.sprlPrm.pairwiseFactors) {
+                            for (int qix2 = 0; qix2 < cs.sprlPropertyNames.size(); qix2++) {
+                                String q2 = cs.sprlPropertyNames.get(qix2);
+                                SprlClassLabel goldSprlLabel2 = propsArray != null ? propsArray.get(qix) : SprlClassLabel.NOT_AN_ARG;
+                                addFactor(new ObsFeTypedFactor(new VarSet(roleVar), JointFactorTemplate.ROLE_SPRL_SPRL,
+                                    makeKey(JointFactorTemplate.ROLE_SPRL_SPRL, SprlVar.class, q, goldSprlLabel, q2, goldSprlLabel2), ofc,
+                                    srl.getFeatExtractor()));
+                            }
+                        }
                     }
                 }
             }

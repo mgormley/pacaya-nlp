@@ -118,6 +118,7 @@ public class SprlFactorGraphBuilder {
         build(isent.getAnnoSentence(), ofc, fg, cs, new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc));
     }
     
+    //TODO: I want record in the sentence pred,arg,property triples should be marginalized over
     /**
      * Adds factors and variables to the given factor graph.
      */

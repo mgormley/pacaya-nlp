@@ -97,7 +97,7 @@ public class SrlFeatureExtractor implements ObsFeatureExtractor {
         if (ft == JointFactorTemplate.LINK_ROLE_BINARY || ft == DepParseFactorTemplate.UNARY
                 || ft == SrlFactorTemplate.ROLE_UNARY || ft == SrlFactorTemplate.SENSE_ROLE_BINARY
                 || ft == JointFactorTemplate.ROLE_C_TAG_BINARY || ft == JointFactorTemplate.ROLE_P_TAG_BINARY
-                || ft == JointFactorTemplate.ROLE_SPRL_BINARY || ft == SprlFactorType.SPRL_UNARY) {
+                || ft == JointFactorTemplate.ROLE_SPRL_BINARY || ft == SprlFactorType.SPRL_UNARY || ft == JointFactorTemplate.ROLE_SPRL_SPRL) {
             tpls = prm.argTemplates;
             // Look at the variables to determine the parent and child.
             for (int i = 0; i < vars.size(); i++) {
