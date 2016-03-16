@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,6 +178,18 @@ public class SrlFactorGraphBuilder implements Serializable {
     
     public SrlFactorGraphBuilder(SrlFactorGraphBuilderPrm prm) {
         this.prm = prm;
+    }
+
+    /**
+     * Helper function that returns the possible predicate argument pairs according to the partial annotations in sent
+     * if fromSrl, then the known pairs and known preds will be from the srl information in sent, otherwise it will come
+     * from the sprl information
+     */
+    public static List<Pair<Integer, Integer>> getPossibleRolePairs(AnnoSentence sent, RoleStructure rS,
+            boolean allowPredArgSelfLoops, boolean fromSrl) {
+        IntSet knownPreds = fromSrl ? sent.getKnownPreds() : sent.getKnownSprlPreds(); 
+        Set<Pair<Integer, Integer>> knownPairs = fromSrl ? sent.getKnownSrlPairs() : sent.getKnownSprlPairs(); 
+        return getPossibleRolePairs(sent.size(), knownPreds, knownPairs, sent.getPairsToSkip(), rS, allowPredArgSelfLoops); 
     }
 
     /**

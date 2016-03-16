@@ -26,10 +26,14 @@ import edu.jhu.nlp.data.concrete.ConcreteReader;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
+import edu.jhu.nlp.features.TemplateReader;
 import edu.jhu.nlp.joint.JointNlpAnnotator;
 import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.random.Prng;
@@ -37,6 +41,8 @@ import edu.jhu.prim.util.random.Prng;
 public class SprlLearningTest {
 
     private static String concreteFilename = "/edu/jhu/nlp/data/concrete/sprlexample.comm";
+    private static String argTemplates = "/edu/jhu/nlp/features/bc-augmented-bjorkelund-en-arg-feats.txt";
+    private static String senseTemplates = "/edu/jhu/nlp/features/bc-augmented-bjorkelund-en-sense-feats.txt";
 
     private CrfTrainerPrm getLBFGSPrm() {
         CrfTrainerPrm crfPrm = new CrfTrainerPrm();
@@ -64,6 +70,7 @@ public class SprlLearningTest {
 
     private CrfTrainerPrm getCrfPrm() {
         return getSGDPrm();
+        //return getLBFGSPrm();
     }
     
     @Rule
@@ -77,6 +84,7 @@ public class SprlLearningTest {
         ConcreteReaderPrm prm = new ConcreteReaderPrm();
         prm.srlTool = "fpropbank";
         prm.sprlTool = "fpropbank";
+        prm.depParseTool = null; 
         ConcreteReader r = new ConcreteReader(prm);
         AnnoSentenceCollection goldTrain = r.sentsFromCommFile(f);
         AnnoSentence exampleSentence = goldTrain.get(4);
@@ -87,18 +95,24 @@ public class SprlLearningTest {
         AnnoSentenceCollection goldDev = goldTrain.getWithAtsRemoved(Arrays.asList());
         AnnoSentenceCollection inDev = goldDev.getWithAtsRemoved(Arrays.asList(AT.SRL, AT.SPRL));
         JointNlpAnnotatorPrm jointPrm = new JointNlpAnnotatorPrm();
+        SrlFeatureExtractorPrm fePrm = new SrlFeatureExtractorPrm();
+        fePrm.biasOnly = biasOnly;
+        fePrm.useTemplates = false;
+        fePrm.featureHashMod = -1;
+        fePrm.argTemplates = getFeatTemplates(argTemplates); 
+        fePrm.senseTemplates = getFeatTemplates(senseTemplates); 
+        jointPrm.ofcPrm.includeUnsupportedFeatures = false;
         jointPrm.buPrm.fgPrm.srlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
-        jointPrm.buPrm.fgPrm.srlPrm.srlFePrm.biasOnly = biasOnly;
-        jointPrm.buPrm.fgPrm.sprlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
-        jointPrm.buPrm.fgPrm.sprlPrm.srlFePrm.biasOnly = biasOnly;
-        jointPrm.buPrm.fgPrm.enforceSprlNilAgreement = false;
-        jointPrm.buPrm.fgPrm.sprlPrm.extraVariablesForNilAgreement = false;
+        jointPrm.buPrm.fgPrm.enforceSprlNilAgreement = true;
         jointPrm.buPrm.fgPrm.includeDp = false;
         jointPrm.buPrm.fgPrm.includeRel = false;
         jointPrm.buPrm.fgPrm.includePos = false;
         jointPrm.buPrm.fgPrm.includeSrl = true;
         jointPrm.buPrm.fgPrm.includeSprl = false;
-        jointPrm.ofcPrm.includeUnsupportedFeatures = false;
+        jointPrm.buPrm.fgPrm.srlPrm.srlFePrm = fePrm;
+        jointPrm.buPrm.fgPrm.sprlPrm.srlFePrm = fePrm;
+        jointPrm.buPrm.fgPrm.sprlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
+        jointPrm.buPrm.fgPrm.sprlPrm.extraVariablesForNilAgreement = false;
         long seed = 5;
         double[] srlParams = null;
         {
@@ -142,9 +156,19 @@ public class SprlLearningTest {
 
     }
     
+    private List<FeatTemplate> getFeatTemplates(String resource) throws IOException {
+        TemplateReader tr = new TemplateReader();
+        tr.readFromResource(resource);
+        List<FeatTemplate> templates = tr.getTemplates();
+        templates = TemplateLanguage.filterOutRequiring(templates, AT.MORPHO);
+        templates = TemplateLanguage.filterOutRequiring(templates, AT.BROWN);
+        return templates;
+    }
+
     @Test
     public void testCorrectSprl() throws IOException {
         testIndependent(true);
+        testIndependent(false);
     }
     
     private List<Double> cat(double[]...arrays) {
