@@ -84,6 +84,7 @@ public class ConcreteReader {
         public String parseTool = null;
         public String nerTool = null;
         public String relationTool = null;
+        public String missingSrlTool = null;
         public String srlTool = null;
         public String sprlTool = null;
     }
@@ -218,6 +219,9 @@ public class ConcreteReader {
                 addRelationsFromSituationMentions(comm, tmpSents, prm.relationTool);
                 // srl
                 addSrlFromSituationMentions(comm, tmpSents, prm.srlTool);
+                if (prm.missingSrlTool != null) {
+                    addMissingSrlPairs(comm, tmpSents, prm.missingSrlTool);
+                }
                 // sprl
                 addSprlFromSituationMentions(comm, tmpSents, prm.sprlTool);
             }
@@ -315,20 +319,29 @@ public class ConcreteReader {
         }
     }
 
-
+    private void addMissingSrlPairs(Communication comm, List<AnnoSentence> tmpSents, String tool) {
+        int totalSkipped = 0;
+        int i = 0;
+        for (SrlGraph g : getSrlFromSituationMentions(comm, tool).get1()) {
+            AnnoSentence sent = tmpSents.get(i);
+            HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
+            for (SrlEdge e : g.getEdges()) {
+                if (e.getLabel().startsWith("*") && e.getLabel().endsWith("*")) {
+                    missingLabels.add(new Pair<>(e.getPred().getPosition(), e.getArg().getPosition()));
+                }
+            }
+            sent.setPairsToSkip(missingLabels);
+            totalSkipped += missingLabels.size();
+        }
+        if (totalSkipped > 0) {
+            log.info(String.format("added %d pairs to skip corresponding to missing SRL labels", totalSkipped));
+        }
+    }
+    
     private void addSrlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int i = 0;
         for (SrlGraph g : getSrlFromSituationMentions(comm, tool).get1()) {
             AnnoSentence sent = tmpSents.get(i);
-            if (SrlEvaluator.skipMissingLabels) {
-                HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
-                for (SrlEdge e : g.getEdges()) {
-                    if (e.getLabel().startsWith("*") && e.getLabel().endsWith("*")) {
-                        missingLabels.add(new Pair<>(e.getPred().getPosition(), e.getArg().getPosition()));
-                    }
-                }
-                sent.setPairsToSkip(missingLabels);
-            }
             sent.setSrlGraph(g);
             sent.setKnownPredsFromSrlGraph();
             numSrlPredicates += g.getNumPreds();

@@ -24,9 +24,6 @@ import edu.jhu.prim.tuple.Pair;
 // TODO: Support other options: predictSense = true, predictPredicatePosition = true.
 public class SrlEvaluator extends F1Evaluator implements Evaluator {
 
-    @Opt(hasArg = true, description = "Should SRL labels beginning and ending with * be skipped.")
-    public static boolean skipMissingLabels = true;
-    
     public static class SrlEvaluatorPrm extends Prm {
         private static final long serialVersionUID = 1L;
         /** Whether to do labeled or unlabeled evaluation. */
@@ -102,7 +99,7 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
             }
             for (int c=0; c < n; c++) {                      
                 // in some cases, some pairs that are known don't have labels that we can evaluate on; skip those
-                if (skipMissingLabels && goldSent.getPairsToSkip() != null && goldSent.getPairsToSkip().contains(new Pair<>(p, c))) {
+                if (goldSent.getPairsToSkip() != null && goldSent.getPairsToSkip().contains(new Pair<>(p, c))) {
                     continue;
                 }
                 if (!prm.evalPredPosition && !hasPredicateForEdge(gold, p, c)) {
