@@ -12,15 +12,22 @@ public class Indexed<T> {
     private int index;
     private T obj;
     public Indexed(T obj, int index) {
-        
+        this.obj = obj;
+        this.index = index;
     }
+
     public int index() {
         return index;
     }
+
     public T get() {
         return obj;
     }
 
+    public String toString() {
+        return String.format("(%s, %d)", get(), index());
+    }
+    
     public static <T> Iterable<Indexed<T>> enumerate(Iterable<T> stream) {
         return new Iterable<Indexed<T>>() {
             
