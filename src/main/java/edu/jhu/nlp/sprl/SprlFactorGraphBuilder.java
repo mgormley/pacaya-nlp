@@ -258,15 +258,9 @@ public class SprlFactorGraphBuilder {
     public void annoToConfig(AnnoSentence goldSent, VarConfig addTo) {
         // we will create some sprl variables possibly looking at the known sprl
         // predicates and pairs
-        //for (Pair<Integer, Integer> e : goldSent.getPairsToSkip()) {
-        //    String srlLabel = goldSent.getSrlGraph().getEdge(e.get1(), e.get2()).getLabel();
-        //    log.info(String.format("ToSkip: %s, %s", e.toString(), srlLabel));
-        //}
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent.size(),
                 goldSent.getKnownSprlPreds(), goldSent.getKnownSprlPairs(), goldSent.getPairsToSkip(),
                 prm.roleStructure, prm.allowPredArgSelfLoops)) {
-            //String srlLabel = goldSent.getSrlGraph().getEdge(e.get1(), e.get2()).getLabel();
-            //log.info(String.format("Found: %s, %s", e.toString(), srlLabel));
             int pred = e.get1();
             int arg = e.get2();
 

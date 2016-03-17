@@ -1,5 +1,7 @@
 package edu.jhu.nlp.data.concrete;
 
+import static edu.jhu.nlp.Indexed.enumerate;
+
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -42,6 +44,7 @@ import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.concrete.serialization.CompactCommunicationSerializer;
 import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.util.TokenizationUtils.TagTypes;
+import edu.jhu.nlp.Indexed;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
 //import edu.jhu.nlp.data.Properties;
@@ -54,10 +57,6 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.data.simple.CorpusHandler;
-import edu.jhu.nlp.eval.SrlEvaluator;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
@@ -321,11 +320,10 @@ public class ConcreteReader {
 
     private void addMissingSrlPairs(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int totalSkipped = 0;
-        int i = 0;
-        for (SrlGraph g : getSrlFromSituationMentions(comm, tool).get1()) {
-            AnnoSentence sent = tmpSents.get(i);
+        for (Indexed<SrlGraph> g : enumerate(getSrlFromSituationMentions(comm, tool).get1())) {
+            AnnoSentence sent = tmpSents.get(g.index());
             HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
-            for (SrlEdge e : g.getEdges()) {
+            for (SrlEdge e : g.get().getEdges()) {
                 if (e.getLabel().startsWith("*") && e.getLabel().endsWith("*")) {
                     missingLabels.add(new Pair<>(e.getPred().getPosition(), e.getArg().getPosition()));
                 }
