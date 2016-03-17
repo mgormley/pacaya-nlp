@@ -22,7 +22,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
     public AnnoSentenceCollection() {
         super();
     }
-    
+
     public AnnoSentenceCollection(Collection<AnnoSentence> list) {
         super(list);
         if (list instanceof AnnoSentenceCollection) {
@@ -47,7 +47,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         return sents;
     }
-    
+
     public SentenceCollection getLemmasAsSentenceCollection(IntObjectBimap<String> alphabet) {
         SentenceCollection sents = new SentenceCollection(alphabet);
         for (AnnoSentence sent : this) {
@@ -59,7 +59,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         return sents;
     }
-    
+
     public SentenceCollection getPosTagsAsSentenceCollection(IntObjectBimap<String> alphabet) {
         SentenceCollection sents = new SentenceCollection(alphabet);
         for (AnnoSentence sent : this) {
@@ -71,7 +71,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         return sents;
     }
-    
+
     public DepTreebank getPosTagsAndParentsAsDepTreebank(IntObjectBimap<String> alphabet) {
         DepTreebank trees = new DepTreebank(alphabet);
         for (AnnoSentence sent : this) {
@@ -83,9 +83,9 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
             boolean isProjective = ParentsArray.isProjective(sent.getParents());
             trees.add(new DepTree(sentence, sent.getParents(), isProjective));
         }
-        return trees; 
+        return trees;
     }
-    
+
     public int getNumTokens() {
         int numTokens = 0;
         for (AnnoSentence sent : this) {
@@ -113,21 +113,21 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         return newSents;
     }
-    
+
     /** Returns true if some of the sentences have a particular annotation type. */
     public boolean someHaveAt(AT at) {
         for (AnnoSentence sent : this) {
-            if (sent.hasAt(at)) { 
+            if (sent.hasAt(at)) {
                 return true;
             }
         }
         return false;
     }
-    
+
     /** Returns true if all of the sentences have a particular annotation type. */
     public boolean allHaveAt(AT at) {
         for (AnnoSentence sent : this) {
-            if (!sent.hasAt(at)) { 
+            if (!sent.hasAt(at)) {
                 return false;
             }
         }
@@ -144,7 +144,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         return maxLen;
     }
-    
+
     /** Gets the average sentence length. */
     public double getAvgLength() {
         double avgLen = 0;
@@ -153,16 +153,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         }
         return avgLen / this.size();
     }
-    
-    /** Gets a new list of new AnnoSentences, each of which is a shallow copy of the original sentence. */
-    public AnnoSentenceCollection getShallowCopy() {
-        AnnoSentenceCollection copy = new AnnoSentenceCollection();
-        for (AnnoSentence sent : this) {
-            copy.add(sent.getShallowCopy());
-        }
-        return copy;
-    }
-    
+
     public static void copyShallow(AnnoSentenceCollection srcSents, AnnoSentenceCollection destSents, AT at) {
         for (int i=0; i<srcSents.size(); i++) {
             AnnoSentence src = srcSents.get(i);
@@ -170,7 +161,7 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
             AnnoSentence.copyShallow(src, dest, at);
         }
     }
-    
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
@@ -182,9 +173,9 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
             }
         }
         sb.append("]");
-        return sb.toString();        
+        return sb.toString();
     }
-    
+
     public Object getSourceSents() {
         return sourceSents;
     }
@@ -211,5 +202,17 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         assert folds.size() == numFolds;
         return folds;
    }
-    
+
+    /**
+     * Creates and returns a new AnnoSentenceCollection containing a shallow copy of
+     * each sentence in this collection
+     */
+    public AnnoSentenceCollection getShallowCopy() {
+        AnnoSentenceCollection copied = new AnnoSentenceCollection();
+        for (AnnoSentence sent : this) {
+            copied.add(sent.getShallowCopy());
+        }
+        return copied;
+    }
+
 }

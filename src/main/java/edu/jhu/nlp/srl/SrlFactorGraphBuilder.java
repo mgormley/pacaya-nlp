@@ -276,9 +276,8 @@ public class SrlFactorGraphBuilder implements Serializable {
 
         // Create the Role variables.
         roleVars = new RoleVar[n][n];
-        AnnoSentence asent = isent.getAnnoSentence();
-        for (Pair<Integer, Integer> e : getPossibleRolePairs(isent.size(), asent.getKnownPreds(),
-                asent.getKnownSrlPairs(), asent.getPairsToSkip(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
+        for (Pair<Integer, Integer> e : getPossibleRolePairs(n, knownPreds,
+                sent.getKnownSrlPairs(), sent.getPairsToSkip(), prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int i = e.get1();
             int j = e.get2();
             roleVars[i][j] = createRoleVar(i, j, knownPreds, roleStateNames);
