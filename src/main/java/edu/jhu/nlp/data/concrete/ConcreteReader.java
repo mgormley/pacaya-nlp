@@ -320,20 +320,19 @@ public class ConcreteReader {
         int i = 0;
         for (SrlGraph g : getSrlFromSituationMentions(comm, tool).get1()) {
             AnnoSentence sent = tmpSents.get(i);
-            sent.setSrlGraph(g);
-            sent.setKnownPredsFromSrlGraph();
-            numSrlPredicates += g.getNumPreds();
-            sent.setKnownPairsFromSrlGraph();
             if (SrlEvaluator.skipMissingLabels) {
                 HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
-                for (Pair<Integer, Integer> pair : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(), sent.getKnownPreds(), sent.getKnownSrlPairs(), null, RoleStructure.PAIRS_GIVEN, true)) {
-                    SrlEdge e = sent.getSrlGraph().getEdge(pair.get1(), pair.get2());
+                for (SrlEdge e : g.getEdges()) {
                     if (e.getLabel().startsWith("*") && e.getLabel().endsWith("*")) {
-                        missingLabels.add(pair);
+                        missingLabels.add(new Pair<>(e.getPred().getPosition(), e.getArg().getPosition()));
                     }
                 }
                 sent.setPairsToSkip(missingLabels);
             }
+            sent.setSrlGraph(g);
+            sent.setKnownPredsFromSrlGraph();
+            numSrlPredicates += g.getNumPreds();
+            sent.setKnownPairsFromSrlGraph();
             i++;
         }
     }

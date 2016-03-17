@@ -82,8 +82,8 @@ public class SprlLearningTest {
         SprlClassLabel.modelNA = false;
         SprlClassLabel.sprlNils = "NA,NOT_AN_ARG,UNKNOWN,UNLIKELY";
         ConcreteReaderPrm prm = new ConcreteReaderPrm();
-        prm.srlTool = "fpropbank";
-        prm.sprlTool = "fpropbank";
+        prm.srlTool = "gpropbank";
+        prm.sprlTool = "gpropbank";
         prm.depParseTool = null; 
         ConcreteReader r = new ConcreteReader(prm);
         AnnoSentenceCollection goldTrain = r.sentsFromCommFile(f);

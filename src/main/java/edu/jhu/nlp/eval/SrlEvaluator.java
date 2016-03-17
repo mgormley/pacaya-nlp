@@ -36,7 +36,7 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
         /** Whether to evaluate predicate position. */
         public boolean evalPredPosition = false;
         /** Whether to evaluate predicate position. */
-        public boolean evalArgPosition = false;
+        public boolean evalArgPosition = true;
         /** Whether to evaluate arguments (i.e. semantic roles). */
         public boolean evalRoles = true;
         /** Mimic eval09.pl definition of predicate sense equality. */
@@ -102,7 +102,7 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
             }
             for (int c=0; c < n; c++) {                      
                 // in some cases, some pairs that are known don't have labels that we can evaluate on; skip those
-                if (goldSent.getPairsToSkip().contains(new Pair<>(p, c))) {
+                if (skipMissingLabels && goldSent.getPairsToSkip() != null && goldSent.getPairsToSkip().contains(new Pair<>(p, c))) {
                     continue;
                 }
                 if (!prm.evalPredPosition && !hasPredicateForEdge(gold, p, c)) {
