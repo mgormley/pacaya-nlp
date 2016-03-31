@@ -492,7 +492,7 @@ public class ConcreteReader {
                 trigger = getSpan(cSm.getTokens());
             }
             if (sentIdx < 0) {
-                log.warn("situation mention with no args: " + cSm);
+                log.trace("situation mention with no args: " + cSm);
             	continue;
             }
             RelationMention aSm = new RelationMention(type, subtype, aArgs, trigger);
