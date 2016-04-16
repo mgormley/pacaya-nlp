@@ -68,7 +68,7 @@ public class ConfusionMap<L, C> {
 
     public void print(Collection<L> labelOrder, Writer out) throws IOException {
         // TODO: I want to know the baseline if we choose baselinper category
-        total.print("total micro", labelOrder, out);
+        total.print("totalmicro", labelOrder, out);
         for (Map.Entry<C, ConfusionMatrix<L>> e : counts.entrySet()) {
             String category = e.getKey().toString();
             e.getValue().print(category, labelOrder, out);

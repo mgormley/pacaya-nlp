@@ -55,4 +55,21 @@ public class ConfusionMatrixTest {
         sw.write("      total  &  3  &  3  &  1  &  2  &  1  &     10  \\\\\n");
         assertEquals(sw.toString(), cm.formatMatrix(Arrays.asList(0, 1, 2, 3, 5)));
     }
+
+//    @Test
+//    public void testNilCounts() {
+//        ConfusionMatrix<Integer> cm = new ConfusionMatrix<>();
+//        cm.recordPrediction(3, 3); // 1 ...
+//        cm.recordPrediction(0, 2); // 1
+//        cm.recordPrediction(0, 1); // 1 ...
+//        cm.recordPrediction(3, 1); // 1
+//        cm.recordPrediction(0, 1); // 2
+//        cm.recordPrediction(3, 5); // 1
+//        cm.recordPrediction(0, 0); // 1 ...
+//        cm.recordPrediction(0, 0); // 2
+//        cm.recordPrediction(2, 0); // 1
+//        cm.recordPrediction(3, 3); // 2
+//
+//    }
+
 }

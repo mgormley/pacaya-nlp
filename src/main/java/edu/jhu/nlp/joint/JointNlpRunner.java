@@ -325,11 +325,22 @@ public class JointNlpRunner {
     public static boolean acl14DepFeats = true;
     @Opt(hasArg = true, description = "Whether to use the fast feature set for dep parsing.")
     public static boolean dpFastFeats = true;
-
     @Opt(hasArg = true, description = "Whether to skip features that look at lemma.")
     public static boolean noLemma = false;
     @Opt(hasArg = true, description = "Whether to skip features that look at morpho feats.")
     public static boolean noMorpho = false;
+
+    @Opt(hasArg = true, description = "Whether to skip features that look at deprel.")
+    public static boolean noDeprelFeats = false;
+    @Opt(hasArg = true, description = "Whether to skip features that look at dep_tree.")
+    public static boolean noDepTreeFeats = false;
+    @Opt(hasArg = true, description = "Comma separated list of ATs; feature templates that use any of these will be filtered for dep, arg and sense.")
+    public static String filterFeatsWith = null;
+    
+    // Options for data munging.
+    @Deprecated
+    @Opt(hasArg=true, description="Whether to normalize and clean words.")
+    public static boolean normalizeWords = false;
 
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
@@ -662,6 +673,7 @@ public class JointNlpRunner {
         dpFePrm.biasOnly = biasOnly;
         dpFePrm.firstOrderTpls = getFeatTpls(dp1FeatTpls);
         dpFePrm.secondOrderTpls = getFeatTpls(dp2FeatTpls);
+
         dpFePrm.featureHashMod = featureHashMod;
         dpFePrm.onlyFast = dpFastFeats;
         if (CorpusHandler.getPredLatAts().contains(AT.SRL) && acl14DepFeats) {
@@ -704,6 +716,10 @@ public class JointNlpRunner {
         if (noLemma) {
             srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.LEMMA);
             srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.LEMMA);
+        }
+        for (AT at : CorpusHandler.getAts(filterFeatsWith)) {
+            srlFePrm.argTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.argTemplates, at);
+            srlFePrm.senseTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.senseTemplates, at);
         }
         srlPrm.srlFePrm = srlFePrm;
         return srlPrm;

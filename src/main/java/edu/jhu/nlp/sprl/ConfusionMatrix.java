@@ -225,7 +225,16 @@ public class ConfusionMatrix<L> {
         StringWriter sw = new StringWriter();
         sw.write("\n");
         // making it easier to sort by f1
-        sw.write(String.format("===\t%s\t%s\t%s\t%s\t%s\n", name, precision(), recall(), f1(), accuracy()));
+        sw.write(String.format("   \t%s\t%s\t%s\t%s\t%s\t%s\t%s\n",
+                               "name", "f1(prec)",
+                               "majf1(majprec)",
+                               "corhits", "majcorhits",
+                               "psbhits", "total"));
+        sw.write(String.format("~~~\t%s\t%.1f (%.1f)\t%.1f (%.1f)\t%s\t%s\t%s\t%s\n",
+                               name, f1() * 100, precision() * 100,
+                               majorityNonNilF1() * 100, majorityNonNilPrecision() * 100,
+                               getCorrectHits(), majorityNonNilCorrectHits(),
+                               getPossibleHits(), getTotal()));
         sw.write(String.format("==%s Precision: %s\n", name, precision()));
         sw.write(String.format("==%s Recall: %s\n", name, recall()));
         sw.write(String.format("==%s F1: %s\n", name, f1()));
@@ -250,11 +259,42 @@ public class ConfusionMatrix<L> {
         }
         return maxLabel;
     }
-    
-    public double majorityNonNilF1() {
-        return ((double) goldCounts.get(majorityNonNilLabel())) / getPossibleHits(); 
+
+    public double majorityNonNilPrecision() {
+        int possibleHits = getPossibleHits();
+        // if possible hits is 0 then can get perfect precision and recall with nil labels
+        if (possibleHits > 0) {
+            // otherwise, all predictions will have to be non-nil and the best shot is the majority
+            return ((double)majorityNonNilCorrectHits()) / getTotal();
+        } else {
+            return 1.0;
+        }
     }
 
+    public double majorityNonNilRecall() {
+        // if possible hits is 0 then can get perfect precision and recall with nil labels
+        int possibleHits = getPossibleHits();
+        if (possibleHits > 0) {
+            // otherwise, all predictions will have to be non-nil and the best shot is the majority
+            return ((double)majorityNonNilCorrectHits()) / possibleHits;
+        } else {
+            return 1.0;
+        }
+    }
+
+    public int majorityNonNilCorrectHits() {
+        int possibleHits = getPossibleHits();
+        if (possibleHits > 0) {
+            return goldCounts.get(majorityNonNilLabel());
+        } else {
+            return 0;
+        }
+    }
+
+    public double majorityNonNilF1() {
+        return harmonicMean(majorityNonNilPrecision(), majorityNonNilRecall());
+    }
+    
     public List<String> getExamples(L gold, L pred) {
         return examples.get(new Pair<>(gold, pred));
     }
