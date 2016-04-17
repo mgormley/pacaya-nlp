@@ -5,10 +5,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 import org.junit.Test;
-
-import edu.stanford.nlp.io.StringOutputStream;
 
 public class JsonConcatReaderTest {
 
@@ -27,7 +26,7 @@ public class JsonConcatReaderTest {
         // expectedSent.setRelations(null);
         // expectedSent.setNamedEntities(null);
         
-        StringOutputStream os = new StringOutputStream();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         JsonConcatWriter w = new JsonConcatWriter(os);
         w.write(sent1);
         w.write(sent2);

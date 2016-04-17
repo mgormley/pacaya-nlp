@@ -10,12 +10,12 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.hlt.optimize.MalletLBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
+import edu.jhu.hlt.optimize.LBFGS;
+import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -281,7 +281,7 @@ public class JointNlpFgExamplesBuilderTest {
         
         CrfTrainerPrm prm = new CrfTrainerPrm();
         prm.infFactory = bpPrm;
-        prm.optimizer = new MalletLBFGS(new MalletLBFGSPrm());
+        prm.optimizer = new LBFGS(new LBFGSPrm());
         // To run with SGD, uncomment these lines.
         //        SGDPrm optPrm = new SGDPrm();
         //        optPrm.iterations = 100;

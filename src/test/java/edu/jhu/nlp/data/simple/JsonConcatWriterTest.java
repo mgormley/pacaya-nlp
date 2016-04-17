@@ -1,11 +1,12 @@
 package edu.jhu.nlp.data.simple;
 
-import static org.junit.Assert.assertEquals;
 import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.NOUN;
 import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.OTHER;
 import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.PUNC;
 import static edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag.VERB;
+import static org.junit.Assert.assertEquals;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -14,7 +15,6 @@ import org.junit.Test;
 
 import edu.jhu.nlp.relations.RelationMungerTest;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
-import edu.stanford.nlp.io.StringOutputStream;
 
 public class JsonConcatWriterTest {
 
@@ -54,7 +54,7 @@ public class JsonConcatWriterTest {
         sent.setRelations(null);
         sent.setNamedEntities(null);
         
-        StringOutputStream os = new StringOutputStream();
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
         JsonConcatWriter w = new JsonConcatWriter(os);
         w.write(sent);
         w.write(sent);
