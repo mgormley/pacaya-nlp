@@ -13,14 +13,11 @@ import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
 import edu.jhu.hlt.optimize.LBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
 import edu.jhu.hlt.optimize.SGDFobos;
 import edu.jhu.hlt.optimize.SGDFobos.SGDFobosPrm;
-import edu.jhu.hlt.optimize.StanfordQNMinimizer;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.hlt.optimize.function.Regularizer;
@@ -30,7 +27,7 @@ import edu.jhu.prim.tuple.Pair;
 
 public class OptimizerFactory {
 
-    public static enum OptimizerType { LBFGS, LBFGS_MALLET, QN_STANFORD, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
+    public static enum OptimizerType { LBFGS, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
 
     public enum RegularizerType { L2, NONE };
     
@@ -80,12 +77,6 @@ public class OptimizerFactory {
         if (optimizer == OptimizerType.LBFGS) {
             opt = new LBFGS();
             batchOpt = null;
-        } else if (optimizer == OptimizerType.LBFGS_MALLET) {
-            opt = getMalletLbfgs();
-            batchOpt = null;
-        } else if (optimizer == OptimizerType.QN_STANFORD) {
-            opt = getStanfordLbfgs();
-            batchOpt = null;            
         } else if (optimizer == OptimizerType.SGD || optimizer == OptimizerType.ASGD  ||
                 optimizer == OptimizerType.ADAGRAD || optimizer == OptimizerType.ADADELTA) {
             opt = null;
@@ -152,16 +143,6 @@ public class OptimizerFactory {
         } else {
             throw new ParseException("Unsupported regularizer: " + regularizer);
         }
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getMalletLbfgs() {
-        MalletLBFGSPrm prm = new MalletLBFGSPrm();
-        prm.maxIterations = maxLbfgsIterations;
-        return new MalletLBFGS(prm);
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getStanfordLbfgs() {
-        return new StanfordQNMinimizer(maxLbfgsIterations);
     }
     
     private static SGDPrm getSgdPrm() {
