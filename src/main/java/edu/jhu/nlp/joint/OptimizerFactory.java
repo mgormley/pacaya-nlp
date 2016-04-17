@@ -12,6 +12,7 @@ import edu.jhu.hlt.optimize.AdaGradSchedule;
 import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
+import edu.jhu.hlt.optimize.LBFGS;
 import edu.jhu.hlt.optimize.MalletLBFGS;
 import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
 import edu.jhu.hlt.optimize.Optimizer;
@@ -29,7 +30,7 @@ import edu.jhu.prim.tuple.Pair;
 
 public class OptimizerFactory {
 
-    public static enum OptimizerType { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
+    public static enum OptimizerType { LBFGS, LBFGS_MALLET, QN_STANFORD, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
 
     public enum RegularizerType { L2, NONE };
     
@@ -77,9 +78,12 @@ public class OptimizerFactory {
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
         if (optimizer == OptimizerType.LBFGS) {
+            opt = new LBFGS();
+            batchOpt = null;
+        } else if (optimizer == OptimizerType.LBFGS_MALLET) {
             opt = getMalletLbfgs();
             batchOpt = null;
-        } else if (optimizer == OptimizerType.QN) {
+        } else if (optimizer == OptimizerType.QN_STANFORD) {
             opt = getStanfordLbfgs();
             batchOpt = null;            
         } else if (optimizer == OptimizerType.SGD || optimizer == OptimizerType.ASGD  ||
