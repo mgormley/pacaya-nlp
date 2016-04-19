@@ -75,6 +75,9 @@ public class SprlConcreteEvaluator {
     @Opt(hasArg = true, description = "output file for confusion matrices")
     public static File outFile = null;
 
+    @Opt(hasArg = true, description = "if not null, only pairs with this gold srl label are included")
+    public static String goldSrlLabel = null;
+    
     @Opt(hasArg = true, description = "output file for examples")
     public static File examplesOut = null;
 
@@ -376,8 +379,17 @@ public class SprlConcreteEvaluator {
                 s.getWordsStr(new Span(secondSpan.end(), s.size())));
     }
 
+    /**
+     * Creates a formatted string for the given example predicate, argument pair
+     * @param gold gold annotations for the sentence
+     * @param pred predicted annotations for the sentence
+     * @param pair the predicate argument pair
+     * @param goldLabels gold sprl labels for the pair
+     * @param predictedLabels predicated sprl labels for the pair
+     * @param propertyOrder order in which to output the properties (and which to include)
+     */
     private static String formatExample(AnnoSentence gold, AnnoSentence pred, Pair<Integer, Integer> pair,
-            List<SprlClassLabel> goldLabels, List<SprlClassLabel> predicatedLabels, List<String> propertyOrder) {
+            List<SprlClassLabel> goldLabels, List<SprlClassLabel> predictedLabels, List<String> propertyOrder) {
         StringWriter sw = new StringWriter();
         int predIx = pair.get1();
         int argIx = pair.get2();
@@ -390,7 +402,7 @@ public class SprlConcreteEvaluator {
             sw.write(String.format("%30s %15s %15s\n", "Property", "Gold", "Predicted"));
             for (int q = 0; q < propertyOrder.size(); q++) {
                 sw.write(String.format("%30s %15s %15s\n", propertyOrder.get(q), goldLabels.get(q),
-                        predicatedLabels.get(q)));
+                        predictedLabels.get(q)));
             }
         }
         sw.write("\n");
@@ -462,11 +474,14 @@ public class SprlConcreteEvaluator {
             assert gLabels.size() == pLabels.size() && gLabels.size() == examples.size();
             for (int x = 0; x < examples.size(); x++) {
                 Triple<Integer, Integer, String> example = examples.get(x);
+                int predIx = example.get1();
+                int argIx = example.get2();
+                if (goldSrlLabel != null && !goldSrlLabel.equals(g.getSrlGraph().getEdge(predIx, argIx).getLabel())) {
+                    continue;
+                }
                 SprlClassLabel gL = SprlClassLabel.valueOf(gLabels.get(x));
                 SprlClassLabel pL = SprlClassLabel.valueOf(pLabels.get(x));
                 String q = example.get3();
-                int predIx = example.get1();
-                int argIx = example.get2();
 //                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
 //                        : String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
 //                                formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
