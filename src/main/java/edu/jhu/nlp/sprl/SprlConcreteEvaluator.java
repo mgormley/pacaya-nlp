@@ -459,6 +459,65 @@ public class SprlConcreteEvaluator {
 
     }
 
+    /**
+     * evaluate the sprl annotations in pred against the gold annotations in gold;
+     */
+    public static void evalSprlMulticlass(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw) {
+        List<String> propOrder = new ArrayList<>(CorpusHandler.getKnownSprlProperties(gold, pred));
+        Set<SprlClassLabel> nils = SprlClassLabel.getNils();
+        ConfusionMap<SprlClassLabel, String> cms = new ConfusionMap<SprlClassLabel, String>(nils);
+        int nSentences = pred.size();
+        for (int i = 0; i < nSentences; i++) {
+            AnnoSentence g = gold.get(i);
+            AnnoSentence p = pred.get(i);
+            SprlEvaluator eval = new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils);
+            List<Triple<Integer, Integer, String>> examples = eval.getExamples(p, g);
+            List<String> gLabels = eval.getLabels(g, g);
+            List<String> pLabels = eval.getLabels(p, g);
+            assert gLabels.size() == pLabels.size() && gLabels.size() == examples.size();
+            for (Pair<Integer, Integer> ex : eval.getExamplePairs(p, g)) {
+                int predIx = ex.get1();
+                int argIx = ex.get2();
+                if (goldSrlLabel != null && !goldSrlLabel.equals(g.getSrlGraph().getEdge(predIx, argIx).getLabel())) {
+                    continue;
+                }
+                List<SprlClassLabel> pML = propList(p, ex, propOrder);
+                List<SprlClassLabel> gML = propList(g, ex, propOrder);
+                
+//                Properties gML= g.getSprl().get(ex);
+                
+                
+//                SprlClassLabel gL = SprlClassLabel.valueOf(gLabels.get(x));
+//                SprlClassLabel pL = SprlClassLabel.valueOf(pLabels.get(x));
+
+                
+//                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
+//                        : String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
+//                                formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+//                                        Collections.singletonList(pL), Collections.singletonList(q)));
+//                String exStr = String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
+//                                formatExample(g, null, new Pair<>(predIx, argIx), Collections.singletonList(gL),
+//                                        Collections.singletonList(pL), Collections.singletonList(q)));
+//                cms.recordPrediction(gL, pL, q, exStr, numExamples);
+            }
+        }
+
+        // set the order
+        List<SprlClassLabel> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY, SprlClassLabel.UNKNOWN,
+                SprlClassLabel.UNLIKELY, SprlClassLabel.NA, SprlClassLabel.NOT_AN_ARG));
+
+        // but only include things we saw
+        for (SprlClassLabel k : SprlClassLabel.values()) {
+            if (!cms.getTotal().keySet().contains(k.name())) {
+                labelOrder.remove(k.name());
+            }
+        }
+
+//        cms.print(labelOrder, fw);
+
+
+    }
+    
     public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw)
             throws IOException {
         Set<SprlClassLabel> nils = SprlClassLabel.getNils();

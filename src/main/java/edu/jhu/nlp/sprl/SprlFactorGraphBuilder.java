@@ -103,7 +103,6 @@ public class SprlFactorGraphBuilder {
     private SprlVar[][][] sprlVars;
     private CorpusStatistics cs = null;
     
-    private ObsFeatureExtractor isArgFe = null;
     private Var[][] argVars = null;
 
     public SprlFactorGraphBuilder(SprlFactorGraphBuilderPrm prm) {
@@ -141,14 +140,6 @@ public class SprlFactorGraphBuilder {
         // set up isArg feature extractor and a place for the extra variables
         if (prm.extraVariablesForNilAgreement) {
             argVars = new Var[n][n];
-            // TODO: replace this with just using the srl feature extractor (we
-            // might as well featurize these factors, too)
-            isArgFe = new ObsFeatureExtractor() {
-                @Override
-                public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
-                    return new FeatureVector();
-                }
-            };
         }
 
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(),
@@ -188,9 +179,10 @@ public class SprlFactorGraphBuilder {
                             makeKey(SprlFactorType.SPRL_UNARY, q), ofc, obsFe));
                 }
                 if (prm.extraVariablesForNilAgreement) {
+                    // TODO: do more feature help here?
                     fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVars[i][j], v),
                             Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, isArgFe));
+                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, BiasOnlyObsFeatureExtractor.instance()));
                 }
             }
             if (prm.pairwiseFactors) {
@@ -200,10 +192,11 @@ public class SprlFactorGraphBuilder {
                     for (int qix2 = 0; qix2 < cs.sprlPropertyNames.size(); qix2++) {
                         String q2 = cs.sprlPropertyNames.get(qix2);
                         SprlVar v2 = sprlVars[i][j][qix2];
+                        // TOOD: do more feature help here?
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2),
                                 SprlFactorType.SPRL_PAIRWISE,
                                 makeKey(SprlFactorType.SPRL_PAIRWISE, q1, q2),
-                                ofc, obsFe));
+                                ofc, BiasOnlyObsFeatureExtractor.instance()));
                     }
                 }
             }

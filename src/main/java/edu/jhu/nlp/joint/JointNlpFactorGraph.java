@@ -30,6 +30,7 @@ import edu.jhu.nlp.features.TemplateLanguage.PositionModifier;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
+import edu.jhu.nlp.sprl.BiasOnlyObsFeatureExtractor;
 import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
@@ -101,6 +102,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         public SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
         public boolean sprlSrlFactors = false;
         public boolean enforceSprlNilAgreement = true;
+        public boolean featurizeSrlSprlPairwise = false;
     }
 
     public static LinkedList<Serializable> makeKey(Serializable... args) {
@@ -177,7 +179,12 @@ public class JointNlpFactorGraph extends FactorGraph {
 
             RoleVar[][] roleVars = prm.includeSrl ? srl.getRoleVars() : null;
             SprlVar[][][] sprlVars = prm.includeSprl ? sprl.getSprlVars() : null;
-            ObsFeatureExtractor fe = prm.includeSprl ? sprl.getFeatExtractor() : srl.getFeatExtractor();
+            ObsFeatureExtractor fe = null;
+            if (prm.featurizeSrlSprlPairwise) {
+                fe = prm.includeSprl ? sprl.getFeatExtractor() : srl.getFeatExtractor();
+            } else {
+                fe = BiasOnlyObsFeatureExtractor.instance();  
+            }
             boolean enforceNilAgreement = prm.enforceSprlNilAgreement && (rS != RoleStructure.PAIRS_GIVEN);
             
             addSrlSprlFactors(sent, ofc, fg, fe, cs.sprlPropertyNames, roleVars, sprlVars, rS, allowSelfLoops,
@@ -292,7 +299,8 @@ public class JointNlpFactorGraph extends FactorGraph {
                         SprlClassLabel goldSprl2 = goldSprlLabel(sent, e, q2.get());
                         JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_SPRL;
                         Serializable templateKey = makeKey(ft, q.get(), goldSprl, q2.get(), goldSprl2);
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVar), ft, templateKey, ofc, fe));
+                        // TODO: do more features help here?
+                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVar), ft, templateKey, ofc, BiasOnlyObsFeatureExtractor.instance()));
                     }
                 }
             }

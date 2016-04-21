@@ -59,8 +59,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
      */
     public List<Triple<Integer, Integer, String>> getExamples(AnnoSentence sent, AnnoSentence gold) {
         List<Triple<Integer, Integer, String>> examples = new ArrayList<>();
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                gold.getKnownSprlPreds(), gold.getSprl().keySet(), gold.getPairsToSkip(), roleStructure, allowSelfLoops)) {
+        for (Pair<Integer, Integer> e : getExamplePairs(sent, gold)) {
             Properties props = gold.getSprl().get(e);
             if (e != null) {
                 Set<String> toScore = props.getMap().keySet();
@@ -77,6 +76,14 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
             }
         }
         return examples;
+    }
+
+    /**
+     * Returns a list of only those pred-arg pairs that should be evaluated
+     */
+    public List<Pair<Integer, Integer>> getExamplePairs(AnnoSentence sent, AnnoSentence gold) {
+        return SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
+                gold.getKnownSprlPreds(), gold.getSprl().keySet(), gold.getPairsToSkip(), roleStructure, allowSelfLoops);
     }
 
     @Override

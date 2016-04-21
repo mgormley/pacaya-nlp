@@ -266,6 +266,9 @@ public class JointNlpRunner {
     public static VarType srlVarType = VarType.LATENT;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between srl and sprl. If either sprl or srl are not included, then these become unary factors that are tied to the gold labels that are not being predicted.")
     public static boolean sprlSrlFactors = false;
+    // TODO: replace this with opportunity to just load a different template
+    @Opt(hasArg = true, description = "Whether to extract the complicated features for the pairwise factors between srl and sprl.")
+    public static boolean sprlSrlFactorsFeaturized = false;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between all sprl questions for a given pred-arg pair.")
     public static boolean sprlAllPairs = false;
     @Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
@@ -632,6 +635,7 @@ public class JointNlpRunner {
         prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
         //prm.fgPrm.sprlPrm.sprlPipelineIndex = sprlPipelineIndex;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
+        prm.fgPrm.featurizeSrlSprlPairwise = sprlSrlFactorsFeaturized;
         prm.fgPrm.sprlPrm.unaryFactors = unaryFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
         prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;  
