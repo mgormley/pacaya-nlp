@@ -126,10 +126,12 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
     private SprlFactorGraphBuilder sprl;
-
+    private BiasOnlyObsFeatureExtractor biasOnlyFe;
+    
     public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs,
             ObsFeatureConjoiner ofc) {
         this.prm = prm;
+        this.biasOnlyFe = new BiasOnlyObsFeatureExtractor(ofc, prm.srlPrm.srlFePrm.featureHashMod);
         build(sent, cs, ofc, this);
     }
 
@@ -183,12 +185,12 @@ public class JointNlpFactorGraph extends FactorGraph {
             if (prm.featurizeSrlSprlPairwise) {
                 fe = prm.includeSprl ? sprl.getFeatExtractor() : srl.getFeatExtractor();
             } else {
-                fe = BiasOnlyObsFeatureExtractor.instance();  
+                fe = biasOnlyFe;
             }
             boolean enforceNilAgreement = prm.enforceSprlNilAgreement && (rS != RoleStructure.PAIRS_GIVEN);
             
             addSrlSprlFactors(sent, ofc, fg, fe, cs.sprlPropertyNames, roleVars, sprlVars, rS, allowSelfLoops,
-                    prm.sprlPrm.pairwiseFactors, enforceNilAgreement);
+                    prm.sprlPrm.pairwiseFactors, enforceNilAgreement, biasOnlyFe);
         }
         if (prm.includeDp && prm.includeSrl) {
             addDpSrlFactors(ofc, fg);
@@ -262,7 +264,7 @@ public class JointNlpFactorGraph extends FactorGraph {
      */
     private static void addSrlSprlFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg,
             ObsFeatureExtractor fe, List<String> propNames, RoleVar[][] roleVars, SprlVar[][][] sprlVars,
-            RoleStructure rS, boolean allowSelfLoops, boolean sprlPairs, boolean enforceNilAgreement) {
+            RoleStructure rS, boolean allowSelfLoops, boolean sprlPairs, boolean enforceNilAgreement, BiasOnlyObsFeatureExtractor biasOnlyFe) {
         boolean givenSrl = roleVars == null ;
         boolean givenSprl = sprlVars == null ;
         assert !givenSrl || !givenSprl;
@@ -300,7 +302,7 @@ public class JointNlpFactorGraph extends FactorGraph {
                         JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_SPRL;
                         Serializable templateKey = makeKey(ft, q.get(), goldSprl, q2.get(), goldSprl2);
                         // TODO: do more features help here?
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVar), ft, templateKey, ofc, BiasOnlyObsFeatureExtractor.instance()));
+                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVar), ft, templateKey, ofc, biasOnlyFe));
                     }
                 }
             }

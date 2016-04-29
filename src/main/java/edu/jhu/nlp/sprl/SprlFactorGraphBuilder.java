@@ -104,6 +104,7 @@ public class SprlFactorGraphBuilder {
     private CorpusStatistics cs = null;
     
     private Var[][] argVars = null;
+    private BiasOnlyObsFeatureExtractor biasOnlyFe;
 
     public SprlFactorGraphBuilder(SprlFactorGraphBuilderPrm prm) {
         this.prm = prm;
@@ -123,6 +124,7 @@ public class SprlFactorGraphBuilder {
      */
     public void build(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs,
             SrlFeatureExtractor fe) {
+        this.biasOnlyFe = new BiasOnlyObsFeatureExtractor(ofc, prm.srlFePrm.featureHashMod);
         // Create feature extractor.
         this.obsFe = fe;
         // hold on to the corpus statistics which we will need for decoding
@@ -182,7 +184,7 @@ public class SprlFactorGraphBuilder {
                     // TODO: do more feature help here?
                     fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVars[i][j], v),
                             Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, BiasOnlyObsFeatureExtractor.instance()));
+                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, biasOnlyFe));
                 }
             }
             if (prm.pairwiseFactors) {
@@ -196,7 +198,7 @@ public class SprlFactorGraphBuilder {
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2),
                                 SprlFactorType.SPRL_PAIRWISE,
                                 makeKey(SprlFactorType.SPRL_PAIRWISE, q1, q2),
-                                ofc, BiasOnlyObsFeatureExtractor.instance()));
+                                ofc, biasOnlyFe));
                     }
                 }
             }
