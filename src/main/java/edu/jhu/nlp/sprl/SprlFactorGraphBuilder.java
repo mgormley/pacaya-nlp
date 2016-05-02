@@ -145,12 +145,6 @@ public class SprlFactorGraphBuilder {
             argVars = new Var[n][n];
         }
         ArrayList<String> sprlStateNames = new ArrayList<>(cs.sprlStateNames);
-        int notAnArgIx = sprlStateNames.indexOf(SprlClassLabel.NOT_AN_ARG.name()); 
-        // TODO: look better at this for the enforcing agreement case
-        if (prm.roleStructure == RoleStructure.PAIRS_GIVEN && notAnArgIx >= 0) {
-//             remove the NOT_AN_ARG label if pairs are given
-            sprlStateNames.remove(notAnArgIx);
-        }
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(),
                 sent.getKnownSprlPreds(), sent.getKnownSprlPairs(), sent.getPairsToSkip(), prm.roleStructure,
                 prm.allowPredArgSelfLoops)) {

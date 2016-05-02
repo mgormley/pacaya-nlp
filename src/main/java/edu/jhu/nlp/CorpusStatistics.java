@@ -162,8 +162,11 @@ public class CorpusStatistics implements Serializable {
             // SPRL stats.
             if (sent.getSprl() != null) {
                 for (Map.Entry<Pair<Integer, Integer>, Properties> e : sent.getSprl().entrySet()) {
-                    knownSprlProperties.addAll(e.getValue().getMap().keySet());
-                    for (SprlClassLabel label : e.getValue().toLabels(SprlClassLabel.getLabels())) {
+                    List<String> theseProps = new ArrayList<>(e.getValue().getMap().keySet());
+                    // add the properties
+                    knownSprlProperties.addAll(theseProps);
+                    // and the SPRL class label for each on this pair (e.g. LIKELY, UNLIKLEY)
+                    for (SprlClassLabel label : e.getValue().toLabels(theseProps)) {
                         knownSprlStates.add(label.name());
                     }
                 }
@@ -214,6 +217,8 @@ public class CorpusStatistics implements Serializable {
         log.info("Found {} POS tag types: {}", knownPostags.size(), knownPostags);
         log.info("Found {} SRL Predicate types.", predSenseListMap.size());
         log.info("Found {} SRL Role types: {}", roleStateNames.size(), roleStateNames);
+        log.info("Found {} SPRL Properties: {}", sprlPropertyNames.size(), sprlPropertyNames);
+        log.info("Found {} SPRL Property State Names: {}", sprlStateNames.size(), sprlStateNames);
         log.info("Found {} NER types: {}", knownNeTypes.size(), knownNeTypes);
         log.info("Found {} NER subtypes: {}", knownNeSubtypes.size(), knownNeSubtypes);
         log.info("Found {} Relation types: {}", relationStateNames.size(), relationStateNames);        
