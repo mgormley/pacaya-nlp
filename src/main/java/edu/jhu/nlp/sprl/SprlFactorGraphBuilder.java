@@ -3,6 +3,7 @@ package edu.jhu.nlp.sprl;
 import static edu.jhu.nlp.joint.JointNlpFactorGraph.makeKey;
 import static edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate.ISARG_SPRL_BINARY;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -143,7 +144,13 @@ public class SprlFactorGraphBuilder {
         if (prm.extraVariablesForNilAgreement) {
             argVars = new Var[n][n];
         }
-
+        ArrayList<String> sprlStateNames = new ArrayList<>(cs.sprlStateNames);
+        int notAnArgIx = sprlStateNames.indexOf(SprlClassLabel.NOT_AN_ARG.name()); 
+        // TODO: look better at this for the enforcing agreement case
+        if (prm.roleStructure == RoleStructure.PAIRS_GIVEN && notAnArgIx >= 0) {
+//             remove the NOT_AN_ARG label if pairs are given
+            sprlStateNames.remove(notAnArgIx);
+        }
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent.size(),
                 sent.getKnownSprlPreds(), sent.getKnownSprlPairs(), sent.getPairsToSkip(), prm.roleStructure,
                 prm.allowPredArgSelfLoops)) {
@@ -162,7 +169,7 @@ public class SprlFactorGraphBuilder {
                 String q = cs.sprlPropertyNames.get(qix);
                 // variable for label on property for this pair
                 String name = "sprl_r" + i + "-" + "a" + j + "_" + q;
-                SprlVar v = new SprlVar(sprlType, SprlClassLabel.getLabels().size(), name, SprlClassLabel.getLabels(),
+                SprlVar v = new SprlVar(sprlType, sprlStateNames.size(), name, sprlStateNames,
                         i, j);
 
                 // add the variable
