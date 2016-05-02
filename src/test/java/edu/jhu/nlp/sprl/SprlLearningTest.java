@@ -17,8 +17,8 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import edu.jhu.hlt.optimize.FixedStep;
-import edu.jhu.hlt.optimize.MalletLBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
+import edu.jhu.hlt.optimize.LBFGS;
+import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
 import edu.jhu.hlt.optimize.functions.L2;
@@ -32,6 +32,7 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateReader;
 import edu.jhu.nlp.joint.JointNlpAnnotator;
 import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
+import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
@@ -48,10 +49,10 @@ public class SprlLearningTest {
         CrfTrainerPrm crfPrm = new CrfTrainerPrm();
         crfPrm.batchOptimizer = null;
         crfPrm.regularizer = null;
-        MalletLBFGSPrm lbfgsPrms = new MalletLBFGSPrm();
-        lbfgsPrms.maxIterations = 1;
-        crfPrm.optimizer = new MalletLBFGS(lbfgsPrms);
-        lbfgsPrms.numberOfCorrections = 0;
+        LBFGSPrm lbfgsPrms = new LBFGSPrm();
+        lbfgsPrms.max_iterations = 1;
+        crfPrm.optimizer = new LBFGS(lbfgsPrms);
+        lbfgsPrms.m = 0;
         return crfPrm;
     }
     
