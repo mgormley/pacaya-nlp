@@ -9,8 +9,6 @@ Natural Language Processing (NLP) tools built using Pacaya.
 This project has several dependencies. 
 * Prim: a Java primitives library
 * Optimize: a Java optimization library
-* Optimize Wrappers: wrappers for various optimizers that are 
-  not included in the standard Optimize library.
 * Pacaya: a Java graphical models library
 
 Currently, these are accessible from the COE's internal maven repository, or they 
@@ -39,10 +37,6 @@ repositories. Email mrg@cs.jhu.edu for access with your GitLab username.
 2. Checkout and install Optimize locally
 	git clone https://gitlab.hltcoe.jhu.edu/mgormley/optimize.git
 	cd optimize
-	mvn install -DskipTests
-3. Checkout and install Optimize Wrappers locally
-	git clone https://gitlab.hltcoe.jhu.edu/mgormley/optimize-wrappers.git
-	cd optimize-wrappers
 	mvn install -DskipTests
 3. Checkout and install Pacaya locally
 	git clone https://gitlab.hltcoe.jhu.edu/mgormley/pacaya.git

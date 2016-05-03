@@ -6,17 +6,17 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.primitives.Bytes;
+
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
-import edu.jhu.nlp.features.BitPacking;
 import edu.jhu.nlp.features.LocalObservations;
 import edu.jhu.nlp.features.TemplateFeatureExtractor;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.pacaya.gm.feat.FeatureVector;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.model.ExpFamFactor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -25,6 +25,7 @@ import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives;
+import edu.jhu.prim.util.SafeCast;
 
 public class PosTagFactorGraphBuilder {
 
@@ -49,7 +50,7 @@ public class PosTagFactorGraphBuilder {
     public enum PosTagFactorType {
         TAG_BIGRAM, INIT_TAG, TAG_UNIGRAM
     }
-    
+        
     private PosTagFactorGraphBuilderPrm prm;
     private List<Var> tagVars;
     
@@ -88,49 +89,25 @@ public class PosTagFactorGraphBuilder {
     }
 
     private void addFastFactors(IntAnnoSentence isent, FactorGraph fg) {
+	// TODO: Add unary INIT_TAG factor as in addSlowFactors.
         for (int i=0; i<isent.size(); i++) {
             if (prm.unigramFactors) {
                 // Unary factor for each tag.
                 VarSet vars = new VarSet(tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
                 BitshiftTokenFeatures.addUnigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
-                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, 
+                        SafeCast.safeIntToShort(PosTagFactorType.TAG_UNIGRAM.ordinal()), prm.featureHashMod));
             }
             if (i > 0 && prm.bigramFactors) {
                 // Binary factor for each pair of tags.
                 VarSet vars = new VarSet(tagVars.get(i-1), tagVars.get(i));
                 final FeatureVector obsFeats = new FeatureVector();
                 BitshiftTokenFeatures.addBigramFeatures(isent, i, obsFeats, -1, (short) 0); // config=0
-                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, prm.featureHashMod));
+                fg.addFactor(new HashObsFeatsFactor(vars, obsFeats, 
+                        SafeCast.safeIntToShort(PosTagFactorType.TAG_UNIGRAM.ordinal()), prm.featureHashMod));
             }
         }
-    }
-    
-    private static class HashObsFeatsFactor extends ExpFamFactor {
-
-        private static final long serialVersionUID = 1L;
-        private FeatureVector obsFeats;
-        private int featureHashMod;
-
-        public HashObsFeatsFactor(VarSet vars, FeatureVector obsFeats, int featureHashMod) {
-            super(vars);
-            this.obsFeats = obsFeats;
-            this.featureHashMod = featureHashMod;
-        }
-        
-        @Override
-        public FeatureVector getFeatures(int config) {
-            // TODO: Double check that magic is not a bug - should config be opened up?
-            int[] idxs = obsFeats.getInternalIndices();
-            int used = obsFeats.getUsed();
-            FeatureVector feats = new FeatureVector(obsFeats.getUsed());
-            for (int k=0; k<used; k++) {
-                long feat = BitPacking.encodeFeatureII__(config, idxs[k]);
-                BitshiftTokenFeatures.addFeat(feats, featureHashMod, feat);
-            }
-            return feats;
-        }
-        
     }
     
     protected void addSlowFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
@@ -169,7 +146,7 @@ public class PosTagFactorGraphBuilder {
     }
 
     /* ------------------------- Encode ------------------------- */
-    public void addRelVarAssignments(List<String> tags, VarConfig vc) {
+    public void addVarAssignments(List<String> tags, VarConfig vc) {
         for (int i=0; i<tagVars.size(); i++) {
             Var var = tagVars.get(i);
             vc.put(var, tags.get(i));

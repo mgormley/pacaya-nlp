@@ -99,8 +99,8 @@ public class CorpusHandler {
     // Reader-Specific Options
     @Opt(hasArg = true, description = "CoNLL-X: whether to use the P(rojective)HEAD column for parents.")
     public static boolean trainUseCoNLLXPhead = false;
-    @Opt(hasArg = true, description = "Tool name of dependency parse for ConcreteReader.")
-    public static String concreteDepParseTool = "basic-deps";
+    @Opt(hasArg = true, description = "Tool name of dependency parse for ConcreteReader. (defaults to the first)")
+    public static String concreteDepParseTool = null;
     
     ////// TODO: use these options... /////
     // @Opt(hasArg=true, description="Whether to normalize and clean words.")

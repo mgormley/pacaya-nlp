@@ -11,11 +11,13 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.data.concrete.ConcreteReader;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.concrete.ListCloseableIterable;
-import edu.jhu.nlp.data.conll.CoNLL08FileReader;
+import edu.jhu.nlp.data.conll.CoNLL02Reader;
+import edu.jhu.nlp.data.conll.CoNLL02Sentence;
+import edu.jhu.nlp.data.conll.CoNLL08Reader;
 import edu.jhu.nlp.data.conll.CoNLL08Sentence;
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
-import edu.jhu.nlp.data.conll.CoNLLXFileReader;
+import edu.jhu.nlp.data.conll.CoNLLXReader;
 import edu.jhu.nlp.data.conll.CoNLLXSentence;
 import edu.jhu.nlp.data.semeval.SemEval2010Reader;
 import edu.jhu.nlp.data.semeval.SemEval2010Sentence;
@@ -44,9 +46,12 @@ public class AnnoSentenceReader {
         /** Concrete options. */
         public ConcreteReaderPrm rePrm = new ConcreteReaderPrm();        
     }
-    
-    public enum DatasetType { SYNTHETIC, PTB, CONLL_X, CONLL_2008, CONLL_2009, CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK };
-    
+
+    public enum DatasetType {
+        SYNTHETIC, PTB, CONLL_2002, CONLL_X, CONLL_2008, CONLL_2009, 
+        CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK, JSON
+    };
+
     public interface SASReader extends Iterable<AnnoSentence> {
         public void close();        
     }
@@ -74,7 +79,7 @@ public class AnnoSentenceReader {
             loadSents(reader);
             sents.setSourceSents(csents.getSourceSents());
             reader.close();
-            logSentStats();
+            logSentStats(sents, log, prm.name);
         } else {
             InputStream fis = new FileInputStream(dataFile);
             loadSents(fis, type);
@@ -98,13 +103,17 @@ public class AnnoSentenceReader {
             reader = new ListCloseableIterable(csents);
         } else {
             if (type == DatasetType.CONLL_2009) {
-                reader = ConvCloseableIterable.getInstance(new CoNLL09FileReader(fis), new CoNLL092Anno());
+                reader = ConvCloseableIterable.getInstance(new CoNLL09Reader(fis), new CoNLL092Anno());
             } else if (type == DatasetType.CONLL_2008) {
-                reader = ConvCloseableIterable.getInstance(new CoNLL08FileReader(fis), new CoNLL082Anno());
+                reader = ConvCloseableIterable.getInstance(new CoNLL08Reader(fis), new CoNLL082Anno());
             } else if (type == DatasetType.CONLL_X) {
-                reader = ConvCloseableIterable.getInstance(new CoNLLXFileReader(fis), new CoNLLX2Anno());
+                reader = ConvCloseableIterable.getInstance(new CoNLLXReader(fis), new CoNLLX2Anno());
+            } else if (type == DatasetType.CONLL_2002) {
+                reader = ConvCloseableIterable.getInstance(new CoNLL02Reader(fis), new CoNLL022Anno());
             } else if (type == DatasetType.SEMEVAL_2010) {
                 reader = ConvCloseableIterable.getInstance(new SemEval2010Reader(fis), new SemEval20102Anno());
+            } else if (type == DatasetType.JSON) {
+                reader = new JsonConcatReader(fis);
             //} else if (type == DatasetType.PTB) {
                 //reader = new Ptb2Anno(new PtbFileReader(dataFile));
             } else {
@@ -115,12 +124,12 @@ public class AnnoSentenceReader {
         loadSents(reader);
         sents.setSourceSents(sourceSents);
         reader.close();
-        logSentStats();
+        logSentStats(sents, log, prm.name);
     }
 
-    private void logSentStats() {
-        log.info("Num " + prm.name + " sentences: " + sents.size());   
-        log.info("Num " + prm.name + " tokens: " + sents.getNumTokens());
+    public static void logSentStats(AnnoSentenceCollection sents, Logger log, String name) {
+        log.info("Num " + name + " sentences: " + sents.size());   
+        log.info("Num " + name + " tokens: " + sents.getNumTokens());
         log.info("Longest sentence: " + sents.getMaxLength());
         log.info("Average sentence length: " + sents.getAvgLength());
     }
@@ -168,6 +177,15 @@ public class AnnoSentenceReader {
         @Override
         public AnnoSentence convert(CoNLLXSentence x) {
             return x.toAnnoSentence(prm.useCoNLLXPhead);
+        }
+        
+    }
+
+    public class CoNLL022Anno implements Converter<CoNLL02Sentence, AnnoSentence> {
+
+        @Override
+        public AnnoSentence convert(CoNLL02Sentence x) {
+            return x.toAnnoSentence();
         }
         
     }

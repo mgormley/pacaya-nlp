@@ -67,7 +67,7 @@ public class EmpiricalRiskTest {
         
         MtFactory mtFactory = new EmpiricalRiskFactory(getErmaBpPrm(s), dl);
         ExampleObjective exObj = new ModuleObjective(data, mtFactory);
-        AvgBatchObjective obj = new AvgBatchObjective(exObj, model, 1);
+        AvgBatchObjective obj = new AvgBatchObjective(exObj, model);
 
         System.out.println(DoubleArrays.toString(obj.getGradient(model.getParams()).toNativeArray(), "%.4g"));
                 

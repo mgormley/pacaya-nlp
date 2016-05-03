@@ -9,24 +9,24 @@ import org.junit.Test;
 
 import edu.jhu.pacaya.util.files.QFiles;
 
-public class CoNLL09ReadWriteTest {
+public class CoNLL02ReadWriteTest {
 
-    public static final String conll2009Example= "/edu/jhu/nlp/data/conll/CoNLL2009-ST-Catalan-trial.txt";
+    public static final String conllXExample= "/edu/jhu/nlp/data/conll/conll-02-example.conll";
     
     @Test
     public void testReadWrite() throws IOException {
-        InputStream inputStream = this.getClass().getResourceAsStream(conll2009Example);
-        CoNLL09Reader cr = new CoNLL09Reader(inputStream);
+        InputStream inputStream = this.getClass().getResourceAsStream(conllXExample);
+        CoNLL02Reader cr = new CoNLL02Reader(inputStream);
 
         StringWriter writer = new StringWriter();
-        CoNLL09Writer cw = new CoNLL09Writer(writer);
-        for (CoNLL09Sentence sent : cr) {
+        CoNLL02Writer cw = new CoNLL02Writer(writer);
+        for (CoNLL02Sentence sent : cr) {
             cw.write(sent);
         }
         cw.close();
         cr.close();
         
-        String readSentsStr = QFiles.getResourceAsString(conll2009Example, "UTF-8");
+        String readSentsStr = QFiles.getResourceAsString(conllXExample, "iso-8859-1");
         String writeSentsStr = writer.getBuffer().toString();
         String[] readSplits = readSentsStr.split("\n");
         String[] writeSplits = writeSentsStr.split("\n");

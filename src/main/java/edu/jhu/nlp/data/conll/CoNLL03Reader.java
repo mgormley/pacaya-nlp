@@ -10,41 +10,41 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import edu.jhu.nlp.data.simple.CloseableIterable;
 
 /**
- * Reads a single file in CoNLL-2009 format.
+ * Reads a single file in CoNLL-2002 format.
  * 
  * @author mgormley
- *
  */
-public class CoNLL09FileReader implements CloseableIterable<CoNLL09Sentence>, Iterator<CoNLL09Sentence> {
+public class CoNLL03Reader implements CloseableIterable<CoNLL03Sentence>, Iterator<CoNLL03Sentence> {
 
-    private CoNLL09Sentence sentence;
+    private CoNLL03Sentence sentence;
     private BufferedReader reader;
 
-    public CoNLL09FileReader(File file) throws IOException {
+    public CoNLL03Reader(File file) throws IOException {
         this(new FileInputStream(file));
     }
 
-    public CoNLL09FileReader(InputStream inputStream) throws UnsupportedEncodingException {
-        this(new BufferedReader(new InputStreamReader(inputStream, "UTF-8")));
+    public CoNLL03Reader(InputStream inputStream) throws UnsupportedEncodingException {
+        this(new BufferedReader(new InputStreamReader(inputStream, "iso-8859-1")));
     }
     
-    public CoNLL09FileReader(BufferedReader reader) {
+    public CoNLL03Reader(BufferedReader reader) {
         this.reader = reader;
         next();
     }
 
-    public static CoNLL09Sentence readCoNLL09Sentence(BufferedReader reader) throws IOException {
+    public static CoNLL03Sentence readCoNLL03Sentence(BufferedReader reader) throws IOException {
         // The current token.
         String line;
         // The tokens for one sentence.
         ArrayList<String> tokens = new ArrayList<String>();
 
         while ((line = reader.readLine()) != null) {
-            if (line.equals("")) {
+            if (line.trim().equals("")) {
                 // End of sentence marker.
                 break;
             } else {
@@ -53,23 +53,22 @@ public class CoNLL09FileReader implements CloseableIterable<CoNLL09Sentence>, It
             }
         }
         if (tokens.size() > 0) {
-            return CoNLL09Sentence.getInstanceFromTokenStrings(tokens);
+            return CoNLL03Sentence.getInstanceFromTokenStrings(tokens);
         } else {
             return null;
         }
     }
 
     @Override
-    public boolean hasNext() {        
+    public boolean hasNext() {
         return sentence != null;
     }
 
     @Override
-    public CoNLL09Sentence next() {
+    public CoNLL03Sentence next() {
         try {
-            CoNLL09Sentence curSent = sentence;
-            sentence = readCoNLL09Sentence(reader);
-            if (curSent != null) { curSent.intern(); }
+            CoNLL03Sentence curSent = sentence;
+            sentence = readCoNLL03Sentence(reader);
             return curSent;
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -82,7 +81,7 @@ public class CoNLL09FileReader implements CloseableIterable<CoNLL09Sentence>, It
     }
 
     @Override
-    public Iterator<CoNLL09Sentence> iterator() {
+    public Iterator<CoNLL03Sentence> iterator() {
         return this;
     }
 
@@ -90,26 +89,19 @@ public class CoNLL09FileReader implements CloseableIterable<CoNLL09Sentence>, It
         reader.close();
     }
 
-    public List<CoNLL09Sentence> readAll() {
-        ArrayList<CoNLL09Sentence> sents = new ArrayList<CoNLL09Sentence>();
-        for (CoNLL09Sentence sent : this) {
+    public List<CoNLL03Sentence> readAll() {
+        ArrayList<CoNLL03Sentence> sents = new ArrayList<CoNLL03Sentence>();
+        for (CoNLL03Sentence sent : this) {
             sents.add(sent);
         }
         return sents;
     }
 
-    public List<CoNLL09Sentence> readSents(int maxSents) {
-        return readSents(maxSents, Integer.MAX_VALUE);
-    }
-    
-    public List<CoNLL09Sentence> readSents(int maxSents, int maxSentLen) {
-        ArrayList<CoNLL09Sentence> sents = new ArrayList<CoNLL09Sentence>();
-        for (CoNLL09Sentence sent : this) {
-            if (sents.size() >= maxSents) {
+    public List<CoNLL03Sentence> readSents(int maxSents) {
+        ArrayList<CoNLL03Sentence> sents = new ArrayList<CoNLL03Sentence>();
+        for (CoNLL03Sentence sent : this) {
+            if (sents.size() > maxSents) {
                 break;
-            }
-            if (sent.size() >= maxSentLen) {
-                continue;
             }
             sents.add(sent);
         }

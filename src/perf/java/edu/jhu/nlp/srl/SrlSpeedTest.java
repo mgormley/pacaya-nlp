@@ -16,16 +16,16 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.words.PrefixAnnotator;
-import edu.jhu.pacaya.gm.data.AbstractFgExampleList;
+import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation;
+import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
-import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
@@ -99,7 +99,7 @@ public class SrlSpeedTest {
             ofcPrm.featCountCutoff = 1;
             //ofcPrm.includeUnsupportedFeatures = true;
             final ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, ftl);
-            ofc.init(new AbstractFgExampleList(){
+            ofc.init(new FgExampleList(){
                 @Override
                 public LFgExample get(int i) {
                     return getSrlFg(sents.get(i), cs, ofc, hash);

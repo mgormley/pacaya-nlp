@@ -38,8 +38,8 @@ public class CoNLL08ConvertToGoldHeads {
 
     private static void readSystemHeadsWriteGoldHeads(String goldFile, String sysFile, String outFile)
             throws UnsupportedEncodingException, FileNotFoundException, IOException {
-        CoNLL08FileReader goldCr = new CoNLL08FileReader(new FileInputStream(goldFile));
-        CoNLL08FileReader sysCr = new CoNLL08FileReader(new FileInputStream(sysFile));
+        CoNLL08Reader goldCr = new CoNLL08Reader(new FileInputStream(goldFile));
+        CoNLL08Reader sysCr = new CoNLL08Reader(new FileInputStream(sysFile));
 
         CoNLL08Writer cw = new CoNLL08Writer(new FileOutputStream(outFile));
         while(sysCr.hasNext()) {

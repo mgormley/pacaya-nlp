@@ -67,7 +67,7 @@ public class ConcreteReader {
         public String posTool = null;
         public String lemmaTool = null;
         public String chunkTool = null;
-        public String depParseTool = "basic-deps"; 
+        public String depParseTool = null; 
         public String parseTool = null;
         public String nerTool = null;
         public String relationTool = null;
@@ -223,7 +223,7 @@ public class ConcreteReader {
         for (EntityMention cEm : cEms.getMentionList()) {
             TokenRefSequence cEmToks = cEm.getTokens();
             Span span = getSpan(cEmToks);
-
+            
             int sentIdx = toksUuid2SentIdx.get(cEmToks.getTokenizationId().getUuidString());
             String entityType = cEm.getEntityType();
             String entitySubtype = null;
@@ -384,8 +384,11 @@ public class ConcreteReader {
             int numWords = words.size();
             log.trace("Reading dependency parse with name {}", prm.depParseTool);
             DependencyParse depParse = ConcreteUtils.getFirstDependencyParseWithName(tokenization, prm.depParseTool);
-            int[] parents = getParents(depParse, numWords);
-            as.setParents(parents);
+            Pair<int[], List<String>> pair = getParentsDeprels(depParse, numWords);
+            if (pair != null) {
+                as.setParents(pair.get1());
+                as.setDeprels(pair.get2());
+            }
         }
         
         // Constituency Parse
@@ -457,13 +460,20 @@ public class ConcreteReader {
         return tags;
     }
 
-    private static int[] getParents(DependencyParse dependencyParse, int numWords) {
+    private static Pair<int[],List<String>> getParentsDeprels(DependencyParse dependencyParse, int numWords) {
         if (dependencyParse == null) {
             return null;
         }
+        // Parents.
         int[] parents = new int[numWords];
         Arrays.fill(parents, -2);
+        // Labels.
+        List<String> deprels = new ArrayList<>(numWords);
+        for (int i=0; i<numWords; i++) {
+            deprels.add(null);
+        }
         for (Dependency arc : dependencyParse.getDependencyList()) {
+            // Parent.
             int c = arc.getDep();
             if (c < 0) {
                 throw new IllegalStateException(String.format("Invalid dep value %d for dependendency tree %s", arc.getDep(), dependencyParse.getUuid()));
@@ -476,11 +486,13 @@ public class ConcreteReader {
             } else {
                 parents[c] = arc.getGov();
             }
+            // Label.
+            deprels.set(c, arc.getEdgeType());
         }
         if (IntArrays.contains(parents, -2)) {
             log.trace("Dependency tree contains token(s) with no head: " + dependencyParse.getUuid());
         }
-        return parents;
+        return new Pair<int[],List<String>>(parents, deprels);
     }
 
     private static Span getSpan(TokenRefSequence toks) {

@@ -41,7 +41,7 @@ public class CoNLL09BrownTagger {
         BrownClusterTagger tagger = new BrownClusterTagger(prm);
         tagger.read(brownClusters);
         log.info("Tagging CoNLL data...");
-        CoNLL09FileReader reader = new CoNLL09FileReader(new File(train));
+        CoNLL09Reader reader = new CoNLL09Reader(new File(train));
         CoNLL09Writer writer = new CoNLL09Writer(trainOut);
         for (CoNLL09Sentence sent : reader) {
             for (CoNLL09Token tok : sent) {

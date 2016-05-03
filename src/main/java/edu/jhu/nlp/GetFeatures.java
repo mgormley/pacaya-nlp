@@ -19,7 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -115,7 +115,7 @@ public class GetFeatures {
             knownLinks.add("True");
             knownLinks.add("False");
             knownUnks.add("UNK");
-            CoNLL09FileReader cr = new CoNLL09FileReader(new File(trainingFile));
+            CoNLL09Reader cr = new CoNLL09Reader(new File(trainingFile));
             for (CoNLL09Sentence sent : cr) {
                 if (sent.size() > maxSentLength) {
                     maxSentLength = sent.size();
@@ -191,7 +191,7 @@ public class GetFeatures {
     }
         
     public void featuresToPrint(String inFile, BufferedWriter bw, boolean isTrain) throws IOException {
-        CoNLL09FileReader cr = new CoNLL09FileReader(new File(inFile));
+        CoNLL09Reader cr = new CoNLL09Reader(new File(inFile));
         int example = 0;
         for (CoNLL09Sentence sent : cr) {
             boolean hasPred = false;

@@ -12,33 +12,32 @@ import edu.jhu.hlt.optimize.AdaGradSchedule;
 import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
-import edu.jhu.hlt.optimize.MalletLBFGS;
-import edu.jhu.hlt.optimize.MalletLBFGS.MalletLBFGSPrm;
+import edu.jhu.hlt.optimize.LBFGS;
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
 import edu.jhu.hlt.optimize.SGDFobos;
 import edu.jhu.hlt.optimize.SGDFobos.SGDFobosPrm;
-import edu.jhu.hlt.optimize.StanfordQNMinimizer;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.hlt.optimize.function.Regularizer;
 import edu.jhu.hlt.optimize.functions.L2;
-import edu.jhu.nlp.joint.JointNlpRunner.RegularizerType;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 
 public class OptimizerFactory {
 
-    public static enum OptimizerType { LBFGS, QN, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
+    public static enum OptimizerType { LBFGS, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
 
+    public enum RegularizerType { L2, NONE };
+    
     // Options for optimization.
     @Opt(hasArg=true, description="The optimization method to use for training.")
-    public static OptimizerType optimizer = OptimizerType.LBFGS;
+    public static OptimizerType optimizer = OptimizerType.ADAGRAD_COMID;
     @Opt(hasArg=true, description="The variance for the L2 regularizer.")
     public static double l2variance = 1.0;
     @Opt(hasArg=true, description="The type of regularizer.")
-    public static JointNlpRunner.RegularizerType regularizer = JointNlpRunner.RegularizerType.L2;
+    public static RegularizerType regularizer = RegularizerType.NONE;
     @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
     public static int maxLbfgsIterations = 1000;
     @Opt(hasArg=true, description="Number of effective passes over the dataset for SGD.")
@@ -76,11 +75,8 @@ public class OptimizerFactory {
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
         if (optimizer == OptimizerType.LBFGS) {
-            opt = getMalletLbfgs();
+            opt = new LBFGS();
             batchOpt = null;
-        } else if (optimizer == OptimizerType.QN) {
-            opt = getStanfordLbfgs();
-            batchOpt = null;            
         } else if (optimizer == OptimizerType.SGD || optimizer == OptimizerType.ASGD  ||
                 optimizer == OptimizerType.ADAGRAD || optimizer == OptimizerType.ADADELTA) {
             opt = null;
@@ -147,16 +143,6 @@ public class OptimizerFactory {
         } else {
             throw new ParseException("Unsupported regularizer: " + regularizer);
         }
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getMalletLbfgs() {
-        MalletLBFGSPrm prm = new MalletLBFGSPrm();
-        prm.maxIterations = maxLbfgsIterations;
-        return new MalletLBFGS(prm);
-    }
-
-    private static edu.jhu.hlt.optimize.Optimizer<DifferentiableFunction> getStanfordLbfgs() {
-        return new StanfordQNMinimizer(maxLbfgsIterations);
     }
     
     private static SGDPrm getSgdPrm() {

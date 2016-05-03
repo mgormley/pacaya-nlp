@@ -13,7 +13,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.nlp.data.conll.CoNLL09FileReader;
+import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph;
@@ -44,7 +44,7 @@ public class Conll09ToConllLiteV2 {
         final String sep = "\t";
 
         BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(output), "UTF-8"));
-        CoNLL09FileReader reader = new CoNLL09FileReader(input);
+        CoNLL09Reader reader = new CoNLL09Reader(input);
         for (CoNLL09Sentence sent : reader) {
             SrlGraph srl = sent.getSrlGraph();
             

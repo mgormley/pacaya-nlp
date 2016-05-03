@@ -4,7 +4,7 @@
 
   <groupId>edu.jhu.pacaya-nlp</groupId>
   <artifactId>pacaya-nlp</artifactId>
-  <version>3.1.1</version>
+  <version>3.1.2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>${project.groupId}:${project.artifactId}</name>
@@ -13,7 +13,7 @@
 
   <properties>
     <!-- The version for the Pacaya dependencies. -->
-    <pacaya.version>3.1.1</pacaya.version>
+    <pacaya.version>3.1.2-SNAPSHOT</pacaya.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
   
@@ -44,7 +44,7 @@
 
   <licenses>
     <license>
-      <name>Apache License, Version 2.0</name>
+      <name>The Apache Software License, Version 2.0</name>
       <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
     </license>
   </licenses>
@@ -111,7 +111,7 @@
           </execution>
         </executions>
       </plugin>
-      <!-- This plugin allows us to update to the latest versions of prim, optimize, and optimize-wrappers. -->
+      <!-- This plugin allows us to update to the latest versions of prim and optimize. -->
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>versions-maven-plugin</artifactId>
@@ -158,6 +158,7 @@
             <artifactId>maven-javadoc-plugin</artifactId>
             <configuration>
               <quiet />
+              <additionalparam>-Xdoclint:none</additionalparam>
             </configuration>
             <executions>
               <execution>
@@ -290,12 +291,6 @@
       <artifactId>optimize</artifactId>
       <version>${pacaya.version}</version>
     </dependency>
-    <dependency>
-      <groupId>edu.jhu.hlt.optimize-wrappers</groupId>
-      <artifactId>optimize-wrappers</artifactId>
-      <version>${pacaya.version}</version>
-      <optional>true</optional>      
-    </dependency>
     <dependency>    
       <groupId>edu.jhu.hlt</groupId>
       <artifactId>concrete-core</artifactId>
@@ -305,6 +300,16 @@
       <groupId>edu.jhu.hlt</groupId>
       <artifactId>concrete-util</artifactId>
       <version>4.4.4</version>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish</groupId>
+      <artifactId>javax.json</artifactId>
+      <version>1.0.4</version>
+    </dependency>
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.6.2</version>
     </dependency>
   </dependencies>
 
