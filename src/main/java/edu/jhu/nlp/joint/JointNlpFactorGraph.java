@@ -1,6 +1,6 @@
 package edu.jhu.nlp.joint;
 
-import static edu.jhu.nlp.Indexed.enumerate;
+import static edu.jhu.pacaya.sch.util.Indexed.enumerate;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.Indexed;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
 import edu.jhu.nlp.data.Properties;
@@ -49,6 +48,7 @@ import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
+import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.tuple.Pair;

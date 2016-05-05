@@ -1,6 +1,6 @@
 package edu.jhu.nlp.data.concrete;
 
-import static edu.jhu.nlp.Indexed.enumerate;
+import static edu.jhu.pacaya.sch.util.Indexed.enumerate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -44,7 +44,6 @@ import edu.jhu.hlt.concrete.UUID;
 import edu.jhu.hlt.concrete.serialization.CompactCommunicationSerializer;
 import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.util.TokenizationUtils.TagTypes;
-import edu.jhu.nlp.Indexed;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
 //import edu.jhu.nlp.data.Properties;
@@ -58,6 +57,7 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
+import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.arrays.IntArrays;
