@@ -11,7 +11,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.gm.feat.SignatureBuilder;
+import edu.jhu.nlp.features.SignatureBuilder;
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.parse.cky.CkyPcfgParser;
 import edu.jhu.pacaya.parse.cky.CkyPcfgParser.CkyPcfgParserPrm;

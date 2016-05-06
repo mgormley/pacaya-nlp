@@ -1,4 +1,4 @@
-package edu.jhu.gm.feat;
+package edu.jhu.nlp.features;
 
 import java.io.Serializable;
 import java.util.HashSet;
