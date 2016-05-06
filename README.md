@@ -12,34 +12,20 @@ This project has several dependencies.
 * Pacaya: a Java graphical models library
 
 Currently, these are accessible from the COE's internal maven repository, or they 
-can be installed locally. You can use the COE maven repository if you are installing a tagged 
-release of Pacaya. If you are trying to build a development branch,
-you should install the dependencies locally.
-
-### Using the COE's internal maven repository
-
-If you are installing on the COE grid, you can skip the rest of this 
-section.
-
-If you are installing somewhere other than the COE grid, set up an ssh 
-tunnel to the COE maven repository and update your settings.xml file 
-to point to localhost. 
+can be installed locally. 
 
 ### Installing dependencies locally
 
-Currently you must request permission to access these private
-repositories. Email mrg@cs.jhu.edu for access with your GitLab username.
-
 1. Checkout and install Prim locally
-	git clone https://gitlab.hltcoe.jhu.edu/mgormley/prim.git
+	git clone https://github.com/mgormley/prim.git
 	cd prim
 	mvn install -DskipTests
 2. Checkout and install Optimize locally
-	git clone https://gitlab.hltcoe.jhu.edu/mgormley/optimize.git
+	git clone https://github.com/minyans/optimize.git
 	cd optimize
 	mvn install -DskipTests
 3. Checkout and install Pacaya locally
-	git clone https://gitlab.hltcoe.jhu.edu/mgormley/pacaya.git
+	git clone https://github.com/mgormley/pacaya.git
 	cd pacaya
 	mvn install -DskipTests
 
