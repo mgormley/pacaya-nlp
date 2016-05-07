@@ -27,16 +27,18 @@ public class BiasOnlyObsFeatureExtractor implements ObsFeatureExtractor {
     
     @Override
     public FeatureVector calcObsFeatureVector(ObsFeExpFamFactor factor) {
+        FeatureVector fv = new FeatureVector();
+
         ObsFeTypedFactor f = (ObsFeTypedFactor) factor;
         
-        FeatureNames alphabet = ofc.getTemplates().getTemplate(f).getAlphabet();
-        List<String> biasFeats = new ArrayList<String>();
-        biasFeats.add("BIAS_FEATURE");
-
-        // Add the bias features.
-        FeatureVector fv = new FeatureVector(biasFeats.size());
-        FeatureUtils.addFeatures(biasFeats, alphabet, fv, true, featureHashMod);
-
+        int templateId = ofc.getTemplates().getTemplateId(f);
+        // if we never saw this in training, we will ignore it
+        if (templateId > 0) {
+            FeatureNames alphabet = ofc.getTemplates().getTemplate(f).getAlphabet();
+            List<String> biasFeats = new ArrayList<String>();
+            biasFeats.add("BIAS_FEATURE");
+            FeatureUtils.addFeatures(biasFeats, alphabet, fv, true, featureHashMod);
+        }
         return fv;
     }
 
