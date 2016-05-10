@@ -312,7 +312,7 @@ public class ConcreteReader {
             AnnoSentence sent = tmpSents.get(i);
             sent.setSprl(sprl);
             sent.setKnownSprlPreds(new IntHashSet(sprl.getPreds()));
-            sent.setKnownSprlPairs(new HashSet<>(sprl.getKnownPairs()));
+            sent.setKnownSprlPairs(new HashSet<>(sprl.getPairs()));
             i++;
         }
     }

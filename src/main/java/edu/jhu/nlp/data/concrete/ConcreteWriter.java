@@ -367,7 +367,7 @@ public class ConcreteWriter {
         // add preds and pairs from sprl
     	if (sprl != null) {
             combinedPreds.add(sprl.getPreds().toNativeArray());
-            combinedPairs.addAll(sprl.getKnownPairs());
+            combinedPairs.addAll(sprl.getPairs());
             labelConverter = sprl.getConverter();
         }
 

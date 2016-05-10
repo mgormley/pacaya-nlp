@@ -51,7 +51,7 @@ public class SprlEvaluator extends LabelEvaluator implements Evaluator {
      */
     public List<Pair<Integer, Integer>> getExamplePairs(AnnoSentence sent, AnnoSentence gold) {
         return SrlFactorGraphBuilder.getPossibleRolePairs(gold.size(),
-                gold.getKnownSprlPreds(), gold.getSprl().getKnownPairs(), gold.getPairsToSkip(), roleStructure, allowSelfLoops);
+                gold.getKnownSprlPreds(), gold.getSprl().getPairs(), gold.getPairsToSkip(), roleStructure, allowSelfLoops);
     }
 
     @Override

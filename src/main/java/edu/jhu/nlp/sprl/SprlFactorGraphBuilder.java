@@ -193,7 +193,7 @@ public class SprlFactorGraphBuilder {
         toAnnotate.setSprl(sprl);
         // only overwrite the pairs if they were not given
         if (prm.roleStructure != RoleStructure.PAIRS_GIVEN) {
-            toAnnotate.setKnownSprlPairs(sprl.getKnownPairs());
+            toAnnotate.setKnownSprlPairs(sprl.getPairs());
         }
         // only overwrite the preds if neither pairs nor preds were given
         if (prm.roleStructure != RoleStructure.PREDS_GIVEN && prm.roleStructure != RoleStructure.PAIRS_GIVEN) {

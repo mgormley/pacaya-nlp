@@ -11,7 +11,7 @@ import edu.jhu.nlp.data.concrete.ConcreteReader;
 import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 
-public class SprlFactorGraphBuilderTest {
+public class SprlPropertiesTest {
     private static String concreteFilename = "/edu/jhu/nlp/data/concrete/minisprl.comm";
 
     @Test
