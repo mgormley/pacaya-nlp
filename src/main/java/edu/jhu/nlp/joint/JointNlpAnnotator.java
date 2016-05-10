@@ -10,7 +10,6 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
@@ -39,7 +38,6 @@ import edu.jhu.nlp.fcm.FcmModule;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
-import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
@@ -244,7 +242,7 @@ public class JointNlpAnnotator implements Trainable {
     }
 
     private SprlEvaluator getSprlEvaluator() {
-        return new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops, SprlClassLabel.getNils());
+        return new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops);
     }
 
     private Evaluator getSrlEvaluator() {

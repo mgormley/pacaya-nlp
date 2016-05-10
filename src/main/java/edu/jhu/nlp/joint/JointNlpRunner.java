@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
@@ -68,7 +67,6 @@ import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
-import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
@@ -518,13 +516,12 @@ public class JointNlpRunner {
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES), (roleStructure != RoleStructure.PAIRS_GIVEN))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
-                Set<SprlClassLabel> nils = SprlClassLabel.getNils();
                 if (breakdownSprlEval && corpus.hasTrain()) {
                     for (String q : CorpusHandler.getKnownSprlProperties(corpus.getTrainGold())) {
-                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils, Collections.singleton(q)));
+                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, Collections.singleton(q)));
                     }
                 }
-                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils));
+                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
                 eval.add(new RelationEvaluator());

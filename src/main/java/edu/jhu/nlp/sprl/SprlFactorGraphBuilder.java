@@ -1,31 +1,28 @@
 package edu.jhu.nlp.sprl;
 
 import static edu.jhu.nlp.joint.JointNlpFactorGraph.makeKey;
-import static edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate.ISARG_SPRL_BINARY;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
+import edu.jhu.nlp.Indexed;
 import edu.jhu.nlp.ObsFeTypedFactor;
-import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
-import edu.jhu.nlp.data.Properties;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
-import edu.jhu.pacaya.gm.feat.FeatureVector;
-import edu.jhu.pacaya.gm.feat.ObsFeExpFamFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
@@ -34,7 +31,6 @@ import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.Prm;
-import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 
 public class SprlFactorGraphBuilder {
@@ -71,7 +67,7 @@ public class SprlFactorGraphBuilder {
          * pair agree as to whether it is a pred-arg pair
          */
         public boolean extraVariablesForNilAgreement = true;
-
+        public SprlLabelConverter labelConverter = new BinarySprlLabelConverter(3.5);
     }
 
     public static class SprlVar extends Var {
@@ -181,12 +177,13 @@ public class SprlFactorGraphBuilder {
                     fg.addFactor(new ObsFeTypedFactor(vars, SprlFactorType.SPRL_UNARY,
                             makeKey(SprlFactorType.SPRL_UNARY, q), ofc, obsFe));
                 }
-                if (prm.extraVariablesForNilAgreement) {
-                    // TODO: do more feature help here?
-                    fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVars[i][j], v),
-                            Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, biasOnlyFe));
-                }
+// TODO: add back nil agreement
+//                if (prm.extraVariablesForNilAgreement) {
+//                     TODO: do more feature help here?
+//                    fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(argVars[i][j], v),
+//                            Arrays.asList(IsArgLabel.NOT_AN_ARG.ordinal(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+//                            ISARG_SPRL_BINARY, makeKey(ISARG_SPRL_BINARY, q), ofc, biasOnlyFe));
+//                }
             }
             if (prm.pairwiseFactors) {
                 for (int qix1 = 0; qix1 < cs.sprlPropertyNames.size(); qix1++) {
@@ -214,38 +211,28 @@ public class SprlFactorGraphBuilder {
     // read the values of the sprl variables in the var config and add the
     // corresponding sprl info to the sentence
     public void configToAnno(VarConfig varConfig, AnnoSentence toAnnotate) {
-        Map<Pair<Integer, Integer>, Properties> sprl = new HashMap<>();
-        IntHashSet sprlPreds = new IntHashSet();
+        SprlProperties sprl = new SprlProperties(prm.labelConverter);
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(toAnnotate.size(),
                 toAnnotate.getKnownSprlPreds(), toAnnotate.getKnownSprlPairs(), toAnnotate.getPairsToSkip(),
                 prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
-            Properties props = new Properties();
             // we don't need to worry about decoding the argVar since we get
             // that information from the sprl anyway
-            for (int qix = 0; qix < cs.sprlPropertyNames.size(); qix++) {
-                String q = cs.sprlPropertyNames.get(qix);
-                // add the variable to the config
-                Var sprlVar = sprlVars[pred][arg][qix];
-                Double response = SprlClassLabel.getResponse(SprlClassLabel.valueOf(varConfig.getStateName(sprlVar)));
-                if (response != null) {
-                    props.add(q, response);
-                }
-            }
-            if (props.size() > 0) {
-                sprl.put(new Pair<>(pred, arg), props);
-                sprlPreds.add(pred);
+            for (Indexed<String> q : Indexed.enumerate((cs.sprlPropertyNames))) {
+                Var sprlVar = sprlVars[pred][arg][q.index()];
+                String sprlLabel = varConfig.getStateName(sprlVar);
+                sprl.set(pred, arg, q.get(), sprlLabel);
             }
         }
         toAnnotate.setSprl(sprl);
         // only overwrite the pairs if they were not given
         if (prm.roleStructure != RoleStructure.PAIRS_GIVEN) {
-            toAnnotate.setKnownSprlPairs(new HashSet<>(sprl.keySet()));
+            toAnnotate.setKnownSprlPairs(sprl.getKnownPairs());
         }
         // only overwrite the preds if neither pairs nor preds were given
         if (prm.roleStructure != RoleStructure.PREDS_GIVEN && prm.roleStructure != RoleStructure.PAIRS_GIVEN) {
-            toAnnotate.setKnownSprlPreds(sprlPreds);
+            toAnnotate.setKnownSprlPreds(sprl.getPreds());
         }
     }
 
@@ -254,32 +241,153 @@ public class SprlFactorGraphBuilder {
     public void annoToConfig(AnnoSentence goldSent, VarConfig addTo) {
         // we will create some sprl variables possibly looking at the known sprl
         // predicates and pairs
+        SprlProperties props = goldSent.getSprl();
         for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(goldSent.size(),
                 goldSent.getKnownSprlPreds(), goldSent.getKnownSprlPairs(), goldSent.getPairsToSkip(),
                 prm.roleStructure, prm.allowPredArgSelfLoops)) {
             int pred = e.get1();
             int arg = e.get2();
+            // TODO: handle latent sprl
+            boolean isAnArg = props.containsPair(e);
 
-            Properties props = goldSent.getSprl().get(new Pair<>(pred, arg));
-            List<SprlClassLabel> labels = null;
-            boolean isAnArg = false;
-            if (props != null) {
-                isAnArg = true;
-                labels = props.toLabels(cs.sprlPropertyNames);
-            }
-
-            // TODO: we are assuming that if SPRL is missing but the pred is a
-            // known pred, then this is not an arg
             if (prm.extraVariablesForNilAgreement) {
                 addTo.put(argVars[pred][arg], isAnArg ? IsArgLabel.IS_ARG.ordinal() : IsArgLabel.NOT_AN_ARG.ordinal());
             }
-            for (int qix = 0; qix < cs.sprlPropertyNames.size(); qix++) {
+            for (Indexed<String> q : Indexed.enumerate(cs.sprlPropertyNames)) {
                 // add the variable to the config
-                Var sprlVar = sprlVars[pred][arg][qix];
-                SprlClassLabel label = isAnArg ? labels.get(qix) : SprlClassLabel.NOT_AN_ARG;
-                addTo.put(sprlVar, label.name());
+                Var sprlVar = sprlVars[pred][arg][q.index()];
+                addTo.put(sprlVar, isAnArg ? props.get(pred, arg, q.get()) : SprlLabelConverter.nil());
             }
         }
     }
+
+    public static void addSprlSrlFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, CorpusStatistics cs, FactorGraph fg,
+            SprlFactorGraphBuilder sprl, SrlFactorGraphBuilder srl,
+            boolean sprlPairs, boolean enforceNilAgreement, boolean featurize) {
+        boolean hasSprl = sprl != null;
+        boolean hasSrl = srl != null;
+        
+        // we only bother about the information between sprl and srl if one of the two is present
+        if (hasSprl || hasSrl) {
+            SprlFactorGraphBuilderPrm sprlPrm = hasSprl ? sprl.prm : null;
+            SrlFactorGraphBuilderPrm srlPrm = hasSrl ? srl.getPrm() : null;
+            BiasOnlyObsFeatureExtractor biasOnlyFe = hasSprl ? sprl.biasOnlyFe : new BiasOnlyObsFeatureExtractor(ofc, srlPrm.srlFePrm.featureHashMod);
+            
+            // if both are present, they must agree on the structure
+            if (hasSprl && hasSrl && srlPrm.roleStructure != sprlPrm.roleStructure) {
+                throw new IllegalArgumentException("cannot put factors between sprl and srl if they have differen't role structure");
+            }
+            if (hasSprl && hasSrl && srlPrm.allowPredArgSelfLoops != sprlPrm.allowPredArgSelfLoops) {
+                throw new IllegalArgumentException("cannot put factors between sprl and srl if they don't agree on predArgSelfLoops");
+            }
+
+            // set the roleStructure
+            RoleStructure rS = hasSrl ? srlPrm.roleStructure : sprlPrm.roleStructure;
+            boolean allowSelfLoops = hasSrl ? srlPrm.allowPredArgSelfLoops : sprlPrm.allowPredArgSelfLoops;
+            RoleVar[][] roleVars = srl != null ? srl.getRoleVars() : null;
+            SprlVar[][][] sprlVars = sprl != null ? sprl.getSprlVars() : null;
+
+            ObsFeatureExtractor fe = null;
+            if (featurize) {
+                fe = sprl != null ? sprl.getFeatExtractor() : srl.getFeatExtractor();
+            } else {
+                fe = biasOnlyFe;
+            }
+            boolean enforceSprlNilAgreement = hasSprl && enforceNilAgreement && rS != RoleStructure.PAIRS_GIVEN;
+            addSrlSprlFactors(sent, ofc, fg, fe, cs.sprlPropertyNames, roleVars, sprlVars, rS, allowSelfLoops,
+                    sprlPairs, enforceSprlNilAgreement, biasOnlyFe);
+        }
+        
+    }
+
+    /**
+     * Adds factors between srl roles and sprl property variables;
+     * if either srl or sprl is not included in the model, then adding these factors
+     * ammounts to adding unary factors on the included variables that reflect the gold label
+     * for the corresponding variables that are not included; nilAgreement is optionally enforced 
+     */
+    private static void addSrlSprlFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg,
+            ObsFeatureExtractor fe, List<String> propNames, RoleVar[][] roleVars, SprlVar[][][] sprlVars,
+            RoleStructure rS, boolean allowSelfLoops, boolean sprlPairs, boolean enforceNilAgreement, BiasOnlyObsFeatureExtractor biasOnlyFe) {
+        boolean givenSrl = roleVars == null ;
+        boolean givenSprl = sprlVars == null ;
+        assert !givenSrl || !givenSprl;
+        SprlProperties sprl = sent.getSprl();
+        
+        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent, rS, allowSelfLoops, roleVars != null)) {
+            int i = e.get1(), j = e.get2(); 
+
+            // Get either the role variable or the gold role label
+            RoleVar roleVar = null;
+            String goldSrl = null;
+            if (givenSrl) {
+                SrlEdge srlEdge = sent.getSrlGraph().getEdge(i, j); 
+                goldSrl = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
+            } else {
+                roleVar = roleVars[i][j];
+            }
+
+            for (Indexed<String> q : Indexed.enumerate(propNames)) {
+                // Get either the sprl variable or the gold sprl label
+                SprlVar sprlVar = null;
+                String goldSprl = null;
+                if (givenSprl) {
+                    goldSprl = sprl.get(i, j, q.get());
+                } else {
+                    sprlVar = sprlVars[i][j][q.index()];
+                }
+
+                // add factors that look at at the current i,j,q triple
+                addSrlSprlFactor(ofc, fg, fe, q.get(), roleVar, goldSrl, sprlVar, goldSprl, enforceNilAgreement);
+
+                // for observed sprlPairs, add a factor that looks at gold sprl pairs 
+                if (givenSprl && sprlPairs) {
+                    for (Indexed<String> q2 : Indexed.enumerate(propNames)) {
+                        JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_SPRL;
+                        Serializable templateKey = makeKey(ft, "GOLD_SPRL_PAIR", q.get(), goldSprl, q2.get(), sprl.get(i, j, q2.get()));
+                        // TODO: do more features help here?
+                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVar), ft, templateKey, ofc, biasOnlyFe));
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Adds factors to account for the interaction between the sprl and srl for a particular
+     * (predicate, argument, property) triple; if both variables are non-null, then a pariwise factor is created between them
+     * (optionally enforcing agreement on whether or not the predication of both should or should not
+     * be NOT_AN_ARG)
+     * if only one is non-null, then a unary factor is placed on that variable with features tied to the
+     * gold value of the null variable 
+     */
+    private static void addSrlSprlFactor(ObsFeatureConjoiner ofc, FactorGraph fg, ObsFeatureExtractor fe,
+            String q, RoleVar roleV, String goldSrl, SprlVar sprlV, String goldSprl,
+            boolean enforceNilAgreement) {
+        JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_BINARY;
+        if (roleV == null) { // given sprlGsrl
+            fg.addFactor(new ObsFeTypedFactor(new VarSet(sprlV), ft, makeKey(ft, q, "GOLD_SRL", goldSrl), ofc, fe));
+        } else if (sprlV == null) { // srlGsprl
+            fg.addFactor(new ObsFeTypedFactor(new VarSet(roleV), ft, makeKey(ft, q, "GOLD_SPRL", goldSprl), ofc, fe));
+        } else { // joint factor
+            Serializable templateKey = makeKey(ft, q); 
+            // real pairwise factors
+// TODO: add back nil agreement
+//            if (enforceNilAgreement) { // create the factor in such a way that nil agreement is enforced
+//                fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleV, sprlV),
+//                        Arrays.asList(roleV.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
+//                        ft, templateKey, ofc, fe));
+//            } else { // ordinary pairwise factor that doesn't enforce nil agreement
+            fg.addFactor(new ObsFeTypedFactor(new VarSet(roleV, sprlV), ft, templateKey, ofc, fe));
+//            }
+        }
+    }
+
+//    private static SprlClassLabel goldSprlLabel(AnnoSentence sent, Pair<Integer, Integer> e, String q) {
+//        Properties props = sent.getSprl().get(e);
+//        return props == null ? SprlClassLabel.NOT_AN_ARG : props.getLabel(q);
+//    }
+
+
 
 }

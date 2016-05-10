@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -13,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.concrete.Communication;
-import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.concrete.ConcreteUtils;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
@@ -23,7 +21,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.sample.Sample;
-import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.tuple.Triple;
 
 public class CorpusHandler {
     private static final Logger log = LoggerFactory.getLogger(CorpusHandler.class);
@@ -496,8 +494,8 @@ public class CorpusHandler {
         for (AnnoSentenceCollection collection : data) {
             for (AnnoSentence sent : collection) {
                 if (sent.getSprl() != null) {
-                    for (Map.Entry<Pair<Integer, Integer>, Properties> e : sent.getSprl().entrySet()) {
-                        props.addAll(e.getValue().getMap().keySet());
+                    for (Triple<Integer, Integer, String> e : sent.getSprl().getLabeledProperties()) {
+                        props.add(e.get3());
                     }
                 }
             }

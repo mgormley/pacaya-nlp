@@ -17,15 +17,14 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
-import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationMunger;
-import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.tuple.Triple;
 
 /**
  * Extract corpus statistics about a CoNLL-2009 dataset.
@@ -161,14 +160,9 @@ public class CorpusStatistics implements Serializable {
 
             // SPRL stats.
             if (sent.getSprl() != null) {
-                for (Map.Entry<Pair<Integer, Integer>, Properties> e : sent.getSprl().entrySet()) {
-                    List<String> theseProps = new ArrayList<>(e.getValue().getMap().keySet());
-                    // add the properties
-                    knownSprlProperties.addAll(theseProps);
-                    // and the SPRL class label for each on this pair (e.g. LIKELY, UNLIKLEY)
-                    for (SprlClassLabel label : e.getValue().toLabels(theseProps)) {
-                        knownSprlStates.add(label.name());
-                    }
+                for (Triple<Integer, Integer, String> e : sent.getSprl().getLabeledProperties()) {
+                    knownSprlProperties.add(e.get3());
+                    knownSprlStates.add(sent.getSprl().get(e));
                 }
             }
             

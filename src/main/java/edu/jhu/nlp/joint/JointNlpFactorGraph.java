@@ -1,7 +1,6 @@
 package edu.jhu.nlp.joint;
 
 import static edu.jhu.pacaya.sch.util.Indexed.enumerate;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -13,9 +12,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
-import edu.jhu.nlp.ObsFeTypedFactorWithNilAgreement;
-import edu.jhu.nlp.data.Properties;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder;
@@ -29,13 +25,9 @@ import edu.jhu.nlp.features.TemplateLanguage.PositionModifier;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
-import edu.jhu.nlp.sprl.BiasOnlyObsFeatureExtractor;
-import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
-import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
@@ -43,7 +35,6 @@ import edu.jhu.nlp.tag.PosTagFactorGraphBuilder;
 import edu.jhu.nlp.tag.PosTagFactorGraphBuilder.PosTagFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.TemplateFeatureFactor;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
@@ -51,7 +42,6 @@ import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
 import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
-import edu.jhu.prim.tuple.Pair;
 
 /**
  * A factor graph builder for joint dependency parsing and semantic role
@@ -101,6 +91,8 @@ public class JointNlpFactorGraph extends FactorGraph {
         public boolean includeSprl = false;
         public SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
         public boolean sprlSrlFactors = false;
+        // this enforcement may happen by way of specializing the srlSprl factors or by adding
+        // additional variables if srl isn't being modeled
         public boolean enforceSprlNilAgreement = true;
         public boolean featurizeSrlSprlPairwise = false;
     }
@@ -126,12 +118,10 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
     private SprlFactorGraphBuilder sprl;
-    private BiasOnlyObsFeatureExtractor biasOnlyFe;
     
     public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs,
             ObsFeatureConjoiner ofc) {
         this.prm = prm;
-        this.biasOnlyFe = new BiasOnlyObsFeatureExtractor(ofc, prm.srlPrm.srlFePrm.featureHashMod);
         build(sent, cs, ofc, this);
     }
 
@@ -144,10 +134,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         // TODO: This should move up the stack.
         IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
 
-        // if we have sprl variables but they won't be connected to srl variables, then we need
-        // to make variables to enforce nil agreement
-        //boolean includeIsArg = prm.includeSprl && prm.sprlPrm.enforceSprlNilAgreement && !(prm.sprlSrlFactors && prm.includeSrl); 
-
+        // SPRL variables and factors that only touch SPRL variables
         if (prm.includeSprl) {
             sprl = new SprlFactorGraphBuilder(prm.sprlPrm);
             sprl.build(isent, ofc, fg, cs);
@@ -168,35 +155,15 @@ public class JointNlpFactorGraph extends FactorGraph {
             rel = new RelationsFactorGraphBuilder(prm.relPrm);
             rel.build(sent, ofc, fg, cs);
         }
-        if (prm.sprlSrlFactors && (prm.includeSprl || prm.includeSrl)) {
-            // we only bother about the information between sprl and srl if one of the two is present
-
-            // set the roleStructure and make sure it is consistent
-            RoleStructure rS = prm.includeSrl ? prm.srlPrm.roleStructure : prm.sprlPrm.roleStructure;
-            boolean allowSelfLoops = prm.includeSrl ? prm.srlPrm.allowPredArgSelfLoops : prm.sprlPrm.allowPredArgSelfLoops;
-            if (prm.includeSrl && prm.includeSprl) {
-                assert prm.srlPrm.roleStructure == prm.sprlPrm.roleStructure;
-                assert prm.srlPrm.allowPredArgSelfLoops == prm.sprlPrm.allowPredArgSelfLoops;
-            }
-
-            RoleVar[][] roleVars = prm.includeSrl ? srl.getRoleVars() : null;
-            SprlVar[][][] sprlVars = prm.includeSprl ? sprl.getSprlVars() : null;
-            ObsFeatureExtractor fe = null;
-            if (prm.featurizeSrlSprlPairwise) {
-                fe = prm.includeSprl ? sprl.getFeatExtractor() : srl.getFeatExtractor();
-            } else {
-                fe = biasOnlyFe;
-            }
-            boolean enforceNilAgreement = prm.enforceSprlNilAgreement && (rS != RoleStructure.PAIRS_GIVEN);
-            
-            addSrlSprlFactors(sent, ofc, fg, fe, cs.sprlPropertyNames, roleVars, sprlVars, rS, allowSelfLoops,
-                    prm.sprlPrm.pairwiseFactors, enforceNilAgreement, biasOnlyFe);
-        }
         if (prm.includeDp && prm.includeSrl) {
             addDpSrlFactors(ofc, fg);
         }
         if (prm.includePos && prm.includeSrl) {
             addPosSrlFactors(sent, ofc, fg, cs);
+        }
+        // SPRL interaction with SRL (including observed SPRL or observed SRL on SPRL)
+        if (prm.sprlSrlFactors) {
+            SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, sprl, srl, prm.sprlPrm.pairwiseFactors, prm.enforceSprlNilAgreement, prm.featurizeSrlSprlPairwise);
         }
     }
 
@@ -251,93 +218,6 @@ public class JointNlpFactorGraph extends FactorGraph {
         }
     }
     
-    private static SprlClassLabel goldSprlLabel(AnnoSentence sent, Pair<Integer, Integer> e, String q) {
-        Properties props = sent.getSprl().get(e);
-        return props == null ? SprlClassLabel.NOT_AN_ARG : props.getLabel(q);
-    }
-
-    /**
-     * Adds factors between srl roles and sprl property variables;
-     * if either srl or sprl is not included in the model, then adding these factors
-     * ammounts to adding unary factors on the included variables that reflect the gold label
-     * for the corresponding variables that are not included; nilAgreement is optionally enforced 
-     */
-    private static void addSrlSprlFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg,
-            ObsFeatureExtractor fe, List<String> propNames, RoleVar[][] roleVars, SprlVar[][][] sprlVars,
-            RoleStructure rS, boolean allowSelfLoops, boolean sprlPairs, boolean enforceNilAgreement, BiasOnlyObsFeatureExtractor biasOnlyFe) {
-        boolean givenSrl = roleVars == null ;
-        boolean givenSprl = sprlVars == null ;
-        assert !givenSrl || !givenSprl;
-        
-        for (Pair<Integer, Integer> e : SrlFactorGraphBuilder.getPossibleRolePairs(sent, rS, allowSelfLoops, roleVars != null)) {
-            int i = e.get1(), j = e.get2(); 
-
-            // Get either the role variable or the gold role label
-            RoleVar roleVar = null;
-            String goldSrl = null;
-            if (givenSrl) {
-                SrlEdge srlEdge = sent.getSrlGraph().toSrlGraph().getEdge(i, j); 
-                goldSrl = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
-            } else {
-                roleVar = roleVars[i][j];
-            }
-
-            for (Indexed<String> q : enumerate(propNames)) {
-                // Get either the sprl variable or the gold sprl label
-                SprlVar sprlVar = null;
-                SprlClassLabel goldSprl = null;
-                if (givenSprl) {
-                    goldSprl = goldSprlLabel(sent, e, q.get());
-                } else {
-                    sprlVar = sprlVars[i][j][q.index()];
-                }
-
-                // add factors that look at at the current i,j,q triple
-                addSrlSprlFactor(ofc, fg, fe, q.get(), roleVar, goldSrl, sprlVar, goldSprl, enforceNilAgreement);
-
-                // for observed sprlPairs, add a factor that looks at gold sprl pairs 
-                if (givenSprl && sprlPairs) {
-                    for (Indexed<String> q2 : enumerate(propNames)) {
-                        SprlClassLabel goldSprl2 = goldSprlLabel(sent, e, q2.get());
-                        JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_SPRL;
-                        Serializable templateKey = makeKey(ft, q.get(), goldSprl, q2.get(), goldSprl2);
-                        // TODO: do more features help here?
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVar), ft, templateKey, ofc, biasOnlyFe));
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Adds factors to account for the interaction between the sprl and srl for a particular
-     * (predicate, argument, property) triple; if both variables are non-null, then a pariwise factor is created between them
-     * (optionally enforcing agreement on whether or not the predication of both should or should not
-     * be NOT_AN_ARG)
-     * if only one is non-null, then a unary factor is placed on that variable with features tied to the
-     * gold value of the null variable 
-     */
-    private static void addSrlSprlFactor(ObsFeatureConjoiner ofc, FactorGraph fg, ObsFeatureExtractor fe,
-            String q, RoleVar roleV, String goldSrl, SprlVar sprlV, SprlClassLabel goldSprl,
-            boolean enforceNilAgreement) {
-        JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_BINARY;
-        if (roleV == null) { // given sprlGsrl
-            fg.addFactor(new ObsFeTypedFactor(new VarSet(sprlV), ft, makeKey(ft, q, RoleVar.class, goldSrl), ofc, fe));
-        } else if (sprlV == null) { // srlGsprl
-            fg.addFactor(new ObsFeTypedFactor(new VarSet(roleV), ft, makeKey(ft, q, SprlVar.class, goldSprl), ofc, fe));
-        } else { // joint factor
-            Serializable templateKey = makeKey(ft, q); 
-            // real pairwise factors
-            if (enforceNilAgreement) { // create the factor in such a way that nil agreement is enforced
-                fg.addFactor(new ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleV, sprlV),
-                        Arrays.asList(roleV.getNilState(), SprlClassLabel.NOT_AN_ARG.ordinal()),
-                        ft, templateKey, ofc, fe));
-            } else { // ordinary pairwise factor that doesn't enforce nil agreement
-                fg.addFactor(new ObsFeTypedFactor(new VarSet(roleV, sprlV), ft, templateKey, ofc, fe));
-            }
-        }
-    }
-
     // ----------------- Creating Variables -----------------
 
     // ----------------- Public Getters -----------------

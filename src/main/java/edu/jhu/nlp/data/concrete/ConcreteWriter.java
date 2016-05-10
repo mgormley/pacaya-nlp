@@ -38,7 +38,6 @@ import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.uuid.UUIDFactory;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
-import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.RelationMention;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
@@ -48,6 +47,8 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.sprl.SprlLabelConverter;
+import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.prim.iter.IntIter;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.set.IntSet;
@@ -346,7 +347,7 @@ public class ConcreteWriter {
         return p;
     }
 
-    private List<SituationMention> makeSituationMentions(SrlGraph srl, Map<Pair<Integer, Integer>, Properties> sprl, List<String> words, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, String tool) {
+    private List<SituationMention> makeSituationMentions(SrlGraph srl, SprlProperties sprl, List<String> words, Tokenization useUUID, EntityMentionSet addEntityMentionsTo, String tool) {
         List<SituationMention> mentions = new ArrayList<SituationMention>();
 
         AnnotationMetadata sprlMeta = new AnnotationMetadata();
@@ -362,12 +363,12 @@ public class ConcreteWriter {
             combinedPairs.addAll(srl.getKnownSrlPairs());
     	}
 
+        SprlLabelConverter labelConverter = null;
         // add preds and pairs from sprl
     	if (sprl != null) {
-            for (Pair<Integer, Integer> p : sprl.keySet()) {
-                combinedPreds.add(p.get1());
-            }
-            combinedPairs.addAll(sprl.keySet());
+            combinedPreds.add(sprl.getPreds().toNativeArray());
+            combinedPairs.addAll(sprl.getKnownPairs());
+            labelConverter = sprl.getConverter();
         }
 
     	// hold onto the preds so that we can add the arguments
@@ -409,13 +410,17 @@ public class ConcreteWriter {
                 a.setRole("UNKNOWN");
     	    }
     	    if (sprl != null) {
-    	        Properties cProps = sprl.get(new Pair<>(predLoc, argLoc));
-    	        if (cProps != null && cProps.size() > 0) {
+    	        if (sprl.containsPair(pair)) {
     	            List<Property> props = new ArrayList<>();
-    	            for (Pair<String, Double> keyAndValue : cProps) {
+    	            for (String property : sprl.getLabeledProperties(pair)) {
+    	                String label = sprl.get(predLoc, argLoc, property);
     	                Property newProp = new Property();
-    	                newProp.setValue(keyAndValue.get1());
-    	                newProp.setPolarity(keyAndValue.get2());
+    	                newProp.setValue(property);
+    	                double response = labelConverter.readProb(label);
+    	                if (!labelConverter.readApplicable(label)) {
+    	                    response *= -1;
+    	                }
+    	                newProp.setPolarity(response);
     	                newProp.setMetadata(sprlMeta);
     	                props.add(newProp);
     	            }

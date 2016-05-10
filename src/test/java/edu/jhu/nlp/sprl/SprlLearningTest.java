@@ -79,9 +79,6 @@ public class SprlLearningTest {
 
     private void testIndependent(boolean biasOnly) throws IOException {
         File f = new File(getClass().getResource(concreteFilename).getFile());
-        SprlClassLabel.splitMode = SprlClassLabel.SplitMode.Split_123_45;
-        SprlClassLabel.modelNA = false;
-        SprlClassLabel.sprlNils = "NA,NOT_AN_ARG,UNKNOWN,UNLIKELY";
         ConcreteReaderPrm prm = new ConcreteReaderPrm();
         prm.srlTool = "gpropbank";
         prm.sprlTool = "gpropbank";

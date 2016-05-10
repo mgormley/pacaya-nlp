@@ -15,11 +15,11 @@ import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
-import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.parse.dep.ParentsArray;
@@ -89,7 +89,7 @@ public class AnnoSentence {
     private List<String> relLabels;
 
     // sprl properties for each pred arg pairs
-    private Map<Pair<Integer, Integer>, Properties> sprl;
+    private SprlProperties sprl;
     private IntHashSet knownSprlPreds;
     private Set<Pair<Integer, Integer>> knownSprlPairs;
     private Set<Pair<Integer, Integer>> pairsToSkip;
@@ -134,7 +134,7 @@ public class AnnoSentence {
         newSent.srlGraph = this.srlGraph;
         // TODO: this should be a deep copy.
         newSent.naryTree = this.naryTree;
-        newSent.sprl = (this.sprl == null) ? null : new HashMap<>(this.sprl);
+        newSent.sprl = (this.sprl == null) ? null : new SprlProperties(this.sprl);
         newSent.knownSprlPreds = (this.knownSprlPreds == null) ? null : new IntHashSet(this.knownSprlPreds);
         newSent.knownSprlPairs = (this.knownSprlPairs == null) ? null : new HashSet<>(this.knownSprlPairs);
         newSent.pairsToSkip = (this.pairsToSkip == null) ? null : new HashSet<>(this.pairsToSkip);
@@ -729,11 +729,11 @@ public class AnnoSentence {
         this.relLabels = relLabels;
     }
 
-    public Map<Pair<Integer, Integer>, Properties> getSprl() {
+    public SprlProperties getSprl() {
         return sprl;
     }
 
-    public void setSprl(Map<Pair<Integer, Integer>, Properties> sprl) {
+    public void setSprl(SprlProperties sprl) {
         this.sprl = sprl;
     }
 

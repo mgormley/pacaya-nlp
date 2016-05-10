@@ -10,7 +10,6 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -25,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.AbstractParallelAnnotator;
-import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -104,18 +102,16 @@ public class SprlConcreteEvaluator {
         return reader.getData();
     }
 
-    private static List<SprlClassLabel> propList(AnnoSentence a, Pair<Integer, Integer> pair, List<String> propOrder) {
-        Map<Pair<Integer, Integer>, Properties> sprl = a.getSprl();
-        if (sprl != null) {
-            Properties props = sprl.get(pair);
-            if (props != null) {
-                return props.toLabels(propOrder);
-            }
+    private static List<String> propList(AnnoSentence a, Pair<Integer, Integer> pair, List<String> propOrder) {
+        SprlProperties sprl = a.getSprl();
+        List<String> returnList = new ArrayList<>();
+        for (String k : propOrder) {
+            returnList.add(sprl != null ? sprl.get(pair.get1(),  pair.get2(), k) : SprlLabelConverter.nil());
         }
-        return Properties.nilPropLabels(propOrder);
+        return returnList;
     }
-
-    public static void findSprlExamples(AnnoSentenceCollection gold, AnnoSentenceCollection pred, File outFile) {
+    
+    public static void findSprlExamples(AnnoSentenceCollection gold, AnnoSentenceCollection pred, File outFile, Set<String> nils) {
         List<String> propOrder = new ArrayList<>(CorpusHandler.getKnownSprlProperties(gold, pred));
         // I want to find two pred-arg pairs such that they are in two different
         // sentences, they have the same predicate and the same gold SRL label,
@@ -130,7 +126,7 @@ public class SprlConcreteEvaluator {
         // Map[(predWord, argLabel) -> Map[(sentenceId) ->
         // list[(pred,arg,goldSprl,predSprl)]]]
         int nSentences = pred.size();
-        Map<Pair<String, String>, Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>>> sprlListsByPredAndSrl = new HashMap<>();
+        Map<Pair<String, String>, Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>>>> sprlListsByPredAndSrl = new HashMap<>();
         for (int i = 0; i < nSentences; i++) {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
@@ -140,13 +136,13 @@ public class SprlConcreteEvaluator {
                 String predWord = g.getWord(predIx);
                 String argLabel = g.getSrlGraph().getEdge(predIx, argIx).getLabel();
                 Pair<String, String> predAndSrl = new Pair<>(predWord, argLabel);
-                Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>> sentToPairs = sprlListsByPredAndSrl
+                Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>>> sentToPairs = sprlListsByPredAndSrl
                         .get(predAndSrl);
                 if (sentToPairs == null) {
                     sentToPairs = new HashMap<>();
                     sprlListsByPredAndSrl.put(predAndSrl, sentToPairs);
                 }
-                List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> pairs = sentToPairs
+                List<Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>> pairs = sentToPairs
                         .get(i);
                 if (pairs == null) {
                     pairs = new LinkedList<>();
@@ -157,20 +153,20 @@ public class SprlConcreteEvaluator {
         }
 
         // score, <sentence, pred, arg>
-        List<Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>> scoredExamples = new ArrayList<>();
+        List<Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>>> scoredExamples = new ArrayList<>();
         // now collect the scores of each by type
         for (Pair<String, String> predAndSrl : sprlListsByPredAndSrl.keySet()) {
-            Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>> sentToPairs = sprlListsByPredAndSrl
+            Map<Integer, List<Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>>> sentToPairs = sprlListsByPredAndSrl
                     .get(predAndSrl);
             for (Integer sent1Ix : sentToPairs.keySet()) {
-                for (Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> pair1 : sentToPairs
+                for (Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>> pair1 : sentToPairs
                         .get(sent1Ix)) {
                     for (Integer sent2Ix : sentToPairs.keySet()) {
                         if (sent2Ix <= sent1Ix) {
                             // skip matches and avoid getting both orders
                             continue;
                         }
-                        for (Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> pair2 : sentToPairs
+                        for (Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>> pair2 : sentToPairs
                                 .get(sent2Ix)) {
                             // only keep if the gold and predicted properties
                             // don't match
@@ -179,8 +175,8 @@ public class SprlConcreteEvaluator {
                             }
                             // compute the score as the harmonic mean o the two
                             // F1's
-                            double pair1F1 = getF1(pair1.get3(), pair1.get4());
-                            double pair2F1 = getF1(pair2.get3(), pair1.get4());
+                            double pair1F1 = getF1(pair1.get3(), pair1.get4(), nils);
+                            double pair2F1 = getF1(pair2.get3(), pair1.get4(), nils);
                             double score = ConfusionMatrix.harmonicMean(pair1F1, pair2F1);
                             scoredExamples.add(new Triple<>(score, pair1, pair2));
                         }
@@ -190,11 +186,11 @@ public class SprlConcreteEvaluator {
             }
         }
         scoredExamples.sort(
-                new Comparator<Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>>>() {
+                new Comparator<Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>>>() {
                     @Override
                     public int compare(
-                            Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> o1,
-                            Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> o2) {
+                            Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>> o1,
+                            Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>> o2) {
                         // sort first by F1 between gold and predicted (harmonic
                         // mean of this across the two instance)
                         double s1 = o1.get1();
@@ -204,8 +200,8 @@ public class SprlConcreteEvaluator {
                         } else {
                             // then sort by the difference between the two gold
                             // property vectors
-                            double exampleSim1 = getF1(o1.get2().get3(), o1.get3().get3());
-                            double exampleSim2 = getF1(o2.get2().get3(), o2.get3().get3());
+                            double exampleSim1 = getF1(o1.get2().get3(), o1.get3().get3(), nils);
+                            double exampleSim2 = getF1(o2.get2().get3(), o2.get3().get3(), nils);
                             if (exampleSim1 != exampleSim2) {
                                 // bigger diff is better
                                 return Double.compare(exampleSim1, exampleSim2);
@@ -225,13 +221,13 @@ public class SprlConcreteEvaluator {
 
             int nExamples = 10;
             int i = 0;
-            for (Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>, Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>>> example : scoredExamples) {
-                Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> ex1 = example
+            for (Triple<Double, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>, Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>>> example : scoredExamples) {
+                Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>> ex1 = example
                         .get2();
                 AnnoSentence s1 = gold.get(ex1.get1());
                 String ex1Str = formatExample(s1, null, ex1.get2(), ex1.get3(), ex1.get4(), propOrder);
 
-                Quadruple<Integer, Pair<Integer, Integer>, List<SprlClassLabel>, List<SprlClassLabel>> ex2 = example
+                Quadruple<Integer, Pair<Integer, Integer>, List<String>, List<String>> ex2 = example
                         .get3();
                 AnnoSentence s2 = gold.get(ex2.get1());
                 String ex2Str = formatExample(s2, null, ex2.get2(), ex2.get3(), ex2.get4(), propOrder);
@@ -389,7 +385,7 @@ public class SprlConcreteEvaluator {
      * @param propertyOrder order in which to output the properties (and which to include)
      */
     private static String formatExample(AnnoSentence gold, AnnoSentence pred, Pair<Integer, Integer> pair,
-            List<SprlClassLabel> goldLabels, List<SprlClassLabel> predictedLabels, List<String> propertyOrder) {
+            List<String> goldLabels, List<String> predictedLabels, List<String> propertyOrder) {
         StringWriter sw = new StringWriter();
         int predIx = pair.get1();
         int argIx = pair.get2();
@@ -409,13 +405,12 @@ public class SprlConcreteEvaluator {
         return sw.toString();
     }
 
-    private static double getF1(List<SprlClassLabel> gold, List<SprlClassLabel> pred) {
-        return getConfusion(gold, pred).f1();
+    private static double getF1(List<String> gold, List<String> pred, Set<String> nils) {
+        return getConfusion(gold, pred, nils).f1();
     }
 
-    private static ConfusionMatrix<SprlClassLabel> getConfusion(List<SprlClassLabel> gold, List<SprlClassLabel> pred) {
-        Set<SprlClassLabel> nils = SprlClassLabel.getNils();
-        ConfusionMatrix<SprlClassLabel> cm = new ConfusionMatrix<>(nils);
+    private static ConfusionMatrix<String> getConfusion(List<String> gold, List<String> pred, Set<String> nils) {
+        ConfusionMatrix<String> cm = new ConfusionMatrix<>(nils);
         for (int i = 0; i < gold.size(); i++) {
             cm.recordPrediction(gold.get(i), pred.get(i));
         }
@@ -462,16 +457,15 @@ public class SprlConcreteEvaluator {
     /**
      * evaluate the sprl annotations in pred against the gold annotations in gold;
      */
-    public static void evalSprlMulticlass(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw) {
+    public static void evalSprlMulticlass(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw, Set<String> nils) {
         List<String> propOrder = new ArrayList<>(CorpusHandler.getKnownSprlProperties(gold, pred));
-        Set<SprlClassLabel> nils = SprlClassLabel.getNils();
-        ConfusionMap<SprlClassLabel, String> cms = new ConfusionMap<SprlClassLabel, String>(nils);
+        ConfusionMap<String, String> cms = new ConfusionMap<String, String>(nils);
         int nSentences = pred.size();
         for (int i = 0; i < nSentences; i++) {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
             SprlEvaluator eval = new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils);
-            List<Triple<Integer, Integer, String>> examples = eval.getExamples(p, g);
+            List<Triple<Integer, Integer, String>> examples = g.getSprl().getLabeledProperties();
             List<String> gLabels = eval.getLabels(g, g);
             List<String> pLabels = eval.getLabels(p, g);
             assert gLabels.size() == pLabels.size() && gLabels.size() == examples.size();
@@ -481,14 +475,14 @@ public class SprlConcreteEvaluator {
                 if (goldSrlLabel != null && !goldSrlLabel.equals(g.getSrlGraph().getEdge(predIx, argIx).getLabel())) {
                     continue;
                 }
-                List<SprlClassLabel> pML = propList(p, ex, propOrder);
-                List<SprlClassLabel> gML = propList(g, ex, propOrder);
+                List<String> pML = propList(p, ex, propOrder);
+                List<String> gML = propList(g, ex, propOrder);
                 
 //                Properties gML= g.getSprl().get(ex);
                 
                 
-//                SprlClassLabel gL = SprlClassLabel.valueOf(gLabels.get(x));
-//                SprlClassLabel pL = SprlClassLabel.valueOf(pLabels.get(x));
+//                String gL = String.valueOf(gLabels.get(x));
+//                String pL = String.valueOf(pLabels.get(x));
 
                 
 //                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
@@ -503,13 +497,13 @@ public class SprlConcreteEvaluator {
         }
 
         // set the order
-        List<SprlClassLabel> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY, SprlClassLabel.UNKNOWN,
-                SprlClassLabel.UNLIKELY, SprlClassLabel.NA, SprlClassLabel.NOT_AN_ARG));
+        List<String> labelOrder = new LinkedList<>(Arrays.asList(SprlLabelConverter.LIKELY, SprlLabelConverter.UNKNOWN,
+                SprlLabelConverter.UNLIKELY, SprlLabelConverter.NA, SprlLabelConverter.NOT_AN_ARG));
 
         // but only include things we saw
-        for (SprlClassLabel k : SprlClassLabel.values()) {
-            if (!cms.getTotal().keySet().contains(k.name())) {
-                labelOrder.remove(k.name());
+        for (String k : labelOrder) {
+            if (!cms.getTotal().keySet().contains(k)) {
+                labelOrder.remove(k);
             }
         }
 
@@ -518,16 +512,15 @@ public class SprlConcreteEvaluator {
 
     }
     
-    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw)
+    public static void evalSprl(AnnoSentenceCollection gold, AnnoSentenceCollection pred, Writer fw, Set<String> nils)
             throws IOException {
-        Set<SprlClassLabel> nils = SprlClassLabel.getNils();
-        ConfusionMap<SprlClassLabel, String> cms = new ConfusionMap<SprlClassLabel, String>(nils);
+        ConfusionMap<String, String> cms = new ConfusionMap<String, String>(nils);
         int nSentences = pred.size();
         for (int i = 0; i < nSentences; i++) {
             AnnoSentence g = gold.get(i);
             AnnoSentence p = pred.get(i);
             SprlEvaluator eval = new SprlEvaluator(roleStructure, allowPredArgSelfLoops, nils);
-            List<Triple<Integer, Integer, String>> examples = eval.getExamples(p, g);
+            List<Triple<Integer, Integer, String>> examples = g.getSprl().getLabeledProperties();
             List<String> gLabels = eval.getLabels(g, g);
             List<String> pLabels = eval.getLabels(p, g);
             assert gLabels.size() == pLabels.size() && gLabels.size() == examples.size();
@@ -538,8 +531,8 @@ public class SprlConcreteEvaluator {
                 if (goldSrlLabel != null && !goldSrlLabel.equals(g.getSrlGraph().getEdge(predIx, argIx).getLabel())) {
                     continue;
                 }
-                SprlClassLabel gL = SprlClassLabel.valueOf(gLabels.get(x));
-                SprlClassLabel pL = SprlClassLabel.valueOf(pLabels.get(x));
+                String gL = String.valueOf(gLabels.get(x));
+                String pL = String.valueOf(pLabels.get(x));
                 String q = example.get3();
 //                String exStr = cms.numExamples(gL, pL, q) >= numExamples ? null
 //                        : String.format("%s\n\n%s\n", getMarkedSentence(g, predIx, argIx, g),
@@ -553,13 +546,13 @@ public class SprlConcreteEvaluator {
         }
 
         // set the order
-        List<SprlClassLabel> labelOrder = new LinkedList<>(Arrays.asList(SprlClassLabel.LIKELY, SprlClassLabel.UNKNOWN,
-                SprlClassLabel.UNLIKELY, SprlClassLabel.NA, SprlClassLabel.NOT_AN_ARG));
+        List<String> labelOrder = new LinkedList<>(Arrays.asList(SprlLabelConverter.LIKELY, SprlLabelConverter.UNKNOWN,
+                SprlLabelConverter.UNLIKELY, SprlLabelConverter.NA, SprlLabelConverter.NOT_AN_ARG));
 
         // but only include things we saw
-        for (SprlClassLabel k : SprlClassLabel.values()) {
-            if (!cms.getTotal().keySet().contains(k.name())) {
-                labelOrder.remove(k.name());
+        for (String k : labelOrder) {
+            if (!cms.getTotal().keySet().contains(k)) {
+                labelOrder.remove(k);
             }
         }
 
@@ -575,7 +568,6 @@ public class SprlConcreteEvaluator {
             parser = new ArgParser(SprlConcreteEvaluator.class);
             parser.registerClass(SrlEvaluator.class);
             parser.registerClass(SprlConcreteEvaluator.class);
-            parser.registerClass(SprlClassLabel.class);
             parser.parseArgs(args);
             AnnoSentenceCollection predSents = loadSents("pred", pred, predTool);
             AnnoSentenceCollection goldSents = loadSents("gold", gold, goldTool);
@@ -591,9 +583,9 @@ public class SprlConcreteEvaluator {
 
             // SPRL confusions
             if (includeSprl && predSents.someHaveAt(AT.SPRL)) {
-                evalSprl(goldSents, predSents, fw);
+                evalSprl(goldSents, predSents, fw, SprlEvaluator.nilLabels);
                 if (examplesOut != null) {
-                    findSprlExamples(goldSents, predSents, examplesOut);
+                    findSprlExamples(goldSents, predSents, examplesOut, SprlEvaluator.nilLabels);
                 }
             }
             fw.close();

@@ -56,6 +56,8 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.sprl.SprlLabelConverter;
+import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
@@ -86,6 +88,7 @@ public class ConcreteReader {
         public String missingSrlTool = null;
         public String srlTool = null;
         public String sprlTool = null;
+        public SprlLabelConverter sprlConverter = null;
     }
 
     private static final Logger log = LoggerFactory.getLogger(ConcreteReader.class);
@@ -305,22 +308,18 @@ public class ConcreteReader {
 
     private void addSprlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int i = 0;
-        for (Map<Pair<Integer, Integer>, Properties> sprl : getSrlFromSituationMentions(comm, tool).get2()) {
+        for (SprlProperties sprl : getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get2()) {
             AnnoSentence sent = tmpSents.get(i);
             sent.setSprl(sprl);
-            IntHashSet sprlPreds = new IntHashSet();
-            for (Pair<Integer, Integer> k : sprl.keySet()) {
-                sprlPreds.add(k.get1());
-            }
-            sent.setKnownSprlPreds(sprlPreds);
-            sent.setKnownSprlPairs(new HashSet<>(sprl.keySet()));
+            sent.setKnownSprlPreds(new IntHashSet(sprl.getPreds()));
+            sent.setKnownSprlPairs(new HashSet<>(sprl.getKnownPairs()));
             i++;
         }
     }
 
     private void addMissingSrlPairs(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int totalSkipped = 0;
-        for (Indexed<SrlGraph> g : enumerate(getSrlFromSituationMentions(comm, tool).get1())) {
+        for (Indexed<SrlGraph> g : enumerate(getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get1())) {
             AnnoSentence sent = tmpSents.get(g.index());
             HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
             for (SrlEdge e : g.get().getEdges()) {
@@ -338,7 +337,7 @@ public class ConcreteReader {
     
     private void addSrlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int i = 0;
-        for (SrlGraph g : getSrlFromSituationMentions(comm, tool).get1()) {
+        for (SrlGraph g : getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get1()) {
             AnnoSentence sent = tmpSents.get(i);
             sent.setSrlGraph(g);
             sent.setKnownPredsFromSrlGraph();
@@ -352,14 +351,14 @@ public class ConcreteReader {
     /**
      * Extracts a list of SrlGraphs corresponding to the sentences in the communication comm and annotations of the given tool
      */
-    public static Pair<List<SrlGraph>, List<Map<Pair<Integer, Integer>, Properties>>>  getSrlFromSituationMentions(Communication comm, String tool) {
+    public static Pair<List<SrlGraph>, List<SprlProperties>>  getSrlFromSituationMentions(Communication comm, String tool, SprlLabelConverter sprlConverter) {
         SituationMentionSet cSms = ConcreteUtils.getFirstSituationMentionSetWithName(comm, tool);
         List<Integer> sentenceLengths = getSentenceLengthsFromCommunication(comm);
         List<SrlGraph> srlGraphs = new ArrayList<>(sentenceLengths.size());
-        List<Map<Pair<Integer, Integer>, Properties>> allSprl = new ArrayList<>(sentenceLengths.size());
+        List<SprlProperties> allSprl = new ArrayList<>(sentenceLengths.size());
         for (int i = 0; i < sentenceLengths.size(); i++) {
-            srlGraphs.add(new SrlGraph(sentenceLengths.get(i)));
-            allSprl.add(new HashMap<>());
+            srlGraphs.add(new SrlGraph(sentenceLengths.get(i))); 
+            allSprl.add(new SprlProperties(sprlConverter));
         }
 
         if (cSms != null) {
@@ -376,8 +375,7 @@ public class ConcreteReader {
 
                 int sentIdx = emId2SentIdx.get(args.get(0).getEntityMentionId().getUuidString());
                 SrlGraph srlGraph = srlGraphs.get(sentIdx);
-                Map<Pair<Integer, Integer>, Properties> sprl = allSprl.get(sentIdx);
-
+                SprlProperties sprl = allSprl.get(sentIdx);
                 // add predicate
                 int predLoc = Collections.min(cSm.getTokens().getTokenIndexList());
                 SrlPred srlPred = null;
@@ -412,11 +410,9 @@ public class ConcreteReader {
                     // add properties
                     List<Property> propertyList = cArg.getPropertyList();
                     if (propertyList != null && propertyList.size() > 0) {
-                        Properties props = new Properties();
                         for (Property prop : cArg.getPropertyList()) {
-                            props.add(prop.getValue(), prop.getPolarity());
+                            sprl.set(predLoc, argLoc, prop.getValue(), sprlConverter.toLabel(Math.abs(prop.getPolarity()), Math.signum(prop.getPolarity())));
                         }
-                        sprl.put(new Pair<>(predLoc, argLoc), props);
                     }
                 }
             }

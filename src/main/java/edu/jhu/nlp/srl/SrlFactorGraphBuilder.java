@@ -537,4 +537,8 @@ public class SrlFactorGraphBuilder implements Serializable {
         return senseVars;
     }
 
+    public SrlFactorGraphBuilderPrm getPrm() {
+        return prm;
+    }
+
 }
