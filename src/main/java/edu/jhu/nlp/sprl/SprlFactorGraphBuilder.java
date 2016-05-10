@@ -10,12 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.Indexed;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
@@ -30,6 +28,7 @@ import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
+import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.tuple.Pair;
 

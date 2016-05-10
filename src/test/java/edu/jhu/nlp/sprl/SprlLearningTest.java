@@ -32,7 +32,6 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
 import edu.jhu.nlp.features.TemplateReader;
 import edu.jhu.nlp.joint.JointNlpAnnotator;
 import edu.jhu.nlp.joint.JointNlpAnnotator.JointNlpAnnotatorPrm;
-import edu.jhu.nlp.sprl.SprlClassLabel;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.train.CrfTrainer.CrfTrainerPrm;
