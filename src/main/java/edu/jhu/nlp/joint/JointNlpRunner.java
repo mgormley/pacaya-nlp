@@ -269,8 +269,8 @@ public class JointNlpRunner {
     public static boolean sprlSrlFactorsFeaturized = false;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between all sprl questions for a given pred-arg pair.")
     public static boolean sprlAllPairs = false;
-    @Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
-    public static boolean enforceSprlNilAgreement = true;
+    //@Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
+    //public static boolean enforceSprlNilAgreement = true;
     @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
     public static boolean breakdownSprlEval = true;
     @Opt(hasArg = true, description = "Only look at srl in validation function for srl with sprl")
@@ -614,7 +614,7 @@ public class JointNlpRunner {
 
         boolean includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);
         boolean includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
-        boolean includeIsArgVars = includeSprl && enforceSprlNilAgreement && !(sprlSrlFactors && includeSrl);
+        //boolean includeIsArgVars = includeSprl && enforceSprlNilAgreement && !(sprlSrlFactors && includeSrl);
 
         prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
@@ -629,13 +629,14 @@ public class JointNlpRunner {
             prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
         }
 
-        prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
+       // prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
+
         //prm.fgPrm.sprlPrm.sprlPipelineIndex = sprlPipelineIndex;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
         prm.fgPrm.featurizeSrlSprlPairwise = sprlSrlFactorsFeaturized;
         prm.fgPrm.sprlPrm.unaryFactors = unaryFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
-        prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;  
+        //prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;  
         prm.fgPrm.sprlPrm.roleStructure = roleStructure;
         prm.fgPrm.sprlPrm.allowPredArgSelfLoops= allowPredArgSelfLoops;
 

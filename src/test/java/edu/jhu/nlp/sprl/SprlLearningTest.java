@@ -110,7 +110,7 @@ public class SprlLearningTest {
         jointPrm.buPrm.fgPrm.srlPrm.srlFePrm = fePrm;
         jointPrm.buPrm.fgPrm.sprlPrm.srlFePrm = fePrm;
         jointPrm.buPrm.fgPrm.sprlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
-        jointPrm.buPrm.fgPrm.sprlPrm.extraVariablesForNilAgreement = false;
+        //jointPrm.buPrm.fgPrm.sprlPrm.extraVariablesForNilAgreement = false;
         long seed = 5;
         double[] srlParams = null;
         {
