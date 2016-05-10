@@ -131,7 +131,7 @@ public class ConfusionMatrix<L> {
         return getCorrect() - getCorrectNils();
     }
 
-    public int getPredictedeHits() {
+    public int getPredictedHits() {
         return getTotal() - getPredictedNils();
     }
 
@@ -149,7 +149,7 @@ public class ConfusionMatrix<L> {
     }
 
     public double precision() {
-        int predicted = getPredictedeHits();
+        int predicted = getPredictedHits();
         if (predicted == 0) {
             return 1.0;
         } else {
@@ -244,7 +244,7 @@ public class ConfusionMatrix<L> {
         return sw.toString();
     }
 
-    private L majorityNonNilLabel() {
+    public L majorityNonNilLabel() {
         L maxLabel = null;
         int maxCount = 0;
         for (L k : keys) {
@@ -313,8 +313,8 @@ public class ConfusionMatrix<L> {
     public String formatMatrix(Collection<L> keys, String cellSep, String lineSep) {
 
         // get the number of rows and columns
-        List<L> rows = new ArrayList<L>(keys == null ? goldCounts.keySet() : keys);
-        List<L> cols = new ArrayList<L>(keys == null ? predCounts.keySet() : keys);
+        List<L> rows = new ArrayList<L>(keys);
+        List<L> cols = new ArrayList<L>(keys);
         DecimalFormat formatter = new DecimalFormat("#,###");
         int nrows = 2 + rows.size();
         int ncols = 2 + cols.size();

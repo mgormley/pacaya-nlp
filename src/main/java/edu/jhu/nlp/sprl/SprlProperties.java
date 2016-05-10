@@ -1,6 +1,7 @@
 package edu.jhu.nlp.sprl;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -77,16 +78,16 @@ public class SprlProperties {
         return propsByPair.containsKey(e);
     }
 
-    /**
-     * if the pred arg pair was unseen or seen as a nil pair, the nil label is
-     * returned, otherwise, the property is looked up
-     */
     public String get(int pred, int arg, String property) {
         return get(new Triple<>(pred, arg, property));
     }
 
+    public Set<Pair<Integer, Integer>> getMarkedNilPairs() {
+        return nilPairs;
+    }
+    
     public Set<String> getLabeledProperties(Pair<Integer, Integer> pair) {
-        return propsByPair.get(pair);
+        return propsByPair.getOrDefault(pair, Collections.emptySet());
     }
 
     public List<Triple<Integer, Integer, String>> getLabeledProperties() {
@@ -97,6 +98,10 @@ public class SprlProperties {
         return labelConverter;
     }
 
+    /**
+     * if the pred arg pair was unseen or seen as a nil pair, the nil label is
+     * returned, otherwise, the property is looked up
+     */
     public String get(Triple<Integer, Integer, String> e) {
         String label = propLabels.get(e);
         if (label != null) {

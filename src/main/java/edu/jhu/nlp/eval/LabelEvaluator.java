@@ -117,7 +117,7 @@ public abstract class LabelEvaluator implements Evaluator {
     }
 
     public int getNumPredictPositive() {
-        return cm.getPredictedeHits();
+        return cm.getPredictedHits();
     }
 
     public int getNumTruePositive() {

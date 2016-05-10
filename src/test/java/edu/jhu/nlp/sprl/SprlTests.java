@@ -7,8 +7,11 @@ import org.junit.runners.Suite;
 @Suite.SuiteClasses({
     ConfusionMatrixTest.class,
     CounterTest.class,
-    SprlConcreteEvaluatorTest.class,
-    SprlEvaluatorTest.class,
-    SprlFactorGraphBuilderTest.class,
-    SprlLearningTest.class})
+    BinarySprlLabelConverterTest.class,
+    SprlPropertiesTest.class
+//  SprlConcreteEvaluatorTest.class,
+//  SprlEvaluatorTest.class,
+//  SprlFactorGraphBuilderTest.class,
+//  SprlLearningTest.class
+})
 public class SprlTests { }
