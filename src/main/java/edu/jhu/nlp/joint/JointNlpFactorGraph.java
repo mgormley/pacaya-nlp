@@ -93,8 +93,8 @@ public class JointNlpFactorGraph extends FactorGraph {
         public boolean sprlSrlFactors = false;
         // this enforcement may happen by way of specializing the srlSprl factors or by adding
         // additional variables if srl isn't being modeled
-        public boolean enforceSprlNilAgreement = true;
-        public boolean featurizeSrlSprlPairwise = false;
+        //public boolean enforceSprlNilAgreement = true;
+        //public boolean featurizeSrlSprlPairwise = false;
     }
 
     public static LinkedList<Serializable> makeKey(Serializable... args) {
@@ -163,7 +163,7 @@ public class JointNlpFactorGraph extends FactorGraph {
         }
         // SPRL interaction with SRL (including observed SPRL or observed SRL on SPRL)
         if (prm.sprlSrlFactors) {
-            SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, sprl, srl, prm.sprlPrm.pairwiseFactors, prm.enforceSprlNilAgreement, prm.featurizeSrlSprlPairwise);
+            SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, sprl, srl, prm.sprlPrm.pairwiseFactors);
         }
     }
 

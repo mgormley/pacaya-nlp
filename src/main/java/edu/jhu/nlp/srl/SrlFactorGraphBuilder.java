@@ -31,6 +31,7 @@ import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.iter.IntIter;
 import edu.jhu.prim.set.IntSet;
+import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
 
 /**
@@ -209,6 +210,7 @@ public class SrlFactorGraphBuilder implements Serializable {
         List<Pair<Integer, Integer>> toReturn = new ArrayList<>();
         if (rS == RoleStructure.PAIRS_GIVEN) {
             toReturn.addAll(knownPairs);
+            toReturn.sort(ComparablePair.naturalOrder());
         } else if (rS == RoleStructure.PREDS_GIVEN) {
             // CoNLL-friendly model; preds given
             IntIter iter = knownPreds.iterator();

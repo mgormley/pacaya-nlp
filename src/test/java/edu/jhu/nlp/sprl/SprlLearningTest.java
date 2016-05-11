@@ -100,7 +100,7 @@ public class SprlLearningTest {
         fePrm.senseTemplates = getFeatTemplates(senseTemplates); 
         jointPrm.ofcPrm.includeUnsupportedFeatures = false;
         jointPrm.buPrm.fgPrm.srlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
-        jointPrm.buPrm.fgPrm.enforceSprlNilAgreement = true;
+//        jointPrm.buPrm.fgPrm.enforceSprlNilAgreement = true;
         jointPrm.buPrm.fgPrm.includeDp = false;
         jointPrm.buPrm.fgPrm.includeRel = false;
         jointPrm.buPrm.fgPrm.includePos = false;
