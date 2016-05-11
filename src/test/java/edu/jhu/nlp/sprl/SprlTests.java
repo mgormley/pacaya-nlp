@@ -8,10 +8,10 @@ import org.junit.runners.Suite;
     ConfusionMatrixTest.class,
     CounterTest.class,
     BinarySprlLabelConverterTest.class,
-    SprlPropertiesTest.class
-//  SprlConcreteEvaluatorTest.class,
-//  SprlEvaluatorTest.class,
-//  SprlFactorGraphBuilderTest.class,
-//  SprlLearningTest.class
+    SprlPropertiesTest.class,
+    SprlConcreteEvaluatorTest.class,
+    SprlEvaluatorTest.class,
+    SprlFactorGraphBuilderTest.class,
+    SprlLearningTest.class
 })
 public class SprlTests { }

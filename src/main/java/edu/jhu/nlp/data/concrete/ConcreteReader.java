@@ -56,6 +56,7 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.sprl.BinarySprlLabelConverter;
 import edu.jhu.nlp.sprl.SprlLabelConverter;
 import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
@@ -88,7 +89,7 @@ public class ConcreteReader {
         public String missingSrlTool = null;
         public String srlTool = null;
         public String sprlTool = null;
-        public SprlLabelConverter sprlConverter = null;
+        public SprlLabelConverter sprlConverter = new BinarySprlLabelConverter(3.5);
     }
 
     private static final Logger log = LoggerFactory.getLogger(ConcreteReader.class);

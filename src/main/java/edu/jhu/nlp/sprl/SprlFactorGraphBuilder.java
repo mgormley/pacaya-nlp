@@ -339,26 +339,8 @@ public class SprlFactorGraphBuilder {
             fg.addFactor(new ObsFeTypedFactor(new VarSet(roleV), ft, makeKey(ft, q, "GOLD_SPRL", goldSprl), ofc, fe));
         } else { // joint factor
             Serializable templateKey = makeKey(ft, q);
-            // real pairwise factors
-            // TODO: add back nil agreement
-            // if (enforceNilAgreement) { // create the factor in such a way
-            // that nil agreement is enforced
-            // fg.addFactor(new
-            // ObsFeTypedFactorWithNilAgreement(Arrays.asList(roleV, sprlV),
-            // Arrays.asList(roleV.getNilState(),
-            // SprlClassLabel.NOT_AN_ARG.ordinal()),
-            // ft, templateKey, ofc, fe));
-            // } else { // ordinary pairwise factor that doesn't enforce nil
-            // agreement
             fg.addFactor(new ObsFeTypedFactor(new VarSet(roleV, sprlV), ft, templateKey, ofc, fe));
-            // }
         }
     }
-
-    // private static SprlClassLabel goldSprlLabel(AnnoSentence sent,
-    // Pair<Integer, Integer> e, String q) {
-    // Properties props = sent.getSprl().get(e);
-    // return props == null ? SprlClassLabel.NOT_AN_ARG : props.getLabel(q);
-    // }
 
 }
