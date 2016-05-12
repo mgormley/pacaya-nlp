@@ -6,9 +6,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -34,7 +31,8 @@ import edu.jhu.prim.tuple.Pair;
 
 public class SprlFactorGraphBuilder {
 
-    private static final Logger log = LoggerFactory.getLogger(SprlFactorGraphBuilder.class);
+    // private static final Logger log =
+    // LoggerFactory.getLogger(SprlFactorGraphBuilder.class);
 
     public static class SprlFactorGraphBuilderPrm extends Prm {
         private static final long serialVersionUID = 1L;
@@ -96,9 +94,9 @@ public class SprlFactorGraphBuilder {
     }
 
     private SprlFactorGraphBuilderPrm prm;
-    private SrlFeatureExtractor obsFe = null;
+    private SrlFeatureExtractor obsFe;
     private SprlVar[][][] sprlVars;
-    private CorpusStatistics cs = null;
+    private CorpusStatistics cs;
 
     // private Var[][] argVars = null;
     private BiasOnlyObsFeatureExtractor biasOnlyFe;
@@ -157,14 +155,9 @@ public class SprlFactorGraphBuilder {
                 }
                 // add pairwise properties
                 if (prm.pairwiseFactors) {
-                    for (Indexed<String> q2 : Indexed.enumerate(cs.sprlPropertyNames)) {
-                        // we only want distinct unordered pairs
-                        // and we want to wait until both variables have been
-                        // created
-                        // v2 is an earlier property
-                        if (q2.index() >= q1.index()) {
-                            continue;
-                        }
+                    // pick an earlier property since we want distinct pairs
+                    // with both vars built
+                    for (Indexed<String> q2 : Indexed.enumerate(cs.sprlPropertyNames.subList(0, q1.index()))) {
                         SprlVar v2 = sprlVars[i][j][q2.index()];
                         // factor is between v1 and an earlier one
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(v1, v2), SprlFactorType.SPRL_PAIRWISE,
@@ -236,7 +229,6 @@ public class SprlFactorGraphBuilder {
         // we only bother about the information between sprl and srl if one of
         // the two is present
         if (hasSprl || hasSrl) {
-            System.out.println(hasSprl + ", " + hasSrl);
             SprlFactorGraphBuilderPrm sprlPrm = hasSprl ? sprl.prm : null;
             SrlFactorGraphBuilderPrm srlPrm = hasSrl ? srl.getPrm() : null;
             BiasOnlyObsFeatureExtractor biasOnlyFe = hasSprl ? sprl.biasOnlyFe
@@ -316,15 +308,11 @@ public class SprlFactorGraphBuilder {
                 // add factors that look at at the current i,j,q triple
                 addSrlSprlFactor(ofc, fg, fe, q1.get(), roleVar, goldSrl, sprlVar, goldSprl);
 
-                // for observed sprlPairs, add a factor that looks at gold sprl
-                // pairs
+                // add a factor that looks at gold obs sprl pairs
                 if (givenSprl && sprlPairs) {
-                    for (Indexed<String> q2 : Indexed.enumerate(propNames)) {
-                        if (q2.index() >= q1.index()) {
-                            continue;
-                        }
-                        JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_SPRL;
-                        // look at this property with an earlier property
+                    JointFactorTemplate ft = JointFactorTemplate.ROLE_SPRL_SPRL;
+                    // pick an earlier other property to conjoin with
+                    for (Indexed<String> q2 : Indexed.enumerate(propNames.subList(0, q1.index()))) {
                         Serializable templateKey = makeKey(ft, "GOLD_SPRL_PAIR", q1.get(), goldSprl, q2.get(),
                                 sprl.get(i, j, q2.get()));
                         // TODO: do more features help here?
