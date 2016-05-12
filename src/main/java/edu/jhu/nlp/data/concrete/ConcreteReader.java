@@ -1,7 +1,5 @@
 package edu.jhu.nlp.data.concrete;
 
-import static edu.jhu.pacaya.sch.util.Indexed.enumerate;
-
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -60,7 +58,6 @@ import edu.jhu.nlp.sprl.BinarySprlLabelConverter;
 import edu.jhu.nlp.sprl.SprlLabelConverter;
 import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
-import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.arrays.IntArrays;
@@ -86,7 +83,7 @@ public class ConcreteReader {
         public String parseTool = null;
         public String nerTool = null;
         public String relationTool = null;
-        public String missingSrlTool = null;
+//        public String missingSrlTool = null;
         public String srlTool = null;
         public String sprlTool = null;
         public SprlLabelConverter sprlConverter = new BinarySprlLabelConverter(3.5);
@@ -222,9 +219,11 @@ public class ConcreteReader {
                 addRelationsFromSituationMentions(comm, tmpSents, prm.relationTool);
                 // srl
                 addSrlFromSituationMentions(comm, tmpSents, prm.srlTool);
+/*
                 if (prm.missingSrlTool != null) {
                     addMissingSrlPairs(comm, tmpSents, prm.missingSrlTool);
                 }
+                */
                 // sprl
                 addSprlFromSituationMentions(comm, tmpSents, prm.sprlTool);
             }
@@ -318,6 +317,7 @@ public class ConcreteReader {
         }
     }
 
+    /*
     private void addMissingSrlPairs(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int totalSkipped = 0;
         for (Indexed<SrlGraph> g : enumerate(getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get1())) {
@@ -335,6 +335,7 @@ public class ConcreteReader {
             log.info(String.format("added %d pairs to skip corresponding to missing SRL labels", totalSkipped));
         }
     }
+    */
     
     private void addSrlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
         int i = 0;

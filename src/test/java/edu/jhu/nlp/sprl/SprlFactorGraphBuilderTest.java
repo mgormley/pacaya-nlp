@@ -980,6 +980,7 @@ public class SprlFactorGraphBuilderTest {
         }
     }
 
+    // this test is a bit of a hack to ensure coverage of SprlFactorGraphBuilder
     @Test
     public void testEnum() {
         assertEquals(SprlFactorType.SPRL_UNARY, SprlFactorType.valueOf(SprlFactorType.SPRL_UNARY.name()));

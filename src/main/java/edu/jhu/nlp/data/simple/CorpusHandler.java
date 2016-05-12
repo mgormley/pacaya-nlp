@@ -110,8 +110,8 @@ public class CorpusHandler {
     public static String concreteDepParseTool = null;
     @Opt(hasArg = true, description = "Tool name of SRL for ConcreteReader (will also be used for NER and Relations).")
     public static String concreteSrlTool = null;
-    @Opt(hasArg = true, description = "Some global SRL labels are missing; if pred-arg pairs having missing gold labels should be skipped then this tool should be the tool with the global srl labels.")
-    public static String concreteMissingSrlTool = null;
+//    @Opt(hasArg = true, description = "Some global SRL labels are missing; if pred-arg pairs having missing gold labels should be skipped then this tool should be the tool with the global srl labels.")
+//    public static String concreteMissingSrlTool = null;
     @Opt(hasArg = true, description = "Tool name of SPRL for ConcreteReader.")
     public static String concreteSprlTool = null;
 //    @Opt(hasArg = true, description = "Tool name to use when writing dependency parse for ConcreteWriter.")
@@ -420,7 +420,7 @@ public class CorpusHandler {
         prm.useGoldSyntax = useGoldSyntax;
         prm.rePrm.depParseTool = checkedTool("depParse", concreteDepParseTool);
         prm.rePrm.srlTool = checkedTool("srl", concreteSrlTool);
-        prm.rePrm.missingSrlTool = concreteMissingSrlTool;
+//        prm.rePrm.missingSrlTool = concreteMissingSrlTool;
         prm.rePrm.sprlTool = checkedTool("sprl", concreteSprlTool);
         return prm;
     }
