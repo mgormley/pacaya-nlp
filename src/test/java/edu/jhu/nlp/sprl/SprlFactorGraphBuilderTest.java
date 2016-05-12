@@ -162,8 +162,6 @@ public class SprlFactorGraphBuilderTest {
         LFgExample ex = exampleList.get(0);
         FactorGraph fg = ex.getFactorGraph();
         CPrm cPrm = new CPrm();
-        cPrm.examples = exampleList;
-        cPrm.ex = ex;
         cPrm.fg = fg;
         cPrm.sprlPrm = sprlPrm;
         cPrm.srlPrm = srlPrm;
@@ -189,8 +187,6 @@ public class SprlFactorGraphBuilderTest {
     private static class CPrm {
         IntAnnoSentence isent;
         FactorGraph fg;
-        LFgExample ex;
-        FgExampleList examples;
         ObsFeatureConjoiner ofc;
         SrlFactorGraphBuilderPrm srlPrm;
         SprlFactorGraphBuilderPrm sprlPrm;
@@ -783,4 +779,53 @@ public class SprlFactorGraphBuilderTest {
         assertEquals(5 * 3, ofc.getTemplates().get(1).getNumConfigs());
         assertEquals(5 * 3, ofc.getTemplates().get(2).getNumConfigs());
     }
+
+    @Test
+    public void testAllPairsSprlGivenSrl() throws IOException {
+        // all pairs; sprlSrl factors
+        CPrm cPrm = auxTest(new TPrm() {
+            {
+                sprlPairs = false;
+                argTemplates = Arrays.asList(new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.CAPITALIZED));
+                sprlUnaryFactors = true;
+                srlUnaryFactors = true;
+                sprlRoleStructure = RoleStructure.ALL_PAIRS;
+                srlRoleStructure = RoleStructure.ALL_PAIRS;
+                sprlAllowSelfLoops = true;
+                srlAllowSelfLoops = true;
+                encode = p -> { 
+                    p.sprlBuilder = new SprlFactorGraphBuilder(p.sprlPrm);
+                    p.sprlBuilder.build(p.isent, p.ofc, p.fg, cs);
+                    p.sprlBuilder.annoToConfig(p.sent, p.vc);
+                    SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, cs, p.fg, p.sprlBuilder, p.srlBuilder, p.sprlPrm.pairwiseFactors);
+                };
+            }
+        });
+        FactorGraph fg = cPrm.fg;
+        ObsFeatureConjoiner ofc = cPrm.ofc;
+
+        // 4 * 4 * 2
+        assertEquals(32, fg.getNumVars());
+        
+        // 32 unary plus (32 given gold srl)
+        assertEquals(64, fg.getNumFactors());
+        assertEquals(64, fg.getFactors().size());
+        
+        // 2 unary sprl + 2 * 4 (all that were observed in the data)
+        assertEquals(10, ofc.getTemplates().size());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), ofc.getTemplates().get(0).getKey());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), ofc.getTemplates().get(1).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "awareness", "GOLD_SRL", "_"), ofc.getTemplates().get(2).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "volitional", "GOLD_SRL", "_"), ofc.getTemplates().get(3).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "awareness", "GOLD_SRL", "ARG0-to"), ofc.getTemplates().get(4).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "volitional", "GOLD_SRL", "ARG0-to"), ofc.getTemplates().get(5).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "awareness", "GOLD_SRL", "ARG1"), ofc.getTemplates().get(6).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "volitional", "GOLD_SRL", "ARG1"), ofc.getTemplates().get(7).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "awareness", "GOLD_SRL", "ARG0"), ofc.getTemplates().get(8).getKey());
+        assertEquals(Arrays.asList(JointFactorTemplate.ROLE_SPRL_BINARY, "volitional", "GOLD_SRL", "ARG0"), ofc.getTemplates().get(9).getKey());
+        for (int i = 0; i < 10; i++) {
+            assertEquals(3, ofc.getTemplates().get(i).getNumConfigs());
+        }
+    }
+
 }

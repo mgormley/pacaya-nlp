@@ -163,7 +163,7 @@ public class SprlFactorGraphBuilder {
                         // created
                         // v2 is an earlier property
                         if (q2.index() >= q1.index()) {
-                            break;
+                            continue;
                         }
                         SprlVar v2 = sprlVars[i][j][q2.index()];
                         // factor is between v1 and an earlier one
