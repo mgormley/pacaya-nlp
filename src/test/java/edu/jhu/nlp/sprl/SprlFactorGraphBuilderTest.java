@@ -27,14 +27,10 @@ import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate1;
 import edu.jhu.nlp.features.TemplateLanguage.Position;
 import edu.jhu.nlp.features.TemplateLanguage.PositionModifier;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
-import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorType;
-import edu.jhu.nlp.srl.SrlEncoder;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorTemplate;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.FgExampleListBuilder;
@@ -48,8 +44,6 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.VarConfig;
-import edu.jhu.pacaya.sch.util.TestUtils;
-import edu.jhu.prim.tuple.Quadruple;
 import edu.jhu.prim.tuple.Triple;
 
 public class SprlFactorGraphBuilderTest {
@@ -57,6 +51,7 @@ public class SprlFactorGraphBuilderTest {
     private static SprlLabelConverter sprlConverter = new BinarySprlLabelConverter(1.5); 
     private static CorpusStatistics cs;
     private static AnnoSentenceCollection sents;
+
     // setup
     {
         File f = new File(getClass().getResource(concreteFilename).getFile());
@@ -66,7 +61,11 @@ public class SprlFactorGraphBuilderTest {
         crPrm.srlTool = "fpropbank";
         crPrm.sprlTool = "fpropbank";
         ConcreteReader r = new ConcreteReader(crPrm);
-        sents = r.sentsFromCommFile(f);
+        try {
+            sents = r.sentsFromCommFile(f);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         assertEquals(2, sents.size());
         
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
@@ -82,34 +81,32 @@ public class SprlFactorGraphBuilderTest {
     }
     
     private CPrm auxTest(TPrm tPrm) {
-        // AnnoSentenceCollection sents, CorpusStatistics cs, boolean allowSelfLoops, List<FeatTemplate> argTemplates, RoleStructure roleStructure, boolean unaryFactors, boolean sprlPairs, boolean checkDecode) {
-        SprlFactorGraphBuilderPrm prm = new SprlFactorGraphBuilderPrm();
-        prm.allowPredArgSelfLoops = tPrm.allowSelfLoops;
-        prm.labelConverter = sprlConverter; 
-        prm.roleStructure = tPrm.sprlRoleStructure;
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
         srlFePrm.useTemplates = false;
 //        srlFePrm.featureHashMod = 1000003;
         srlFePrm.featureHashMod = -1;
         srlFePrm.senseTemplates = Arrays.asList(new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.LEMMA));
         srlFePrm.biasOnly = false;
-        prm.unaryFactors = tPrm.unaryFactors;
-
-        // only unary factors
         srlFePrm.argTemplates = tPrm.argTemplates;
-        prm.srlFePrm = srlFePrm;
-        prm.pairwiseFactors = tPrm.sprlPairs;
+
+        
+        SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
+        sprlPrm.allowPredArgSelfLoops = tPrm.sprlAllowSelfLoops;
+        sprlPrm.labelConverter = sprlConverter; 
+        sprlPrm.roleStructure = tPrm.sprlRoleStructure;
+        sprlPrm.unaryFactors = tPrm.unaryFactors;
+        sprlPrm.srlFePrm = srlFePrm;
+        sprlPrm.pairwiseFactors = tPrm.sprlPairs;
+        sprlPrm.roleStructure = tPrm.sprlRoleStructure;
 
         // preds given; sprlSrl factors
         SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
-        prm.allowPredArgSelfLoops = true;
-        srlPrm.allowPredArgSelfLoops = prm.allowPredArgSelfLoops;
+        srlPrm.allowPredArgSelfLoops = tPrm.srlAllowSelfLoops;
         srlPrm.binarySenseRoleFactors = false;
         srlPrm.fcmFactors = false;
         srlPrm.makeUnknownPredRolesLatent = false;
         srlPrm.predictPredPos = false;
-        prm.roleStructure = RoleStructure.PREDS_GIVEN;
-        srlPrm.roleStructure = prm.roleStructure;
+        srlPrm.roleStructure = tPrm.srlRoleStructure;
         srlPrm.srlFePrm = srlFePrm;
         srlPrm.unaryFactors = tPrm.unaryFactors;
 
@@ -137,7 +134,7 @@ public class SprlFactorGraphBuilderTest {
                 eprm.sent = sent;
                 eprm.isent = new IntAnnoSentence(sent, cs.store);
                 eprm.ofc = ofc;
-                eprm.sprlPrm = prm;
+                eprm.sprlPrm = sprlPrm;
                 eprm.srlPrm = srlPrm;
                 eprm.vc = vc;
                 eprm.sprlBuilder = null;
@@ -157,38 +154,40 @@ public class SprlFactorGraphBuilderTest {
             }
         });
         ofc.init(exampleList);
-        IntAnnoSentence isent = new IntAnnoSentence(sents.get(0), cs.store);
         LFgExample ex = exampleList.get(0);
         FactorGraph fg = ex.getFactorGraph();
         CPrm cPrm = new CPrm();
         cPrm.examples = exampleList;
         cPrm.ex = ex;
         cPrm.fg = fg;
-        cPrm.sprlPrm = prm;
+        cPrm.sprlPrm = sprlPrm;
         cPrm.srlPrm = srlPrm;
         cPrm.ofc = ofc;
+        cPrm.isent = new IntAnnoSentence(sents.get(0), cs.store);
         return cPrm;
     }
     
     // params for specifying a test setting
     private static class TPrm {
-        public boolean sprlPairs;
-        public List<FeatTemplate> argTemplates;
-        public boolean unaryFactors;
-        public RoleStructure sprlRoleStructure;
-        public boolean allowSelfLoops;
-        protected Consumer<EPrm> encode;
+        Consumer<EPrm> encode;
+        List<FeatTemplate> argTemplates;
+        RoleStructure srlRoleStructure;
+        RoleStructure sprlRoleStructure;
+        boolean srlAllowSelfLoops;
+        boolean sprlAllowSelfLoops;
+        boolean sprlPairs;
+        boolean unaryFactors;
     }
 
     // params available for checking
     private static class CPrm {
-
-        public FactorGraph fg;
-        public LFgExample ex;
-        public FgExampleList examples;
-        public ObsFeatureConjoiner ofc;
-        public SrlFactorGraphBuilderPrm srlPrm;
-        public SprlFactorGraphBuilderPrm sprlPrm;
+        IntAnnoSentence isent;
+        FactorGraph fg;
+        LFgExample ex;
+        FgExampleList examples;
+        ObsFeatureConjoiner ofc;
+        SrlFactorGraphBuilderPrm srlPrm;
+        SprlFactorGraphBuilderPrm sprlPrm;
         
     }
 
@@ -206,13 +205,14 @@ public class SprlFactorGraphBuilderTest {
 
     @Test
     public void testSprlUnaries() throws IOException {
+        // only unary factors
         CPrm cPrm = auxTest(new TPrm() {
             {
                 sprlPairs = false;
                 argTemplates = Arrays.asList(new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.CAPITALIZED));
                 unaryFactors = true;
                 sprlRoleStructure = RoleStructure.PAIRS_GIVEN;
-                allowSelfLoops = true;
+                srlAllowSelfLoops = true;
                 encode = p -> { 
                     p.sprlBuilder = new SprlFactorGraphBuilder(p.sprlPrm);
                     p.sprlBuilder.build(p.isent, p.ofc, p.fg, cs);
@@ -220,188 +220,125 @@ public class SprlFactorGraphBuilderTest {
                 };
             }
         });
+        FactorGraph fg = new FactorGraph();
+        SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(cPrm.sprlPrm);
+        ObsFeatureConjoiner ofc = cPrm.ofc;
+        builder.build(cPrm.isent, ofc, fg, cs);
+        assertEquals(4, builder.getSprlVars().length);
+        assertEquals(4, builder.getSprlVars()[0].length);
+        assertEquals(2, builder.getSprlVars()[0][0].length);
+        assertEquals(2, builder.getSprlVars()[0][1].length);
+        assertTrue(builder.getSprlVars()[0][0][0] == null);
+        assertTrue(builder.getSprlVars()[0][0][1] == null);
+        assertTrue(builder.getSprlVars()[0][1][0] == null);
+        assertTrue(builder.getSprlVars()[0][1][1] == null);
+        assertTrue(builder.getSprlVars()[1][0][0] != null);
+        assertTrue(builder.getSprlVars()[1][0][1] != null);
+        assertTrue(builder.getSprlVars()[1][2][0] != null);
+        assertTrue(builder.getSprlVars()[1][2][1] != null);
+        // 2 pairs each with 2 properties; so, 2 unary factors
+        assertEquals(4, fg.getNumVars());
+        assertEquals(4, fg.getNumFactors());
+        assertEquals(4, fg.getFactors().size());
+        //fg.getFactors().get(0).g
+        ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(0));
+        List<Serializable> templateKey = Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness");
+        assertEquals(templateKey, factor.getTemplateKey());
+        FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
+        assertEquals(2, fv.getUsed());
+        assertEquals(2, fv.getNumImplicitEntries());
+        assertEquals(4, ofc.getTemplates().getNumObsFeats());
+        assertEquals(2, ofc.getTemplates().size());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), ofc.getTemplates().get(0).getKey());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), ofc.getTemplates().get(1).getKey());
+        assertEquals(2, ofc.getTemplates().get(0).getNumConfigs());
+        assertEquals(8, ofc.getNumParams());
+    }
+    
+    @Test
+    public void testSprlPairwise() throws IOException {
         // only unary factors
-        {
-            srlFePrm.argTemplates = 
-            prm.srlFePrm = srlFePrm;
-            prm.pairwiseFactors = false;
-            CorpusStatistics cs = new CorpusStatistics(csPrm);
-            ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, new FactorTemplateList());
-            if (!cs.isInitialized()) {
-                cs.init(sents, false);
-                cs.store = new AlphabetStore(sents);
+        CPrm cPrm = auxTest(new TPrm() {
+            {
+                sprlPairs = true;
+                argTemplates = Arrays.asList(new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.CAPITALIZED),
+                        new FeatTemplate1(Position.CHILD, PositionModifier.HEAD, TokProperty.CAPITALIZED),
+                        new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.LC),
+                        new FeatTemplate1(Position.CHILD, PositionModifier.HEAD, TokProperty.LC));
+                unaryFactors = true;
+                sprlRoleStructure = RoleStructure.PAIRS_GIVEN;
+                srlAllowSelfLoops = true;
+                encode = p -> { 
+                    p.sprlBuilder = new SprlFactorGraphBuilder(p.sprlPrm);
+                    p.sprlBuilder.build(p.isent, p.ofc, p.fg, cs);
+                    p.sprlBuilder.annoToConfig(p.sent, p.vc);
+                };
             }
-            FgExampleListBuilder exListBuilder = new FgExampleListBuilder(exListPrm);
-            FgExampleList exampleList = exListBuilder.getInstance(new FgExampleList() {
-                
-                @Override
-                public int size() {
-                    return sents.size();
-                }
-                
-                @Override
-                public LFgExample get(int i) {
-                    AnnoSentence sent = sents.get(i);
-                    IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
-                    FactorGraph fg = new FactorGraph(); 
-                    SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(prm);
-                    builder.build(isent, ofc, fg, cs);
-                    VarConfig vc = new VarConfig();
-                    builder.annoToConfig(sent, vc);
-                    AnnoSentence copy = sent.getShallowCopy();
-                    copy.removeAt(AT.SPRL);
-                    builder.configToAnno(vc, copy);
-                    SprlProperties gold = sent.getSprl();
-                    for (Triple<Integer, Integer, String> t : gold.getLabeledProperties()) {
-                        assertEquals(gold.get(t), copy.getSprl().get(t));
-                    }
-                    return new LabeledFgExample(fg, vc, ofc.getTemplates());
-                }
-            });
-            ofc.init(exampleList);
-            IntAnnoSentence isent = new IntAnnoSentence(sents.get(0), cs.store);
-            LFgExample ex = exampleList.get(0);
-            FactorGraph fg = ex.getFactorGraph();
-            SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(prm);
-            builder.build(isent, ofc, fg, cs);
-            assertEquals(4, builder.getSprlVars().length);
-            assertEquals(4, builder.getSprlVars()[0].length);
-            assertEquals(2, builder.getSprlVars()[0][0].length);
-            assertEquals(2, builder.getSprlVars()[0][1].length);
-            assertTrue(builder.getSprlVars()[0][0][0] == null);
-            assertTrue(builder.getSprlVars()[0][0][1] == null);
-            assertTrue(builder.getSprlVars()[0][1][0] == null);
-            assertTrue(builder.getSprlVars()[0][1][1] == null);
-            assertTrue(builder.getSprlVars()[1][0][0] != null);
-            assertTrue(builder.getSprlVars()[1][0][1] != null);
-            assertTrue(builder.getSprlVars()[1][2][0] != null);
-            assertTrue(builder.getSprlVars()[1][2][1] != null);
-            // 2 pairs each with 2 properties; so, 2 unary factors
-            assertEquals(4, fg.getNumVars());
-            assertEquals(4, fg.getNumFactors());
-            assertEquals(4, fg.getFactors().size());
-            //fg.getFactors().get(0).g
+        });
+        FactorGraph fg = new FactorGraph();
+        SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(cPrm.sprlPrm);
+        ObsFeatureConjoiner ofc = cPrm.ofc;
+        builder.build(cPrm.isent, cPrm.ofc, fg, cs);
+        assertEquals(4, builder.getSprlVars().length);
+        assertEquals(4, builder.getSprlVars()[0].length);
+        assertEquals(2, builder.getSprlVars()[0][0].length);
+        assertEquals(2, builder.getSprlVars()[0][1].length);
+        assertTrue(builder.getSprlVars()[0][0][0] == null);
+        assertTrue(builder.getSprlVars()[0][0][1] == null);
+        assertTrue(builder.getSprlVars()[0][1][0] == null);
+        assertTrue(builder.getSprlVars()[0][1][1] == null);
+        assertTrue(builder.getSprlVars()[1][0][0] != null);
+        assertTrue(builder.getSprlVars()[1][0][1] != null);
+        assertTrue(builder.getSprlVars()[1][2][0] != null);
+        assertTrue(builder.getSprlVars()[1][2][1] != null);
+        // 2 pairs each with 2 properties; so, 2 unary factors
+        assertEquals(4, fg.getNumVars());
+        // 2*2 + 2 = 6; 2 pairs each with 2 properties each with 1 unary plus 1 pairwise for each pair
+        assertEquals(6, fg.getNumFactors());
+        assertEquals(6, fg.getFactors().size());
+        //fg.getFactors().get(0).g
+        // 3 are listed below: aw, aw+vol, vol
+        assertEquals(3, ofc.getTemplates().size());
+        // has to do with the number of times we saw combos of the obs features
+        assertEquals(13, ofc.getTemplates().getNumObsFeats());
+        // 20 unary templates but 2 unseen and 4 pairwise bias templates
+        assertEquals(24 - 2 + 4, ofc.getNumParams());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), ofc.getTemplates().get(0).getKey());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), ofc.getTemplates().get(1).getKey());
+        assertEquals(Arrays.asList(SprlFactorType.SPRL_PAIRWISE, "volitional", "awareness"), ofc.getTemplates().get(2).getKey());
+        {
+            FactorTemplate template = ofc.getTemplates().get(0);                
             ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(0));
-            List<Serializable> templateKey = Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness");
-            assertEquals(templateKey, factor.getTemplateKey());
+            assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), factor.getTemplateKey());
+            assertEquals(2, template.getNumConfigs());
             FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
-            assertEquals(2, fv.getUsed());
-            assertEquals(2, fv.getNumImplicitEntries());
-            assertEquals(4, ofc.getTemplates().getNumObsFeats());
-            assertEquals(2, ofc.getTemplates().size());
-            assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), ofc.getTemplates().get(0).getKey());
-            assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), ofc.getTemplates().get(1).getKey());
-            assertEquals(2, ofc.getTemplates().get(0).getNumConfigs());
-            assertEquals(8, ofc.getNumParams());
+            // 4 + bias
+            assertEquals(5, fv.getUsed());
+            assertEquals(5, fv.getNumImplicitEntries());
         }
-            
-        
-        // sprl pairwise
         {
-            srlFePrm.argTemplates = Arrays.asList(new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.CAPITALIZED),
-                    new FeatTemplate1(Position.CHILD, PositionModifier.HEAD, TokProperty.CAPITALIZED),
-                    new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.LC),
-                    new FeatTemplate1(Position.CHILD, PositionModifier.HEAD, TokProperty.LC));
-                    
-            prm.srlFePrm = srlFePrm;
-            prm.pairwiseFactors = true;
-            CorpusStatistics cs = new CorpusStatistics(csPrm);
-            ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, new FactorTemplateList());
-            if (!cs.isInitialized()) {
-                cs.init(sents, false);
-                cs.store = new AlphabetStore(sents);
-            }
-            FgExampleListBuilder exListBuilder = new FgExampleListBuilder(exListPrm);
-            FgExampleList exampleList = exListBuilder.getInstance(new FgExampleList() {
-                
-                @Override
-                public int size() {
-                    return sents.size();
-                }
-                
-                @Override
-                public LFgExample get(int i) {
-                    AnnoSentence sent = sents.get(i);
-                    IntAnnoSentence isent = new IntAnnoSentence(sent, cs.store);
-                    FactorGraph fg = new FactorGraph(); 
-                    SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(prm);
-                    builder.build(isent, ofc, fg, cs);
-                    VarConfig vc = new VarConfig();
-                    builder.annoToConfig(sent, vc);
-                    AnnoSentence copy = sent.getShallowCopy();
-                    copy.removeAt(AT.SPRL);
-                    builder.configToAnno(vc, copy);
-                    SprlProperties gold = sent.getSprl();
-                    for (Triple<Integer, Integer, String> t : gold.getLabeledProperties()) {
-                        assertEquals(gold.get(t), copy.getSprl().get(t));
-                    }
-                    return new LabeledFgExample(fg, vc, ofc.getTemplates());
-                }
-            });
-            ofc.init(exampleList);
-            IntAnnoSentence isent = new IntAnnoSentence(sents.get(0), cs.store);
-            FactorGraph fg = new FactorGraph(); 
-            SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(prm);
-            builder.build(isent, ofc, fg, cs);
-            assertEquals(4, builder.getSprlVars().length);
-            assertEquals(4, builder.getSprlVars()[0].length);
-            assertEquals(2, builder.getSprlVars()[0][0].length);
-            assertEquals(2, builder.getSprlVars()[0][1].length);
-            assertTrue(builder.getSprlVars()[0][0][0] == null);
-            assertTrue(builder.getSprlVars()[0][0][1] == null);
-            assertTrue(builder.getSprlVars()[0][1][0] == null);
-            assertTrue(builder.getSprlVars()[0][1][1] == null);
-            assertTrue(builder.getSprlVars()[1][0][0] != null);
-            assertTrue(builder.getSprlVars()[1][0][1] != null);
-            assertTrue(builder.getSprlVars()[1][2][0] != null);
-            assertTrue(builder.getSprlVars()[1][2][1] != null);
-            // 2 pairs each with 2 properties; so, 2 unary factors
-            assertEquals(4, fg.getNumVars());
-            // 2*2 + 2 = 6; 2 pairs each with 2 properties each with 1 unary plus 1 pairwise for each pair
-            assertEquals(6, fg.getNumFactors());
-            assertEquals(6, fg.getFactors().size());
-            //fg.getFactors().get(0).g
-            // 3 are listed below: aw, aw+vol, vol
-            assertEquals(3, ofc.getTemplates().size());
-            // has to do with the number of times we saw combos of the obs features
-            assertEquals(13, ofc.getTemplates().getNumObsFeats());
-            // 20 unary templates but 2 unseen and 4 pairwise bias templates
-            assertEquals(24 - 2 + 4, ofc.getNumParams());
-            assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), ofc.getTemplates().get(0).getKey());
-            assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), ofc.getTemplates().get(1).getKey());
-            assertEquals(Arrays.asList(SprlFactorType.SPRL_PAIRWISE, "volitional", "awareness"), ofc.getTemplates().get(2).getKey());
-            {
-                FactorTemplate template = ofc.getTemplates().get(0);                
-                ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(0));
-                assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "awareness"), factor.getTemplateKey());
-                assertEquals(2, template.getNumConfigs());
-                FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
-                // 4 + bias
-                assertEquals(5, fv.getUsed());
-                assertEquals(5, fv.getNumImplicitEntries());
-            }
-            {
-                FactorTemplate template = ofc.getTemplates().get(1);                
-                ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(1));
-                assertEquals(2, template.getNumConfigs());
-                assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), factor.getTemplateKey());
-                FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
-                assertEquals(5, fv.getUsed());
-                assertEquals(5, fv.getNumImplicitEntries());
-            }
-            {
-                FactorTemplate template = ofc.getTemplates().get(2);                
-                ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(2));
-                assertEquals(Arrays.asList(SprlFactorType.SPRL_PAIRWISE, "volitional", "awareness"), factor.getTemplateKey());
-                assertEquals(4, template.getNumConfigs());
-                FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
-                // only bias
-                // only one configuration is observed
-                assertEquals(1, fv.getUsed());
-                assertEquals(1, fv.getNumImplicitEntries());
-            }
+            FactorTemplate template = ofc.getTemplates().get(1);                
+            ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(1));
+            assertEquals(2, template.getNumConfigs());
+            assertEquals(Arrays.asList(SprlFactorType.SPRL_UNARY, "volitional"), factor.getTemplateKey());
+            FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
+            assertEquals(5, fv.getUsed());
+            assertEquals(5, fv.getNumImplicitEntries());
         }
+        {
+            FactorTemplate template = ofc.getTemplates().get(2);                
+            ObsFeTypedFactor factor = ((ObsFeTypedFactor)fg.getFactor(2));
+            assertEquals(Arrays.asList(SprlFactorType.SPRL_PAIRWISE, "volitional", "awareness"), factor.getTemplateKey());
+            assertEquals(4, template.getNumConfigs());
+            FeatureVector fv = builder.getFeatExtractor().calcObsFeatureVector(factor);
+            // only bias
+            // only one configuration is observed
+            assertEquals(1, fv.getUsed());
+            assertEquals(1, fv.getNumImplicitEntries());
+        }
+    }
 
+/*    
         // sprlSrl factors
         SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
         srlPrm.allowPredArgSelfLoops = prm.allowPredArgSelfLoops;
@@ -993,5 +930,5 @@ public class SprlFactorGraphBuilderTest {
         }   
                 
     }
-    
+    */
 }
