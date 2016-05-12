@@ -84,7 +84,7 @@ public class SprlFactorGraphBuilderTest {
         cs.init(sents, false);
         cs.store = new AlphabetStore(sents);
     }
-    
+
     private CPrm auxTest(TPrm tPrm) {
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
         srlFePrm.useTemplates = false;
@@ -590,7 +590,7 @@ public class SprlFactorGraphBuilderTest {
             assertEquals(5, ofc.getTemplates().get(i).getNumConfigs());
         }
     }
-/*
+
     @Test
     public void testNeither() throws IOException {
         // neither given
@@ -599,23 +599,21 @@ public class SprlFactorGraphBuilderTest {
             {
                 sprlPairs = true;
                 argTemplates = Arrays.asList(new FeatTemplate1(Position.PARENT, PositionModifier.HEAD, TokProperty.CAPITALIZED));
-                unaryFactors = true;
+                sprlUnaryFactors = true;
+                srlUnaryFactors = true;
                 sprlRoleStructure = RoleStructure.PAIRS_GIVEN;
                 srlRoleStructure = RoleStructure.PAIRS_GIVEN;
                 sprlAllowSelfLoops = true;
                 srlAllowSelfLoops = true;
-                encode = p -> { 
-//                    p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
-//                    p.srlBuilder.build(p.isent, cs, p.ofc, p.fg);
-//                    SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, cs, p.fg, p.sprlBuilder, p.srlBuilder, p.sprlPrm.pairwiseFactors);
-//                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc, p.srlPrm.predictSense,  p.srlPrm.predictPredPos,  p.srlPrm.predictPredPos);
-                };
+                encode = p -> { };
             }
         });
         ObsFeatureConjoiner ofc = cPrm.ofc;
         AnnoSentence sent = sents.get(0);
+        SprlFactorGraphBuilderPrm sprlPrm = cPrm.sprlPrm;
         SrlFactorGraphBuilder srlBuilder = new SrlFactorGraphBuilder(cPrm.srlPrm);
         {
+            // test neither srl nor sprl modeled
             FactorGraph fg = new FactorGraph(); 
             SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, null, null, cPrm.sprlPrm.pairwiseFactors);
             assertEquals(0, fg.getNumVars());
@@ -624,23 +622,23 @@ public class SprlFactorGraphBuilderTest {
         {
             // mismatch in role structure
             FactorGraph fg = new FactorGraph(); 
-            prm.roleStructure = RoleStructure.ALL_PAIRS;
-            SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(prm);
-            assertTrue(TestUtils.checkThrows(() -> SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, builder, srlBuilder, prm.pairwiseFactors), IllegalArgumentException.class));
+            sprlPrm.roleStructure = RoleStructure.ALL_PAIRS;
+            SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(sprlPrm);
+            assertTrue(TestUtils.checkThrows(() -> SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, builder, srlBuilder, sprlPrm.pairwiseFactors), IllegalArgumentException.class));
             assertEquals(0, fg.getNumVars());
             assertEquals(0, fg.getNumFactors());
+            sprlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
         }
         {
             FactorGraph fg = new FactorGraph(); 
-            prm.roleStructure = RoleStructure.PAIRS_GIVEN;
-            prm.allowPredArgSelfLoops = false;
-            SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(prm);
-            assertTrue(TestUtils.checkThrows(() -> SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, builder, srlBuilder, prm.pairwiseFactors), IllegalArgumentException.class));
+            sprlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
+            sprlPrm.allowPredArgSelfLoops = false;
+            SprlFactorGraphBuilder builder = new SprlFactorGraphBuilder(sprlPrm);
+            assertTrue(TestUtils.checkThrows(() -> SprlFactorGraphBuilder.addSprlSrlFactors(sent, ofc, cs, fg, builder, srlBuilder, sprlPrm.pairwiseFactors), IllegalArgumentException.class));
             assertEquals(0, fg.getNumVars());
             assertEquals(0, fg.getNumFactors());
         }
     }
-*/
     
     @Test
     public void testPredsGivenSprlSrlFactors() throws IOException {
