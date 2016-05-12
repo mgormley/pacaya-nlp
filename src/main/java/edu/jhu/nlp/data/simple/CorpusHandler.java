@@ -489,6 +489,7 @@ public class CorpusHandler {
         return words;
     }
 
+    /*
     public static Set<String> getKnownSprlProperties(AnnoSentenceCollection... data) {
         Set<String> props = new TreeSet<>();
         for (AnnoSentenceCollection collection : data) {
@@ -504,6 +505,7 @@ public class CorpusHandler {
     }
     
     /** Gets a set containing all the words appearing in train/dev/test. */
+/*
     public Set<String> getAllKnownSprlProperties() throws IOException {
         log.info("Reading all data to build known words set.");
         Set<String> props = new TreeSet<>();
@@ -518,5 +520,5 @@ public class CorpusHandler {
         }
         return props;
     }
-    
+    */
 }

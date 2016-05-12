@@ -272,7 +272,9 @@ public class JointNlpRunner {
     //@Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
     //public static boolean enforceSprlNilAgreement = true;
     @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
-    public static boolean breakdownSprlEval = true;
+    public static boolean sprlBreakdownEval = false;
+    @Opt(hasArg = true, description = "Whether to compute the property-specific label optimal baseline (might not want this on final test data)")
+    public static boolean sprlReportBaseline = false;
     @Opt(hasArg = true, description = "Only look at srl in validation function for srl with sprl")
     public static boolean favorSrlValidation = false;
     @Opt(hasArg = true, description = "Only look at sprl in validation function for srl with sprl")
@@ -516,12 +518,7 @@ public class JointNlpRunner {
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES), (roleStructure != RoleStructure.PAIRS_GIVEN))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
-                if (breakdownSprlEval && corpus.hasTrain()) {
-                    for (String q : CorpusHandler.getKnownSprlProperties(corpus.getTrainGold())) {
-                        eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, Collections.singleton(q)));
-                    }
-                }
-                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops));
+                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, sprlBreakdownEval, sprlReportBaseline, true));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
                 eval.add(new RelationEvaluator());

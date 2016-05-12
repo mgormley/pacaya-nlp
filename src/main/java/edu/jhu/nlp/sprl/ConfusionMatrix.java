@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.prim.tuple.Pair;
 
 public class ConfusionMatrix<L> {
@@ -54,7 +55,7 @@ public class ConfusionMatrix<L> {
      * record the prediction without an example
      */
     public void recordPrediction(L gold, L pred) {
-        recordPrediction(gold, pred, null, Integer.MAX_VALUE);
+        recordPrediction(gold, pred, null);
     }
 
     public void recordPrediction(L gold, L pred, String example) {
@@ -131,16 +132,16 @@ public class ConfusionMatrix<L> {
         return getCorrect() - getCorrectNils();
     }
 
-    public int getPredictedHits() {
+    public int getNumPositive() {
         return getTotal() - getPredictedNils();
     }
 
-    public int getPossibleHits() {
+    public int getNumPossible() {
         return getTotal() - getExpectedNils();
     }
     
     public double recall() {
-        int possible = getPossibleHits();
+        int possible = getNumPossible();
         if (possible == 0) {
             return 1.0;
         } else {
@@ -148,15 +149,27 @@ public class ConfusionMatrix<L> {
         }
     }
 
-    public double precision() {
-        int predicted = getPredictedHits();
-        if (predicted == 0) {
+    public static double recall(int numCorrectHits, int numPossible) {
+        if (numPossible == 0) {
             return 1.0;
         } else {
-            return ((double) getCorrectHits()) / predicted;
+            return ((double) numCorrectHits) / numPossible;
         }
     }
 
+    public static double precision(int numCorrectHits, int numPositive) {
+        if (numPositive == 0) {
+            return 1.0;
+        } else {
+            return ((double) numCorrectHits) / numPositive;
+        }
+    }
+
+    public double precision() {
+        return precision(getCorrectHits(), getNumPositive());
+    }
+
+    
     public static double harmonicMean(double p, double r) {
         double denom = p + r;
         if (denom == 0.0) {
@@ -166,10 +179,14 @@ public class ConfusionMatrix<L> {
         }
     }
 
-    public double f1() {
-        return harmonicMean(precision(), recall());
+    public static double f1(int numCorrectHits, int numPositive, int numPossible) {
+        return harmonicMean(precision(numCorrectHits, numPositive), recall(numCorrectHits, numPossible));
     }
 
+    public double f1() {
+        return f1(getCorrectHits(), getNumPositive(), getNumPossible());
+    }
+    
     public double accuracy() {
         int total = getTotal();
         if (total == 0) {
@@ -221,6 +238,46 @@ public class ConfusionMatrix<L> {
         return goldPredPairCounts.getTotal();
     }
 
+    public void reportSummary(String name, Reporter rep) {
+        rep.report(name + "NumTotal", getTotal());
+        rep.report(name + "NumPositive", getNumPositive());
+        rep.report(name + "NumPossible", getNumPossible());
+        rep.report(name + "NumCorrectHits", getCorrectHits());
+        rep.report(name + "NumCorrectNils", getCorrectNils());
+        rep.report(name + "NumCorrect", getCorrect());
+        rep.report(name + "Accuracy", accuracy());
+        rep.report(name + "Precision", precision());
+        rep.report(name + "Recall", recall());
+        rep.report(name + "F1", f1());
+    }
+
+    public void reportMajorityBaseline(String name, Reporter rep) {
+        // no nils are predicted with the baseline (since all nils would be 0 f1)
+        // majority non-nil baseline
+        rep.report(name + "MNNBaselineNumTotal", getTotal());
+        rep.report(name + "MNNBaselineNumPositive", getTotal());
+        rep.report(name + "MNNBaselineNumPossible", getNumPossible());
+        rep.report(name + "MNNBaselineNumCorrectHits", majorityNonNilCorrectHits());
+        rep.report(name + "MNNBaselineNumCorrectNils", 0);
+        rep.report(name + "MNNBaselineNumCorrect", majorityNonNilCorrectHits());
+        rep.report(name + "MNNBaselineAccuracy", majorityNonNilAccuracy());
+        rep.report(name + "MNNBaselinePrecision", majorityNonNilPrecision());
+        rep.report(name + "MNNBaselineRecall", majorityNonNilRecall());
+        rep.report(name + "MNNBaselineF1", majorityNonNilF1());
+    }
+    
+    public static double accuracy(int correct, int total) {
+        if (total == 0) {
+            return 1.0;
+        } else {
+            return ((double) correct) / total;
+        }
+    }
+
+    private double majorityNonNilAccuracy() {
+        return accuracy(majorityNonNilCorrectHits(), getTotal());
+    }
+
     public String format(String name, Collection<L> labelOrder) {
         StringWriter sw = new StringWriter();
         sw.write("\n");
@@ -234,7 +291,7 @@ public class ConfusionMatrix<L> {
                                name, f1() * 100, precision() * 100,
                                majorityNonNilF1() * 100, majorityNonNilPrecision() * 100,
                                getCorrectHits(), majorityNonNilCorrectHits(),
-                               getPossibleHits(), getTotal()));
+                               getNumPossible(), getTotal()));
         sw.write(String.format("==%s Precision: %s\n", name, precision()));
         sw.write(String.format("==%s Recall: %s\n", name, recall()));
         sw.write(String.format("==%s F1: %s\n", name, f1()));
@@ -261,7 +318,7 @@ public class ConfusionMatrix<L> {
     }
 
     public double majorityNonNilPrecision() {
-        int possibleHits = getPossibleHits();
+        int possibleHits = getNumPossible();
         // if possible hits is 0 then can get perfect precision and recall with nil labels
         if (possibleHits > 0) {
             // otherwise, all predictions will have to be non-nil and the best shot is the majority
@@ -273,7 +330,7 @@ public class ConfusionMatrix<L> {
 
     public double majorityNonNilRecall() {
         // if possible hits is 0 then can get perfect precision and recall with nil labels
-        int possibleHits = getPossibleHits();
+        int possibleHits = getNumPossible();
         if (possibleHits > 0) {
             // otherwise, all predictions will have to be non-nil and the best shot is the majority
             return ((double)majorityNonNilCorrectHits()) / possibleHits;
@@ -283,7 +340,7 @@ public class ConfusionMatrix<L> {
     }
 
     public int majorityNonNilCorrectHits() {
-        int possibleHits = getPossibleHits();
+        int possibleHits = getNumPossible();
         if (possibleHits > 0) {
             return goldCounts.get(majorityNonNilLabel());
         } else {

@@ -1,15 +1,20 @@
 package edu.jhu.nlp.sprl;
 
+import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Test;
+
+import edu.jhu.pacaya.sch.util.TestUtils;
+import edu.jhu.pacaya.util.report.Reporter;
 
 public class ConfusionMatrixTest {
     private static double tol = 1E-9;
@@ -106,8 +111,8 @@ public class ConfusionMatrixTest {
         assertEquals(cm.getPredictedNils(), 3);
         assertEquals(cm.getCorrectNils(), 2);
         assertEquals(cm.getCorrectHits(), 2);
-        assertEquals(cm.getPossibleHits(), 5);
-        assertEquals(cm.getPredictedHits(), 7);
+        assertEquals(cm.getNumPossible(), 5);
+        assertEquals(cm.getNumPositive(), 7);
         assertEquals(2.0 / 5.0, cm.recall(), tol);
         assertEquals(2.0 / 7.0, cm.precision(), tol);
         assertEquals(8.0 / 35.0 / (2.0 / 5.0 + 2.0 / 7.0), cm.f1(), tol);
@@ -156,10 +161,94 @@ public class ConfusionMatrixTest {
         List<Integer> labelOrder = Arrays.asList(0, 1, 2, 3, 5);
         cm.print("testing", labelOrder, ow);
         assertEquals(sw.toString(), ow.toString());
+
+        {
+            List<String> reportKeys = new ArrayList<>();
+            List<Number> reportValues = new ArrayList<>();
+            
+            cm.reportMajorityBaseline("test", new Reporter() {
+                @Override
+                public void report(String key, Object val) {
+                    reportKeys.add(key);
+                    reportValues.add((Number)val);
+                }});
+            assertEquals(Arrays.asList(
+                    "testMNNBaselineNumTotal",
+                    "testMNNBaselineNumPositive",
+                    "testMNNBaselineNumPossible",
+                    "testMNNBaselineNumCorrectHits",
+                    "testMNNBaselineNumCorrectNils",
+                    "testMNNBaselineNumCorrect",
+                    "testMNNBaselineAccuracy",
+                    "testMNNBaselinePrecision",
+                    "testMNNBaselineRecall",
+                    "testMNNBaselineF1"), reportKeys);
+            assertArrayEquals(new double[]{
+                    10, // "testMNNBaselineNumTotal",
+                    10, // "testMNNBaselineNumPositive",
+                    5,  // "testMNNBaselineNumPossible",
+                    4,  // "testMNNBaselineNumCorrectHits",
+                    0,  // "testMNNBaselineNumCorrectNils",
+                    4,  // "testMNNBaselineNumCorrect",
+                    0.4, // "testMNNBaselineAccuracy",
+                    0.4, // "testMNNBaselinePrecision",
+                    0.8, // "testMNNBaselineRecall",
+                    2*0.4*0.8/(0.4+0.8) // "testMNNBaselineF1"));
+            }, TestUtils.toArray(reportValues), 1E-9);
+            
+        }
+        {
+            ArrayList<String> reportKeys = new ArrayList<>();
+            ArrayList<Number> reportValues = new ArrayList<>();
+            
+            cm.reportSummary("test", new Reporter() {
+                @Override
+                public void report(String key, Object val) {
+                    reportKeys.add(key);
+                    reportValues.add((Number)val);
+                }});
+            assertEquals(Arrays.asList(
+                    "testNumTotal",
+                    "testNumPositive",
+                    "testNumPossible",
+                    "testNumCorrectHits",
+                    "testNumCorrectNils",
+                    "testNumCorrect",
+                    "testAccuracy",
+                    "testPrecision",
+                    "testRecall",
+                    "testF1"), reportKeys);             
+            assertEquals(cm.getTotal(), 10);
+            assertEquals(cm.getExpectedNils(), 5);
+            assertEquals(cm.getPredictedNils(), 3);
+            assertEquals(cm.getCorrectNils(), 2);
+            assertEquals(cm.getCorrectHits(), 2);
+            assertEquals(cm.getNumPossible(), 5);
+            assertEquals(cm.getNumPositive(), 7);
+            assertEquals(2.0 / 5.0, cm.recall(), tol);
+            assertEquals(2.0 / 7.0, cm.precision(), tol);
+            assertEquals(8.0 / 35.0 / (2.0 / 5.0 + 2.0 / 7.0), cm.f1(), tol);
+            
+            assertArrayEquals(new double[]{
+                    10, // "testNumTotal",         
+                    7, // "testNumPositive",      
+                    5,  // "testNumPossible",      
+                    2,  // "testNumCorrectHits",   
+                    2,  // "testNumCorrectNils",   
+                    4,  // "testNumCorrect",       
+                    0.4, //"testAccuracy",         
+                    2.0/7, //"testPrecision",        
+                    2.0/5, //"testRecall",           
+                    2*2.0/7*2.0/5/(2.0/7+2.0/5), // "testF1"));             
+            }, TestUtils.toArray(reportValues), 1E-9);
+            
+        }
+        
         cm.recordPrediction(3, 3, "example 3", 2); // 3
         cm.recordPrediction(3, 3, "example 4", 2); // 4
         assertEquals(Arrays.asList("example 4", "example 3"), cm.getExamples(3, 3));
         assertEquals(2, cm.numExamples(3, 3));
+        assertEquals(1.0, ConfusionMatrix.accuracy(0,  0), tol);
     }
     
     

@@ -117,11 +117,11 @@ public abstract class LabelEvaluator implements Evaluator {
     }
 
     public int getNumPredictPositive() {
-        return cm.getPredictedHits();
+        return cm.getNumPositive();
     }
 
     public int getNumTruePositive() {
-        return cm.getPossibleHits();
+        return cm.getNumPossible();
     }
 
     public int getNumInstances() {

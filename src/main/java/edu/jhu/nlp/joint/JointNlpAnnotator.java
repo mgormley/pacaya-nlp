@@ -242,7 +242,8 @@ public class JointNlpAnnotator implements Trainable {
     }
 
     private SprlEvaluator getSprlEvaluator() {
-        return new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops);
+        // make an evaluator that doesn't break it down by category and that doesn't report 
+        return new SprlEvaluator(prm.buPrm.fgPrm.sprlPrm.roleStructure, prm.buPrm.fgPrm.sprlPrm.allowPredArgSelfLoops, false, false, false);
     }
 
     private Evaluator getSrlEvaluator() {

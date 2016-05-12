@@ -161,6 +161,8 @@ public class CorpusStatistics implements Serializable {
 
             // SPRL stats.
             if (sent.getSprl() != null) {
+                // the nil label will be included in the set of states used when building a variable if that is
+                // appropriate for the specified role structure
                 for (Triple<Integer, Integer, String> e : sent.getSprl().getLabeledProperties()) {
                     knownSprlProperties.add(e.get3());
                     knownSprlStates.add(sent.getSprl().get(e));

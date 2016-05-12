@@ -6,6 +6,7 @@ import org.junit.runners.Suite;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     ConfusionMatrixTest.class,
+    ConfusionMapTest.class,
     CounterTest.class,
     BinarySprlLabelConverterTest.class,
     SprlPropertiesTest.class,
