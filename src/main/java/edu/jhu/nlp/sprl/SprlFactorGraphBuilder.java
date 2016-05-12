@@ -36,14 +36,10 @@ public class SprlFactorGraphBuilder {
 
     public static class SprlFactorGraphBuilderPrm extends Prm {
         private static final long serialVersionUID = 1L;
-        /** Feature templates. */
-        // public List<FeatTemplate> templates =
-        // TemplateSets.getFromResource(TemplateSets.naradowskyArgFeatsResource);
         /**
          * The value of the mod for use in the feature hashing trick. If <= 0,
          * feature-hashing will be disabled.
          */
-        // public int featureHashMod = 1000000;
         /** Whether to include unary factors on each sprl var. */
         public boolean unaryFactors = true;
         /**

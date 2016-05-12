@@ -980,4 +980,9 @@ public class SprlFactorGraphBuilderTest {
         }
     }
 
+    @Test
+    public void testEnum() {
+        assertEquals(SprlFactorType.SPRL_UNARY, SprlFactorType.valueOf(SprlFactorType.SPRL_UNARY.name()));
+    }
+    
 }
