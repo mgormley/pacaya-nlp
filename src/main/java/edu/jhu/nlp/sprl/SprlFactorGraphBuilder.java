@@ -125,6 +125,9 @@ public class SprlFactorGraphBuilder {
         // NOTE: setting this to null does not set automatically!
         VarType sprlType = VarType.PREDICTED;
         ArrayList<String> sprlStateNames = new ArrayList<>(cs.sprlStateNames);
+        if (prm.roleStructure != RoleStructure.PAIRS_GIVEN) {
+            sprlStateNames.add(SprlLabelConverter.nil());
+        }
         this.biasOnlyFe = new BiasOnlyObsFeatureExtractor(ofc, prm.srlFePrm.featureHashMod);
         this.obsFe = fe;
         this.cs = cs;
