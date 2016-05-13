@@ -412,8 +412,14 @@ public class ConcreteReader {
                     // add properties
                     List<Property> propertyList = cArg.getPropertyList();
                     if (propertyList != null && propertyList.size() > 0) {
+                        int ntriplesBefore = sprl.getLabeledProperties().size();
                         for (Property prop : cArg.getPropertyList()) {
                             sprl.set(predLoc, argLoc, prop.getValue(), sprlConverter.toLabel(Math.abs(prop.getPolarity()), Math.signum(prop.getPolarity())));
+                        }
+                        if (sprl.getLabeledProperties().size() == ntriplesBefore) {
+                            // this happens sometimes just because the same argument is used in multiple
+                            // copies of the predicate (for example, d runs from a to b to c; results in 2 predicates d runs from a to b and d runs from a to c  
+                            log.debug(String.format("Concrete Argument property list was already in sprl (sentId: %s): %s", sentIdx, cArg));
                         }
                     }
                 }

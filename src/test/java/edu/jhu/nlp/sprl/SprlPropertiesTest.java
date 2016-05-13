@@ -100,6 +100,9 @@ public class SprlPropertiesTest {
 //              IllegalArgumentException.class));
         props.set(1, 0, "awareness", SprlLabelConverter.UNLIKELY);
         assertEquals(SprlLabelConverter.UNLIKELY, props.get(1, 0, "awareness"));
+        // change it again (no warning; which I'm not actually checking)
+        props.set(1, 0, "awareness", SprlLabelConverter.UNLIKELY);
+        assertEquals(SprlLabelConverter.UNLIKELY, props.get(1, 0, "awareness"));
     }
 
 }

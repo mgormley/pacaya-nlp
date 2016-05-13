@@ -63,13 +63,11 @@ public class SprlProperties {
             argsByPred.get(predLoc).add(argLoc);
             if (propsByPair.get(pair).add(property)) {
                 labeledProperties.add(t);
-            } else {
-              log.warn(String.format("changing sprl %s on (%s, %s) from: %s to %s", property, predLoc, argLoc, get(t), label));  
+            } else if (label != get(t)) {
+                // TODO: maybe this should throw an exception instead to make sure there isn't corrupt data
+                log.warn(String.format("changing sprl %s on (%s, %s) from: %s to %s", property, predLoc, argLoc, get(t), label));  
             }
             propLabels.put(t, label);
-//            } else {
-//                throw new IllegalArgumentException("sprl properties are write-once");
-//            }
         }
     }
 
