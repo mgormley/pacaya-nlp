@@ -1,6 +1,9 @@
 package edu.jhu.nlp.sprl;
 
 import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
 import static edu.jhu.nlp.sprl.SprlConcreteEvaluator.hStack;
 
 
@@ -9,7 +12,9 @@ import org.junit.Test;
 public class SprlConcreteEvaluatorTest {
 
     @Test
-    public void testHStack() {
+    public void testHStack() throws IOException {
+        // constructor just to count default
+        SprlConcreteEvaluator eval = new SprlConcreteEvaluator();
         String a = String.join("",
                 "1234\n",
                 "\n",

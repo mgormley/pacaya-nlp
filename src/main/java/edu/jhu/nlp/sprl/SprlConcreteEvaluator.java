@@ -1,48 +1,11 @@
 package edu.jhu.nlp.sprl;
 
 import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
-
-import org.apache.commons.cli.ParseException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import edu.jhu.nlp.AbstractParallelAnnotator;
-import edu.jhu.nlp.data.Span;
-import edu.jhu.nlp.data.conll.SrlGraph;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
-import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.data.simple.AnnoSentenceReader;
-import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
-import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
-import edu.jhu.nlp.data.simple.CorpusHandler;
-import edu.jhu.nlp.eval.SprlEvaluator;
-import edu.jhu.nlp.eval.SrlEvaluator;
-import edu.jhu.nlp.features.TemplateLanguage.AT;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
-import edu.jhu.pacaya.util.cli.ArgParser;
-import edu.jhu.pacaya.util.cli.Opt;
-import edu.jhu.prim.tuple.Pair;
-import edu.jhu.prim.tuple.Quadruple;
-import edu.jhu.prim.tuple.Triple;
 
 public class SprlConcreteEvaluator {
 //
@@ -531,7 +494,7 @@ public class SprlConcreteEvaluator {
   /**
    * Horizontally stack the lines of the two strings
    */
-    public static String hStack(String... a) {
+    public static String hStack(String... a) throws IOException {
         List<List<String>> lines = new ArrayList<List<String>>(a.length);
         List<Integer> maxWidths = new ArrayList<Integer>(a.length);
         int totalWidth = 0;
@@ -580,21 +543,14 @@ public class SprlConcreteEvaluator {
 
     /**
      * does not include the line terminating characters
-     * 
-     * @param s
-     * @return
      */
-    private static List<String> getLines(String s) {
+    private static List<String> getLines(String s) throws IOException {
         // adapted from
         // http://stackoverflow.com/questions/13464954/how-do-i-split-a-string-by-line-break
         List<String> lines = new ArrayList<String>();
-        try {
-            BufferedReader rdr = new BufferedReader(new StringReader(s));
-            for (String line = rdr.readLine(); line != null; line = rdr.readLine()) {
-                lines.add(line);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        BufferedReader rdr = new BufferedReader(new StringReader(s));
+        for (String line = rdr.readLine(); line != null; line = rdr.readLine()) {
+            lines.add(line);
         }
         return lines;
     }
