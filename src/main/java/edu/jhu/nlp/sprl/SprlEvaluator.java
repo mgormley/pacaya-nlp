@@ -1,4 +1,4 @@
-package edu.jhu.nlp.eval;
+package edu.jhu.nlp.sprl;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -7,19 +7,11 @@ import java.util.TreeSet;
 import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.sprl.ConfusionMap;
-import edu.jhu.nlp.sprl.ConfusionMatrix;
-import edu.jhu.nlp.sprl.SprlLabelConverter;
-import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.prim.tuple.Pair;
 
-/**
- * (Fork of F1 evaluator) Computes the precision, recall, and micro-averaged F1.
- * 
- */
 public class SprlEvaluator implements Evaluator {
 
 //    private static final Logger log = LoggerFactory.getLogger(SprlEvaluator.class);
@@ -40,6 +32,10 @@ public class SprlEvaluator implements Evaluator {
         reset();
     }
     
+    public ConfusionMap<String, String> getConfusions() {
+        return cms;
+    }
+    
     public void reset() {
         cms = new ConfusionMap<>(nilLabels);
     }
@@ -48,7 +44,7 @@ public class SprlEvaluator implements Evaluator {
         rep.report(dataName+"SPRLnumSentences", ""+numSentences);
         if (reportIndividual) {
             for (String category : cms.getCategories()) {
-                report(dataName+"SPRL-"+category, cms.getConfusionMatrix(category), false);
+                report(dataName+"SPRL-"+category+"-", cms.getConfusionMatrix(category), false);
             }
         }
         report(dataName+"SPRL", cms.getTotal(), true);

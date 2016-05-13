@@ -17,8 +17,6 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import edu.jhu.hlt.optimize.FixedStep;
-import edu.jhu.hlt.optimize.LBFGS;
-import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
 import edu.jhu.hlt.optimize.functions.L2;
@@ -43,7 +41,7 @@ public class SprlLearningTest {
     private static String concreteFilename = "/edu/jhu/nlp/data/concrete/sprlexample.comm";
     private static String argTemplates = "/edu/jhu/nlp/features/bc-augmented-bjorkelund-en-arg-feats.txt";
     private static String senseTemplates = "/edu/jhu/nlp/features/bc-augmented-bjorkelund-en-sense-feats.txt";
-
+/*
     private CrfTrainerPrm getLBFGSPrm() {
         CrfTrainerPrm crfPrm = new CrfTrainerPrm();
         crfPrm.batchOptimizer = null;
@@ -54,7 +52,7 @@ public class SprlLearningTest {
         lbfgsPrms.m = 0;
         return crfPrm;
     }
-    
+  */  
     private CrfTrainerPrm getSGDPrm() {
         CrfTrainerPrm crfPrm = new CrfTrainerPrm();
         SGDPrm sgdPrm = new SGDPrm();

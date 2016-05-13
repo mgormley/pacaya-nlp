@@ -28,16 +28,16 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.eval.DepParseAccuracy;
-import edu.jhu.nlp.eval.LabelEvaluator;
 import edu.jhu.nlp.eval.PosTagAccuracy;
 import edu.jhu.nlp.eval.RelationEvaluator;
-import edu.jhu.nlp.eval.SprlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.fcm.FcmModule;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.joint.JointNlpDecoder.JointNlpDecoderPrm;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
+import edu.jhu.nlp.sprl.ConfusionMatrix;
+import edu.jhu.nlp.sprl.SprlEvaluator;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
@@ -212,7 +212,7 @@ public class JointNlpAnnotator implements Trainable {
                             String name) {
                         double srlF1 = Math.abs(srlEval.evaluate(predSents, goldSents, name));
                         double sprlF1 = Math.abs(sprlEval.evaluate(predSents, goldSents, name));
-                        double f1 = LabelEvaluator.harmonicMean(srlF1, sprlF1);
+                        double f1 = ConfusionMatrix.harmonicMean(srlF1, sprlF1);
                         return -f1;
                     }
 

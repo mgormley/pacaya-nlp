@@ -1,5 +1,6 @@
 package edu.jhu.nlp.sprl;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Set;
 import java.util.TreeSet;
@@ -9,7 +10,9 @@ import java.util.TreeSet;
  * threshold; non-na scores at and above the threshold are assigned a positive
  * label
  */
-public class BinarySprlLabelConverter implements SprlLabelConverter {
+public class BinarySprlLabelConverter implements SprlLabelConverter, Serializable {
+
+    private static final long serialVersionUID = 1L;
     private double threshold;
     private static Set<String> validLabels = new TreeSet<>(Arrays.asList(LIKELY, UNLIKELY));
 

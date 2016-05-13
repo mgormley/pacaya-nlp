@@ -6,8 +6,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.TreeSet;
 
@@ -78,9 +76,6 @@ public class SprlPropertiesTest {
         BinarySprlLabelConverter converter = new BinarySprlLabelConverter(3.5);
         SprlProperties props = new SprlProperties(converter);
         props.set(1, 0, "awareness", SprlLabelConverter.LIKELY);
-        // can't set to different value
-        assertTrue(TestUtils.checkThrows(() -> props.set(1, 0, "awareness", SprlLabelConverter.UNLIKELY),
-                IllegalArgumentException.class));
         props.set(1, 0, "volitional", SprlLabelConverter.UNLIKELY);
         props.set(1, 2, "awareness", SprlLabelConverter.UNLIKELY);
         props.set(1, 2, "volitional", SprlLabelConverter.UNLIKELY);
@@ -99,7 +94,12 @@ public class SprlPropertiesTest {
         assertEquals(SprlLabelConverter.LIKELY, newProps.get(1, 2, "otherthing"));
         // make sure the old didn't change
         checkProperties1(props, converter);
-        
+
+//      // (before, couldn't set to different value
+//      assertTrue(TestUtils.checkThrows(() -> props.set(1, 0, "awareness", SprlLabelConverter.UNLIKELY),
+//              IllegalArgumentException.class));
+        props.set(1, 0, "awareness", SprlLabelConverter.UNLIKELY);
+        assertEquals(SprlLabelConverter.UNLIKELY, props.get(1, 0, "awareness"));
     }
 
 }

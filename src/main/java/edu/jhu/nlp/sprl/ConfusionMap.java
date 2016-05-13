@@ -27,10 +27,8 @@ public class ConfusionMap<L, C> {
      */
     private DefaultDict<C, ConfusionMatrix<L>> counts;
     private ConfusionMatrix<L> total;
-    private Set<L> nilLabels;
 
     public ConfusionMap(Set<L> nilLabels) {
-        this.nilLabels = nilLabels;
         counts = new DefaultDict<>(Void -> new ConfusionMatrix<>(nilLabels));
         total = new ConfusionMatrix<>(nilLabels);
     }

@@ -15,7 +15,7 @@ import edu.jhu.pacaya.util.report.Reporter;
 import edu.jhu.prim.tuple.Pair;
 
 public class ConfusionMapTest {
-    private static double tol = 1E-9;
+//    private static double tol = 1E-9;
     
     @Test
     public void testCounts() {

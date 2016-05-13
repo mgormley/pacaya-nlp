@@ -3,6 +3,8 @@ package edu.jhu.nlp.sprl;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import edu.jhu.nlp.data.concrete.ConcreteReaderTest;
+
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
     ConfusionMatrixTest.class,
@@ -13,6 +15,7 @@ import org.junit.runners.Suite;
     SprlConcreteEvaluatorTest.class,
     SprlEvaluatorTest.class,
     SprlFactorGraphBuilderTest.class,
-    SprlLearningTest.class
+    SprlLearningTest.class,
+    ConcreteReaderTest.class
 })
 public class SprlTests { }

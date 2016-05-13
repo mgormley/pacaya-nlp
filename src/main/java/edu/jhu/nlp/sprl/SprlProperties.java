@@ -9,6 +9,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.pacaya.sch.util.DefaultDict;
 import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
@@ -19,6 +22,7 @@ import edu.jhu.prim.tuple.Triple;
  *
  */
 public class SprlProperties {
+    private static final Logger log = LoggerFactory.getLogger(SprlEvaluator.class);
     private SprlLabelConverter labelConverter;
     private IntHashSet preds;
     private Set<Pair<Integer, Integer>> nilPairs;
@@ -59,10 +63,13 @@ public class SprlProperties {
             argsByPred.get(predLoc).add(argLoc);
             if (propsByPair.get(pair).add(property)) {
                 labeledProperties.add(t);
-                propLabels.put(t, label);
             } else {
-                throw new IllegalArgumentException("sprl properties are write-once");
+              log.warn(String.format("changing sprl %s on (%s, %s) from: %s to %s", property, predLoc, argLoc, get(t), label));  
             }
+            propLabels.put(t, label);
+//            } else {
+//                throw new IllegalArgumentException("sprl properties are write-once");
+//            }
         }
     }
 
