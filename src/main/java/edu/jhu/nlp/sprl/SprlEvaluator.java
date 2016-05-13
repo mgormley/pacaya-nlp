@@ -65,6 +65,7 @@ public class SprlEvaluator implements Evaluator {
     @Override
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
         reset();
+        numSentences += goldSents.size();
         accum(cms, predSents, goldSents, rS, allowSelfLoops);
         report(dataName);
         return -cms.getTotal().f1();
