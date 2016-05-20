@@ -11,7 +11,7 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.berkeley.nlp.PCFGLA.smoothing.BerkeleySignatureBuilder;
+import edu.jhu.nlp.features.SignatureBuilder;
 import edu.jhu.pacaya.nlp.data.Sentence;
 import edu.jhu.pacaya.parse.cky.CkyPcfgParser;
 import edu.jhu.pacaya.parse.cky.CkyPcfgParser.CkyPcfgParserPrm;
@@ -193,10 +193,8 @@ public class RunCkyParser {
     }
     
     // TODO: This should live in GrammarConstants, but was moved here to take it out of pacaya.
-    //
-    // Hard-coded to Berkeley OOV signatures.
     public static String getSignature(String word, int loc, IntObjectBimap<String> lexAlphabet) {
-        BerkeleySignatureBuilder bsb = new BerkeleySignatureBuilder(lexAlphabet);
+        SignatureBuilder bsb = new SignatureBuilder(lexAlphabet);
         String signature = bsb.getSignature(word, loc, GrammarConstants.unknownLevel);
         return signature;
     }

@@ -2,16 +2,13 @@ package edu.jhu.nlp.features;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
 import edu.jhu.nlp.CorpusStatistics;
-import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.features.TemplateLanguage.EdgeProperty;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
@@ -48,7 +45,7 @@ public class TemplateFeatureExtractor {
     private static final Logger log = LoggerFactory.getLogger(TemplateFeatureExtractor.class);
 
     private final CorpusStatistics cs;
-    private final SrlBerkeleySignatureBuilder sig;
+    private final SrlSignatureBuilder sig;
     private final AnnoSentence sent;
     private final FeaturizedSentence fSent; 
 

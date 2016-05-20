@@ -18,11 +18,11 @@ import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.berkeley.nlp.PCFGLA.smoothing.SrlBerkeleySignatureBuilder;
 import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Token;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.nlp.features.SrlSignatureBuilder;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.Primitives.MutableInt;
@@ -79,7 +79,7 @@ public class GetFeatures {
     private Map<Set<String>,MutableInt> bigrams = new HashMap<Set<String>,MutableInt>();
     
     private static IntObjectBimap<String> lexAlphabet = new IntObjectBimap<String>();
-    private static SrlBerkeleySignatureBuilder sig = new SrlBerkeleySignatureBuilder(lexAlphabet);
+    private static SrlSignatureBuilder sig = new SrlSignatureBuilder(lexAlphabet);
     
     private String trainingOut = new String();
     private String testingOut = new String();
