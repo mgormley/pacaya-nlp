@@ -1,8 +1,10 @@
-# Summary
+# Pacaya NLP [![Build Status](https://travis-ci.org/mgormley/pacaya-nlp.svg?branch=master)](https://travis-ci.org/mgormley/pacaya-nlp)
+
+## Summary 
 
 Pacaya NLP is a suite of Natural Language Processing (NLP) tools built using [Pacaya](https://github.com/mgormley/pacaya), a library for hybrid graphical models and neural networks.
 
-# Using the Library
+## Using the Library
 
 The latest version is deployed on Maven Central:
 
@@ -14,9 +16,9 @@ The latest version is deployed on Maven Central:
 </dependency>
 ```
 
-# Development
+## Development
 
-## Dependencies
+### Dependencies
 
 This project has several dependencies all of which are available on Maven Central.
 Among others we make extensive use:
@@ -25,7 +27,7 @@ Among others we make extensive use:
 * [Optimize](https://github.com/minyans/optimize): a numerical optimization library
 * [Pacaya](https://github.com/mgormley/pacaya): modeling library for hybrids of graphical models and neural networks
 
-### Installing dependencies locally
+#### Installing dependencies locally
 
 1. Checkout and install Prim locally
 
@@ -51,7 +53,7 @@ Among others we make extensive use:
 	mvn install -DskipTests
 	```
 	
-## Build:
+### Build:
 
 * Compile the code from the command line:
 
@@ -65,7 +67,7 @@ Among others we make extensive use:
 	
 	    source setupenv.sh
 
-## Eclipse setup:
+### Eclipse setup:
 
 * Create local versions of the .project and .classpath files for Eclipse:
 
@@ -80,7 +82,7 @@ Among others we make extensive use:
 * To make the project Git aware, right click on the project and select Team -> Git... 
 
 
-# Citations
+## Citations
 
 This library includes code for the papers below. Please cite as appropriate.
 
