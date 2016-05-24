@@ -253,7 +253,8 @@ public class RelationMunger implements Serializable {
                     AnnoSentence single = sent.getShallowCopy();
                     single.setNePairs(QLists.getList(sent.getNePairs().get(k)));
                     single.setRelLabels(QLists.getList(sent.getRelLabels().get(k)));
-                    single.setNamedEntities(null);
+                    // NOTE: We don't set the NEs to null so that we can compute features such as # NEs between. 
+                    // single.setNamedEntities(null);
                     single.setRelations(null);
                     singles.add(single);
                 }
