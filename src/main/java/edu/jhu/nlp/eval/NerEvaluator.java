@@ -16,6 +16,7 @@ import edu.jhu.pacaya.util.report.Reporter;
  * 
  * @author mgormley
  */
+// TODO: This is incorrect. Fix it.
 public class NerEvaluator extends F1Evaluator implements Evaluator {
 
     private static final Logger log = LoggerFactory.getLogger(NerEvaluator.class);

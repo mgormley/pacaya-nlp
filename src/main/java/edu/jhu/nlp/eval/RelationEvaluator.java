@@ -11,7 +11,7 @@ import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.pacaya.util.report.Reporter;
 
 /**
- * Computes the precision, recall, and micro-averaged F1 of relations mentions.
+ * Computes the micro-averaged precision, recall, and F1 of relations mentions.
  * 
  * @author mgormley
  */
