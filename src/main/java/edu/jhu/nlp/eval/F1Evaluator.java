@@ -125,7 +125,7 @@ public abstract class F1Evaluator implements Evaluator {
             if (!isNilLabel(goldLabel)) {
                 numTruePositive++;
             }
-            if (!isNilLabel(predLabel)) {
+            if (pred != null && !isNilLabel(predLabel)) {
                 numPredictPositive++;
             }
             numInstances++;
