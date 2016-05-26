@@ -75,7 +75,7 @@ public class RelationEvaluator implements Evaluator {
     public void accum(List<String> gold, List<String> pred) {
         if (gold == null) { return; }
         if (pred == null) { numMissing++; }
-        if (pred != null) { assert gold.size() == pred.size(); }
+        if (pred != null) { assert gold.size() == pred.size() : "len(gold)="+gold.size()+" len(pred)="+pred.size(); }
         
         // For each pair of named entities.
         for (int k=0; k<gold.size(); k++) {                
@@ -92,7 +92,7 @@ public class RelationEvaluator implements Evaluator {
             if (!RelationMunger.isNoRelationLabel(goldLabel)) {
                 numTruePositive++;
             }
-            if (!RelationMunger.isNoRelationLabel(predLabel)) {
+            if (predLabel != null && !RelationMunger.isNoRelationLabel(predLabel)) {
                 numPredictPositive++;
             }
             numInstances++;
