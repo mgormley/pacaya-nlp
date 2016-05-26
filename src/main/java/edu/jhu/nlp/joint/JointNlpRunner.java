@@ -761,7 +761,6 @@ public class JointNlpRunner {
         Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> opts = OptimizerFactory.getOptimizers();
         prm.optimizer = opts.get1();
         prm.batchOptimizer = opts.get2();
-        prm.regularizer = OptimizerFactory.getRegularizer();
         prm.trainer = trainer;
         
         // TODO: add options for other loss functions.

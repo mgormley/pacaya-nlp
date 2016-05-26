@@ -287,7 +287,6 @@ public class JointNlpFgExamplesBuilderTest {
         //        optPrm.iterations = 100;
         //        optPrm.lrAtMidpoint = 0.1;
         //        prm.maximizer = new SGD(optPrm);
-        prm.regularizer = null;
         
         CrfTrainer trainer = new CrfTrainer(prm);
         trainer.train(model, data);
