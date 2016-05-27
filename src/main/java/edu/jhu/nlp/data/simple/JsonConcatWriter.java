@@ -1,6 +1,5 @@
 package edu.jhu.nlp.data.simple;
 
-import java.io.BufferedWriter;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -20,7 +19,6 @@ import javax.json.JsonArrayBuilder;
 import javax.json.JsonObject;
 import javax.json.JsonReader;
 import javax.json.JsonValue;
-import javax.json.JsonWriterFactory;
 import javax.json.stream.JsonGenerator;
 import javax.json.stream.JsonGeneratorFactory;
 
@@ -28,6 +26,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.NerMention;
+import edu.jhu.nlp.data.NerMentions;
 import edu.jhu.nlp.data.Span;
 import edu.jhu.prim.tuple.Pair;
 
@@ -92,6 +91,7 @@ public class JsonConcatWriter implements Closeable {
         appendIfNotNull("parents", sent.getParents());
         appendIfNotNull("deprels", sent.getDeprels());
         appendIfNotNull("naryTree", sent.getNaryTree() == null ? null : sent.getNaryTree().getAsOneLineString());
+        appendIfNotNull("namedEntities", nesToJson(sent.getNamedEntities()).toString());
         appendIfNotNull("nePairs", nePairsToJson(sent.getNePairs()).toString());
         appendIfNotNull("relLabels", sent.getRelLabels());
         
@@ -100,7 +100,6 @@ public class JsonConcatWriter implements Closeable {
         //appendIfNotNull("depEdgeMask", sent.getDepEdgeMask());
         //appendIfNotNull("srlGraph", sent.getSrlGraph());
         //appendIfNotNull("knownPreds", sent.getKnownPreds());
-        //appendIfNotNull("namedEntities", sent.getNamedEntities());
         //if (sent.getNamedEntities() != null) { 
         // appendIfNotNull("namedEntities-InContext", sent.getNamedEntities().toString(sent.getWords())); 
         //}
@@ -154,7 +153,7 @@ public class JsonConcatWriter implements Closeable {
     }
     
     /* ------------ Object Specific Transformations -------------- */
-    
+
     public static JsonArray nePairsToJson(List<Pair<NerMention, NerMention>> nePairs) {
         JsonArrayBuilder pairs = Json.createArrayBuilder();
         for (Pair<NerMention, NerMention> nePair : nePairs) {
@@ -163,6 +162,14 @@ public class JsonConcatWriter implements Closeable {
                     .add("m2", nemToJson(nePair.get2())));
         }
         return pairs.build();
+    }
+    
+    public static JsonArray nesToJson(NerMentions nes) {
+        JsonArrayBuilder jnes = Json.createArrayBuilder();
+        for (NerMention ne : nes) {
+            jnes.add(nemToJson(ne));
+        }
+        return jnes.build();
     }
     
     private static JsonValue nemToJson(NerMention nem) {
@@ -190,6 +197,27 @@ public class JsonConcatWriter implements Closeable {
                     nemFromJson(pair.getJsonObject("m2"))));
         }
         return nePairs;
+    }
+
+    /**
+     * Converts from JSON to NerMentions.
+     * 
+     * @param json The input JSON string.
+     * @param n The number of words in the sentence.
+     * @return The named entity mentions.
+     */
+    public static NerMentions nesFromJson(String json, int n) {
+        JsonReader jsonReader = Json.createReader(new StringReader(json));
+        JsonArray pairs = jsonReader.readArray();
+        jsonReader.close();
+        
+        List<NerMention> spans = new ArrayList<>();
+        for (int i=0; i<pairs.size(); i++) {
+            JsonObject ne = pairs.getJsonObject(i);
+            spans.add(nemFromJson(ne));
+        }
+        NerMentions nes = new NerMentions(n, spans);
+        return nes;
     }
 
     private static NerMention nemFromJson(JsonObject m) {

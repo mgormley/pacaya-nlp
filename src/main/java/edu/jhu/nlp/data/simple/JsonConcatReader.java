@@ -90,6 +90,11 @@ public class JsonConcatReader implements CloseableIterable<AnnoSentence>, Iterat
                 sent.setDeprels(getListOfStrings(key, val));
             } else if (key.equals("naryTree")) {
                 sent.setNaryTree(NaryTree.fromTreeInPtbFormat(val.getAsString()));
+            } else if (key.equals("namedEntities")) {
+                if (sent.getWords() == null) {
+                    throw new IllegalStateException("Invalid file format: words must appear before namedEntities in the JSON.");
+                }
+                sent.setNamedEntities(JsonConcatWriter.nesFromJson(val.getAsString(), sent.size()));
             } else if (key.equals("nePairs")) {
                 sent.setNePairs(JsonConcatWriter.nePairsFromJson(val.getAsString()));
             } else if (key.equals("relLabels")) {
@@ -101,7 +106,6 @@ public class JsonConcatReader implements CloseableIterable<AnnoSentence>, Iterat
                 // - depEdgeMask (DepEdgeMask)
                 // - srlGraph (SrlGraph)
                 // - knownPreds (IntHashSet)
-                // - namedEntities (NerMentions)
                 // - namedEntitiesInContext
                 // - relations (RelationMentions)
                 // - relationsInContext
