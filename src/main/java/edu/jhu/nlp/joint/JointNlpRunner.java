@@ -257,6 +257,8 @@ public class JointNlpRunner {
     public static File argFeatTplsOut = null;
     @Opt(hasArg = true, description = "Whether to include extra ACL '14 style arg features.")
     public static boolean srlExtraArgFeats = false;
+    @Opt(hasArg = true, description = "The type of the SRL role / sense variables.")
+    public static VarType srlVarType = VarType.PREDICTED;
 
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
@@ -674,6 +676,7 @@ public class JointNlpRunner {
     private static SrlFactorGraphBuilderPrm getSrlFactorGraphBuilderPrm() {
         SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
         // Semantic Role Labeling factor graph structure.
+        srlPrm.srlVarType = srlVarType;
         srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
         srlPrm.roleStructure = roleStructure;
         srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;

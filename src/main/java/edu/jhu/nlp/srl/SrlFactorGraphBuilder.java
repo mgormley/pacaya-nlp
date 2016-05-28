@@ -48,6 +48,8 @@ public class SrlFactorGraphBuilder implements Serializable {
         private static final long serialVersionUID = 1L;
         /** The structure of the Role variables. */
         public RoleStructure roleStructure = RoleStructure.ALL_PAIRS;
+        /** The type of the SRL role / sense variables. */
+        public VarType srlVarType = VarType.PREDICTED;
         /**
          * Whether the Role variables (if any) that correspond to predicates not
          * marked with a "Y" should be latent, as opposed to predicted
@@ -294,19 +296,17 @@ public class SrlFactorGraphBuilder implements Serializable {
     // ----------------- Creating Variables -----------------
 
     private RoleVar createRoleVar(int parent, int child, IntSet knownPreds, List<String> roleStateNames) {
-        RoleVar roleVar;
         String roleVarName = "Role_" + parent + "_" + child;
-        if (!prm.makeUnknownPredRolesLatent || knownPreds.contains((Integer) parent)) {
-            roleVar = new RoleVar(VarType.PREDICTED, roleStateNames.size(), roleVarName, roleStateNames, parent, child);            
-        } else {
-            roleVar = new RoleVar(VarType.LATENT, roleStateNames.size(), roleVarName, roleStateNames, parent, child);
+        VarType roleVarType = prm.srlVarType;
+        if (prm.makeUnknownPredRolesLatent && !knownPreds.contains((Integer) parent)) {
+            roleVarType = VarType.LATENT;
         }
-        return roleVar;
+        return new RoleVar(roleVarType, roleStateNames.size(), roleVarName, roleStateNames, parent, child);
     }
     
     private SenseVar createSenseVar(int parent, List<String> senseStateNames) {
         String senseVarName = "Sense_" + parent;
-        return new SenseVar(VarType.PREDICTED, senseStateNames.size(), senseVarName, senseStateNames, parent);            
+        return new SenseVar(prm.srlVarType, senseStateNames.size(), senseVarName, senseStateNames, parent);            
     }
     
     // ----------------- Public Getters -----------------

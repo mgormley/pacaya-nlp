@@ -34,6 +34,8 @@ public class RelationsFactorGraphBuilder {
     public static class RelationsFactorGraphBuilderPrm extends Prm {
         // TODO: Cleanup these names: drop "use" and add "rel" prefix.
         private static final long serialVersionUID = 1L;
+        @Opt(hasArg=true, description="The type of the relation variables.")
+        public VarType relVarType = VarType.PREDICTED;
         @Opt(hasArg=true, description="Whether to use the standard binary features.")
         public boolean useZhou05Features = true;
         @Opt(hasArg=true, description="Whether to use the embedding FCM features.")
@@ -98,7 +100,7 @@ public class RelationsFactorGraphBuilder {
     		NerMention ne2 = pair.get2();
             // Create relation variable.
             String name = RelVar.getDefaultName(ne1.getSpan(), ne2.getSpan());
-            RelVar rv = new RelVar(VarType.PREDICTED, name, ne1, ne2, cs.relationStateNames);
+            RelVar rv = new RelVar(prm.relVarType, name, ne1, ne2, cs.relationStateNames);
             rvs.add(rv);
             relVars.add(rv);
         }

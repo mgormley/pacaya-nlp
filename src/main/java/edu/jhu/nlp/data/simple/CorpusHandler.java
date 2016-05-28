@@ -95,6 +95,8 @@ public class CorpusHandler {
     public static String predAts = null;
     @Opt(hasArg = true, description = "Comma separated list of annotation types for latent annotations.")
     public static String latAts = null;
+    @Opt(hasArg = true, description = "Whether to remove latent annotations.")
+    public static boolean removeLatAts = true;
     
     // Reader-Specific Options
     @Opt(hasArg = true, description = "CoNLL-X: whether to use the P(rojective)HEAD column for parents.")
@@ -401,7 +403,12 @@ public class CorpusHandler {
 
     /** Gets predicated and latent annotations (included only in the gold data). */
     public static Set<AT> getGoldOnlyAts() {
-        return QSets.union(getPredAts(), getLatAts());
+        if (removeLatAts) {
+            return QSets.union(getPredAts(), getLatAts());
+        } else {
+            log.warn("CAUTION: The latent variable annotations have NOT been removed.");
+            return getPredAts();
+        }
     }
     
     public static Set<AT> getAts(String atsStr) {

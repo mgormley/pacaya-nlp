@@ -67,17 +67,17 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
                 fg.getPosTagBuilder().addVarAssignments(gold.getPosTags(), vc);;
             }
         }
-        if (prm.fgPrm.includeDp) {
+        if (prm.fgPrm.includeDp && prm.fgPrm.dpPrm.linkVarType != VarType.LATENT) {
             if (gold != null && gold.getParents() != null) {
                 DepParseEncoder.addDepParseTrainAssignment(gold.getParents(), fg.getDpBuilder(), vc);
             }
         }
-        if (prm.fgPrm.includeSrl) {
+        if (prm.fgPrm.includeSrl && prm.fgPrm.srlPrm.srlVarType != VarType.LATENT) {
             if (gold != null && gold.getSrlGraph() != null) {
                 SrlEncoder.addSrlTrainAssignment(sent, gold.getSrlGraph(), fg.getSrlBuilder(), vc, prm.fgPrm.srlPrm.predictSense, prm.fgPrm.srlPrm.predictPredPos);
             }
         }
-        if (prm.fgPrm.includeRel) {
+        if (prm.fgPrm.includeRel && prm.fgPrm.relPrm.relVarType != VarType.LATENT) {
             if (gold != null && gold.getRelLabels() != null) {
                 RelationsEncoder.addRelVarAssignments(sent, gold.getRelLabels(), fg.getRelBuilder(), vc);
             }
