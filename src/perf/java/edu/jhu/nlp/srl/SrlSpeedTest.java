@@ -10,6 +10,8 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
 import edu.jhu.nlp.features.TemplateSets;
+import edu.jhu.nlp.srl.SrlDecoder;
+import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.nlp.srl.SrlDecoder.SrlDecoderPrm;
 import edu.jhu.nlp.srl.SrlEncoder.SrlEncoderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
@@ -195,27 +197,6 @@ public class SrlSpeedTest {
         }
         return new Pair<BeliefPropagation, BeliefPropagationPrm>(bp, bpPrm);
     }
-    
-//    private static class SrlFgExampleList extends AbstractFgExampleList {
-//
-//        private CorpusStatistics 
-//        private AnnoSentenceCollection sents;
-//        
-//        public SrlFgExampleList(AnnoSentenceCollection sents) {
-//            this.sents = sents;
-//        }
-//
-//        @Override
-//        public LFgExample get(int i) {
-//            return getSrlFg(sents.get(i), cs, ofc, numParams);
-//        }
-//
-//        @Override
-//        public int size() {
-//            return sents.size();
-//        }
-//        
-//    }
     
     public static void main(String[] args) {
         (new SrlSpeedTest()).testSpeed();

@@ -75,7 +75,7 @@ public class JointNlpAnnotator implements Trainable, Annotator {
         public transient CrfTrainerPrm crfPrm = new CrfTrainerPrm();
         public CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm(); 
         public ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
-        // We also ignore buPrm.fePrm, which is overwritten by the value in the model.
+        // We also ignore buPrm.fgPrm, which is overwritten by the value in the model.
         // --------------------------------------------------------------------
     }
     

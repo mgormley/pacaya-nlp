@@ -35,7 +35,6 @@ public class JointNlpFgExamplesBuilder {
     public static class JointNlpFgExampleBuilderPrm extends Prm {
         private static final long serialVersionUID = 1L;
         public FgExamplesBuilderPrm exPrm = new FgExamplesBuilderPrm();
-        // TODO: Switch fgPrm and fePrm to: public JointNlpEncoderPrm jePrm = new JointNlpEncoderPrm();
         public JointNlpFactorGraphPrm fgPrm = new JointNlpFactorGraphPrm();
     }
     

@@ -400,7 +400,12 @@ public class CorpusHandler {
     public static Set<AT> getRemoveAts() {
         return getAts(removeAts);
     }
-
+    
+    /** Gets predicated and latent annotations (included only in the gold data). */
+    public static Set<AT> getPredLatAts() {
+        return QSets.union(getPredAts(), getLatAts());
+    }
+    
     /** Gets predicated and latent annotations (included only in the gold data). */
     public static Set<AT> getGoldOnlyAts() {
         if (removeLatAts) {

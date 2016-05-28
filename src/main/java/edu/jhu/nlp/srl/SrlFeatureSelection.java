@@ -87,7 +87,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             }
             argFeats.addAll(newFeats);
         }
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
+        if (CorpusHandler.getPredLatAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
             // Set the chosen templates for dependencing parsing.
             fgPrm.dpPrm.dpFePrm.firstOrderTpls = srlFePrm.argTemplates;
         }

@@ -464,23 +464,23 @@ public class JointNlpRunner {
                 eval.add(new OraclePruningAccuracy(dpSkipPunctuation));
                 eval.add(new OraclePruningExactMatch(dpSkipPunctuation));
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.POS)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.POS)) {
                 eval.add(new PosTagAccuracy());
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.DEP_TREE)) {
                 eval.add(new DepParseAccuracy(dpSkipPunctuation));
                 eval.add(new DepParseExactMatch(dpSkipPunctuation));
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL_PRED_IDX)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.SRL_PRED_IDX)) {
                 // Evaluate F1 of unlabled predicate position identification.
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, predictPredPos, false)));
                 eval.add(new SrlPredIdAccuracy());
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.SRL)) {
                 eval.add(new SrlSelfLoops());
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.REL_LABELS)) {
                 eval.add(new RelationEvaluator());
             }
             eval.add(new ProportionAnnotated(CorpusHandler.getPredAts()));
@@ -614,15 +614,15 @@ public class JointNlpRunner {
         // SRL factor graph.
         prm.fgPrm.srlPrm = getSrlFactorGraphBuilderPrm();
         // Relation factor graph.
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
+        if (CorpusHandler.getPredLatAts().contains(AT.REL_LABELS)) {
             prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
         
-        prm.fgPrm.includePos = CorpusHandler.getGoldOnlyAts().contains(AT.POS);
-        prm.fgPrm.includeDp = CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE);
-        prm.fgPrm.includeSrl = CorpusHandler.getGoldOnlyAts().contains(AT.SRL);
-        prm.fgPrm.includeRel = CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS);
-                
+        prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
+        prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
+        prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
+        prm.fgPrm.includeRel = CorpusHandler.getPredLatAts().contains(AT.REL_LABELS);
+        
         // Example construction and storage.
         prm.exPrm.cacheType = cacheType;
         prm.exPrm.gzipped = gzipCache;
@@ -658,7 +658,7 @@ public class JointNlpRunner {
         dpFePrm.secondOrderTpls = getFeatTpls(dp2FeatTpls);
         dpFePrm.featureHashMod = featureHashMod;
         dpFePrm.onlyFast = dpFastFeats;
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && acl14DepFeats) {
+        if (CorpusHandler.getPredLatAts().contains(AT.SRL) && acl14DepFeats) {
             // This special case is only for historical consistency.
             dpFePrm.onlyTrueBias = false;
             dpFePrm.onlyTrueEdges = false;
