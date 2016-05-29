@@ -72,6 +72,8 @@ public class SrlFactorGraphBuilder implements Serializable {
         public boolean fcmFactors = false;
         /** Whether to treat the embeddings as model parameters. */ 
         public boolean fcmFineTuning = false;
+        /** FCM word features flags. */ 
+        public SrlWordFeaturesPrm fcmWfPrm = new SrlWordFeaturesPrm();
     }
 
     public enum RoleStructure {
@@ -280,8 +282,7 @@ public class SrlFactorGraphBuilder implements Serializable {
                             // HACK: Does this work correctly? We do the same in RelationsFactorGraphBuilder.
                             final FeatureNames alphabet = ofc.fcmAlphabet;
                             Embeddings embeddings = (Embeddings)ofc.embeddings;
-                            SrlWordFeaturesPrm wfPrm = new SrlWordFeaturesPrm();
-                            SrlWordFeatures wf = new SrlWordFeatures(wfPrm, sent, alphabet);
+                            SrlWordFeatures wf = new SrlWordFeatures(prm.fcmWfPrm, sent, alphabet);
                             fg.addFactor(new FcmFactor(vars, sent, embeddings, ofc, prm.fcmFineTuning, wf));
                         }
                     }

@@ -66,6 +66,8 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.nlp.srl.SrlFeatureSelection;
+import edu.jhu.nlp.srl.SrlWordFeatures;
+import edu.jhu.nlp.srl.SrlWordFeatures.SrlWordFeaturesPrm;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
@@ -687,6 +689,7 @@ public class JointNlpRunner {
         srlPrm.predictPredPos = predictPredPos;
         srlPrm.fcmFactors = srlFcmFactors;
         srlPrm.fcmFineTuning = srlFcmFineTuning;
+        srlPrm.fcmWfPrm = parser.getInstanceFromParsedArgs(SrlWordFeaturesPrm.class);
         
         // SRL Feature Extraction.
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
@@ -858,6 +861,7 @@ public class JointNlpRunner {
             parser.registerClass(InsideOutsideDepParse.class);      
             parser.registerClass(ReporterManager.class);
             parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);
+            parser.registerClass(SrlWordFeaturesPrm.class);
             parser.parseArgs(args);
             JointNlpRunner.parser = parser;
             
