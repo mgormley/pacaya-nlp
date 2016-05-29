@@ -106,8 +106,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
     private static void removeAts(JointNlpFactorGraphPrm fgPrm) {
         Set<AT> ats = new HashSet<>();
         ats.addAll(CorpusHandler.getRemoveAts());
-        ats.addAll(CorpusHandler.getLatAts()); 
-        ats.addAll(CorpusHandler.getPredAts());
+        ats.addAll(CorpusHandler.getGoldOnlyAts());
         if (JointNlpRunner.brownClusters == null) {
             // Filter out the Brown cluster features.
             log.warn("Filtering out Brown cluster features.");
