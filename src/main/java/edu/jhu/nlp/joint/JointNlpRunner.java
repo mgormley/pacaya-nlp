@@ -221,8 +221,9 @@ public class JointNlpRunner {
     public static boolean srlFcmFineTuning = false;
     
     // Options for joint factor graph structure.
+    // TODO: Split into srlUnaryFactors and dpUnaryFactors.
     @Opt(hasArg = true, description = "Whether to include unary factors in the model.")
-    public static boolean unaryFactors = false;
+    public static boolean unaryFactors = false; 
 
     // Options for SRL feature selection.
     @Opt(hasArg = true, description = "Whether to do feature selection.")

@@ -271,9 +271,11 @@ public class SrlFactorGraphBuilder implements Serializable {
             for (int j = 0; j < n; j++) {
                 if (i != -1) {
                     // Add unary factors on Roles.
-                    if (prm.unaryFactors && roleVars[i][j] != null) {
+                    if (roleVars[i][j] != null) {
                         VarSet vars = new VarSet(roleVars[i][j]);
-                        fg.addFactor(new ObsFeTypedFactor(vars, SrlFactorTemplate.ROLE_UNARY, ofc, obsFe));
+                        if (prm.unaryFactors) {
+                            fg.addFactor(new ObsFeTypedFactor(vars, SrlFactorTemplate.ROLE_UNARY, ofc, obsFe));
+                        }
                         if (prm.fcmFactors) {
                             // HACK: Does this work correctly? We do the same in RelationsFactorGraphBuilder.
                             final FeatureNames alphabet = ofc.fcmAlphabet;
