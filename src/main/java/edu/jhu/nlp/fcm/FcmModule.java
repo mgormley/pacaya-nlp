@@ -128,10 +128,12 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
                         // s_y += T_{y,k,d} f_{i,k} e_{w_i,d} \forall y
                         double score = tparam.get(y, d, k) * e_wi_d * f_ik;
                         scores.add(score, y);
-                        if (log.isTraceEnabled()) {
-                            log.trace("i={} y={} d={} k={} s_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
-                                    i, y, d, k, score, tparam.get(y, d, k), e_wi_d, f_ik);
-                        }
+                        
+                        // Commented for speed:
+                        // if (log.isTraceEnabled()) {
+                        //     log.trace("i={} y={} d={} k={} s_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
+                        //             i, y, d, k, score, tparam.get(y, d, k), e_wi_d, f_ik);
+                        // }
                     }
                 }
             }
