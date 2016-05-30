@@ -107,27 +107,27 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
 
         scores = new VarTensor(RealAlgebra.getInstance(), vars);
         assert scores.size() == numLabels;
-
+        
         // Loop over tokens.
         for (int i=0; i<sent.size(); i++) {
             int w_i = sent.getEmbedId(i);
             if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
             if (f_i.getUsed() == 0) { continue; }
-            // Loop over labels.
-            for (int y=0; y<numLabels; y++) {
-                // Loop over embedding dimensions.
-                for (int d=0; d<embedDim; d++) {
-                    double e_wi_d = embed.get(w_i, d);
-                    // Loop over (sparse) features.
-                    for(int j=0; j<f_i.getUsed(); j++) {
-                        int k = f_i.getInternalIndices()[j];
-                        double f_ik = f_i.getInternalValues()[j];
-                        assert 0 <= k && k < numFeats;
+            // Loop over embedding dimensions.
+            for (int d=0; d<embedDim; d++) {
+                double e_wi_d = embed.getFast(w_i, d);
+                // Loop over (sparse) features.
+                for(int j=0; j<f_i.getUsed(); j++) {
+                    int k = f_i.getInternalIndices()[j];
+                    double f_ik = f_i.getInternalValues()[j];
+                    assert 0 <= k && k < numFeats;
+                    // Loop over labels.
+                    for (int y=0; y<numLabels; y++) {
                         // Add to the factor score.
                         // s_y += T_{y,k,d} f_{i,k} e_{w_i,d} \forall y
-                        double score = tparam.get(y, d, k) * e_wi_d * f_ik;
-                        scores.add(score, y);
+                        double score = tparam.getFast(y, d, k) * e_wi_d * f_ik;
+                        scores.addValue(y, score);
                         
                         // Commented for speed:
                         // if (log.isTraceEnabled()) {
@@ -135,7 +135,7 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
                         //             i, y, d, k, score, tparam.get(y, d, k), e_wi_d, f_ik);
                         // }
                     }
-                }
+                }                   
             }
         }
         
@@ -196,32 +196,34 @@ public class FcmModule extends AbstractModule<VarTensor> implements Module<VarTe
             if (w_i == -1) { continue; }
             FeatureVector f_i = feats.get(i);
             if (f_i.getUsed() == 0) { continue; }
-            // Loop over labels.
-            for (int y=0; y<numLabels; y++) {
-                // Loop over embedding dimensions.
-                for (int d=0; d<embedDim; d++) {
-                    double e_wi_d = embed.get(w_i, d);
-                    // Loop over (sparse) features.
-                    for(int j=0; j<f_i.getUsed(); j++) {
-                        int k = f_i.getInternalIndices()[j];
-                        double f_ik = f_i.getInternalValues()[j];
-                        assert 0 <= k && k < numFeats;
-
+            // Loop over embedding dimensions.
+            for (int d=0; d<embedDim; d++) {
+                double e_wi_d = embed.get(w_i, d);
+                // Loop over (sparse) features.
+                for(int j=0; j<f_i.getUsed(); j++) {
+                    int k = f_i.getInternalIndices()[j];
+                    double f_ik = f_i.getInternalValues()[j];
+                    assert 0 <= k && k < numFeats;
+                    // Loop over labels.
+                    for (int y=0; y<numLabels; y++) {
+                            
                         // Backprop
                         // dG/dT_{y,k,d} = dG/ds_y ds_y/dT_{y,k,d} 
                         //               = dG/ds_y (\sum_{i=1}^N f_{i,k} e_{w_i,d}) \forall y,k,d
-                        double tadd = scoresAdj.get(y) * f_ik * e_wi_d;
-                        tparamAdj.add(tadd, y, d, k);
+                        double tadd = scoresAdj.getValue(y) * f_ik * e_wi_d;
+                        tparamAdj.addFast(y, d, k, tadd);
                         if (fineTuning) {
                             // dG/de_{w_i,d} = \sum_y dG/ds_y ds_y/dT_{y,k,d} 
                             //               = \sum_y dG/ds_y (\sum_{k=1}^K T_{y,k,d} f_{i,k}) \forall i,d
-                            double eadd = scoresAdj.get(y) * tparam.get(y, d, k) * f_ik;
-                            embedAdj.add(eadd, w_i, d);
+                            double eadd = scoresAdj.getValue(y) * tparam.getFast(y, d, k) * f_ik;
+                            embedAdj.addFast(w_i, d, eadd);
                         }
-                        if (log.isTraceEnabled()) {
-                            log.trace("tadd={} dG/ds_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
-                                    tadd, scoresAdj.get(y), tparam.get(y, d, k), e_wi_d, f_ik);
-                        }
+                        
+                        // Commented for speed:
+                        // if (log.isTraceEnabled()) {
+                        //    log.trace("tadd={} dG/ds_y={} T_{y,k,d}={} e_{w_i,d}={} f_{i,k}={}", 
+                        //        tadd, scoresAdj.get(y), tparam.get(y, d, k), e_wi_d, f_ik);
+                        // }
                     }
                 }
             }
