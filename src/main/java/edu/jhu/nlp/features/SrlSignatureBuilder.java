@@ -26,12 +26,6 @@ public class SrlSignatureBuilder implements Serializable {
         this.lexAlphabet = new IntObjectBimap<String>(lexAlphabet);
         this.lexAlphabet.stopGrowth();
     }
-
-    public Set<String> getSimpleUnkFeatures(String word, int loc, String language) {        
-        Set<String> simpleUnkFeatures = new HashSet<String>();
-        simpleUnkFeatures.add(word);
-        return simpleUnkFeatures;
-    }
     
     //Overloaded version of below, to start adding "language" as an option.
     public String getSignature(String word, int loc, String language) {
