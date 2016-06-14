@@ -91,7 +91,7 @@ public class JsonConcatWriter implements Closeable {
         appendIfNotNull("parents", sent.getParents());
         appendIfNotNull("deprels", sent.getDeprels());
         appendIfNotNull("naryTree", sent.getNaryTree() == null ? null : sent.getNaryTree().getAsOneLineString());
-        appendIfNotNull("namedEntities", nesToJson(sent.getNamedEntities()).toString());
+        appendIfNotNull("namedEntities", sent.getNamedEntities() == null ? null : nesToJson(sent.getNamedEntities()).toString());
         appendIfNotNull("nePairs", nePairsToJson(sent.getNePairs()).toString());
         appendIfNotNull("relLabels", sent.getRelLabels());
         
@@ -147,8 +147,10 @@ public class JsonConcatWriter implements Closeable {
             return b.build();
         } else if (o instanceof String) {
             return safeStringToJson((String)o);
+        } else if (o instanceof Enum) {
+            return toJson(((Enum<?>)o).name());
         } else {
-            throw new RuntimeException("Unsupported type: " + o);
+            throw new RuntimeException("Unsupported type: " + o.getClass());
         }
     }
     
