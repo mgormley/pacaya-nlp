@@ -41,7 +41,7 @@ import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var.VarType;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective;
 import edu.jhu.pacaya.gm.train.AvgBatchObjective.ExampleObjective;
-import edu.jhu.pacaya.gm.train.LogLikelihoodFactory;
+import edu.jhu.pacaya.gm.train.NegLogLikelihoodFactory;
 import edu.jhu.pacaya.gm.train.MarginalLogLikelihood;
 import edu.jhu.pacaya.gm.train.ModuleObjective;
 import edu.jhu.pacaya.gm.train.MtFactory;
@@ -148,7 +148,7 @@ public class LogLikelihoodFactoryTest {
         Function obj = getCrfObj(model, data, infFactory);
         //CrfObjective obj = new CrfObjective(new CrfObjectivePrm(), model, data, infFactory);
         //obj.setPoint(FgModelTest.getParams(model));
-        double ll = obj.getValue(model.getParams());        
+        double ll = -obj.getValue(model.getParams());        
         assertEquals(2./6., FastMath.exp(ll), 1e-13);
     }
     
@@ -173,8 +173,8 @@ public class LogLikelihoodFactoryTest {
         FgInferencerFactory infFactory = getInfFactory(s); 
         Function obj = getCrfObj(model, data, infFactory);
         double ll = obj.getValue(model.getParams());        
-        assertEquals(-15.006, ll, 1e-3);
-        assertTrue(ll < 0d);
+        assertEquals(15.006, ll, 1e-3);
+        assertTrue(ll > 0d);
     }
 
     public static FgExampleList getDp1stOrderData(ObsFeatureConjoiner ofc) throws IOException {
@@ -243,14 +243,14 @@ public class LogLikelihoodFactoryTest {
         AvgBatchObjective obj = getCrfObj(model, data, infFactory);
         double ll = 0;
         for (int i=0; i<obj.getNumExamples(); i++) {
-            double exll = obj.getValue(model.getParams(), new int[]{i});
+            double exll = - obj.getValue(model.getParams(), new int[]{i});
             System.out.printf("Example %4d ll=%f\n", i, exll);
             //assertTrue(exll <= 0);
             ll += exll;
         }
         //Without scaling: assertEquals(-74.29, ll, 1e-2);
-        assertEquals(-10.681, ll, 1e-2);
-        assertTrue(ll < 0d);
+        assertEquals(10.681, ll, 1e-2);
+        assertTrue(ll > 0d);
     }
     
     @Test
@@ -338,7 +338,7 @@ public class LogLikelihoodFactoryTest {
     }
     
     public static AvgBatchObjective getCrfObj(FgModel model, FgExampleList data, FgInferencerFactory infFactory) {
-        MtFactory mtFactory = new LogLikelihoodFactory(infFactory);
+        MtFactory mtFactory = new NegLogLikelihoodFactory(infFactory);
         ExampleObjective exObj = new ModuleObjective(data, mtFactory);
         return new AvgBatchObjective(exObj, model);
     }
