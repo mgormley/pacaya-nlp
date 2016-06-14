@@ -243,7 +243,7 @@ public class LogLikelihoodFactoryTest {
         AvgBatchObjective obj = getCrfObj(model, data, infFactory);
         double ll = 0;
         for (int i=0; i<obj.getNumExamples(); i++) {
-            double exll = - obj.getValue(model.getParams(), new int[]{i});
+            double exll = obj.getValue(model.getParams(), new int[]{i});
             System.out.printf("Example %4d ll=%f\n", i, exll);
             //assertTrue(exll <= 0);
             ll += exll;
