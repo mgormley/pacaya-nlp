@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import edu.jhu.nlp.data.DepEdgeMask;
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
 import edu.jhu.nlp.data.RelationMentions;
@@ -57,8 +58,7 @@ public class AnnoSentence {
     private int[] parents;
     private DepEdgeMask depEdgeMask;
     private IntHashSet knownPreds;
-    // TODO: This should be broken into semantic-roles and word senses.
-    private SrlGraph srlGraph;
+    private DepGraph srlGraph;
     /** Constituency parse. */
     private NaryTree naryTree;
     // The standard set of named entities.
@@ -564,7 +564,12 @@ public class AnnoSentence {
         if (srlGraph == null) {
             throw new IllegalStateException("This can only be called if srlGraph is non-null.");
         }
-        knownPreds = srlGraph.getKnownPreds();
+        knownPreds = new IntHashSet();
+        for (int p=0; p<srlGraph.size(); p++) {
+            if (srlGraph.get(-1, p) != null) {
+                knownPreds.add(p);
+            }
+        }
     }
     
     /* ----------- Getters/Setters for internal storage ------------ */
@@ -673,11 +678,11 @@ public class AnnoSentence {
         this.knownPreds = knownPreds;
     }
 
-    public SrlGraph getSrlGraph() {
+    public DepGraph getSrlGraph() {
         return srlGraph;
     }
     
-    public void setSrlGraph(SrlGraph srlGraph) {
+    public void setSrlGraph(DepGraph srlGraph) {
         this.srlGraph = srlGraph;
     }
     

@@ -285,7 +285,7 @@ public class CoNLL08Sentence implements Iterable<CoNLL08Token> {
     public static AnnoSentence toAnnoSentence(CoNLL08Sentence cos, boolean useGoldSyntax, boolean useSplitForms) {
         AnnoSentence s = new AnnoSentence();
         s.setSourceSent(cos);
-        s.setSrlGraph(cos.getSrlGraph());
+        s.setSrlGraph(cos.getSrlGraph().toDepGraph());
         s.setKnownPredsFromSrlGraph();
 
         if (useSplitForms) {
@@ -369,7 +369,7 @@ public class CoNLL08Sentence implements Iterable<CoNLL08Token> {
         
         // Update SRL columns from the SRL graph.
         // (This correctly handles null SRL graphs.)
-        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph());
+        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph().toSrlGraph());
         
         return updatedSentence;
     }

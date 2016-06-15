@@ -4,23 +4,24 @@ import java.io.File;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
-import edu.jhu.nlp.data.conll.SrlGraph;
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
 import edu.jhu.nlp.data.simple.AnnoSentenceReaderSpeedTest;
+import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.features.TemplateSets;
-import edu.jhu.nlp.srl.SrlDecoder;
-import edu.jhu.nlp.srl.SrlEncoder;
-import edu.jhu.nlp.srl.SrlDecoder.SrlDecoderPrm;
-import edu.jhu.nlp.srl.SrlEncoder.SrlEncoderPrm;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.gm.data.FgExampleList;
 import edu.jhu.pacaya.gm.data.LFgExample;
+import edu.jhu.pacaya.gm.data.LabeledFgExample;
 import edu.jhu.pacaya.gm.data.UFgExample;
+import edu.jhu.pacaya.gm.decode.MbrDecoder;
+import edu.jhu.pacaya.gm.decode.MbrDecoder.MbrDecoderPrm;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner.ObsFeatureConjoinerPrm;
@@ -28,9 +29,11 @@ import edu.jhu.pacaya.gm.inf.BeliefPropagation;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BeliefPropagationPrm;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpScheduleType;
 import edu.jhu.pacaya.gm.inf.BeliefPropagation.BpUpdateOrder;
+import edu.jhu.pacaya.gm.inf.FgInferencer;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.FgModel;
 import edu.jhu.pacaya.gm.model.Var;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Timer;
@@ -104,7 +107,9 @@ public class SrlSpeedTest {
             ofc.init(new FgExampleList(){
                 @Override
                 public LFgExample get(int i) {
-                    return getSrlFg(sents.get(i), cs, ofc, hash);
+                    SrlFactorGraphBuilderPrm prm = getSrlFactorGraphBuilderPrm(hash);
+                    SrlFactorGraphBuilder srl = new SrlFactorGraphBuilder(prm);
+                    return getSrlEx(sents.get(i), cs, ofc, srl);
                 }
                 @Override
                 public int size() {
@@ -119,8 +124,10 @@ public class SrlSpeedTest {
             int n=0;
     
             for (AnnoSentence sent : sents) {
-                t1.start(); 
-                UFgExample ex = getSrlFg(sent, cs, ofc, hash);
+                t1.start();
+                SrlFactorGraphBuilderPrm prm = getSrlFactorGraphBuilderPrm(hash);
+                SrlFactorGraphBuilder srl = new SrlFactorGraphBuilder(prm);
+                UFgExample ex = getSrlEx(sent, cs, ofc, srl);
                 t1.stop();
                 
                 t2.start();
@@ -136,13 +143,10 @@ public class SrlSpeedTest {
                 BeliefPropagation bp = pair.get1();
                 t4.stop();
                 
-                t5.start(); 
-                SrlDecoderPrm prm = new SrlDecoderPrm();
-                prm.mbrPrm.infFactory = pair.get2();
-                SrlDecoder decode = new SrlDecoder(prm);
-                SrlGraph graph = decode.decode(bp, ex, sent);
-                s += graph.getNumArgs();
-                s -= graph.getNumArgs();
+                t5.start();
+                DepGraph graph = decode(bp, ex, sent, srl);
+                s += graph.size();
+                s -= graph.size();
                 t5.stop();
                 
                 n+=sent.size();
@@ -167,21 +171,37 @@ public class SrlSpeedTest {
         }
     }
     
-    public static LFgExample getSrlFg(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc, int numParams) {        
-        SrlEncoderPrm prm = new SrlEncoderPrm();
+    public static LFgExample getSrlEx(AnnoSentence sent, CorpusStatistics cs, ObsFeatureConjoiner ofc, SrlFactorGraphBuilder srl) { 
+        FactorGraph fg = new FactorGraph();
+        srl.build(new IntAnnoSentence(sent, cs.store), cs, ofc, fg);
+        VarConfig goldConfig = new VarConfig();
+        srl.addVarAssignments(sent.getSrlGraph(), goldConfig);
+        FactorTemplateList fts = ofc.getTemplates();
+        return new LabeledFgExample(fg, goldConfig, fts);
+    }
+
+    protected static SrlFactorGraphBuilderPrm getSrlFactorGraphBuilderPrm(int numParams) {
+        SrlFactorGraphBuilderPrm prm = new SrlFactorGraphBuilderPrm();
         prm.srlFePrm.featureHashMod = numParams;
         prm.srlFePrm.useTemplates = true;
         //prm.srlFePrm.pairTemplates = TemplateSets.getNaradowskyArgUnigramFeatureTemplates();;
         prm.srlFePrm.argTemplates = TemplateSets.getFromResource("/edu/jhu/nlp/features/coarse1-arg-feats-igconll09en.txt");
         prm.srlFePrm.senseTemplates = TemplateSets.getNaradowskySenseUnigramFeatureTemplates();
-        prm.srlPrm.allowPredArgSelfLoops = true;
-        prm.srlPrm.binarySenseRoleFactors = true;
-        prm.srlPrm.predictPredPos = true;
-        prm.srlPrm.predictSense = false;
-        prm.srlPrm.roleStructure = RoleStructure.ALL_PAIRS;
-        prm.srlPrm.unaryFactors = true;
-        SrlEncoder encode = new SrlEncoder(prm , cs, ofc);
-        return encode.encode(sent, sent.getSrlGraph());
+        prm.allowPredArgSelfLoops = true;
+        prm.binarySenseRoleFactors = true;
+        prm.predictPredPos = true;
+        prm.predictSense = false;
+        prm.roleStructure = RoleStructure.ALL_PAIRS;
+        prm.unaryFactors = true;
+        return prm;
+    }
+
+    private static DepGraph decode(FgInferencer inf, UFgExample ex, AnnoSentence sent, SrlFactorGraphBuilder srl) {
+        MbrDecoder mbrDecoder = new MbrDecoder(new MbrDecoderPrm());
+        mbrDecoder.decode(inf, ex);
+        VarConfig mbrVarConfig = mbrDecoder.getMbrVarConfig();
+        // Get the SRL graph.
+        return srl.getSrlGraphFromMbrVarConfig(mbrVarConfig);
     }
     
     public static Pair<BeliefPropagation, BeliefPropagationPrm> runBp(FactorGraph fg, int numIters) {

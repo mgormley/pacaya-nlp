@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
@@ -150,22 +151,26 @@ public class CorpusStatistics implements Serializable {
             }
             
             // SRL stats.
-            if (sent.getSrlGraph() != null) {
-                for (SrlEdge edge : sent.getSrlGraph().getEdges()) {
-                    String role = edge.getLabel();
-                    knownRoles.add(role);
-                }
-                for (SrlPred pred : sent.getSrlGraph().getPreds()) {
-                    int position = pred.getPosition();
-                    // If we don't have lemmas, then this is a map from underscore to all possible
-                    // predicate senses.
-                    String lemma = (sent.getLemmas() != null) ? sent.getLemma(position) : "_";
-                    Set<String> senses = predSenseSetMap.get(lemma);
-                    if (senses == null) {
-                        senses = new TreeSet<String>();
-                        predSenseSetMap.put(lemma, senses);
+            DepGraph srl = sent.getSrlGraph();
+            if (srl != null) {
+                for (int p=-1; p<srl.size(); p++) {
+                    for (int c=0; c<srl.size(); c++) {
+                        if (srl.get(p, c) != null) {
+                            if (p == -1) {
+                                // If we don't have lemmas, then this is a map from underscore to all possible
+                                // predicate senses.
+                                String lemma = (sent.getLemmas() != null) ? sent.getLemma(c) : "_";
+                                Set<String> senses = predSenseSetMap.get(lemma);
+                                if (senses == null) {
+                                    senses = new TreeSet<String>();
+                                    predSenseSetMap.put(lemma, senses);
+                                }
+                                senses.add(srl.get(p, c));
+                            } else {
+                                knownRoles.add(srl.get(p, c));
+                            }
+                        }
                     }
-                    senses.add(pred.getLabel());
                 }
             }
 

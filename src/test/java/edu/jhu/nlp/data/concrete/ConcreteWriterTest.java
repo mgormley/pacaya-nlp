@@ -101,7 +101,7 @@ public class ConcreteWriterTest {
         // Add SRL graph to AnnoSentence
         SrlGraphTest sgt = new SrlGraphTest();
         CoNLL09Sentence cos = sgt.getSimpleCoNLL09Sentence();
-        sentences.get(0).setSrlGraph(cos.getSrlGraph());
+        sentences.get(0).setSrlGraph(cos.getSrlGraph().toDepGraph());
 
         // Add annotations to Communication
         ConcreteWriterPrm cwPrm = new ConcreteWriterPrm();

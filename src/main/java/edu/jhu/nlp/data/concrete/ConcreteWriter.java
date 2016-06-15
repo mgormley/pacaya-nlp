@@ -220,7 +220,7 @@ public class ConcreteWriter {
                 AnnoSentence sent = sents.get(i);
                 Tokenization at = tokenizations.get(i);
                 if (sent.getSrlGraph() != null) {
-                    DependencyParse p = makeDependencyParse(sent.getSrlGraph(), sent, meta);
+                    DependencyParse p = makeDependencyParse(sent.getSrlGraph().toSrlGraph(), sent, meta);
                     at.addToDependencyParseList(p);
                 }
             }
@@ -237,7 +237,7 @@ public class ConcreteWriter {
                 AnnoSentence sent = sents.get(i);
                 Tokenization t = tokenizations.get(i); 
                 if (sent.getSrlGraph() != null) {
-                    for(SituationMention sm : makeSitutationMentions(sent.getSrlGraph(), sent, t, ems)) {
+                    for(SituationMention sm : makeSitutationMentions(sent.getSrlGraph().toSrlGraph(), sent, t, ems)) {
                         sms.addToMentionList(sm);
                     }
                 }

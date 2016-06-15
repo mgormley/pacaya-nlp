@@ -185,7 +185,7 @@ public class CorpusHandler {
             log.info("Projectivizing training trees");
             new Projectivizer().projectivize(trainGoldSents);
         }
-                
+        
         // Cache input train data.
         trainInputSents = trainGoldSents.getWithAtsRemoved(getGoldOnlyAts());
     }

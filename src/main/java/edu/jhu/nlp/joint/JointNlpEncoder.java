@@ -10,7 +10,6 @@ import edu.jhu.nlp.depparse.DepParseEncoder;
 import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
 import edu.jhu.nlp.relations.RelationsEncoder;
-import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.pacaya.gm.app.Encoder;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.LabeledFgExample;
@@ -18,8 +17,8 @@ import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.util.Prm;
 
 /**
@@ -74,7 +73,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         }
         if (prm.fgPrm.includeSrl && prm.fgPrm.srlPrm.srlVarType != VarType.LATENT) {
             if (gold != null && gold.getSrlGraph() != null) {
-                SrlEncoder.addSrlTrainAssignment(sent, gold.getSrlGraph(), fg.getSrlBuilder(), vc, prm.fgPrm.srlPrm.predictSense, prm.fgPrm.srlPrm.predictPredPos);
+                fg.getSrlBuilder().addVarAssignments(gold.getSrlGraph(), vc);
             }
         }
         if (prm.fgPrm.includeRel && prm.fgPrm.relPrm.relVarType != VarType.LATENT) {

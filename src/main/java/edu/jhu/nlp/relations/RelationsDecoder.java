@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
-import edu.jhu.nlp.srl.SrlDecoder;
 import edu.jhu.pacaya.gm.app.Decoder;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.decode.MbrDecoder;
@@ -19,7 +18,7 @@ import edu.jhu.pacaya.gm.model.VarConfig;
 
 public class RelationsDecoder implements Decoder<AnnoSentence, List<String>> {
     
-    private static final Logger log = LoggerFactory.getLogger(SrlDecoder.class);
+    private static final Logger log = LoggerFactory.getLogger(RelationsDecoder.class);
     
     public static class RelationsDecoderPrm {
         // TODO: Set to non-null values.

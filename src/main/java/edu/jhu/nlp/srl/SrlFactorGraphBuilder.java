@@ -9,10 +9,17 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
+import edu.jhu.nlp.data.DepGraph;
+import edu.jhu.nlp.data.conll.SrlGraph;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.fcm.FcmFactor;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.nlp.srl.SrlWordFeatures.SrlWordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
@@ -20,10 +27,12 @@ import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.iter.IntIter;
+import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.set.IntSet;
 
 /**
@@ -351,6 +360,115 @@ public class SrlFactorGraphBuilder implements Serializable {
 
     public ObsFeatureExtractor getFeatExtractor() {
         return obsFe;
+    }
+
+    /* ------------------------- Encode ------------------------- */
+    public void addVarAssignments(DepGraph srl, VarConfig vc) {
+        for (int i = -1; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == -1 && senseVars[j] != null && senseVars[j].getType() == VarType.PREDICTED) {
+                    if (!prm.predictSense && !prm.predictPredPos) {
+                        throw new IllegalStateException("Neither predictSense nor predictPredPos is set. So there shouldn't be any SenseVars.");
+                    }
+                    SenseVar senseVar = senseVars[j];
+                    String predSense = srl.get(i, j);
+                    if (predSense != null) { // There is a predicate at token j.
+                        if (prm.predictSense) {
+                            // Tries to map the sense variable to its label (e.g. argM-TMP).
+                            // If the variable state space does not include that label, we
+                            // fall back on the UNKNOWN_SENSE constant. If for some reason
+                            // the UNKNOWN_SENSE constant isn't present, we just set it to the
+                            // first possible sense.
+                            if (!tryPut(vc, senseVar, predSense)) {
+                                if (!tryPut(vc, senseVar, CorpusStatistics.UNKNOWN_SENSE)) {
+                                    // This is a hack to ensure that something is added at test time.
+                                    vc.put(senseVar, 0);
+                                }
+                            }
+                        } else { // (prm.predictPredPos && !prm.predictPredSense)
+                            // We use CorpusStatistics.UNKNOWN_SENSE to indicate that
+                            // there exists a predicate at this position.
+                            vc.put(senseVar, CorpusStatistics.UNKNOWN_SENSE);   
+                        }
+                    } else {
+                        // The "_" indicates that there is no predicate at this
+                        // position.
+                        vc.put(senseVar, "_");
+                    }
+                }
+                if (i != -1 && roleVars[i][j] != null && roleVars[i][j].getType() == VarType.PREDICTED) {
+                    RoleVar roleVar = roleVars[i][j];
+                    String roleName = srl.get(i, j);
+                    if (roleName != null) {
+                        int roleNameIdx = roleVar.getState(roleName);
+                        // TODO: This isn't quite right...we should really store the actual role name here.
+                        if (roleNameIdx == -1) {
+                            vc.put(roleVar, CorpusStatistics.UNKNOWN_ROLE);
+                        } else {
+                            vc.put(roleVar, roleNameIdx);
+                        }
+                    } else {
+                        vc.put(roleVar, "_");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Trys to put the entry (var, stateName) in vc.
+     * @return True iff the entry (var, stateName) was added to vc.
+     */
+    private static boolean tryPut(VarConfig vc, Var var, String stateName) {
+        int stateNameIdx = var.getState(stateName);
+        if (stateNameIdx == -1) {
+            return false;
+        } else {
+            vc.put(var, stateName);
+            return true;
+        }
+    }
+ 
+    /* ------------------------- Decode ------------------------- */
+
+    // TODO: We used to decode only the PREDICTED vars, but now decode them all.
+    // It's possible this could cause unexpected behavior.
+    public DepGraph getSrlGraphFromMbrVarConfig(VarConfig vc) {
+        int srlVarCount = 0;
+        DepGraph srl = new DepGraph(n);
+        for (int i = -1; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                if (i == -1 && senseVars[j] != null) {
+                    // Decode the Sense var.
+                    SenseVar sense = senseVars[j];
+                    if (!vc.contains(sense)) { throw new RuntimeException("VarConfig doesn't contain var: " + sense); }
+                    String predSense = vc.getStateName(sense);
+                    if ("_".equals(predSense)) {
+                        // Predicate ID said there's no predicate here.
+                    } else {
+                        // Adding the identified predicate.
+                        srl.set(i, j, predSense);
+                    }
+                    srlVarCount++;
+                }
+                if (i != -1 && roleVars[i][j] != null) {
+                    // Decode the Role var.
+                    RoleVar role = roleVars[i][j];
+                    if (!vc.contains(role)) { throw new RuntimeException("VarConfig doesn't contain var: " + role); }
+                    String stateName = vc.getStateName(role);
+                    if (!"_".equals(stateName)) {
+                        if (srl.get(-1, i) == null) {
+                            // We need some predicate sense here.
+                            srl.set(-1, i, "NO.SENSE.PREDICTED");
+                        }
+                        srl.set(i, j, stateName);
+                    }
+                    srlVarCount++;
+                }
+            }
+        }
+        log.trace("SRL var count: {}", srlVarCount);
+        return srl;
     }
     
 }

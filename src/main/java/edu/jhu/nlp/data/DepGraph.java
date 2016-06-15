@@ -1,5 +1,7 @@
 package edu.jhu.nlp.data;
 
+import java.util.Arrays;
+
 import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
@@ -88,5 +90,17 @@ public class DepGraph {
             throw new IllegalArgumentException("Invalid parent index: " + p);
         }
     }
+
+    /** Gets the number of tokens. */
+    public int size() {
+        return n;
+    }
+
+    @Override
+    public String toString() {
+        return "DepGraph [graph=" + Arrays.deepToString(graph) + ", n=" + n + "]";
+    }
+    
+    
     
 }

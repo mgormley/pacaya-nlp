@@ -14,14 +14,14 @@ import edu.jhu.hlt.optimize.LBFGS;
 import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.conll.CoNLL09ReadWriteTest;
 import edu.jhu.nlp.data.conll.CoNLL09Reader;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
-import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.JointNlpFgExamplesBuilder.JointNlpFgExampleBuilderPrm;
-import edu.jhu.nlp.srl.SrlDecoder;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
 import edu.jhu.pacaya.gm.data.FgExampleList;
@@ -266,9 +266,9 @@ public class JointNlpFgExamplesBuilderTest {
 
         // 18 role vars and 1 sense.
         assertEquals(18+1, vc.size());
-        SrlGraph srlGraph = SrlDecoder.getSrlGraphFromVarConfig(vc, simpleSents.get(0).size());
-        assertEquals(2, srlGraph.getPredAt(2).getPosition());
-        assertEquals("fer.a2", srlGraph.getPredAt(2).getLabel());
+        SrlFactorGraphBuilder srlBuilder = ((JointNlpFactorGraph) ex.getFactorGraph()).getSrlBuilder();
+        DepGraph srlGraph = srlBuilder.getSrlGraphFromMbrVarConfig(vc);
+        assertEquals("fer.a2", srlGraph.get(-1, 2));
     }
    
     

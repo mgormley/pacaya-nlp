@@ -48,7 +48,7 @@ public class SrlEvaluatorTest {
                                        // Arg (incorrect: missing 2, 0, agent.)
         predSrl.set(2, 3, "theme");    // Arg (incorrect label)
         predSrl.set(-1, 0, "run.02");  // Pred (extra)
-        pred.setSrlGraph(predSrl.toSrlGraph());
+        pred.setSrlGraph(predSrl);
         pred.setKnownPredsFromSrlGraph();
         
         goldSrl.set(-1, 1, "like.01"); // Pred
@@ -58,7 +58,7 @@ public class SrlEvaluatorTest {
         goldSrl.set(-1, 2, "eat.01");  // Pred
         goldSrl.set(2, 0, "agent");    // Arg
         goldSrl.set(2, 3, "patient");  // Arg
-        gold.setSrlGraph(goldSrl.toSrlGraph());
+        gold.setSrlGraph(goldSrl);
         gold.setKnownPredsFromSrlGraph();
 
         System.out.println(pred.getSrlGraph());

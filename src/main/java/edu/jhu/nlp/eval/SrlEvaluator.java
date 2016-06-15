@@ -68,8 +68,8 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
 
     @Override
     protected Pair<List<String>,List<String>> getLabels(AnnoSentence goldSent, AnnoSentence predSent) {
-        DepGraph gold = (goldSent.getSrlGraph() == null) ? null : goldSent.getSrlGraph().toDepGraph();
-        DepGraph pred = (predSent.getSrlGraph() == null) ? null : predSent.getSrlGraph().toDepGraph();
+        DepGraph gold = goldSent.getSrlGraph();
+        DepGraph pred = predSent.getSrlGraph();
         
         List<String> goldLabels = new ArrayList<>();
         List<String> predLabels = new ArrayList<>();
