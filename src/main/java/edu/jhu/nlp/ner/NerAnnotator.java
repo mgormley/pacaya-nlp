@@ -170,9 +170,9 @@ public class NerAnnotator implements Trainable, Annotator {
             
             @Override
             public double getValue(IntDoubleVector point) {
-                // TODO: This should make a shallow copy of the input sentences.
-                anno.annotate(devInput);
-                return eval.evaluate(devInput, devGold, "dev");
+                AnnoSentenceCollection devPred = devInput.getShallowCopy();
+                anno.annotate(devPred);
+                return eval.evaluate(devPred, devGold, "dev");
             }
             
             @Override

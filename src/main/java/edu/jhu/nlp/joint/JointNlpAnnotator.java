@@ -167,9 +167,9 @@ public class JointNlpAnnotator implements Trainable, Annotator {
             
             @Override
             public double getValue(IntDoubleVector point) {
-                // TODO: This should make a shallow copy of the input sentences.
-                anno.annotate(devInput, devData);
-                return eval.evaluate(devInput, devGold, "dev");
+                AnnoSentenceCollection devPred = devInput.getShallowCopy();
+                anno.annotate(devPred, devData);
+                return eval.evaluate(devPred, devGold, "dev");
             }
             
             @Override

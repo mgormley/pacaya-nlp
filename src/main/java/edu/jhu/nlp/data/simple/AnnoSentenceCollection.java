@@ -154,6 +154,15 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         return avgLen / this.size();
     }
     
+    /** Gets a new list of new AnnoSentences, each of which is a shallow copy of the original sentence. */
+    public AnnoSentenceCollection getShallowCopy() {
+        AnnoSentenceCollection copy = new AnnoSentenceCollection();
+        for (AnnoSentence sent : this) {
+            copy.add(sent.getShallowCopy());
+        }
+        return copy;
+    }
+    
     public static void copyShallow(AnnoSentenceCollection srcSents, AnnoSentenceCollection destSents, AT at) {
         for (int i=0; i<srcSents.size(); i++) {
             AnnoSentence src = srcSents.get(i);
