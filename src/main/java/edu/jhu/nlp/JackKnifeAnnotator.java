@@ -12,7 +12,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
  * 
  * @author mgormley
  */
-public class CrossValAnnotator implements Trainable {
+public class JackKnifeAnnotator implements Trainable {
 
     private static final long serialVersionUID = 1L;
     private TrainableFactory factory;
@@ -24,7 +24,7 @@ public class CrossValAnnotator implements Trainable {
         Trainable getInstance();
     }
     
-    public CrossValAnnotator(TrainableFactory factory, int numFolds) {
+    public JackKnifeAnnotator(TrainableFactory factory, int numFolds) {
         this.factory = factory;
         this.numFolds = numFolds;
         this.annoPrimary = factory.getInstance();

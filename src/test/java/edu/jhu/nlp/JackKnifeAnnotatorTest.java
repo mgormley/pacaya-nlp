@@ -8,7 +8,7 @@ import java.util.Set;
 
 import org.junit.Test;
 
-import edu.jhu.nlp.CrossValAnnotator.TrainableFactory;
+import edu.jhu.nlp.JackKnifeAnnotator.TrainableFactory;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
@@ -16,12 +16,12 @@ import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.collections.QSets;
 import edu.jhu.prim.bimap.CountingIntObjectBimap;
 
-public class CrossValAnnotatorTest {
+public class JackKnifeAnnotatorTest {
 
     @Test
     public void testTrainAndAnnotate() throws Exception {
         TrainableFactory factory = () -> new MajorityVote();
-        CrossValAnnotator cva = new CrossValAnnotator(factory , 3);
+        JackKnifeAnnotator cva = new JackKnifeAnnotator(factory , 3);
         
         AnnoSentenceCollection trainGold = getTaggedSents("B", "R", "R", "G", "G", "B");
         AnnoSentenceCollection devGold = getTaggedSents("Y", "Y");
