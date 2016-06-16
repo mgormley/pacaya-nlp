@@ -508,8 +508,8 @@ public class JointNlpRunner {
             }
             
             if (corpus.hasTrain()) {
-                // Train a model. (AnnoPipeline also annotates all the train and dev input.)
-                anno.train(trainInput, trainGold, devInput, devGold);
+                // Train a model.
+                anno.trainAndAnnotate(trainInput, trainGold, devInput, devGold);
                 
                 // Save the model.
                 if (jointAnno != null && modelOut != null) {

@@ -39,7 +39,7 @@ import edu.jhu.prim.util.Lambda.FnIntToVoid;
 import edu.jhu.prim.util.Timer;
 import edu.jhu.prim.vector.IntDoubleVector;
 
-public class NerAnnotator implements Trainable, Annotator {
+public class NerAnnotator implements Trainable {
 
     private static final long serialVersionUID = 1L;
 

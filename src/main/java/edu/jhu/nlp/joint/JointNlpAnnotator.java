@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.optimize.function.Function;
 import edu.jhu.nlp.AbstractParallelAnnotator;
-import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.Evaluator;
@@ -55,7 +54,7 @@ import edu.jhu.prim.vector.IntDoubleVector;
  * 
  * @author mgormley
  */
-public class JointNlpAnnotator implements Trainable, Annotator {
+public class JointNlpAnnotator implements Trainable {
 
     public static enum InitParams { UNIFORM, RANDOM };
     private static final long serialVersionUID = 1L;

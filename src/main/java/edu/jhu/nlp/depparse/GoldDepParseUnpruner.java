@@ -6,14 +6,13 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 
-public class GoldDepParseUnpruner implements Trainable, Annotator {
+public class GoldDepParseUnpruner implements Trainable {
 
     private static final Logger log = LoggerFactory.getLogger(GoldDepParseUnpruner.class);
     private static final long serialVersionUID = 1L;

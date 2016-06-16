@@ -70,9 +70,9 @@ public class NerRunner {
             }
             
             if (corpus.hasTrain()) {
-                // Train a model. (AnnoPipeline also annotates all the train and dev input.)
+                // Train a model.
                 corpus.writeTrainGold();
-                anno.train(trainInput, trainGold, devInput, devGold);                
+                anno.trainAndAnnotate(trainInput, trainGold, devInput, devGold);                
             } else if (corpus.hasDev()) { // but not train
                 corpus.writeDevGold();
                 anno.annotate(devInput);

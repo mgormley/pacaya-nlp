@@ -192,5 +192,24 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
     public void setSourceSents(Object sourceSents) {
         this.sourceSents = sourceSents;
     }
+
+    /**
+     * Divides the sentences into numFolds different folds. The remainder is appended to the last fold.
+     */
+    public List<AnnoSentenceCollection> getFolds(int numFolds) {
+        List<AnnoSentenceCollection> folds = new ArrayList<>(numFolds);
+        int numSents = this.size();
+        int numPerFold = numSents / numFolds;
+        int k=-1;
+        for (int i=0; i<numSents; i++) {
+            if (i%numPerFold == 0 && k < numFolds-1) {
+                folds.add(new AnnoSentenceCollection());
+                k++;
+            }
+            folds.get(k).add(this.get(i));
+        }
+        assert folds.size() == numFolds;
+        return folds;
+    }
     
 }

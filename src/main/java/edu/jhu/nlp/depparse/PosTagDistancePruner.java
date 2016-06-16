@@ -9,7 +9,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.AbstractParallelAnnotator;
-import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.DepEdgeMask;
 import edu.jhu.nlp.data.simple.AnnoSentence;
@@ -32,7 +31,7 @@ import edu.jhu.prim.util.Lambda.FnIntToVoid;
  * 
  * @author mgormley
  */
-public class PosTagDistancePruner implements Trainable, Annotator, Serializable {
+public class PosTagDistancePruner implements Trainable, Serializable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(PosTagDistancePruner.class);
