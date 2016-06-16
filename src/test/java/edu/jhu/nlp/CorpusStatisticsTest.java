@@ -43,7 +43,6 @@ public class CorpusStatisticsTest {
 
         assertEquals(QSets.getSet("de", ",", "."), new HashSet<String>(cs.knownWords));
         assertEquals(QSets.getSet("de"), new HashSet<String>(cs.topNWords));
-        assertEquals(QSets.getSet("UNK-CAPS", "UNK", "UNK-LC", "UNK-LC-s"), new HashSet<String>(cs.knownUnks));
         assertEquals(QSets.getSet("True", "False"), new HashSet<String>(cs.linkStateNames));
         assertEquals(QSets.getSet("argUNK", "arg2", "arg1", "arg0", "argm", "_"), new HashSet<String>(cs.roleStateNames));
         assertEquals(30, cs.maxSentLength);        

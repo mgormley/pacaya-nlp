@@ -45,7 +45,6 @@ public class TemplateFeatureExtractor {
     private static final Logger log = LoggerFactory.getLogger(TemplateFeatureExtractor.class);
 
     private final CorpusStatistics cs;
-    private final SrlSignatureBuilder sig;
     private final AnnoSentence sent;
     private final FeaturizedSentence fSent; 
 
@@ -55,19 +54,12 @@ public class TemplateFeatureExtractor {
      */
     public TemplateFeatureExtractor(FeaturizedSentence fSent, CorpusStatistics cs) {        
         this.cs = cs;
-        if (cs != null) { this.sig = cs.sig; }
-        else { this.sig = null; }
         this.fSent = fSent;
         this.sent = fSent.getSent();
     }
     
     public TemplateFeatureExtractor(AnnoSentence sent, CorpusStatistics cs) {
         this.cs = cs;
-        if (cs != null) {
-            this.sig = cs.sig;
-        } else {
-            this.sig = null;
-        }
         this.fSent = new FeaturizedSentence(sent, cs);
         this.sent = fSent.getSent();
     }
@@ -598,9 +590,6 @@ public class TemplateFeatureExtractor {
             return tok.getFeat6().get(1);
         case MORPHO3:
             return tok.getFeat6().get(2);
-        case UNK:
-            log.warn("Assuming Spanish when creating UNK feature.");            
-            return sig.getSignature(tok.getForm(), idx, "es");
         default:
             throw new IllegalStateException();
         }

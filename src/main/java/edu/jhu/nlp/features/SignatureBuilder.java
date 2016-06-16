@@ -1,8 +1,6 @@
 package edu.jhu.nlp.features;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -33,7 +31,7 @@ public class SignatureBuilder implements Serializable {
     }
 
     public String getSignature(String word, int loc, int unknownLevel) {
-        return word;
+        throw new RuntimeException("SignatureBuilder.getSignature() is not implemented in the public version of this code.");
     }
     
 }

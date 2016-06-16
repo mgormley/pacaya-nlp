@@ -569,7 +569,6 @@ public class IntTemplateFeatureExtractor {
         case MORPHO1: return safeGet(isent.getFeats(idx), 0);
         case MORPHO2: return safeGet(isent.getFeats(idx), 1);
         case MORPHO3: return safeGet(isent.getFeats(idx), 2);
-        case UNK: throw new RuntimeException("not implemented");
         default:
             throw new IllegalStateException();
         }

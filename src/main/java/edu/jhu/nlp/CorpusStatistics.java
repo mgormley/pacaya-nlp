@@ -17,15 +17,11 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.features.SrlSignatureBuilder;
 import edu.jhu.nlp.relations.RelationMunger;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives.MutableInt;
-import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
 
@@ -64,7 +60,6 @@ public class CorpusStatistics implements Serializable {
     public static final List<String> PRED_POSITION_STATE_NAMES = QLists.getList("_", UNKNOWN_SENSE);
 
     public Set<String> knownWords = new HashSet<String>();
-    public Set<String> knownUnks = new HashSet<String>();
     public Set<String> knownPostags = new HashSet<String>();
 
     public Set<String> topNWords = new HashSet<String>();
@@ -78,7 +73,6 @@ public class CorpusStatistics implements Serializable {
 
     public int maxSentLength = 0;
 
-    public SrlSignatureBuilder sig;
     public Normalizer normalize;
     public AlphabetStore store;
     
@@ -88,7 +82,6 @@ public class CorpusStatistics implements Serializable {
     public CorpusStatistics(CorpusStatisticsPrm prm) {
         this.prm = prm;
         this.normalize = new Normalizer(prm.normalizeWords);
-        this.sig = new SrlSignatureBuilder(new IntObjectBimap<String>());
         initialized = false;
     }
 
@@ -116,7 +109,6 @@ public class CorpusStatistics implements Serializable {
         // the Link variable. Applies to knownLinks, knownRoles.
         knownLinks.add("True");
         knownLinks.add("False");
-        knownUnks.add("UNK");
         knownRoles.add(UNKNOWN_ROLE);
         // This is a hack:  '_' won't actually be in any of the defined edges.
         // However, removing this messes up what we assume as default.
@@ -136,9 +128,8 @@ public class CorpusStatistics implements Serializable {
                 String wordForm = sent.getWord(position);
                 String cleanWord = normalize.clean(wordForm);
                 // Actually only need to do this for those words that are below
-                // threshold for knownWords.  
-                String unkWord = sig.getSignature(wordForm, position, prm.language);
-                unkWord = normalize.escape(unkWord);
+                // threshold for knownWords. 
+                String unkWord = normalize.escape(cleanWord);
                 addWord(words, cleanWord);
                 addWord(unks, unkWord);
             }
@@ -202,7 +193,6 @@ public class CorpusStatistics implements Serializable {
         
         // For words and unknown word classes, we only keep those above some threshold.
         knownWords = getUnigramsAboveThreshold(words, prm.cutoff);
-        knownUnks = getUnigramsAboveThreshold(unks, prm.cutoff);
         
         topNWords = getTopNUnigrams(words, prm.topN, prm.cutoff);
         
@@ -270,7 +260,6 @@ public class CorpusStatistics implements Serializable {
         return "CorpusStatistics [" 
                 + "\n     knownWords=" + knownWords 
                 + ",\n     topNWords=" + topNWords
-                + ",\n     knownUnks=" + knownUnks
                 + ",\n     knownPostags=" + knownPostags 
                 + ",\n     linkStateNames=" + linkStateNames
                 + ",\n     roleStateNames=" + roleStateNames 

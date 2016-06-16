@@ -166,7 +166,6 @@ public class TemplateFeatureExtractorTest {
         assertEquals("11010", extr.getTokProp(TokProperty.BC0, 3));
         assertEquals("1101011", extr.getTokProp(TokProperty.BC1, 3));
         assertEquals("cpred", extr.getTokProp(TokProperty.DEPREL, 3));
-        assertEquals("UNK-LC-s", extr.getTokProp(TokProperty.UNK, 3));
         assertEquals("LC", extr.getTokProp(TokProperty.CAPITALIZED, 3));
         // 
         assertEquals("Resultaban", extr.getTokProp(TokProperty.WORD, 1));
@@ -199,7 +198,6 @@ public class TemplateFeatureExtractorTest {
         assertEquals("BOS", extr.getTokProp(TokProperty.BC0, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.BC1, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.DEPREL, -1));
-        assertEquals("BOS", extr.getTokProp(TokProperty.UNK, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.LC, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE1, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE2, -1));
@@ -227,7 +225,6 @@ public class TemplateFeatureExtractorTest {
         assertEquals("EOS", extr.getTokProp(TokProperty.BC0, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.BC1, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.DEPREL, n));
-        assertEquals("EOS", extr.getTokProp(TokProperty.UNK, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.LC, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE1, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE2, n));

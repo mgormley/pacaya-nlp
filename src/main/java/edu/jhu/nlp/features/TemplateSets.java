@@ -177,7 +177,7 @@ public class TemplateSets {
         tpls.addAll(TemplateSets.getBjorkelundSenseUnigramFeatureTemplates());
         tpls.addAll(TemplateSets.getZhaoEnSenseUnigramFeatureTemplates());
         tpls.addAll(TemplateSets.getNaradowskySenseUnigramFeatureTemplates());
-        return TemplateLanguage.filterOutFeats(new ArrayList<FeatTemplate>(tpls), TokProperty.UNK);
+        return new ArrayList<>(tpls);
     }
     
     public static List<FeatTemplate> getCoarseUnigramSet1() {
@@ -251,9 +251,6 @@ public class TemplateSets {
         for (OtherFeat feat : otherFeats) {
             tpls.add(new FeatTemplate0(feat));
         }
-        
-        // TODO: UNK is currently only supported for English and Spanish, so we filter those feature out.
-        tpls = TemplateLanguage.filterOutFeats(tpls, TokProperty.UNK);
         
         return tpls;
     }
