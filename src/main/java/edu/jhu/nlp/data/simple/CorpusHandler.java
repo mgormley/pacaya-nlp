@@ -39,7 +39,7 @@ public class CorpusHandler {
     public static int trainMinSentenceLength = 0;
     @Opt(hasArg = true, description = "Maximum number of sentences to include in train.")
     public static int trainMaxNumSentences = Integer.MAX_VALUE; 
-            
+    
     // Options for dev data
     @Opt(hasArg = true, description = "Testing data input file or directory.")
     public static File dev = null;

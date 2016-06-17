@@ -2,6 +2,8 @@ package edu.jhu.nlp.eval;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +33,8 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
         public boolean evalPredPosition = false;
         /** Whether to evaluate arguments (i.e. semantic roles). */
         public boolean evalRoles = true;
+        /** Mimic eval09.pl definition of predicate sense equality. */
+        public boolean mimicEval09pl = true;
         public SrlEvaluatorPrm() { }
         public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
             this.labeled = labeled;
@@ -116,6 +120,8 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
         }
     }
 
+    Pattern senseSuffix = Pattern.compile(".+\\.(.+)");
+    
     private String getLabel(DepGraph dg, int p, int c) {
         if (dg == null) {
             return null;
@@ -125,6 +131,15 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
             return NO_LABEL;
         } else if (!prm.labeled || (p == -1 && !prm.evalPredSense)){
             return SOME_LABEL;
+        } else if (prm.mimicEval09pl && p == -1) {
+            // The eval09.pl script only checks if the numeric sense matches.
+            // Thus, trading.01 and trade.01 would count as correct -- we mimic
+            // this behavior here.
+            Matcher match = senseSuffix.matcher(label);
+            if (match.matches()) {
+                return match.group(1);
+            }
+            return label;
         } else {
             return label;
         }
