@@ -233,28 +233,29 @@ public class SrlFactorGraphBuilder implements Serializable {
         senseVars = new SenseVar[n];
         for (int i = 0; i < n; i++) {
             // Only look at the knownPreds if the predicate positions are given.
-            if (prm.roleStructure == RoleStructure.PREDS_GIVEN && !knownPreds.contains(i)) {
+            if (!prm.predictPredPos && !knownPreds.contains(i)) {
                 // Skip non-predicate positions.
                 continue;
             }
-            if ((!prm.predictSense && !prm.predictPredPos) ||  
-                    (prm.roleStructure == RoleStructure.PREDS_GIVEN && !prm.predictSense)) {
-                // Do not add sense variables.
-            } else if (!prm.predictSense && prm.predictPredPos) {
+            if (!prm.predictSense && prm.predictPredPos) {
                 // Positions without sense.
                 senseVars[i] = createSenseVar(i, CorpusStatistics.PRED_POSITION_STATE_NAMES);
             } else if (prm.predictSense || prm.predictPredPos) {
-                // Sense and position. Even if we aren't predicting the predicate position, the
+                // Sense without positions OR Sense and position.
+                //
+                // Even if we aren't predicting the predicate position, the
                 // training data could contain non-gold known predicate positions so we need to
                 // include "_" as a possible value for the sense.
                 List<String> senseStateNames = psMap.get(lemmas.get(i));
                 if (senseStateNames == null) {
                     senseStateNames = CorpusStatistics.PRED_POSITION_STATE_NAMES;
-                } else {
+                } else { 
                     // Include the state of "no predicate".
                     senseStateNames = QLists.cons("_", senseStateNames);
                 }
                 senseVars[i] = createSenseVar(i, senseStateNames);
+            } else {
+                // Do not add sense variables.
             }
         }
 
