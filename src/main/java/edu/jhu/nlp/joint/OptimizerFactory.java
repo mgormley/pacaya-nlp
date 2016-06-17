@@ -12,6 +12,7 @@ import edu.jhu.hlt.optimize.AdaGradSchedule;
 import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
+import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.hlt.optimize.LBFGS;
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
@@ -37,7 +38,9 @@ public class OptimizerFactory {
     @Opt(hasArg=true, description="The weight on the L2 regularizer.")
     public static double l2Lambda = 1.0;
     @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
-    public static int maxLbfgsIterations = 1000;
+    public static int lbfgsMaxIters = 1000;
+    @Opt(hasArg=true, description="Number of iterations to cache for LBFGS training.")
+    public static int lbfgsCachedIters = 6;
     @Opt(hasArg=true, description="Number of effective passes over the dataset for SGD.")
     public static int sgdNumPasses = 30;
     @Opt(hasArg=true, description="The batch size to use at each step of SGD.")
@@ -73,7 +76,10 @@ public class OptimizerFactory {
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
         if (optimizer == OptimizerType.LBFGS) {
-            opt = DifferentiableFunctionOpts.getRegularizedOptimizer(new LBFGS(), l1Lambda, l2Lambda);            
+            LBFGSPrm prm = new LBFGSPrm();
+            prm.max_iterations = lbfgsMaxIters;
+            prm.m = lbfgsCachedIters;
+            opt = DifferentiableFunctionOpts.getRegularizedOptimizer(new LBFGS(prm), l1Lambda, l2Lambda);            
             batchOpt = null;
         } else if (optimizer == OptimizerType.SGD || optimizer == OptimizerType.ASGD  ||
                 optimizer == OptimizerType.ADAGRAD || optimizer == OptimizerType.ADADELTA) {
