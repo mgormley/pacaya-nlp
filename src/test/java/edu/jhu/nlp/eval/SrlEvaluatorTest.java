@@ -82,63 +82,75 @@ public class SrlEvaluatorTest {
     }
 
     @Test
-    public void testMissingPredictions() {
+    public void testMissingPredictionsRoles() {
         predSents.get(0).setSrlGraph(null);
-        checkSrlPrecRecallF1(0, 0, 0, 1, false, false, false, true);
+        checkSrlPrecRecallF1(0, 0, 0, 1, false, false, false, true, false);
     }
     
     @Test
-    public void testUnlabeled() {
-        checkSrlPrecRecallF1(3, 4, 5, 0, false, false, false, true);
+    public void testUnlabeledRoles() {
+        checkSrlPrecRecallF1(3, 4, 5, 0, false, false, false, true, false);
     }
     
     @Test
-    public void testLabeled() {     
-        checkSrlPrecRecallF1(2, 4, 5, 0, true, false, false, true);
+    public void testLabeledRoles() {     
+        checkSrlPrecRecallF1(2, 4, 5, 0, true, false, false, true, false);
     }
     
     @Test
-    public void testUnlabeledSense() {
-        checkSrlPrecRecallF1(5, 6, 7, 0, false, true, false, true);
+    public void testUnlabeledSenseRoles() {
+        checkSrlPrecRecallF1(5, 6, 7, 0, false, true, false, true, false);
     }
     
     @Test
-    public void testLabeledSense() {     
-        checkSrlPrecRecallF1(3, 6, 7, 0, true, true, false, true);
+    public void testLabeledSenseRoles() {     
+        checkSrlPrecRecallF1(3, 6, 7, 0, true, true, false, true, false);
     }
 
     @Test
-    public void testUnlabeledPosition() {
-        checkSrlPrecRecallF1(5, 7, 7, 0, false, false, true, true);
+    public void testUnlabeledPositionRoles() {
+        checkSrlPrecRecallF1(5, 7, 7, 0, false, false, true, true, false);
     }
     
     @Test
-    public void testLabeledPosition() {     
-        checkSrlPrecRecallF1(4, 7, 7, 0, true, false, true, true);
+    public void testLabeledPositionRoles() {     
+        checkSrlPrecRecallF1(4, 7, 7, 0, true, false, true, true, false);
     }
 
     @Test
-    public void testUnlabeledSensePosition() {
-        checkSrlPrecRecallF1(5, 7, 7, 0, false, true, true, true);
+    public void testUnlabeledSensePositionRoles() {
+        checkSrlPrecRecallF1(5, 7, 7, 0, false, true, true, true, false);
     }
     
     @Test
-    public void testLabeledSensePosition() {     
-        checkSrlPrecRecallF1(3, 7, 7, 0, true, true, true, true);
+    public void testLabeledSensePositionRoles() {     
+        checkSrlPrecRecallF1(3, 7, 7, 0, true, true, true, true, false);
     }
 
     @Test
-    public void testPositionNoRoles() {     
-        checkSrlPrecRecallF1(2, 3, 2, 0, false, false, true, false);
+    public void testPosition() {     
+        checkSrlPrecRecallF1(2, 3, 2, 0, false, false, true, false, false);
     }
     
     @Test
-    public void testSensePositionNoRoles() {     
-        checkSrlPrecRecallF1(1, 3, 2, 0, true, true, true, false);
+    public void testSensePosition() {     
+        checkSrlPrecRecallF1(1, 3, 2, 0, true, true, true, false, false);
+    }
+    
+    @Test
+    public void testLabeledSenseRolesEval09pl() {     
+        checkSrlPrecRecallF1(4, 6, 7, 0, true, true, false, true, true);
+    }
+
+    @Test
+    public void testLabeledSenseEval09pl() {     
+        // The extra predicted sense is not counted as a predicted positive.
+        checkSrlPrecRecallF1(2, 2, 2, 0, true, true, false, false, true);
     }
 
     protected void checkSrlPrecRecallF1(int numCorrectPositives, int numPredictedPositives, int numTruePositives, 
-            int numMissing, boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
+            int numMissing, boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles, 
+            boolean mimicEval09pl) {
         double ep = numPredictedPositives == 0 ? 0 : (double) numCorrectPositives / numPredictedPositives;
         double er = numTruePositives == 0 ? 0 : (double) numCorrectPositives / numTruePositives;
         double ef1 = (ep + er) == 0 ? 0 : 2 * ep * er / (ep + er);
@@ -147,6 +159,7 @@ public class SrlEvaluatorTest {
         prm.evalPredSense = evalSense;
         prm.evalPredPosition = evalPredicatePosition;
         prm.evalRoles = evalRoles;
+        prm.mimicEval09pl = mimicEval09pl;
         SrlEvaluator eval = new SrlEvaluator(prm);
         eval.evaluate(predSents, goldSents, "Train");
         assertEquals(ep, eval.getPrecision(), 1e-13);
