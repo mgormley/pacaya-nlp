@@ -245,9 +245,7 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "Cutoff for OOV words.")
     public static int cutoff = 3;
     @Opt(hasArg = true, description = "For preprocessing: Minimum feature count for caching.")
-    public static int featCountCutoff = 4;
-    @Opt(hasArg = true, description = "Whether to include unsupported features.")
-    public static boolean includeUnsupportedFeatures = false;
+    public static int featCountCutoff = 1;
     @Opt(hasArg = true, description = "Whether to include pairs of features.")
     public static boolean useTemplates = false;
     @Opt(hasArg = true, description = "Sense feature templates.")
@@ -706,7 +704,6 @@ public class JointNlpRunner {
     private static ObsFeatureConjoinerPrm getObsFeatureConjoinerPrm() {
         ObsFeatureConjoinerPrm prm = new ObsFeatureConjoinerPrm();
         prm.featCountCutoff = featCountCutoff;
-        prm.includeUnsupportedFeatures = includeUnsupportedFeatures;
         return prm;
     }
     

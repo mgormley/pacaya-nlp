@@ -146,7 +146,7 @@ public class JointNlpFgExamplesBuilderTest {
         {
             FactorTemplateList fts = new FactorTemplateList();
             ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
-            ofcPrm.featCountCutoff = 0;            
+            ofcPrm.featCountCutoff = 1;            
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, fts);
             JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
             FgExampleList data = builder.getData(simpleSents);
@@ -156,19 +156,7 @@ public class JointNlpFgExamplesBuilderTest {
         {
             FactorTemplateList fts = new FactorTemplateList();
             ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
-            ofcPrm.includeUnsupportedFeatures = true;
-            ofcPrm.featCountCutoff = 1;   
-            ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, fts);
-            JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
-            FgExampleList data = builder.getData(simpleSents);
-            ofc.init(data);
-            assertEquals(2916, ofc.getNumParams());            
-        }
-        {
-            FactorTemplateList fts = new FactorTemplateList();
-            ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
-            ofcPrm.includeUnsupportedFeatures = true;
-            ofcPrm.featCountCutoff = -1;   
+            ofcPrm.featCountCutoff = 0;
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, fts);
             JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
             FgExampleList data = builder.getData(simpleSents);
