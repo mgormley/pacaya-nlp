@@ -64,6 +64,8 @@ public class IGFeatureTemplateSelector {
         public int maxNumSentences = Integer.MAX_VALUE;
         /** Whether to do feature selection for sense features. */
         public boolean selectSense = true;
+        /** Whether to do feature selection for sense features. */
+        public boolean selectArgs = true;
     }
     
     private IGFeatureTemplateSelectorPrm prm;
@@ -89,8 +91,8 @@ public class IGFeatureTemplateSelector {
             CorpusStatisticsPrm csPrm, SrlFeatTemplates sft) {
         List<FeatTemplate> srlSense = prm.selectSense ? getFeatTemplatesForSrl(inputSents, goldSents, csPrm,
                 sft.srlSense, new SrlSenseExtractor()) : sft.srlSense;
-        List<FeatTemplate> srlArg = getFeatTemplatesForSrl(inputSents, goldSents, csPrm, sft.srlArg,
-                new SrlArgExtractor());
+        List<FeatTemplate> srlArg = prm.selectArgs ? getFeatTemplatesForSrl(inputSents, goldSents, csPrm, sft.srlArg,
+                new SrlArgExtractor()) : sft.srlArg;
         // Note we do NOT do feature selection on the dependency parsing templates.
         return new SrlFeatTemplates(srlSense, srlArg, sft.depParse);
     }
