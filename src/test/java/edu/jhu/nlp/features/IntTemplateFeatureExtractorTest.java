@@ -76,8 +76,7 @@ public class IntTemplateFeatureExtractorTest {
 
     private static IntTemplateFeatureExtractor getCoNLLSentenceExtractor1() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence1(), true);
-        TemplateFeatureExtractorTest.addFakeBrownClusters(sent);
-        PrefixAnnotator.addPrefixes(sent);
+        TemplateFeatureExtractorTest.addFakeAnnos(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(QLists.getList(sent));
         AlphabetStore store = new AlphabetStore(QLists.getList(sent));
@@ -88,8 +87,7 @@ public class IntTemplateFeatureExtractorTest {
 
     private static IntTemplateFeatureExtractor getCoNLLSentenceExtractor2() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence2(), true);
-        TemplateFeatureExtractorTest.addFakeBrownClusters(sent);
-        PrefixAnnotator.addPrefixes(sent);
+        TemplateFeatureExtractorTest.addFakeAnnos(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(QLists.getList(sent));
         AlphabetStore store = new AlphabetStore(QLists.getList(sent));

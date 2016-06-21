@@ -70,9 +70,8 @@ public class TemplateFeatureExtractorTest {
         LocalObservations local = LocalObservations.getAll(pidx, cidx, midx, rule, ri, rj, rk, ne1, ne2);
         
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(AnnoSentenceTest.getDogConll09Sentence(), true);
-        StrictPosTagAnnotator.addStrictPosTags(sent);
-        addFakeCoarsePosTags(sent);
-        addFakeBrownClusters(sent);
+        addFakeAnnos(sent);
+
         // Add fake coarse POS tags.
         sent.setCposTags(sent.getPosTags());
         
@@ -542,10 +541,7 @@ public class TemplateFeatureExtractorTest {
 
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor1() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence1(), true);
-        StrictPosTagAnnotator.addStrictPosTags(sent);
-        addFakeCoarsePosTags(sent);
-        PrefixAnnotator.addPrefixes(sent);
-        addFakeBrownClusters(sent);
+        addFakeAnnos(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
@@ -554,13 +550,18 @@ public class TemplateFeatureExtractorTest {
 
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor2() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence2(), true);
-        StrictPosTagAnnotator.addStrictPosTags(sent);
-        addFakeCoarsePosTags(sent);
-        addFakeBrownClusters(sent);
+        TemplateFeatureExtractorTest.addFakeAnnos(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;
+    }
+
+    protected static void addFakeAnnos(AnnoSentence sent) {
+        StrictPosTagAnnotator.addStrictPosTags(sent);
+        addFakeCoarsePosTags(sent);
+        PrefixAnnotator.addPrefixes(sent);
+        addFakeBrownClusters(sent);
     }
     
     public static void addFakeBrownClusters(AnnoSentence sent) {

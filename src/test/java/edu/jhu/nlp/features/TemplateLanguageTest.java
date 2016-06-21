@@ -26,7 +26,7 @@ public class TemplateLanguageTest {
         assertTrue(TemplateLanguage.hasRequiredAnnotationType(sent, AT.DEPREL));
         assertFalse(TemplateLanguage.hasRequiredAnnotationType(sent, AT.BROWN));
         
-        TemplateFeatureExtractorTest.addFakeBrownClusters(sent);
+        TemplateFeatureExtractorTest.addFakeAnnos(sent);
         sent.setCposTags(sent.getPosTags());
         assertTrue(TemplateLanguage.hasRequiredAnnotationTypes(sent, types));
         assertTrue(TemplateLanguage.hasRequiredAnnotationType(sent, AT.DEPREL));
