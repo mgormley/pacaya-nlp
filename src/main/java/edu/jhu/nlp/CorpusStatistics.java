@@ -57,6 +57,7 @@ public class CorpusStatistics implements Serializable {
     
     public static final String UNKNOWN_ROLE = "argUNK";
     public static final String UNKNOWN_SENSE = "senseUNK.01";
+    public static final List<String> PRED_SENSE_UNK_STATE_NAMES = QLists.getList(UNKNOWN_SENSE);
     public static final List<String> PRED_POSITION_STATE_NAMES = QLists.getList("_", UNKNOWN_SENSE);
 
     public Set<String> knownWords = new HashSet<String>();

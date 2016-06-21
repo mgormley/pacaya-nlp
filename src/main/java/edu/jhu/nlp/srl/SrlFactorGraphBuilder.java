@@ -248,8 +248,10 @@ public class SrlFactorGraphBuilder implements Serializable {
                 // include "_" as a possible value for the sense.
                 List<String> senseStateNames = psMap.get(lemmas.get(i));
                 if (senseStateNames == null) {
-                    senseStateNames = CorpusStatistics.PRED_POSITION_STATE_NAMES;
-                } else { 
+                    senseStateNames = prm.predictPredPos 
+                            ? CorpusStatistics.PRED_POSITION_STATE_NAMES 
+                            : CorpusStatistics.PRED_SENSE_UNK_STATE_NAMES;
+                } else if (prm.predictPredPos) { 
                     // Include the state of "no predicate".
                     senseStateNames = QLists.cons("_", senseStateNames);
                 }
