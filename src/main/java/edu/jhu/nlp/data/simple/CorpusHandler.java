@@ -72,13 +72,13 @@ public class CorpusHandler {
     @Opt(hasArg = true, description = "Maximum number of sentences to include in test.")
     public static int testMaxNumSentences = Integer.MAX_VALUE; 
 
-    // Options for train/dev/test data
+    // Options for train/dev/test data.
     @Opt(hasArg = true, description = "Random proportion of train data to allocate as dev data.")
     public static double propTrainAsDev = 0.0;
 
-    // Options for SRL data munging.
-    @Opt(hasArg = true, description = "SRL language.")
-    public static String language = "es";
+    // Language-specific options.
+    @Opt(hasArg = true, description = "Language identifier (two character language code).")
+    public static String language = null;
 
     // Options for dependency parse pre-processing.
     @Opt(hasArg = true, description = "Whether to projectivize the training depedendency parses")

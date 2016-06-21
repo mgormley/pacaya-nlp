@@ -75,7 +75,9 @@ public class TemplateFeatureExtractorTest {
         // Add fake coarse POS tags.
         sent.setCposTags(sent.getPosTags());
         
-        CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
+        CorpusStatisticsPrm prm = new CorpusStatisticsPrm();
+        prm.language = "en";
+        CorpusStatistics cs = new CorpusStatistics(prm);
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);  
         
@@ -542,7 +544,9 @@ public class TemplateFeatureExtractorTest {
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor1() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence1(), true);
         addFakeAnnos(sent);
-        CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
+        CorpusStatisticsPrm prm = new CorpusStatisticsPrm();
+        prm.language = "es";
+        CorpusStatistics cs = new CorpusStatistics(prm);
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;

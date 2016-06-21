@@ -74,6 +74,7 @@ public class FeaturizedTokenTest {
         CoNLL09Sentence sent = getSpanishConll09Sentence2();
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         csPrm.useGoldSyntax = true;
+        csPrm.language = "es";
         AnnoSentence simpleSent = sent.toAnnoSentence(csPrm.useGoldSyntax);
         CorpusStatistics cs = new CorpusStatistics(csPrm);
         cs.init(QLists.getList(simpleSent));
