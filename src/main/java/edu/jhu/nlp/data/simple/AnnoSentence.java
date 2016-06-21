@@ -305,7 +305,7 @@ public class AnnoSentence {
         return cposTags.get(i);
     }
     
-    /** Gets the i'th Strict POS tag as a String. */
+    /** Gets the i'th Strict POS tag. */
     public StrictPosTag getStrictPosTag(int i) {
         return strictPosTags.get(i);
     }

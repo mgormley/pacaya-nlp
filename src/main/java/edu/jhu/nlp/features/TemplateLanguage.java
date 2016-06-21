@@ -43,7 +43,7 @@ public class TemplateLanguage {
     
     /** Word property. A mapping from a position to a string. */
     public enum TokProperty {
-        INDEX, WORD, LEMMA, POS, CPOS, BC0, BC1, MORPHO, DEPREL, LC, CAPITALIZED, WORD_TOP_N,
+        INDEX, WORD, LEMMA, POS, CPOS, STRICT_POS, BC0, BC1, MORPHO, DEPREL, LC, CAPITALIZED, WORD_TOP_N,
         CHPRE1, CHPRE2, CHPRE3, CHPRE4, CHPRE5,
         CHSUF1, CHSUF2, CHSUF3, CHSUF4, CHSUF5,
         //
@@ -217,6 +217,7 @@ public class TemplateLanguage {
         desc(TokProperty.LEMMA, "lemma", "Lemma", AT.LEMMA);
         desc(TokProperty.POS, "pos", "POS Tag", AT.POS);
         desc(TokProperty.CPOS, "cpos", "Coarse POS Tag", AT.CPOS);
+        desc(TokProperty.STRICT_POS, "spos", "Strict POS Tag", AT.STRICT_POS);
         desc(TokProperty.BC0, "bc0", "Coarse-grained Brown cluster", AT.BROWN);
         desc(TokProperty.BC1, "bc1", "Fine-grained Brown cluster", AT.BROWN);
         desc(TokProperty.MORPHO, "morpho", "Morphological features", AT.MORPHO);

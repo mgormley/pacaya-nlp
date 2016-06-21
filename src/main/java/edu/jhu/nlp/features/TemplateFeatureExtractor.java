@@ -575,6 +575,8 @@ public class TemplateFeatureExtractor {
             return sent.getPosTag(idx);
         case CPOS:
             return sent.getCposTag(idx);
+        case STRICT_POS:
+            return sent.getStrictPosTag(idx).name();
         case BC0:
             String bc = sent.getCluster(idx);
             return bc.substring(0, Math.min(bc.length(), 5));

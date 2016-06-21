@@ -562,6 +562,7 @@ public class IntTemplateFeatureExtractor {
         case LEMMA: return isent.getLemma(idx);
         case POS: return isent.getPosTag(idx);
         case CPOS: return isent.getCposTag(idx);
+        case STRICT_POS: return isent.getAnnoSentence().getStrictPosTag(idx).ordinal();
         case BC0: return isent.getClusterPrefix(idx, 5);
         case BC1: return isent.getCluster(idx);
         case DEPREL: return isent.getDeprel(idx);
