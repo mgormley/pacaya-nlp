@@ -1,6 +1,5 @@
 package edu.jhu.nlp.joint;
 
-import java.io.IOException;
 import java.util.Date;
 
 import edu.jhu.hlt.optimize.AdaDelta;
@@ -13,8 +12,8 @@ import edu.jhu.hlt.optimize.AdaGradSchedule;
 import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
-import edu.jhu.hlt.optimize.LBFGS;
 import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
+import edu.jhu.hlt.optimize.LBFGS;
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
@@ -24,7 +23,6 @@ import edu.jhu.hlt.optimize.function.BatchFunctionOpts;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunctionOpts;
-import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 
@@ -38,13 +36,7 @@ public class OptimizerFactory {
     @Opt(hasArg=true, description="The weight on the L1 regularizer.")
     public static double l1Lambda = 0.0;
     @Opt(hasArg=true, description="The weight on the L2 regularizer.")
-    public static double l2Lambda = 0.0;
-    @Opt(hasArg=true, description="The capicity control for the L1 regularizer." + 
-            "[l1Lambda must be 0.0, and CorpusHandler must have a train corpus]")
-    public static double l1CC = 0.0;
-    @Opt(hasArg=true, description="The capicity control for the L2 regularizer." + 
-            "[l2Lambda must be 0.0, and CorpusHandler must have a train corpus]")
-    public static double l2CC = 0.0;
+    public static double l2Lambda = 1.0;
     @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
     public static int lbfgsMaxIters = 1000;
     @Opt(hasArg=true, description="Number of iterations to cache for LBFGS training.")
@@ -81,21 +73,8 @@ public class OptimizerFactory {
     public static Date stopTrainingBy = null;
 
     public static Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> getOptimizers() {
-        return getOptimizers(null);
-    }
-
-    public static Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> getOptimizers(CorpusHandler corpus) {
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
-        
-        if (l1CC > 0 && l1Lambda == 0.0 && corpus != null && corpus.hasTrain()) {
-            try {
-                l1Lambda = l1CC / corpus.getTrainInput().size();
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        
         if (optimizer == OptimizerType.LBFGS) {
             LBFGSPrm prm = new LBFGSPrm();
             prm.max_iterations = lbfgsMaxIters;
