@@ -369,7 +369,7 @@ public class CoNLL08Sentence implements Iterable<CoNLL08Token> {
         
         // Update SRL columns from the SRL graph.
         // (This correctly handles null SRL graphs.)
-        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph().toSrlGraph());
+        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph() == null ? null : sent.getSrlGraph().toSrlGraph());
         
         return updatedSentence;
     }
