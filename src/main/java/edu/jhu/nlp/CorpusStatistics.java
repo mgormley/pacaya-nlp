@@ -214,9 +214,42 @@ public class CorpusStatistics implements Serializable {
         log.info("Num true positive relations: " + numTruePosRels);
         log.info("Num relations: " + numRels);
     }
+
+    public String getDefaultSense(String lemma, List<String> feats) {
+        if ("de".equals(prm.language)) {
+            return lemma + ".1";
+        } else if ("es".equals(prm.language) || "ca".equals(prm.language)) {
+            // This is the linguistically informed default used by Bjorkelund et al. (2009).
+            StringBuilder fb = new StringBuilder();
+            for (String feat : feats) {
+                fb.append(feat);
+                fb.append("_");
+            }
+            String f = fb.toString();
+            String suffix;
+            if (f.contains("postype=auxiliary")) {
+                suffix = "c2";
+            } else if (f.contains("postype=common")) {
+                suffix = "a2";
+            } else if (f.contains("postype=main")) {
+                suffix = "a2";
+            } else if (f.contains("postype=qualificative")) {
+                suffix = "b2";
+            } else if (f.contains("postype=semiauxiliary")) {
+                suffix = "c2";
+            } else {
+                suffix = "a2";
+            }
+            return lemma + "." + suffix;
+        } else if ("en".equals(prm.language) || "zh".equals(prm.language)) {
+            return lemma + ".01";
+        } else {
+            throw new RuntimeException("Language has no default predicate sense: " + prm.language);
+        }
+    }
     
     // ------------------- private ------------------- //
-
+    
     private static void addWord(Map<String, MutableInt> inputHash, String w) {
         MutableInt count = inputHash.get(w);
         if (count == null) {

@@ -10,20 +10,15 @@ import org.slf4j.LoggerFactory;
 import edu.jhu.nlp.CorpusStatistics;
 import edu.jhu.nlp.ObsFeTypedFactor;
 import edu.jhu.nlp.data.DepGraph;
-import edu.jhu.nlp.data.conll.SrlGraph;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.IntAnnoSentence;
 import edu.jhu.nlp.embed.Embeddings;
 import edu.jhu.nlp.fcm.FcmFactor;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleVar;
-import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SenseVar;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.nlp.srl.SrlWordFeatures.SrlWordFeaturesPrm;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.feat.ObsFeatureExtractor;
+import edu.jhu.pacaya.gm.model.ClampFactor;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
@@ -32,7 +27,6 @@ import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.iter.IntIter;
-import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.set.IntSet;
 
 /**
@@ -248,10 +242,9 @@ public class SrlFactorGraphBuilder implements Serializable {
                 // include "_" as a possible value for the sense.
                 List<String> senseStateNames = psMap.get(lemmas.get(i));
                 if (senseStateNames == null) {
-                    senseStateNames = prm.predictPredPos 
-                            ? CorpusStatistics.PRED_POSITION_STATE_NAMES 
-                            : CorpusStatistics.PRED_SENSE_UNK_STATE_NAMES;
-                } else if (prm.predictPredPos) { 
+                    senseStateNames = QLists.getList(cs.getDefaultSense(sent.getLemma(i), sent.getFeats(i)));
+                }
+                if (prm.predictPredPos) {
                     // Include the state of "no predicate".
                     senseStateNames = QLists.cons("_", senseStateNames);
                 }
@@ -278,8 +271,12 @@ public class SrlFactorGraphBuilder implements Serializable {
             }
             // Add the unary factors for the sense variables.
             if (i >= 0 && senseVars[i] != null) {
-                String templateKey = SrlFactorTemplate.SENSE_UNARY + "_" + lemmaForTk;
-                fg.addFactor(new ObsFeTypedFactor(new VarSet(senseVars[i]), SrlFactorTemplate.SENSE_UNARY, templateKey, ofc, obsFe));
+                if (senseVars[i].getNumStates() > 1) {
+                    String templateKey = SrlFactorTemplate.SENSE_UNARY + "_" + lemmaForTk;
+                    fg.addFactor(new ObsFeTypedFactor(new VarSet(senseVars[i]), SrlFactorTemplate.SENSE_UNARY, templateKey, ofc, obsFe));
+                } else {
+                    fg.addFactor(new ClampFactor(senseVars[i], 0));
+                }
             }
             // Add the role factors.
             for (int j = 0; j < n; j++) {
@@ -299,7 +296,9 @@ public class SrlFactorGraphBuilder implements Serializable {
                         }
                     }
                     // Add binary factors between Role and Sense variables.
-                    if (prm.binarySenseRoleFactors && senseVars[i] != null && roleVars[i][j] != null) {
+                    // (Only added if the sense is ambiguous.)
+                    if (prm.binarySenseRoleFactors && senseVars[i] != null && roleVars[i][j] != null
+                            && senseVars[i].getNumStates() > 1) {
                         String templateKey = SrlFactorTemplate.SENSE_ROLE_BINARY + "_" + lemmaForTk;
                         fg.addFactor(new ObsFeTypedFactor(new VarSet(senseVars[i], roleVars[i][j]), SrlFactorTemplate.SENSE_ROLE_BINARY, templateKey, ofc, obsFe));
                     }
