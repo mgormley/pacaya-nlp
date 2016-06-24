@@ -624,6 +624,13 @@ public class JointNlpRunner {
         prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
         prm.fgPrm.includeRel = CorpusHandler.getPredLatAts().contains(AT.REL_LABELS);
         
+        // Joint features.
+        if (acl14DepFeats) {
+            prm.fgPrm.useSrlFeatsForLinkRoleFactors = true;
+        } else {
+            prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
+        }
+        
         // Example construction and storage.
         prm.exPrm.cacheType = cacheType;
         prm.exPrm.gzipped = gzipCache;

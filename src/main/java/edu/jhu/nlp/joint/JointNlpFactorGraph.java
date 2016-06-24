@@ -63,6 +63,8 @@ public class JointNlpFactorGraph extends FactorGraph {
         public SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
         public boolean includeRel = false;
         public RelationsFactorGraphBuilderPrm relPrm = new RelationsFactorGraphBuilderPrm();
+        /** Whether to use SRL feats for Link-Role factors. */
+        public boolean useSrlFeatsForLinkRoleFactors = true;
     }
     
     public enum JointFactorTemplate {
@@ -115,6 +117,20 @@ public class JointNlpFactorGraph extends FactorGraph {
         
         if (prm.includeDp && prm.includeSrl) {
             // Add the joint factors.
+            TemplateFeatureExtractor fe = null;
+            List<FeatTemplate> templates = null;
+            if (!prm.useSrlFeatsForLinkRoleFactors) {
+                fe = new TemplateFeatureExtractor(sent, cs);
+                templates = QLists.getList(
+                        new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.WORD), // word(p)
+                        new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.WORD), // word(c)
+                        //new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.BC0), // bc0(p)
+                        //new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.BC0), // bc0(c)
+                        new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.POS), // pos(p)
+                        new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.POS) // pos(c)
+                        );
+            }
+            // Add the joint factors.
             LinkVar[][] childVars = dp.getChildVars();
             RoleVar[][] roleVars = srl.getRoleVars();
             for (int i = -1; i < n; i++) {
@@ -122,8 +138,15 @@ public class JointNlpFactorGraph extends FactorGraph {
                     if (i != -1) {
                         // Add binary factors between Roles and Links.
                         if (roleVars[i][j] != null && childVars[i][j] != null) {
-                            addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), 
-                                    JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
+                            if (prm.useSrlFeatsForLinkRoleFactors) {
+                                addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]), 
+                                        JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
+                            } else {
+                                LocalObservations local = LocalObservations.newPidxCidx(i, j);
+                                addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], childVars[i][j]), 
+                                        JointFactorTemplate.LINK_ROLE_BINARY, ofc, local , fe, 
+                                        templates, prm.srlPrm.srlFePrm.featureHashMod));
+                            }
                         }
                     }
                 }
