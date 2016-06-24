@@ -41,13 +41,13 @@ public class CorpusHandler {
     public static int trainMaxNumSentences = Integer.MAX_VALUE; 
     
     // Options for dev data
-    @Opt(hasArg = true, description = "Testing data input file or directory.")
+    @Opt(hasArg = true, description = "Dev data input file or directory.")
     public static File dev = null;
     @Opt(hasArg = true, description = "Type of dev data.")
     public static DatasetType devType = DatasetType.CONLL_2009;
     @Opt(hasArg = true, description = "Testing data predictions output file.")
     public static File devPredOut = null;
-    @Opt(hasArg = true, description = "Testing data gold output file.")
+    @Opt(hasArg = true, description = "Dev data gold output file.")
     public static File devGoldOut = null;
     @Opt(hasArg = true, description = "Type of dev data ouput (predicted and gold). null implies same as trainType.")
     public static DatasetType devTypeOut = null;
@@ -57,13 +57,13 @@ public class CorpusHandler {
     public static int devMaxNumSentences = Integer.MAX_VALUE; 
     
     // Options for test data
-    @Opt(hasArg = true, description = "Testing data input file or directory.")
+    @Opt(hasArg = true, description = "Test data input file or directory.")
     public static File test = null;
-    @Opt(hasArg = true, description = "Type of testing data.")
+    @Opt(hasArg = true, description = "Type of test data.")
     public static DatasetType testType = DatasetType.CONLL_2009;
-    @Opt(hasArg = true, description = "Testing data predictions output file.")
+    @Opt(hasArg = true, description = "Test data predictions output file.")
     public static File testPredOut = null;
-    @Opt(hasArg = true, description = "Testing data gold output file.")
+    @Opt(hasArg = true, description = "Test data gold output file.")
     public static File testGoldOut = null;
     @Opt(hasArg = true, description = "Type of test data ouput (predicted and gold). null implies same as trainType.")
     public static DatasetType testTypeOut = null;
