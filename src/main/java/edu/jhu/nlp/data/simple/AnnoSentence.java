@@ -32,9 +32,6 @@ import edu.jhu.prim.tuple.Pair;
  * @author mmitchell
  */
 public class AnnoSentence {
-
-    // TODO: maybe change this to something like underscore?
-    private static final String SPAN_STR_SEP = " ";
     
     private List<String> words;
     // 5-gram prefix if the word is longer than 5 characters.
@@ -410,91 +407,6 @@ public class AnnoSentence {
      */
     public List<String> getLemmas(Span span) {
         return getSpan(lemmas, span);
-    }    
-    
-    /**
-     * Gets a list of word/POS tags corresponding to a token span.
-     */
-    public List<String> getWordPosTags(Span span) {
-        assert (span != null);
-        List<String> list = new ArrayList<String>();
-        for (int i = span.start(); i < span.end(); i++) {
-            list.add(words.get(i) + "/" + posTags.get(i));
-        }
-        return list;
-    }
-    
-    /**
-     * Gets a single string representing the words in a given token span.
-     * 
-     * @param span
-     */
-    public String getWordsStr(Span span) {
-        return getSpanStr(words, span);
-    }
-    
-    /**
-     * Gets a single string representing the words in a given token span.
-     * 
-     * @param span
-     */
-    public String getPrefixesStr(Span span) {
-        return getSpanStr(prefixes, span);
-    }
-
-    /**
-     * Gets a single string representing the POS tags in a given token span.
-     * 
-     * @param span
-     */
-    public String getPosTagsStr(Span span) {
-        return getSpanStr(posTags, span);
-    }
-
-    /**
-     * Gets a single string representing the coarse POS tags in a given token span.
-     * 
-     * @param span
-     */
-    public String getCposTagsStr(Span span) {
-        return getSpanStr(cposTags, span);
-    }
-    
-    /**
-     * Gets a single string representing the Distributional Similarity Cluster IDs in a given token span.
-     * 
-     * @param span
-     */
-    public String getClustersStr(Span span) {
-        return getSpanStr(clusters, span);
-    }
-
-    /**
-     * Gets a single string representing the lemmas in a given token span.
-     * 
-     * @param span
-     */
-    public String getLemmasStr(Span span) {
-        return getSpanStr(lemmas, span);
-    }
-
-    /**
-     * Gets a single string representing the Word/POS in a given token span.
-     * 
-     * @param span
-     */
-    public String getWordPosTagsStr(Span span) {
-        assert (span != null);
-        StringBuilder sb = new StringBuilder();
-        for (int i = span.start(); i < span.end(); i++) {
-            if (i > span.start()) {
-                sb.append(SPAN_STR_SEP);
-            }
-            sb.append(words.get(i));
-            sb.append("/");
-            sb.append(posTags.get(i));
-        }
-        return sb.toString();
     }
     
     // TODO: Consider moving this to LabelSequence.
@@ -514,20 +426,6 @@ public class AnnoSentence {
             list.add(i);
         }
         return list;
-    }
-
-    
-    // TODO: Consider moving this to LabelSequence.
-    private static String getSpanStr(List<String> seq, Span span) {
-        assert (span != null);
-        StringBuilder sb = new StringBuilder();
-        for (int i = span.start(); i < span.end(); i++) {
-            if (i > span.start()) {
-                sb.append(SPAN_STR_SEP);
-            }
-            sb.append(seq.get(i));
-        }
-        return sb.toString();
     }
     
     /**
