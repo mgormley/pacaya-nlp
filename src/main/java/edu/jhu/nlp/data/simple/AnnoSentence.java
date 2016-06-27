@@ -411,12 +411,7 @@ public class AnnoSentence {
     
     // TODO: Consider moving this to LabelSequence.
     private static <T> List<T> getSpan(List<T> seq, Span span) {
-        assert (span != null);
-        List<T> list = new ArrayList<>();
-        for (int i = span.start(); i < span.end(); i++) {
-            list.add(seq.get(i));
-        }
-        return list;
+        return seq.subList(span.start(), span.end());
     }
 
     private static List<Integer> getSpan(int[] parents, Span span) {
