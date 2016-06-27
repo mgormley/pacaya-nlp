@@ -210,6 +210,7 @@ public class CorpusStatistics implements Serializable {
         log.info("Found {} SRL Predicate types.", predSenseListMap.size());
         log.info("Found {} SRL Role types: {}", roleStateNames.size(), roleStateNames);
         log.info("Found {} NER types: {}", knownNeTypes.size(), knownNeTypes);
+        log.info("Found {} NER subtypes: {}", knownNeSubtypes.size(), knownNeSubtypes);
         log.info("Found {} Relation types: {}", relationStateNames.size(), relationStateNames);        
         log.info("Num true positive relations: " + numTruePosRels);
         log.info("Num relations: " + numRels);
