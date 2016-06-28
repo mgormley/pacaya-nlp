@@ -17,7 +17,6 @@ import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
 import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.prim.set.IntHashSet;
 
 /**
  * One sentence from a CoNLL-2009 formatted file.
@@ -199,55 +198,13 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
         }
         return pdeprels;
     }
-    
-    public IntHashSet getKnownPreds() {
-        IntHashSet knownPreds = new IntHashSet();
-        for (int i=0; i<size(); i++) {
-            if (tokens.get(i).isFillpred()) {
-                knownPreds.add(i);
-            }
-        }
-        return knownPreds;
-    }
-    
-    public List<String> getPreds() {
-        List<String> preds =  new ArrayList<String>();
-        for (int i=0; i<size(); i++) {
-            preds.add(tokens.get(i).getPred());            
-        }
-        return preds;
-    }
 
-    public String[][] getApreds() {
-        int n = size();
-        String[][] apreds =  new String[n][n];
-        int predCol = 0;
-        for (int p=0; p<n; p++) {
-            if (tokens.get(p).isFillpred()) {
-                // Add the arguments of this predicate from the corresponding column.
-                for (int c=0; c<n; c++) {
-                    apreds[p][c] = tokens.get(c).getApreds().get(predCol);
-                }
-                predCol++;
-            }
-        }
-        return apreds;
-    }
-
-    public void setApreds(String[][] apreds) {        
-        int n = size();
-        IntHashSet kpFromApreds = new IntHashSet();
-        for (int p=0; p<n; p++) {
-            for (int c=0; c<n; c++) {
-                if (apreds[p][c] != null) {
-                    kpFromApreds.add(p);
-                }
-            }
-        }
-    }
-    
     public SrlGraph getSrlGraph() {
         return new SrlGraph(this);
+    }
+
+    public void setPredApredFromSrlGraph(SrlGraph srlGraph, boolean warnMismatchedPreds) {
+        setColsFromSrlGraph(srlGraph, warnMismatchedPreds, false);
     }
     
     public void setColsFromSrlGraph(SrlGraph srlGraph, boolean warnMismatchedPreds, boolean setFillPred) {
@@ -420,6 +377,8 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
         AnnoSentence s = new AnnoSentence();
         s.setSourceSent(cos);
         s.setWords(cos.getWords());
+        s.setSrlGraph(cos.getSrlGraph().toDepGraph());
+        s.setKnownPredsFromSrlGraph();
         if (useGoldSyntax) {
             s.setLemmas(cos.getLemmas());
             s.setParents(cos.getParentsFromHead());
@@ -433,9 +392,6 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
             s.setFeats(cos.getPfeats());
             s.setDeprels(cos.getPdeprels());
         }
-        s.setKnownPreds(cos.getKnownPreds());
-        s.setSrlPredSenses(cos.getPreds());
-        s.setSrlArgs(cos.getApreds());
         return s;
     }
 
@@ -466,19 +422,18 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
             if (sent.getFeats() != null) { tok.setFeat(sent.getFeats(i)); }
             if (sent.getParents() != null) { tok.setHead(sent.getParent(i) + 1); }
             if (sent.getDeprels() != null) { tok.setDeprel(sent.getDeprel(i)); }
-            // Set FILLPRED, PRED columns.
-            if (sent.getKnownPreds() != null) { tok.setFillpred(sent.isKnownPred(i)); }
-            if (sent.getSrlPredSenses() != null) { tok.setPred(sent.getSrlPredSense(i)); }
+            
             toks.add(tok);
         }
         
         // Create the new sentence.
-        CoNLL09Sentence cos = new CoNLL09Sentence(toks);
+        CoNLL09Sentence updatedSentence = new CoNLL09Sentence(toks);
         
-        // Set APRED columns.
-        cos.setApredsFromSrlGraph(sent.getSrlArgs());
+        // Update SRL columns from the SRL graph.
+        // (This correctly handles null SRL graphs.)
+        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph() == null ? null : sent.getSrlGraph().toSrlGraph(), false, true);
         
-        return cos;
+        return updatedSentence;
     }
     
     public static AnnoSentenceCollection toAnno(Iterable<CoNLL09Sentence> conllSents, boolean useGoldSyntax) {

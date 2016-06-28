@@ -33,56 +33,42 @@ import edu.jhu.prim.tuple.Pair;
  */
 public class AnnoSentence {
     
-    // Words
     private List<String> words;
-    // 5-gram prefix if the word is longer than 5 characters
+    // 5-gram prefix if the word is longer than 5 characters.
     private List<String> prefixes;
-    // Lemmas
     private List<String> lemmas;
-    // Part-of-speech (POS) tags
     private List<String> posTags;
-    // Coarse POS tags
     private List<String> cposTags;
-    // Coarser POS tags restricted to a small fixed set.
     private List<StrictPosTag> strictPosTags;
-    // Word clusters (e.g. Brown cluster strings)
     private List<String> clusters;
-    // Indicies of word embeddings (each index refers to some external lookup table of embeddings)
     private IntArrayList embedIds;
-    // List of morphological features for each word
     private List<List<String>> feats;
-    // Chunking tags
     private List<String> chunks;
-    // NER tags (e.g. BIO style)
     private List<String> neTags;
-    // Label of dependency edge from each token to its parent,
-    // where the parent is given by the parents array.
     private List<String> deprels;
-    // Internal representation of a dependency parse: parents[i] gives the index
-    // of the parent of the word at index i. The Wall node has index -1. If a
-    // word has no parent, it has index -2 (e.g. if punctuation was not marked
-    // with a head).
+    /**
+     * Internal representation of a dependency parse: parents[i] gives the index
+     * of the parent of the word at index i. The Wall node has index -1. If a
+     * word has no parent, it has index -2 (e.g. if punctuation was not marked
+     * with a head).
+     */
     private int[] parents;
-    // Dependency edge mask (0-indexed, with -1 as virtual root)
     private DepEdgeMask depEdgeMask;
-    // Known SRL predicates
     private IntHashSet knownPreds;
-    // Semantic role labeling (SRL) graph
     private DepGraph srlGraph;
-    // Constituency parse.
+    /** Constituency parse. */
     private NaryTree naryTree;
-    // Named entities.
+    // The standard set of named entities.
     private NerMentions namedEntities;
-    // Relation mentions.
-    private RelationMentions relations;
-
     // Pairs of named entities to be considered for relation extraction.
     // This set could be all pairs, all ordered pairs, or some other definition.
     private List<Pair<NerMention,NerMention>> nePairs;
-    // Labels for the pairs of named entities given by nePairs.
+    // Labels for the pairs of named entities.
     private List<String> relLabels;
+    // The standard set of relation mentions.
+    private RelationMentions relations;
     
-    // The original object (e.g. CoNLL09Sentence) used to create this sentence. 
+    /** The original object (e.g. CoNLL09Sentence) used to create this sentence. */
     private Object sourceSent;
     
     public AnnoSentence() {
