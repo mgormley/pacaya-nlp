@@ -580,8 +580,8 @@ public class AnnoSentence {
         if (srlGraph == null) {
             return null;
         }
-        ArrayList<String> senses = new ArrayList<>();
-        for (int p=0; p<this.size(); p++) {
+        ArrayList<String> senses = new ArrayList<>(srlGraph.size());
+        for (int p=0; p<srlGraph.size(); p++) {
             senses.add(srlGraph.get(-1, p));
         }
         return senses;

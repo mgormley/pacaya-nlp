@@ -3,7 +3,6 @@ package edu.jhu.nlp.data.simple;
 import java.util.List;
 
 import edu.jhu.nlp.data.DepGraph;
-import edu.jhu.nlp.data.simple.AlphabetStore.AffixGetter;
 import edu.jhu.nlp.features.FeaturizedToken;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.prim.bimap.IntObjectBimap;
@@ -133,7 +132,7 @@ public class IntAnnoSentence {
         for (int k=0; k<maxLen; k++) {
             arr[k] = new ShortArrayList(tokens.size());
             for (int i=0; i<tokens.size(); i++) {
-                int idx = AlphabetStore.safeLookup(alphabet, AffixGetter.getAffix(tokens.get(i), k+1, isPre));
+                int idx = AlphabetStore.safeLookup(alphabet, IntAnnoSentence.getAffix(tokens.get(i), k+1, isPre));
                 arr[k].add(SafeCast.safeIntToUnsignedShort(idx));
             }
         }
@@ -141,6 +140,7 @@ public class IntAnnoSentence {
     }
 
     private static boolean[] getIsCapitalized(List<String> words) {
+        if (words == null) { return null; }
         boolean[] isCapitalized = new boolean[words.size()];
         for (int i=0; i<words.size(); i++) {
             isCapitalized[i] = FeaturizedToken.capitalized(words.get(i));
@@ -267,6 +267,15 @@ public class IntAnnoSentence {
             // a == b
             return 0;
         }
+    }
+
+    private static String getAffix(String s, int max, boolean isPre) {
+        if (isPre) {
+            s = s.substring(0, Math.min(s.length(), max)); // prefix
+        } else {
+            s = s.substring(Math.max(0, s.length() - max), s.length()); // suffix
+        }
+        return s;
     }
 
     public int size() {
