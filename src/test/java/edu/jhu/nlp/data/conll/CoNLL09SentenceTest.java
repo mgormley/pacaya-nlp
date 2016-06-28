@@ -24,7 +24,7 @@ public class CoNLL09SentenceTest {
         assertFalse(sent1.equals(sent2));
         
         SrlGraph srlGraph = sent1.getSrlGraph();
-        sent2.setPredApredFromSrlGraph(srlGraph, true);
+        sent2.setColsFromSrlGraph(srlGraph, true, false);
         
         assertEquals(sent1, sent2);
     }
