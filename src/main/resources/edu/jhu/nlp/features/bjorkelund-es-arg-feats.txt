@@ -1,13 +1,4 @@
-# Bjorklund Spanish features.
-#
-# Create original list: 
-# cat ../other_lib/mate-tools-read-only/srl/featuresets/spa/a*.feats  | awk '{print $1;}' | sort | uniq
-# 
-# Make a sed script:
-# cat src/main/resources/edu/jhu/featurize/bjorkelund-arg-feats.txt | perl -pe "s/# (.*)\n/s\/\1\//" | perl -pe "s/$/\//" | tail -n 31 > tmp.sed
-# 
-# Run sed to produce final output:
-# grep -v "#" src/main/resources/edu/jhu/featurize/bjorkelund-es-arg-feats.txt |   sed -f ./tmp.sed
+# Features selected as in Bjorkelund et al. (2009) for 'arg' language 'es'
 
 deprel(c)
 morpho(c)
@@ -27,13 +18,10 @@ word(lmc(c)) + pos(dir(seq(path(p,c))))
 pos(dir(seq(path(p,c))))
 pos(dir(seq(path(p,c)))) + morpho(rns(c))
 relative(p,c)
-morpho(p) # NOT SUPPORTED: + lemmaSense(p)
+morpho(p) + predSense(p)
 lemma(p)
-# NOT SUPPORTED: p.lemmaSense
+predSense(p)
 morpho(rmc(c))
 pos(rmc(c))
 word(rns(c))
 word(rmc(c))
-
-
-

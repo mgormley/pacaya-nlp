@@ -1,4 +1,4 @@
-# Bjorklund Spanish features.
+# Features selected as in Bjorkelund et al. (2009) for 'sense' language 'es'
 
 deprel(bag(children(p)))
 deprel(bag(children(p))) + pos(p)
