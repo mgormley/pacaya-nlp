@@ -142,7 +142,18 @@ public class JointNlpFgExamplesBuilderTest {
         prm.fgPrm.srlPrm.srlFePrm.senseTemplates = TemplateSets.getBjorkelundSenseUnigramFeatureTemplates();
         prm.fgPrm.srlPrm.srlFePrm.argTemplates = TemplateSets.getBjorkelundArgUnigramFeatureTemplates();
         prm.fgPrm.srlPrm.roleStructure = RoleStructure.PREDS_GIVEN;
-        
+
+        {
+            FactorTemplateList fts = new FactorTemplateList();
+            ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
+            ofcPrm.featCountCutoff = 0;
+            ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, fts);
+            JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
+            FgExampleList data = builder.getData(simpleSents);
+            ofc.init(data);
+            assertEquals(342, fts.getNumObsFeats());
+            assertEquals(4311, ofc.getNumParams());            
+        }
         {
             FactorTemplateList fts = new FactorTemplateList();
             ObsFeatureConjoinerPrm ofcPrm = new ObsFeatureConjoinerPrm();
@@ -150,8 +161,8 @@ public class JointNlpFgExamplesBuilderTest {
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, fts);
             JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
             FgExampleList data = builder.getData(simpleSents);
-            assertEquals(340, fts.getNumObsFeats());
-            assertEquals(2916, ofc.getNumParams());
+            assertEquals(342, fts.getNumObsFeats());
+            assertEquals(2925, ofc.getNumParams());
         }
         {
             FactorTemplateList fts = new FactorTemplateList();
@@ -161,7 +172,8 @@ public class JointNlpFgExamplesBuilderTest {
             JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
             FgExampleList data = builder.getData(simpleSents);
             ofc.init(data);
-            assertEquals(4299, ofc.getNumParams());            
+            assertEquals(342, fts.getNumObsFeats());
+            assertEquals(4311, ofc.getNumParams());            
         }
         {
             FactorTemplateList fts = new FactorTemplateList();
@@ -171,11 +183,7 @@ public class JointNlpFgExamplesBuilderTest {
             JointNlpFgExamplesBuilder builder = new JointNlpFgExamplesBuilder(prm, ofc, cs);
             FgExampleList data = builder.getData(simpleSents);
             ofc.init(data);
-            assertEquals(2349, ofc.getNumParams());
-            // These are the old counts from when we used to filter based on the counting versions of 
-            // FeatureTemplateList.
-            //assertEquals(313, fts.getNumObsFeats());
-            //assertEquals(715, ofc.getNumParams());
+            assertEquals(2352, ofc.getNumParams());
         }
     }
 

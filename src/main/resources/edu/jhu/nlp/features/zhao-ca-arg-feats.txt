@@ -7,7 +7,7 @@ predSense(p) + lemma(p)
 # p.currentSense + p.pos
 predSense(p) + pos(p)
 # p.currentSense + a.pos
-predSense(p) + pos(a)
+predSense(p) + pos(c)
 # p_{-1}.FEAT1
 morpho1(-1(p))
 # p.FEAT2
