@@ -36,11 +36,11 @@ public class EvalRunner {
     
 
     // Options for data
-    @Opt(hasArg = true, description = "Predicted data input file or directory.")
+    @Opt(hasArg = true, required = true, description = "Predicted data input file or directory.")
     public static File pred = null;
-    @Opt(hasArg = true, description = "Gold data input file or directory.")
+    @Opt(hasArg = true, required = true, description = "Gold data input file or directory.")
     public static File gold = null;
-    @Opt(hasArg = true, description = "Type of data.")
+    @Opt(hasArg = true, required = true, description = "Type of data.")
     public static DatasetType type = null;
     
     public static AnnoSentenceCollection getData(File path, String name, DatasetType type) throws IOException {
@@ -71,6 +71,8 @@ public class EvalRunner {
         eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false)));
         // Labeled predicate sense classification.
         eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false)));
+        // SRL without sense, assuming predicate positions are given.
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true)));
         // Full SRL, assuming predicate positions are given.
         eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true)));
         // Relation extraction.
@@ -92,7 +94,6 @@ public class EvalRunner {
         try {
             parser = new ArgParser(EvalRunner.class);
             parser.registerClass(EvalRunner.class);
-            parser.registerClass(CorpusHandler.class);
             parser.registerClass(ReporterManager.class);
             parser.parseArgs(args);
             

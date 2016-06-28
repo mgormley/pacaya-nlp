@@ -24,7 +24,7 @@ import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.SafeCast;
 
 public class AlphabetStore implements Serializable {
-
+    
     private static final long serialVersionUID = 1L;
 
     private static final Logger log = LoggerFactory.getLogger(AlphabetStore.class);
@@ -64,6 +64,8 @@ public class AlphabetStore implements Serializable {
     final static int MAX_CLUSTER = SHORT_MAX_IDX;
     final static int MAX_FEAT = SHORT_MAX_IDX;
     final static int MAX_DEPREL = BYTE_MAX_IDX;
+    final static int MAX_SRL_PRED_SENSE = SHORT_MAX_IDX;
+    final static int MAX_SRL_ARG = BYTE_MAX_IDX;
     
     CountingIntObjectBimap<String> words;
     IntObjectBimap<String> lcWords;
@@ -76,6 +78,8 @@ public class AlphabetStore implements Serializable {
     IntObjectBimap<String> clusterPrefixes;
     IntObjectBimap<String> feats;
     IntObjectBimap<String> deprels;
+    IntObjectBimap<String> srlPredSenses;
+    IntObjectBimap<String> srlArgs;
     private List<IntObjectBimap<String>> as;
 
     private int wordTopNCutoff;
@@ -104,24 +108,15 @@ public class AlphabetStore implements Serializable {
         clusterPrefixes = getAlphabet("clusterPrefix", clusterPrefixGetter, MAX_CLUSTER, sents);
         feats = getAlphabet("feat", featGetter, MAX_FEAT, sents);
         deprels= getAlphabet("deprel", deprelGetter, MAX_DEPREL, sents);
+        srlPredSenses = getAlphabet("srlPredSense", srlPredSenseGetter, MAX_SRL_PRED_SENSE, sents);
+        srlArgs = getAlphabet("srlArgs", srlArgGetter, MAX_SRL_ARG, sents);
         
         // Compute the minimum frequence of the top 800 most frequent words.
         wordTopNCutoff = getTopNCutoff(words, 800);
         
-        as = QLists.getList(words, lcWords, prefixes, suffixes, lemmas, posTags, cposTags, clusters, clusterPrefixes, feats, deprels);
+        as = QLists.getList(words, lcWords, prefixes, suffixes, lemmas, posTags, cposTags, 
+                clusters, clusterPrefixes, feats, deprels, srlPredSenses, srlArgs);
         this.stopGrowth();
-    }
-
-    /** Gets the frequency of the topN'th most frequent word. */
-    private static int getTopNCutoff(CountingIntObjectBimap<String> words, int topN) {
-        IntArrayList idxCountMap = new IntArrayList(words.getInternalIdxCountMap());
-        idxCountMap.sortDesc();
-        int i = Math.min(idxCountMap.size() - 1, topN);
-        int cutoff = idxCountMap.get(i);
-        while(i > 0 && cutoff == 0) {
-            cutoff = idxCountMap.get(--i);
-        }
-        return cutoff;
     }
 
     /**
@@ -129,12 +124,21 @@ public class AlphabetStore implements Serializable {
      * where K is the minimum value such that the maximum index of the final mapping is
      * less-than-or-equal to maxIdx.
      */
-    private static CountingIntObjectBimap<String> getAlphabet(String name, StrGetter sg, int maxIdx, Iterable<AnnoSentence> sents) {
-        CountingIntObjectBimap<String> counter = countStrings(sg, sents);
+    private static CountingIntObjectBimap<String> getAlphabet(String name, StrApplier sa, int maxIdx, Iterable<AnnoSentence> sents) {
+        CountingIntObjectBimap<String> counter = countStrings(sa, sents);
         CountingIntObjectBimap<String> alphabet = applyCountCutoffToGetAlphabet(name, maxIdx, counter);
         return alphabet;
     }
 
+    /** Gets a mapping from ints to strings, with counts of the number of times each one was observed. */
+    private static CountingIntObjectBimap<String> countStrings(StrApplier sa, Iterable<AnnoSentence> sents) {
+        CountingIntObjectBimap<String> counter = new CountingIntObjectBimap<>();
+        for (AnnoSentence sent : sents) {
+            sa.apply(sent, (str) -> counter.lookupIndex(str));
+        }
+        return counter;
+    }
+    
     /**
      * Transforms a mapping from ints to strings (with counts!) to ensure it does not exceed a
      * maximum size. Types occurring fewer than K times are re-mapped to UNK, where K is the minimum
@@ -170,20 +174,6 @@ public class AlphabetStore implements Serializable {
         return alphabet;
     }
 
-    /** Gets a mapping from ints to strings, with counts of the number of times each one was observed. */
-    private static CountingIntObjectBimap<String> countStrings(StrGetter sg, Iterable<AnnoSentence> sents) {
-        CountingIntObjectBimap<String> counter = new CountingIntObjectBimap<>();
-        for (AnnoSentence sent : sents) {
-            List<String> strs = sg.getStrs(sent);
-            if (strs != null) {
-                for (String str : strs) {
-                    counter.lookupIndex(str);
-                }
-            }
-        }
-        return counter;
-    }
-
     /**
      * Gets a mapping from ints to strings, which is initialized with the special tokens occupying
      * their reserved positions.
@@ -202,6 +192,18 @@ public class AlphabetStore implements Serializable {
         assert alphabet.lookupIndex(TOK_END_STR) == TOK_END_INT;
         assert alphabet.lookupIndex(TOK_WALL_STR) == TOK_WALL_INT;
         return alphabet;
+    }
+
+    /** Gets the frequency of the topN'th most frequent word. */
+    private static int getTopNCutoff(CountingIntObjectBimap<String> words, int topN) {
+        IntArrayList idxCountMap = new IntArrayList(words.getInternalIdxCountMap());
+        idxCountMap.sortDesc();
+        int i = Math.min(idxCountMap.size() - 1, topN);
+        int cutoff = idxCountMap.get(i);
+        while(i > 0 && cutoff == 0) {
+            cutoff = idxCountMap.get(--i);
+        }
+        return cutoff;
     }
 
     public void startGrowth() {
@@ -272,14 +274,41 @@ public class AlphabetStore implements Serializable {
     public int getDeprelIdx(String deprel) {
         return safeLookup(deprels, deprel);
     }
-    
 
-    public interface StrGetter extends Serializable {
-        List<String> getStrs(AnnoSentence sent);
+    public int getSrlPredSenseIdx(String sense) {
+        return safeLookup(srlPredSenses, sense);
+    }
+    
+    public int getSrlArgIdx(String arg) {
+        return safeLookup(srlArgs, arg);
+    }
+
+    public interface StrApplier extends Serializable {
+        void apply(AnnoSentence sent, StrCounter sc);
+    }
+    
+    public interface StrCounter {
+        void count(String str);
+    }
+    
+    private static abstract class StrGetter implements StrApplier {
+        
+        private static final long serialVersionUID = 1L;
+
+        @Override
+        public void apply(AnnoSentence sent, StrCounter sc) {
+            List<String> strs = getStrs(sent);
+            if (strs == null) { return; }
+            for (String str : strs) {
+                sc.count(str);
+            }
+        }
+        
+        public abstract List<String> getStrs(AnnoSentence sent);
     }
     
     /** For each token, get all affixes up to a maximum length. */
-    public static class AffixGetter implements StrGetter {
+    public static class AffixGetter extends StrGetter {
         private static final long serialVersionUID = 1L;
         private int max;
         private boolean isPre;
@@ -311,7 +340,7 @@ public class AlphabetStore implements Serializable {
     }
     
     /** Concatenates the output of multiple StrGetters. */
-    private static class MultiStrGetter implements StrGetter {
+    private static class MultiStrGetter extends StrGetter {
         private static final long serialVersionUID = 1L;
         List<StrGetter> getters = new ArrayList<>();
         public MultiStrGetter(StrGetter... getters) {
@@ -372,6 +401,28 @@ public class AlphabetStore implements Serializable {
     private StrGetter deprelGetter = new StrGetter() {
         private static final long serialVersionUID = 1L;
         public List<String> getStrs(AnnoSentence sent) { return sent.getDeprels(); }
+    };
+    private StrApplier srlPredSenseGetter = new StrApplier() {
+        private static final long serialVersionUID = 1L;
+        public void apply(AnnoSentence sent, StrCounter sc) {
+            if (sent.getSrlGraph() != null) {
+                for (int p=0; p<sent.getSrlGraph().size(); p++) {
+                    sc.count(sent.getSrlGraph().get(-1, p));
+                }
+            }
+        }
+    };
+    private StrApplier srlArgGetter = new StrApplier() {
+        private static final long serialVersionUID = 1L;
+        public void apply(AnnoSentence sent, StrCounter sc) {
+            if (sent.getSrlGraph() != null) {
+                for (int p=0; p<sent.getSrlGraph().size(); p++) {
+                    for (int c=0; c<sent.getSrlGraph().size(); c++) {
+                        sc.count(sent.getSrlGraph().get(p, c));
+                    }
+                }
+            }
+        }
     };
 
     public int getWordTopNCutoff() {

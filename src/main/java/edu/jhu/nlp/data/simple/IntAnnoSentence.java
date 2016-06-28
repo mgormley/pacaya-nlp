@@ -1,8 +1,8 @@
 package edu.jhu.nlp.data.simple;
 
-import java.util.ArrayList;
 import java.util.List;
 
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AlphabetStore.AffixGetter;
 import edu.jhu.nlp.features.FeaturizedToken;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
@@ -22,13 +22,15 @@ public class IntAnnoSentence {
     private ShortArrayList lemmas;
     private ByteArrayList posTags;
     private ByteArrayList cposTags;
+    private ByteArrayList coarserPosTags;
     private ShortArrayList clusters;
     private ShortArrayList[] clusterPrefixes;
-    private ArrayList<ShortArrayList> feats;
+    private ShortArrayList[] feats;
     private ByteArrayList deprels;
+    private ShortArrayList srlPredSenses;
+    private ByteArrayList srlArgs;
     // TODO: private IntNaryTree naryTree;
     
-    private ByteArrayList coarserPosTags;
     private ShortArrayList numVerbsToLeft;
     private ShortArrayList numNounsToLeft;
     private ShortArrayList numPuncsToLeft;
@@ -51,12 +53,16 @@ public class IntAnnoSentence {
         this.clusters = getShorts(sent.getClusters(), store.clusters);
         this.clusterPrefixes = getAffixShorts(sent.getClusters(), store.clusterPrefixes, store.maxClusterPrefixLen, true);
         if (sent.getFeats() != null) {
-            feats = new ArrayList<>(sent.getFeats().size());
-            for (List<String> featList : sent.getFeats()) {
-                feats.add(getShorts(featList, store.feats));
+            this.feats = new ShortArrayList[sent.getFeats().size()];
+            for (int i=0; i<feats.length; i++) {
+                this.feats[i] = getShorts(sent.getFeats(i), store.feats);
             }
         }
         this.deprels = getBytes(sent.getDeprels(), store.deprels);
+        if (sent.getSrlGraph() != null) {
+            this.srlPredSenses = getShorts(sent.getPredSenses(), store.srlPredSenses);
+            this.srlArgs = getBytesFromDepGraph(sent.getSrlGraph(), store.srlArgs);
+        }
         if (StrictPosTag.values().length > AlphabetStore.MAX_STRICT_POS) {
             throw new IllegalStateException("Too many strict POS tags.");
         }
@@ -65,14 +71,6 @@ public class IntAnnoSentence {
         this.numNounsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.NOUN);
         this.numPuncsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.PUNC);
         this.numConjsToLeft = getNumToLeft(sent.getStrictPosTags(), StrictPosTag.CONJ);
-    }
-
-    private static boolean[] getIsCapitalized(List<String> words) {
-        boolean[] isCapitalized = new boolean[words.size()];
-        for (int i=0; i<words.size(); i++) {
-            isCapitalized[i] = FeaturizedToken.capitalized(words.get(i));
-        }
-        return isCapitalized;
     }
 
     private static IntArrayList getInts(List<String> tokens, IntObjectBimap<String> alphabet) {
@@ -141,6 +139,29 @@ public class IntAnnoSentence {
         }
         return arr;
     }
+
+    private static boolean[] getIsCapitalized(List<String> words) {
+        boolean[] isCapitalized = new boolean[words.size()];
+        for (int i=0; i<words.size(); i++) {
+            isCapitalized[i] = FeaturizedToken.capitalized(words.get(i));
+        }
+        return isCapitalized;
+    }
+
+    /** Gets all edges except for (-1, c) edges. */
+    private static ByteArrayList getBytesFromDepGraph(DepGraph graph, IntObjectBimap<String> alphabet) {
+        if (graph == null) { return null; }
+        int n = graph.size();
+        ByteArrayList edges = new ByteArrayList(n*n);
+        for (int p=0; p<n; p++) {
+            for (int c=0; c<n; c++) {
+                int idx = AlphabetStore.safeLookup(alphabet, graph.get(p, c));
+                // Adding to position p*n + c
+                edges.add(SafeCast.safeIntToUnsignedByte(idx));
+            }
+        }
+        return edges;
+    }
     
     /** Gets the i'th word. */
     public short getWord(int i) {
@@ -181,6 +202,11 @@ public class IntAnnoSentence {
     public byte getCposTag(int i) {
         return cposTags.get(i);
     }
+    
+    /** Gets the i'th Strict POS tag. */
+    public byte getStrictPosTag(int i) {
+        return coarserPosTags.get(i);
+    }
 
     /** Gets the i'th Distributional Similarity Cluster ID. */
     public short getCluster(int i) {
@@ -194,12 +220,22 @@ public class IntAnnoSentence {
     
     /** Gets the features (e.g. morphological features) of the i'th word. */
     public ShortArrayList getFeats(int i) {
-        return feats.get(i);
+        return feats[i];
     }
 
     /** Gets the dependency relation label for the arc from the i'th word to its parent. */
     public byte getDeprel(int i) {
         return deprels.get(i);
+    }
+
+    /** Gets the predicate sense of the i'th token. */
+    public short getSrlPredSense(int i) {
+        return srlPredSenses.get(i);
+    }
+
+    /** Gets the semantic argument label from token p to token c. */
+    public byte getSrlArg(int p, int c) {
+        return srlArgs.get(p * this.size() + c);
     }
     
     /** Gets the number of verbs in between tokens a and b. */

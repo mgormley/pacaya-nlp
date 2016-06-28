@@ -569,31 +569,21 @@ public class TemplateFeatureExtractor {
         case CHSUF3: return suffix(idx, 3);
         case CHSUF4: return suffix(idx, 4);
         case CHSUF5: return suffix(idx, 5);
-        case LEMMA:
-            return sent.getLemma(idx);
-        case POS:
-            return sent.getPosTag(idx);
-        case CPOS:
-            return sent.getCposTag(idx);
-        case STRICT_POS:
-            return sent.getStrictPosTag(idx).name();
+        case LEMMA: return sent.getLemma(idx);
+        case POS: return sent.getPosTag(idx);
+        case CPOS: return sent.getCposTag(idx);
+        case STRICT_POS: return sent.getStrictPosTag(idx).name();
+        case PRED_SENSE: return sent.getSrlGraph().get(-1, idx);
         case BC0:
             String bc = sent.getCluster(idx);
             return bc.substring(0, Math.min(bc.length(), 5));
-        case BC1:
-            return sent.getCluster(idx);
-        case DEPREL:
-            return sent.getDeprel(idx);
-        case MORPHO:
-            return tok.getFeatStr();
-        case MORPHO1:
-            return tok.getFeat6().get(0);
-        case MORPHO2:
-            return tok.getFeat6().get(1);
-        case MORPHO3:
-            return tok.getFeat6().get(2);
-        default:
-            throw new IllegalStateException();
+        case BC1: return sent.getCluster(idx);
+        case DEPREL: return sent.getDeprel(idx);
+        case MORPHO: return tok.getFeatStr();
+        case MORPHO1: return tok.getFeat6().get(0);
+        case MORPHO2: return tok.getFeat6().get(1);
+        case MORPHO3: return tok.getFeat6().get(2);
+        default: throw new IllegalStateException();
         }
     }
 

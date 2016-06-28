@@ -574,6 +574,18 @@ public class AnnoSentence {
     public DepGraph getSrlGraph() {
         return srlGraph;
     }
+
+    /** Constructs a new list containing the predicate senses. */
+    public List<String> getPredSenses() {
+        if (srlGraph == null) {
+            return null;
+        }
+        ArrayList<String> senses = new ArrayList<>();
+        for (int p=0; p<this.size(); p++) {
+            senses.add(srlGraph.get(-1, p));
+        }
+        return senses;
+    }
     
     public void setSrlGraph(DepGraph srlGraph) {
         this.srlGraph = srlGraph;
