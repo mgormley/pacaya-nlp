@@ -7,7 +7,6 @@ import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.depparse.DepEdgeMaskDecoder.DepEdgeMaskDecoderPrm;
 import edu.jhu.nlp.depparse.DepParseDecoder;
-import edu.jhu.nlp.relations.RelationsDecoder;
 import edu.jhu.pacaya.gm.app.Decoder;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.decode.MbrDecoder;
@@ -74,8 +73,7 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
         }
         // Get the relations.
         if (fg.getRelBuilder() != null) {
-            List<String> rels = RelationsDecoder.getRelLabelsFromVarConfig(mbrVarConfig);
-            predSent.setRelLabels(rels);
+            fg.getRelBuilder().decode(mbrVarConfig, predSent);
         }
         
         return predSent;

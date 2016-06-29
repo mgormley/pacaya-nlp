@@ -9,7 +9,6 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.depparse.DepParseEncoder;
 import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
-import edu.jhu.nlp.relations.RelationsEncoder;
 import edu.jhu.pacaya.gm.app.Encoder;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.LabeledFgExample;
@@ -78,7 +77,7 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
         }
         if (prm.fgPrm.includeRel && prm.fgPrm.relPrm.relVarType != VarType.LATENT) {
             if (gold != null && gold.getRelLabels() != null) {
-                RelationsEncoder.addRelVarAssignments(sent, gold.getRelLabels(), fg.getRelBuilder(), vc);
+                fg.getRelBuilder().addVarAssignments(sent, gold.getRelLabels(), vc);
             }
         }
         
