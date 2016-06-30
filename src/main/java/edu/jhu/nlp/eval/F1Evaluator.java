@@ -115,17 +115,20 @@ public abstract class F1Evaluator implements Evaluator {
             String goldLabel = gold.get(k);
             String predLabel = (pred == null) ? null : pred.get(k);
             
-            if (goldLabel.equals(predLabel)) {
-                if (!isNilLabel(goldLabel)) {
+            boolean goldIsNil = isNilLabel(goldLabel);
+            boolean predIsNil = isNilLabel(predLabel);
+
+            if (pred != null && ((goldIsNil && predIsNil) || (goldLabel != null && goldLabel.equals(predLabel)))){
+                if (!goldIsNil) {
                     numCorrectPositive++;
                 } else {
                     numCorrectNegative++;
                 }
             }
-            if (!isNilLabel(goldLabel)) {
+            if (!goldIsNil) {
                 numTruePositive++;
             }
-            if (pred != null && !isNilLabel(predLabel)) {
+            if (pred != null && !predIsNil) {
                 numPredictPositive++;
             }
             numInstances++;
