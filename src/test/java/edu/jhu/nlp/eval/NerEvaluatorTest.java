@@ -6,10 +6,9 @@ import java.util.List;
 
 import org.junit.Test;
 
-import edu.jhu.hlt.util.JUnitUtils;
+import edu.jhu.pacaya.util.JUnitUtils;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
-import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.pacaya.util.report.ReporterManager;
 

@@ -10,6 +10,10 @@ import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.data.concrete.ConcreteWriter;
 import edu.jhu.nlp.data.concrete.ConcreteWriter.ConcreteWriterPrm;
+import edu.jhu.nlp.data.conll.CoNLL02Sentence;
+import edu.jhu.nlp.data.conll.CoNLL02Writer;
+import edu.jhu.nlp.data.conll.CoNLL03Sentence;
+import edu.jhu.nlp.data.conll.CoNLL03Writer;
 import edu.jhu.nlp.data.conll.CoNLL08Sentence;
 import edu.jhu.nlp.data.conll.CoNLL08Writer;
 import edu.jhu.nlp.data.conll.CoNLL09Sentence;
@@ -56,6 +60,20 @@ public class AnnoSentenceWriter {
             CoNLLXWriter cw = new CoNLLXWriter(out);
             for (AnnoSentence sent : sents) {
                 CoNLLXSentence conllSent = CoNLLXSentence.fromAnnoSentence(sent);
+                cw.write(conllSent);
+            }
+            cw.close();
+        } else if (type == DatasetType.CONLL_2002) {
+            CoNLL02Writer cw = new CoNLL02Writer(out);
+            for (AnnoSentence sent : sents) {
+                CoNLL02Sentence conllSent = CoNLL02Sentence.fromAnnoSentence(sent);
+                cw.write(conllSent);
+            }
+            cw.close();
+        } else if (type == DatasetType.CONLL_2003) {
+            CoNLL03Writer cw = new CoNLL03Writer(out);
+            for (AnnoSentence sent : sents) {
+                CoNLL03Sentence conllSent = CoNLL03Sentence.fromAnnoSentence(sent);
                 cw.write(conllSent);
             }
             cw.close();

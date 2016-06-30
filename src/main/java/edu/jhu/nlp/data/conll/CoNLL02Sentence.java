@@ -69,6 +69,15 @@ public class CoNLL02Sentence implements Iterable<CoNLL02Token> {
         return s;
     }
 
+    public static CoNLL02Sentence fromAnnoSentence(AnnoSentence s) {
+        List<CoNLL02Token> toks = new ArrayList<CoNLL02Token>();
+        for (int i=0; i<s.size(); i++) {
+            CoNLL02Token e = new CoNLL02Token(s.getWord(i), s.getPosTag(i), s.getNeTag(i));
+            toks.add(e);
+        }
+        return new CoNLL02Sentence(toks);
+    }
+    
     public List<String> getWords() {
         List<String> words = new ArrayList<String>(size());
         for (int i=0; i<size(); i++) {
