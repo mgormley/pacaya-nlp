@@ -9,6 +9,7 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import concrete.tools.AnnotationException;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.nlp.AnnoPipeline;
 import edu.jhu.nlp.data.concrete.ConcreteReader;
@@ -25,13 +26,13 @@ import edu.jhu.prim.util.random.Prng;
 /**
  * Annotator of communication that takes a serialized AnnoPipeline and annotates communications.
  * This is intended for use within a PostStanfordAnnotationTool for Annotated Gigaword v2.0.
- *
+ * 
  * @author mgormley
  */
 public class CommunicationAnnotator {
-
+    
     public static enum InputType { FILE, RESOURCE };
-
+    
     public static class CommunicationAnnotatorPrm extends Prm {
         public static final long serialVersionUID = 1L;
         /** (REQUIRED) The path to the serialized pipeline. */
@@ -49,11 +50,11 @@ public class CommunicationAnnotator {
         /** The concrete writer parameters. (Output annotation types will be overwritten.)*/
         public ConcreteWriterPrm cwPrm = new ConcreteWriterPrm();
     }
-
+    
     private static final Logger log = LoggerFactory.getLogger(CommunicationAnnotator.class);
-    private CommunicationAnnotatorPrm prm;     // Parameters.
-    private AnnoPipeline anno;    // Cached.
-
+    private CommunicationAnnotatorPrm prm;     // Parameters.    
+    private AnnoPipeline anno;    // Cached.    
+    
     public CommunicationAnnotator(CommunicationAnnotatorPrm prm) {
         if (prm.pipeIn == null) {
             throw new IllegalArgumentException("pipeIn must not be null");
@@ -63,12 +64,12 @@ public class CommunicationAnnotator {
         }
         this.prm = prm;
     }
-
+    
     public void init() {
         ReporterManager.init(prm.reportOut, true);
         Prng.seed(prm.seed);
         Threads.initDefaultPool(prm.threads);
-        if (prm.inputType == InputType.FILE) {
+        if (prm.inputType == InputType.FILE) { 
             log.info("Reading the annotation pipeline from file: " + prm.pipeIn);
             this.anno = (AnnoPipeline) QFiles.deserialize(prm.pipeIn);
         } else { // inputType == InputType.RESOURCE
@@ -77,7 +78,7 @@ public class CommunicationAnnotator {
         }
     }
 
-    public void annotate(Communication c) {
+    public void annotate(Communication c) throws AnnotationException {
         ConcreteReader cr = new ConcreteReader(prm.crPrm );
         AnnoSentenceCollection sents = cr.sentsFromComm(c);
         anno.annotate(sents);
@@ -86,7 +87,7 @@ public class CommunicationAnnotator {
         ConcreteWriter cw = new ConcreteWriter(prm.cwPrm);
         cw.addAnnotations(sents, c);
     }
-
+    
     public void close() {
         Threads.shutdownDefaultPool();
         ReporterManager.close();
