@@ -131,7 +131,7 @@ public class TemplateSets {
             reader.readFromResource(resourceName);
             return reader.getTemplates();
         } catch (IOException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
     
