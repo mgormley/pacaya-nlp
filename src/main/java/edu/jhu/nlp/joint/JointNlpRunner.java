@@ -111,7 +111,7 @@ import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
 
 /**
- * Pipeline runner for SRL experiments.
+ * Pipeline runner for Joint NLP experiments.
  * @author mgormley
  * @author mmitchell
  */
@@ -221,12 +221,9 @@ public class JointNlpRunner {
     public static boolean srlFcmFactors = false;
     @Opt(hasArg = true, description = "Whether to treat the embeddings as model parameters.")
     public static boolean srlFcmFineTuning = false;
+    @Opt(hasArg = true, description = "Whether to include unary factors on the SRL variables.")
+    public static boolean srlUnaryFactors = true; 
     
-    // Options for joint factor graph structure.
-    // TODO: Split into srlUnaryFactors and dpUnaryFactors.
-    @Opt(hasArg = true, description = "Whether to include unary factors in the model.")
-    public static boolean unaryFactors = false; 
-
     // Options for SRL feature selection.
     @Opt(hasArg = true, description = "Whether to do feature selection.")
     public static boolean featureSelection = true;
@@ -278,6 +275,8 @@ public class JointNlpRunner {
     public static boolean headBigramFactors = false;
     @Opt(hasArg = true, description = "Whether to exclude non-projective grandparent factors.")
     public static boolean excludeNonprojectiveGrandparents = true;
+    @Opt(hasArg = true, description = "Whether to include unary factors on the dependency edge variables.")
+    public static boolean dpUnaryFactors = true; 
     
     // Options for dependency parsing pruning.
     @Opt(hasArg = true, description = "File from which to read a first-order pruning model.")
@@ -647,7 +646,7 @@ public class JointNlpRunner {
         // Dependency Parsing factor graph structure.
         dpPrm.linkVarType = linkVarType;
         dpPrm.useProjDepTreeFactor = useProjDepTreeFactor;
-        dpPrm.unaryFactors = unaryFactors;
+        dpPrm.unaryFactors = dpUnaryFactors;
         dpPrm.excludeNonprojectiveGrandparents = excludeNonprojectiveGrandparents;
         dpPrm.grandparentFactors = grandparentFactors;
         dpPrm.arbitrarySiblingFactors = arbitrarySiblingFactors;
@@ -683,7 +682,7 @@ public class JointNlpRunner {
         srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
         srlPrm.roleStructure = roleStructure;
         srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;
-        srlPrm.unaryFactors = unaryFactors;
+        srlPrm.unaryFactors = srlUnaryFactors;
         srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
         srlPrm.predictSense = predictSense;
         srlPrm.predictPredPos = predictPredPos;
