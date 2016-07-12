@@ -2,6 +2,9 @@ package edu.jhu.nlp.joint;
 
 import java.util.Date;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.hlt.optimize.AdaDelta;
 import edu.jhu.hlt.optimize.AdaDelta.AdaDeltaPrm;
 import edu.jhu.hlt.optimize.AdaGradComidL1;
@@ -23,13 +26,16 @@ import edu.jhu.hlt.optimize.function.BatchFunctionOpts;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunctionOpts;
+import edu.jhu.nlp.srl.SrlRunner;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 
 public class OptimizerFactory {
 
     public static enum OptimizerType { LBFGS, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
-    
+
+    private static final Logger log = LoggerFactory.getLogger(OptimizerFactory.class);
+
     // Options for optimization.
     @Opt(hasArg=true, description="The optimization method to use for training.")
     public static OptimizerType optimizer = OptimizerType.ADAGRAD_COMID;
@@ -73,6 +79,12 @@ public class OptimizerFactory {
     public static Date stopTrainingBy = null;
 
     public static Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> getOptimizers() {
+        if (OptimizerFactory.stopTrainingBy != null && new Date().after(OptimizerFactory.stopTrainingBy)) {
+            log.warn("Training will never begin since stopTrainingBy has already happened: " + OptimizerFactory.stopTrainingBy);
+            log.warn("Ignoring stopTrainingBy by setting it to null.");
+            OptimizerFactory.stopTrainingBy = null;
+        }
+        
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
         if (optimizer == OptimizerType.LBFGS) {

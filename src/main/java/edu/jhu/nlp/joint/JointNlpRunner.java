@@ -344,11 +344,6 @@ public class JointNlpRunner {
         if (useLogAddTable) {
             log.warn("Using log-add table instead of exact computation. When using global factors, this may result in numerical instability.");
         }
-        if (OptimizerFactory.stopTrainingBy != null && new Date().after(OptimizerFactory.stopTrainingBy)) {
-            log.warn("Training will never begin since stopTrainingBy has already happened: " + OptimizerFactory.stopTrainingBy);
-            log.warn("Ignoring stopTrainingBy by setting it to null.");
-            OptimizerFactory.stopTrainingBy = null;
-        }
         
         // Initialize the data reader/writer.
         CorpusHandler corpus = new CorpusHandler();
