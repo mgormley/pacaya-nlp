@@ -15,6 +15,8 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableMap;
+
 import edu.jhu.hlt.concrete.AnnotationMetadata;
 import edu.jhu.hlt.concrete.Communication;
 import edu.jhu.hlt.concrete.Dependency;
@@ -29,7 +31,6 @@ import edu.jhu.hlt.concrete.SituationMentionSet;
 import edu.jhu.hlt.concrete.TokenRefSequence;
 import edu.jhu.hlt.concrete.Tokenization;
 import edu.jhu.hlt.concrete.UUID;
-import edu.jhu.hlt.concrete.communications.SuperCommunication;
 import edu.jhu.hlt.concrete.serialization.CompactCommunicationSerializer;
 import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.uuid.UUIDFactory;
@@ -48,13 +49,13 @@ import edu.jhu.prim.tuple.Pair;
 
 /**
  * Writer of Concrete files from {@link AnnoSentence}s.
- * 
+ *
  * @author Travis Wolfe
  * @author mgormley
  */
 public class ConcreteWriter {
 
-    public static class ConcreteWriterPrm {   
+    public static class ConcreteWriterPrm {
         private static final Logger log = LoggerFactory.getLogger(ConcreteWriterPrm.class);
         /* ----- Whether to include each annotation layer ----- */
         /** Whether to add the dependency parses. */
@@ -68,13 +69,13 @@ public class ConcreteWriter {
         /* ---------------------------------------------------- */
         /**
          * Whether to write out SRL as a labeled dependency tree (i.e. syntax) or as SituationMentions.
-         * 
+         *
          * If true, we put SRL annotations in as dependency parses.
          * Dependency edges from root (gov=-1) represent predicates,
          * with the edge type giving the predicate sense. Arguments
          * are dependents of their predicate token, with the dependency
          * label capturing the argument label (e.g. "ARG0" and "ARG1").
-         * 
+         *
          * Otherwise, we create a SituationMention for every predicate,
          * which have proper Arguments, each of which includes an EntityMention
          * that is added to its own EntityMentionSet (all EntityMentions created
@@ -87,7 +88,7 @@ public class ConcreteWriter {
             this.addSrl = ats.contains(AT.SRL);
             this.addNerMentions = ats.contains(AT.NER);
             this.addRelations = ats.contains(AT.RELATIONS);
-            
+
             EnumSet<AT> others = EnumSet.complementOf(EnumSet.of(AT.DEP_TREE, AT.SRL, AT.NER, AT.RELATIONS));
             for (AT at : ats) {
                 if (others.contains(at)) {
@@ -96,14 +97,14 @@ public class ConcreteWriter {
             }
         }
     }
-    
+
     private static final Logger log = LoggerFactory.getLogger(ConcreteWriter.class);
 
     public static final String DEP_PARSE_TOOL = "Pacaya Dependency Parser";
     public static final String SRL_TOOL = "Pacaya Semantic Role Labeler (SRL)";
     private static final String REL_TOOL = "Pacaya Relation Extractor";
     private static final String NER_TOOL = "Pacaya Named Entity Recognizer (NER)";
-        
+
     private final long timestamp;     // time that every annotation that is processed will get
     private final ConcreteWriterPrm prm;
 
@@ -163,7 +164,7 @@ public class ConcreteWriter {
     public void addDependencyParse(
             AnnoSentenceCollection sents,
             Communication comm) {
-        if (!sents.someHaveAt(AT.DEP_TREE)) { return; } 
+        if (!sents.someHaveAt(AT.DEP_TREE)) { return; }
         List<Tokenization> ts = getTokenizationsCorrespondingTo(sents, comm);
         for(int i=0; i<ts.size(); i++) {
             Tokenization t = ts.get(i);
@@ -186,7 +187,7 @@ public class ConcreteWriter {
         meta.setTool(DEP_PARSE_TOOL);
         meta.setTimestamp(timestamp);
         p.setMetadata(meta);
-        p.setDependencyList(new ArrayList<Dependency>());        
+        p.setDependencyList(new ArrayList<Dependency>());
         for(int i=0; i<parents.length; i++) {
             if (parents[i] == -2) { continue; }
             Dependency d = new Dependency();
@@ -199,21 +200,21 @@ public class ConcreteWriter {
         }
         return p;
     }
-    
+
     /**
      * behavior depends on {@code this.srlIsSyntax}
      */
     public void addSrlAnnotations(
             AnnoSentenceCollection sents,
-            Communication comm) {    
+            Communication comm) {
         if (!sents.someHaveAt(AT.SRL)) { return; }
-        
+
         AnnotationMetadata meta = new AnnotationMetadata();
         meta.setTool(SRL_TOOL);
         meta.setTimestamp(timestamp);
-        
+
         List<Tokenization> tokenizations = getTokenizationsCorrespondingTo(sents, comm);
-        
+
         if(prm.srlIsSyntax) {
             // make a dependency parse for every sentence / SRL
             for(int i=0; i<tokenizations.size(); i++) {
@@ -235,7 +236,7 @@ public class ConcreteWriter {
             sms.setMentionList(new ArrayList<SituationMention>());
             for(int i=0; i<sents.size(); i++) {
                 AnnoSentence sent = sents.get(i);
-                Tokenization t = tokenizations.get(i); 
+                Tokenization t = tokenizations.get(i);
                 if (sent.getSrlGraph() != null) {
                     for(SituationMention sm : makeSitutationMentions(sent.getSrlGraph().toSrlGraph(), sent, t, ems)) {
                         sms.addToMentionList(sm);
@@ -246,7 +247,7 @@ public class ConcreteWriter {
             comm.addToSituationMentionSetList(sms);
         }
     }
-    
+
     private DependencyParse makeDependencyParse(SrlGraph srl, AnnoSentence from, AnnotationMetadata meta) {
         DependencyParse p = new DependencyParse();
         p.setUuid(getUUID());
@@ -270,7 +271,7 @@ public class ConcreteWriter {
         }
         return p;
     }
-    
+
     private List<SituationMention> makeSitutationMentions(SrlGraph srl, AnnoSentence from, Tokenization useUUID, EntityMentionSet addEntityMentionsTo) {
         List<SituationMention> mentions = new ArrayList<SituationMention>();
         for(SrlPred p : srl.getPreds()) {
@@ -281,7 +282,7 @@ public class ConcreteWriter {
                 int ai = child.getArg().getPosition();
                 MentionArgument a = new MentionArgument();
                 a.setRole(child.getLabel());
-                
+
                 // make an EntityMention
                 EntityMention em = new EntityMention();
                 em.setUuid(getUUID());
@@ -293,7 +294,7 @@ public class ConcreteWriter {
                 seq.setAnchorTokenIndex(ai);
                 seq.setTokenIndexList(Arrays.asList(ai));
                 seq.setTokenizationId(useUUID.getUuid());
-                
+
                 a.setEntityMentionId(em.getUuid());
                 addEntityMentionsTo.addToMentionList(em);
             }
@@ -310,7 +311,7 @@ public class ConcreteWriter {
             // 1.a. If we are adding NerMentions, convert the NerMentions to
             // EntityMentions (storing the below mapping along the
             // way).
-            List<EntityMention> cEms = new ArrayList<>(); 
+            List<EntityMention> cEms = new ArrayList<>();
             List<Tokenization> ts = getTokenizationsCorrespondingTo(sents, comm);
             for(int i=0; i<sents.size(); i++) {
                 Tokenization cSent = ts.get(i);
@@ -318,7 +319,7 @@ public class ConcreteWriter {
                 Map<NerMention, EntityMention> a2cForSent = new HashMap<>();
                 NerMentions aEms = aSent.getNamedEntities();
                 if (aEms != null) {
-                    for (NerMention aEm : aEms) {                    
+                    for (NerMention aEm : aEms) {
                         TokenRefSequence cSpan = new TokenRefSequence();
                         cSpan.setTokenIndexList(toIntegerList(aEm.getSpan()));
                         cSpan.setTokenizationId(cSent.getUuid());
@@ -350,8 +351,13 @@ public class ConcreteWriter {
             assert comm.getEntityMentionSetListSize() == 1;
             // 1.b. Create a mapping from NerMention's to EntityMentions (these will be the existing
             // EntityMentions that we read in.)
-            SuperCommunication cSupComm = new SuperCommunication(comm);
-            Map<UUID, EntityMention> id2cem = cSupComm.generateEntityMentionIdToEntityMentionMap();
+            // Guaranteed to exist per above assert.
+            EntityMentionSet any = comm.getEntityMentionSetList().get(0);
+
+            ImmutableMap.Builder<UUID, EntityMention> id2cemB = new ImmutableMap.Builder<>();
+            any.getMentionList().forEach(e -> id2cemB.put(e.getUuid(), e));
+            Map<UUID, EntityMention> id2cem = id2cemB.build();
+
             for(int i=0; i<sents.size(); i++) {
                 Map<NerMention, EntityMention> a2cForSent = new HashMap<>();
                 AnnoSentence aSent = sents.get(i);
@@ -362,7 +368,7 @@ public class ConcreteWriter {
                 aem2cem.add(a2cForSent);
             }
         }
-        
+
         if (prm.addRelations) {
             if (!sents.someHaveAt(AT.RELATIONS)) { return; }
             // 2. Convert AnnoSentence.getRelations() to Concrete's
@@ -404,7 +410,7 @@ public class ConcreteWriter {
             comm.addToSituationMentionSetList(cRelSet);
         }
     }
-    
+
     /** Converts a {@link Span} to a list of integers. */
     private static List<Integer> toIntegerList(Span span) {
         List<Integer> ids = new ArrayList<>();
