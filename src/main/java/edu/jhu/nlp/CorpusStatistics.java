@@ -46,10 +46,6 @@ public class CorpusStatistics implements Serializable {
         public int cutoff = 3;
         /** Cutoff for topN words. */ 
         public int topN = 800;
-        /**
-         * Whether to normalize and clean words.
-         */
-        public boolean normalizeWords = false;
     }
 
     private static final long serialVersionUID = 1L;
@@ -74,7 +70,6 @@ public class CorpusStatistics implements Serializable {
 
     public int maxSentLength = 0;
 
-    public Normalizer normalize;
     public AlphabetStore store;
     
     public CorpusStatisticsPrm prm;
@@ -82,7 +77,6 @@ public class CorpusStatistics implements Serializable {
     
     public CorpusStatistics(CorpusStatisticsPrm prm) {
         this.prm = prm;
-        this.normalize = new Normalizer(prm.normalizeWords);
         initialized = false;
     }
 
@@ -102,7 +96,6 @@ public class CorpusStatistics implements Serializable {
         Set<String> knownNeSubtypes = new TreeSet<String>();
         Set<String> knownRelations = new TreeSet<String>();
         Map<String, MutableInt> words = new HashMap<String, MutableInt>();
-        Map<String, MutableInt> unks = new HashMap<String, MutableInt>();
         initialized = true;
         
         // Store the variable states we have seen before so
@@ -126,13 +119,7 @@ public class CorpusStatistics implements Serializable {
             
             // Word stats.
             for (int position = 0; position < sent.size(); position++) {
-                String wordForm = sent.getWord(position);
-                String cleanWord = normalize.clean(wordForm);
-                // Actually only need to do this for those words that are below
-                // threshold for knownWords. 
-                String unkWord = normalize.escape(cleanWord);
-                addWord(words, cleanWord);
-                addWord(unks, unkWord);
+                addWord(words, sent.getWord(position));
             }
             
             // POS tag stats.

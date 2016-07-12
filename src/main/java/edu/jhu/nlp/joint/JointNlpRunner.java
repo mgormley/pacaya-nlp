@@ -296,11 +296,6 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "Whether to use the fast feature set for dep parsing.")
     public static boolean dpFastFeats = true;
     
-    // Options for data munging.
-    @Deprecated
-    @Opt(hasArg=true, description="Whether to normalize and clean words.")
-    public static boolean normalizeWords = false;
-
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
     public static CacheType cacheType = CacheType.NONE;
@@ -750,7 +745,6 @@ public class JointNlpRunner {
         prm.cutoff = cutoff;
         prm.language = CorpusHandler.language;
         prm.useGoldSyntax = CorpusHandler.useGoldSyntax;
-        prm.normalizeWords = normalizeWords;
         return prm;
     }
     
