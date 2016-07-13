@@ -11,8 +11,8 @@ import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.nlp.AnnoPipeline;
 import edu.jhu.nlp.Evaluator;
-import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.data.simple.Experiments;
 import edu.jhu.nlp.eval.NerEvaluator;
 import edu.jhu.nlp.joint.OptimizerFactory;
 import edu.jhu.nlp.ner.NerAnnotator.NerAnnotatorPrm;
@@ -53,59 +53,9 @@ public class NerRunner {
         
         // Initialize the data reader/writer.
         CorpusHandler corpus = new CorpusHandler();
-        {
-            // Either of train or dev might be null.
-            AnnoSentenceCollection trainGold = corpus.getTrainGold();
-            AnnoSentenceCollection trainInput = corpus.getTrainInput();
-            AnnoSentenceCollection devGold = corpus.getDevGold();
-            AnnoSentenceCollection devInput = corpus.getDevInput();
-
-            if (corpus.hasTrain()) {
-                // Preprocess the gold train data and write it out.
-                corpus.writeTrainGold();
-            }
-            if (corpus.hasDev()) {
-                // Preprocess the gold dev data and write it out.
-                corpus.writeDevGold();
-            }
-            
-            if (corpus.hasTrain()) {
-                // Train a model.
-                corpus.writeTrainGold();
-                anno.trainAndAnnotate(trainInput, trainGold, devInput, devGold);                
-            } else if (corpus.hasDev()) { // but not train
-                corpus.writeDevGold();
-                anno.annotate(devInput);
-            }
-            
-            if (corpus.hasTrain()) {
-                // Decode and evaluate. the train data.
-                corpus.writeTrainPreds(trainInput);
-                eval.evaluate(trainInput, trainGold, "train");
-                corpus.clearTrainCache();
-            }
-            if (corpus.hasDev()) {
-                // Decode and evaluate the dev data.
-                corpus.writeDevPreds(devInput);
-                eval.evaluate(devInput, devGold, "dev");
-                corpus.clearDevCache();
-            }
-        }
         
-        if (corpus.hasTest()) {
-            // Decode test data.
-            String name = "test";
-            AnnoSentenceCollection testInput = corpus.getTestInput();
-            anno.annotate(testInput);
-            corpus.writeTestPreds(testInput);
-            if (corpus.hasTestGold()) {    
-                // Evaluate test data.
-                AnnoSentenceCollection testGold = corpus.getTestGold();
-                corpus.writeTestGold();
-                eval.evaluate(testInput, testGold, name);
-            }
-            corpus.clearTestCache();
-        }
+        // Run experiment.
+        Experiments.trainAnnoEval(corpus, anno, eval);
     }
 
     protected static NerAnnotatorPrm getNerAnnotatorPrm() {

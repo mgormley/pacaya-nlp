@@ -25,6 +25,7 @@ import edu.jhu.nlp.EvalPipeline;
 import edu.jhu.nlp.TransientAnnotator;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.data.simple.Experiments;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
@@ -474,78 +475,26 @@ public class JointNlpRunner {
             eval.add(new ProportionAnnotated(CorpusHandler.getPredAts()));
         }
         
-        {
-            // Either of train or dev might be null.
-            AnnoSentenceCollection trainGold = corpus.getTrainGold();
-            AnnoSentenceCollection trainInput = corpus.getTrainInput();
-            AnnoSentenceCollection devGold = corpus.getDevGold();
-            AnnoSentenceCollection devInput = corpus.getDevInput();
-
-            if (corpus.hasTrain()) {
-                // Preprocess the gold train data and write it out.
-                prep.annotate(trainGold);
-                corpus.writeTrainGold();
-            }
-            if (corpus.hasDev()) {
-                // Preprocess the gold dev data and write it out.
-                prep.annotate(devGold);
-                corpus.writeDevGold();
-            }
-            
-            if (corpus.hasTrain()) {
-                // Train a model.
-                anno.trainAndAnnotate(trainInput, trainGold, devInput, devGold);
-                
-                // Save the model.
-                if (jointAnno != null && modelOut != null) {
-                    jointAnno.saveModel(modelOut);
-                }
-                if (jointAnno != null && printModel != null) {
-                    jointAnno.printModel(printModel);
-                }
-                if (pipeOut != null) {
-                    log.info("Serializing pipeline to file: " + pipeOut);
-                    QFiles.serialize(anno, pipeOut);
-                }
-            } else if (corpus.hasDev()) { // but not train
-                anno.annotate(devInput);
-            }
-            
-            if (corpus.hasTrain()) {
-                // Decode and evaluate. the train data.
-                corpus.writeTrainPreds(trainInput);
-                eval.evaluate(trainInput, trainGold, "train");
-                corpus.clearTrainCache();
-            }
-            if (corpus.hasDev()) {
-                // Decode and evaluate the dev data.
-                corpus.writeDevPreds(devInput);
-                eval.evaluate(devInput, devGold, "dev");
-                corpus.clearDevCache();
-            }
-        }
+        Experiments.trainAnnoEvalPrepGold(corpus, anno, eval, prep);
         
-        if (corpus.hasTest()) {
-            // Decode test data.
-            String name = "test";
-            AnnoSentenceCollection testInput = corpus.getTestInput();
-            anno.annotate(testInput);
-            corpus.writeTestPreds(testInput);
-            if (corpus.hasTestGold()) {
-                // Evaluate test data.
-                AnnoSentenceCollection testGold = corpus.getTestGold();
-                prep.annotate(testGold);
-                corpus.writeTestGold();
-                eval.evaluate(testInput, testGold, name);
-            } else {
-                (new ProportionAnnotated(CorpusHandler.getPredAts())).evaluate(testInput, null, name);
+        if (corpus.hasTrain()) {
+            // Save the joint model.
+            if (jointAnno != null && modelOut != null) {
+                jointAnno.saveModel(modelOut);
             }
-            corpus.clearTestCache();
+            if (jointAnno != null && printModel != null) {
+                jointAnno.printModel(printModel);
+            }
+            // Save the entire pipeline.
+            if (pipeOut != null) {
+                log.info("Serializing pipeline to file: " + pipeOut);
+                QFiles.serialize(anno, pipeOut);
+            }
         }
         t.stop();
         rep.report("elapsedSec", t.totSec());
     }
-    
+
     /**
      * TODO: Deprecate this class. This is only a hold over until we remove the dependence of
      * CommunicationsAnnotator on these options being correctly set.
