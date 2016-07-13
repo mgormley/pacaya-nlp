@@ -490,50 +490,47 @@ public class SignificanceTests {
         parser.registerClass(ReporterManager.class);
         parser.parseArgs(args);        
         ReporterManager.init(ReporterManager.reportOut, true);
-        try {
-            AnnoSentenceCollection goldSents = getData(_gold, _type, "gold", _maxNumSentences);
-            AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1", _maxNumSentences);
-            AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2", _maxNumSentences);
-            
-            EvalMetric<AnnoSentence> metric;
-            if (_metric == Metric.POS_ACC) {
-                metric = new PosTagAccuracyMetric(); 
-            } else if (_metric == Metric.DP_ACC) {
-                metric = new DepAccuracyMetric(_skipPunct);
-            } else if (_metric.name().startsWith("SRL_")) {
-                SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
-                // TODO: add command line options.
-                prm.evalPredPosition = false;
-                prm.evalRoles = true;
-                prm.evalPredSense = true;
-                prm.labeled = true;
-                metric = new SrlF1Metric(prm, _metric);
-            } else if (_metric.name().startsWith("REL_")) {
-                metric = new RelF1Metric(_metric);
-            } else {
-                throw new ParseException("Unsupported metric: " + _metric.name());
-            }
-            
-            if (_metric == Metric.DP_ACC) {
-                // 20 seconds for 2416 sentences.
-                double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
-                log.info("p-value (fast paired permutation): {}", ppt);
-                rep.report("p-value-ppt-fast", ppt);
-            } else if (_metric.name().startsWith("REL")) {
-                RelationEvaluator eval = new RelationEvaluator();
-                eval.evaluate(predSents1, goldSents, "pred1");
-                eval.evaluate(predSents2, goldSents, "pred2");
-            }
-            
-            double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
-            log.info("p-value (paired permutation): {}", ppt);
-            rep.report("p-value-ppt", ppt);
-            double bts = bootstrapTest(goldSents, predSents1, predSents2, _numSamples, metric);
-            log.info("p-value (paired permutation): {}", bts);
-            rep.report("p-value-bts", bts);
-        } finally {
-            ReporterManager.close();
+
+        AnnoSentenceCollection goldSents = getData(_gold, _type, "gold", _maxNumSentences);
+        AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1", _maxNumSentences);
+        AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2", _maxNumSentences);
+        
+        EvalMetric<AnnoSentence> metric;
+        if (_metric == Metric.POS_ACC) {
+            metric = new PosTagAccuracyMetric(); 
+        } else if (_metric == Metric.DP_ACC) {
+            metric = new DepAccuracyMetric(_skipPunct);
+        } else if (_metric.name().startsWith("SRL_")) {
+            SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
+            // TODO: add command line options.
+            prm.evalPredPosition = false;
+            prm.evalRoles = true;
+            prm.evalPredSense = true;
+            prm.labeled = true;
+            metric = new SrlF1Metric(prm, _metric);
+        } else if (_metric.name().startsWith("REL_")) {
+            metric = new RelF1Metric(_metric);
+        } else {
+            throw new ParseException("Unsupported metric: " + _metric.name());
         }
+        
+        if (_metric == Metric.DP_ACC) {
+            // 20 seconds for 2416 sentences.
+            double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
+            log.info("p-value (fast paired permutation): {}", ppt);
+            rep.report("p-value-ppt-fast", ppt);
+        } else if (_metric.name().startsWith("REL")) {
+            RelationEvaluator eval = new RelationEvaluator();
+            eval.evaluate(predSents1, goldSents, "pred1");
+            eval.evaluate(predSents2, goldSents, "pred2");
+        }
+        
+        double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
+        log.info("p-value (paired permutation): {}", ppt);
+        rep.report("p-value-ppt", ppt);
+        double bts = bootstrapTest(goldSents, predSents1, predSents2, _numSamples, metric);
+        log.info("p-value (paired permutation): {}", bts);
+        rep.report("p-value-bts", bts);
     }
     
 }

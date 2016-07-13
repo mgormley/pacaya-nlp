@@ -15,8 +15,8 @@ import edu.jhu.hlt.optimize.AdaGradSchedule;
 import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
-import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.hlt.optimize.LBFGS;
+import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
@@ -26,7 +26,6 @@ import edu.jhu.hlt.optimize.function.BatchFunctionOpts;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunctionOpts;
-import edu.jhu.nlp.srl.SrlRunner;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 

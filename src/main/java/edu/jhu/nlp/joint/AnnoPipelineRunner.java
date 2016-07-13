@@ -92,9 +92,6 @@ public class AnnoPipelineRunner {
         } catch (Throwable t) {
             t.printStackTrace();
             exitCode = 1;
-        } finally {
-            Threads.shutdownDefaultPool();
-            ReporterManager.close();
         }
         
         System.exit(exitCode);
