@@ -270,13 +270,7 @@ public class RunCkyParser {
     public static void main(String[] args) throws IOException {
         ArgParser parser = new ArgParser(RunCkyParser.class);
         parser.registerClass(RunCkyParser.class);
-        try {
-            parser.parseArgs(args);
-        } catch (ParseException e) {
-            log.error(e.getMessage());
-            parser.printUsage();
-            System.exit(1);
-        }
+        parser.parseArgs(args);
         
         Prng.seed(seed);
         

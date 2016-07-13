@@ -39,21 +39,18 @@ public class AnnoPipelineRunner {
     public static boolean useLogAddTable = false;
     
     // Options for model IO
-    @Opt(hasArg = true, description = "File from which to read a serialized pipeline.")
+    @Opt(hasArg = true, required = true, description = "File from which to read a serialized pipeline.")
     public static File pipeIn = null;
         
     public AnnoPipelineRunner() {
     }
 
-    public void run() throws ParseException, IOException {  
+    public void run() throws IOException {  
         Timer t = new Timer();
         t.start();
         // Initialize the data reader/writer.
         CorpusHandler corpus = new CorpusHandler();
 
-        if (pipeIn == null) {
-            throw new ParseException("pipeIn must not be null");
-        }
         AnnoPipeline anno = (AnnoPipeline) QFiles.deserialize(pipeIn);
         if (corpus.hasTest()) {
             // Decode test data.
@@ -67,34 +64,19 @@ public class AnnoPipelineRunner {
         rep.report("elapsedSec", t.totSec());
     }
 
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(AnnoPipelineRunner.class);
-            parser.registerClass(AnnoPipelineRunner.class);
-            parser.registerClass(CorpusHandler.class);
-            parser.registerClass(ReporterManager.class);
-            parser.parseArgs(args);
-            
-            ReporterManager.init(ReporterManager.reportOut, true);
-            Prng.seed(seed);
-            Threads.initDefaultPool(threads);
-
-            AnnoPipelineRunner pipeline = new AnnoPipelineRunner();
-            pipeline.run();
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        }
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(AnnoPipelineRunner.class);
+        parser.registerClass(AnnoPipelineRunner.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.registerClass(ReporterManager.class);
+        parser.parseArgs(args);
         
-        System.exit(exitCode);
+        ReporterManager.init(ReporterManager.reportOut, true);
+        Prng.seed(seed);
+        Threads.initDefaultPool(threads);
+
+        AnnoPipelineRunner pipeline = new AnnoPipelineRunner();
+        pipeline.run();
     }
 
 }

@@ -97,34 +97,19 @@ public class NerRunner {
         return prm;
     }
 
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(NerRunner.class);
-            parser.registerClass(NerRunner.class);
-            parser.registerClass(OptimizerFactory.class);
-            parser.registerClass(CorpusHandler.class);
-            parser.registerClass(ReporterManager.class);
-            parser.parseArgs(args);
-            
-            ReporterManager.init(ReporterManager.reportOut, true);
-            Prng.seed(seed);
-            Threads.initDefaultPool(threads);
-
-            NerRunner.run();
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        }
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(NerRunner.class);
+        parser.registerClass(NerRunner.class);
+        parser.registerClass(OptimizerFactory.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.registerClass(ReporterManager.class);
+        parser.parseArgs(args);
         
-        System.exit(exitCode);
+        ReporterManager.init(ReporterManager.reportOut, true);
+        Prng.seed(seed);
+        Threads.initDefaultPool(threads);
+
+        NerRunner.run();
     }
     
 }

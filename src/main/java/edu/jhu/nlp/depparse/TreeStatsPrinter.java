@@ -71,25 +71,13 @@ public class TreeStatsPrinter {
         log.info(String.format("#missing-edges=%d", numMissingEdges));
     }
     
-    public static void main(String[] args) {
-        try {
-            ArgParser parser = new ArgParser(JointNlpRunner.class);
-            parser.registerClass(CorpusHandler.class);
-            try {
-                parser.parseArgs(args);
-            } catch (ParseException e) {
-                log.error(e.getMessage());
-                parser.printUsage();
-                System.exit(1);
-            }
-            
-            TreeStatsPrinter pipeline = new TreeStatsPrinter();
-            pipeline.run();
-        } catch (Throwable t) {
-            t.printStackTrace();
-            System.exit(1);
-        }
-        System.exit(0);
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(JointNlpRunner.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.parseArgs(args);
+        
+        TreeStatsPrinter pipeline = new TreeStatsPrinter();
+        pipeline.run();
     }
     
 }

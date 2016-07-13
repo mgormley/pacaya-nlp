@@ -42,29 +42,14 @@ public class CorpusConverter {
         handler.writeTrainGold();
     }
     
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(CorpusConverter.class);
-            parser.registerClass(CorpusConverter.class);
-            parser.registerClass(CorpusHandler.class);
-            parser.registerClass(RelationMungerPrm.class);
-            parser.parseArgs(args);
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(CorpusConverter.class);
+        parser.registerClass(CorpusConverter.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.registerClass(RelationMungerPrm.class);
+        parser.parseArgs(args);
 
-            CorpusConverter.run(parser);
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        }
-        
-        System.exit(exitCode);
+        CorpusConverter.run(parser);
     }
     
 }

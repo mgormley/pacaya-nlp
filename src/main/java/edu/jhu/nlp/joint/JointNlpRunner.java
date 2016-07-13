@@ -330,7 +330,7 @@ public class JointNlpRunner {
     
     public JointNlpRunner() { }
 
-    public void run() throws ParseException, IOException {  
+    public void run() throws IOException {  
         Timer t = new Timer();
         t.start();
         FastMath.useLogAddTable = useLogAddTable;
@@ -343,7 +343,7 @@ public class JointNlpRunner {
         
         // Get a model.
         if (modelIn == null && !corpus.hasTrain()) {
-        	throw new ParseException("Either --modelIn or --train must be specified.");
+        	throw new IllegalStateException("Either --modelIn or --train must be specified.");
         }
         
         // The annotation pipeline.
@@ -530,7 +530,7 @@ public class JointNlpRunner {
         return prm;
     }
 
-    private static JointNlpAnnotatorPrm getJointNlpAnnotatorPrm() throws ParseException {
+    private static JointNlpAnnotatorPrm getJointNlpAnnotatorPrm() {
         JointNlpAnnotatorPrm prm = new JointNlpAnnotatorPrm();
         prm.crfPrm = getCrfTrainerPrm();
         prm.csPrm = getCorpusStatisticsPrm();
@@ -695,7 +695,7 @@ public class JointNlpRunner {
         return prm;
     }
     
-    private static CrfTrainerPrm getCrfTrainerPrm() throws ParseException {
+    private static CrfTrainerPrm getCrfTrainerPrm() {
         FgInferencerFactory infPrm = getInfFactory();
         
         CrfTrainerPrm prm = new CrfTrainerPrm();
@@ -726,14 +726,14 @@ public class JointNlpRunner {
             } else if (dpLoss == ErmaLoss.EXPECTED_RECALL) {
                 prm.dlFactory = new ExpectedRecallFactory();
             } else {
-                throw new ParseException("Unsupported loss: " + dpLoss.name());
+                throw new RuntimeException("Unsupported loss: " + dpLoss.name());
             }
         }
         
         return prm;
     }
 
-    private static FgInferencerFactory getInfFactory() throws ParseException {
+    private static FgInferencerFactory getInfFactory() {
         if (inference == Inference.BRUTE_FORCE) {
             BruteForceInferencerPrm prm = new BruteForceInferencerPrm(algebra.getAlgebra());
             return prm;
@@ -755,14 +755,14 @@ public class JointNlpRunner {
                     && grandparentFactors && !arbitrarySiblingFactors && !headBigramFactors) { 
                 return new O2AllGraFgInferencerFactory(algebra.getAlgebra());
             } else {
-                throw new ParseException("DP inference only supported for dependency parsing with all grandparent factors.");
+                throw new IllegalStateException("DP inference only supported for dependency parsing with all grandparent factors.");
             }
         } else {
-            throw new ParseException("Unsupported inference method: " + inference);
+            throw new RuntimeException("Unsupported inference method: " + inference);
         }
     }
 
-    private static JointNlpDecoderPrm getDecoderPrm() throws ParseException {
+    private static JointNlpDecoderPrm getDecoderPrm() {
         MbrDecoderPrm mbrPrm = new MbrDecoderPrm();
         mbrPrm.infFactory = getInfFactory();
         mbrPrm.loss = Loss.L1;
@@ -787,41 +787,26 @@ public class JointNlpRunner {
         return prm;
     }
     
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(JointNlpRunner.class);
-            parser.registerClass(JointNlpRunner.class);
-            parser.registerClass(OptimizerFactory.class);
-            parser.registerClass(CorpusHandler.class);
-            parser.registerClass(RelationMungerPrm.class);
-            parser.registerClass(RelationsFactorGraphBuilderPrm.class);
-            parser.registerClass(InsideOutsideDepParse.class);      
-            parser.registerClass(ReporterManager.class);
-            parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);
-            parser.registerClass(SrlWordFeaturesPrm.class);
-            parser.parseArgs(args);
-            JointNlpRunner.parser = parser;
-            
-            ReporterManager.init(ReporterManager.reportOut, true);
-            Prng.seed(seed);
-            Threads.initDefaultPool(threads);
-
-            JointNlpRunner pipeline = new JointNlpRunner();
-            pipeline.run();
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        }
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(JointNlpRunner.class);
+        parser.registerClass(JointNlpRunner.class);
+        parser.registerClass(OptimizerFactory.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.registerClass(RelationMungerPrm.class);
+        parser.registerClass(RelationsFactorGraphBuilderPrm.class);
+        parser.registerClass(InsideOutsideDepParse.class);      
+        parser.registerClass(ReporterManager.class);
+        parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);
+        parser.registerClass(SrlWordFeaturesPrm.class);
+        parser.parseArgs(args);
+        JointNlpRunner.parser = parser;
         
-        System.exit(exitCode);
+        ReporterManager.init(ReporterManager.reportOut, true);
+        Prng.seed(seed);
+        Threads.initDefaultPool(threads);
+
+        JointNlpRunner pipeline = new JointNlpRunner();
+        pipeline.run();
     }
 
 }

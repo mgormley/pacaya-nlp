@@ -484,7 +484,7 @@ public class SignificanceTests {
      *   - paired permutation:      73 seconds
      *   - bootstrap:               126 seconds
      */
-    public static void main(String[] args) throws ParseException, IOException {
+    public static void main(String[] args) throws IOException {
         ArgParser parser = new ArgParser(SignificanceTests.class);
         parser.registerClass(SignificanceTests.class);
         parser.registerClass(ReporterManager.class);
@@ -511,7 +511,7 @@ public class SignificanceTests {
         } else if (_metric.name().startsWith("REL_")) {
             metric = new RelF1Metric(_metric);
         } else {
-            throw new ParseException("Unsupported metric: " + _metric.name());
+            throw new IllegalStateException("Unsupported metric: " + _metric.name());
         }
         
         if (_metric == Metric.DP_ACC) {

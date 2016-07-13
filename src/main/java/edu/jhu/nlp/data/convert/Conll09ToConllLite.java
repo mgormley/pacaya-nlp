@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,13 +58,7 @@ public class Conll09ToConllLite {
     public static void main(String[] args) throws IOException {
         ArgParser parser = new ArgParser(Conll09ToConllLite.class);
         parser.registerClass(Conll09ToConllLite.class);
-        try {
-            parser.parseArgs(args);
-        } catch (ParseException e) {
-            log.error(e.getMessage());
-            parser.printUsage();
-            System.exit(1);
-        }
+        parser.parseArgs(args);
         
         Conll09ToConllLite pipeline = new Conll09ToConllLite();
         pipeline.run();

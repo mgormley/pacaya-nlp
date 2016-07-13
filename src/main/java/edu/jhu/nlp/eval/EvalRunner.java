@@ -88,32 +88,17 @@ public class EvalRunner {
         eval.evaluate(predSents, goldSents, "pred/gold");
     }
 
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(EvalRunner.class);
-            parser.registerClass(EvalRunner.class);
-            parser.registerClass(ReporterManager.class);
-            parser.parseArgs(args);
-            
-            ReporterManager.init(ReporterManager.reportOut, true);
-            Prng.seed(seed);
-            Threads.initDefaultPool(threads);
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(EvalRunner.class);
+        parser.registerClass(EvalRunner.class);
+        parser.registerClass(ReporterManager.class);
+        parser.parseArgs(args);
 
-            EvalRunner.run();
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        }
-        
-        System.exit(exitCode);
+        ReporterManager.init(ReporterManager.reportOut, true);
+        Prng.seed(seed);
+        Threads.initDefaultPool(threads);
+
+        EvalRunner.run();
     }
     
 }
