@@ -324,8 +324,6 @@ public class JointNlpRunner {
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
     public static boolean dpSkipPunctuation = false;
-    @Opt(hasArg=true, description="Whether to evaluate test data.")
-    public static boolean evalTest = true;
     
     private static ArgParser parser;
     
@@ -533,14 +531,14 @@ public class JointNlpRunner {
             AnnoSentenceCollection testInput = corpus.getTestInput();
             anno.annotate(testInput);
             corpus.writeTestPreds(testInput);
-            // Evaluate test data.
-            AnnoSentenceCollection testGold = corpus.getTestGold();
-            prep.annotate(testGold);
-            corpus.writeTestGold();
-            if (evalTest) {
+            if (corpus.hasTestGold()) {
+                // Evaluate test data.
+                AnnoSentenceCollection testGold = corpus.getTestGold();
+                prep.annotate(testGold);
+                corpus.writeTestGold();
                 eval.evaluate(testInput, testGold, name);
             } else {
-                (new ProportionAnnotated(CorpusHandler.getPredAts())).evaluate(testInput, testGold, name);
+                (new ProportionAnnotated(CorpusHandler.getPredAts())).evaluate(testInput, null, name);
             }
             corpus.clearTestCache();
         }

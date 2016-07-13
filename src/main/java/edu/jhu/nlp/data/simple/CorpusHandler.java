@@ -71,7 +71,9 @@ public class CorpusHandler {
     public static int testMaxSentenceLength = Integer.MAX_VALUE;
     @Opt(hasArg = true, description = "Maximum number of sentences to include in test.")
     public static int testMaxNumSentences = Integer.MAX_VALUE; 
-
+    @Opt(hasArg=true, description="Whether the test data includes the gold labels.")
+    public static boolean testHasGold = true;
+    
     // Options for train/dev/test data.
     @Opt(hasArg = true, description = "Random proportion of train data to allocate as dev data.")
     public static double propTrainAsDev = 0.0;
@@ -318,7 +320,14 @@ public class CorpusHandler {
         return test != null && testType != null;
     }
     
+    public boolean hasTestGold() {
+        return hasTest() && testHasGold;
+    }
+    
     public AnnoSentenceCollection getTestGold() throws IOException {
+        if (!testHasGold) {
+            return null;
+        }
         if (testGoldSents == null) {
             loadTest();
         }
@@ -363,12 +372,14 @@ public class CorpusHandler {
         // Cache gold test data.
         testGoldSents = reader.getData();
         testGoldSents = testGoldSents.getWithAtsRemoved(getRemoveAts());
+        if (!testHasGold) { testGoldSents = null; }
         
         // Cache input test data.
         testInputSents = testGoldSents.getWithAtsRemoved(getGoldOnlyAts());
     }
 
     public void writeTestGold() throws IOException {
+        if (!testHasGold) { throw new IllegalStateException("Test does not have gold data to write."); }
         if (testGoldSents != null && testGoldOut != null) {
             // Write gold test data.
             AnnoSentenceWriterPrm wPrm = new AnnoSentenceWriterPrm();
@@ -377,7 +388,9 @@ public class CorpusHandler {
             writer.write(testGoldOut, getTestTypeOut(), testGoldSents, new HashSet<AT>());
         }
     }
-    
+
+    // -------------------- Helper Methods --------------------------
+
     private AnnoSentenceReaderPrm getDefaultReaderPrm() {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.normalizeRoleNames = normalizeRoleNames;

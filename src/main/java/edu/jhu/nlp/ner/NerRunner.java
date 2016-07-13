@@ -98,10 +98,12 @@ public class NerRunner {
             AnnoSentenceCollection testInput = corpus.getTestInput();
             anno.annotate(testInput);
             corpus.writeTestPreds(testInput);
-            // Evaluate test data.
-            AnnoSentenceCollection testGold = corpus.getTestGold();
-            corpus.writeTestGold();
-            eval.evaluate(testInput, testGold, name);
+            if (corpus.hasTestGold()) {    
+                // Evaluate test data.
+                AnnoSentenceCollection testGold = corpus.getTestGold();
+                corpus.writeTestGold();
+                eval.evaluate(testInput, testGold, name);
+            }
             corpus.clearTestCache();
         }
     }

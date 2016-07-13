@@ -23,7 +23,7 @@ public class ProportionAnnotated implements Evaluator {
     
     public ProportionAnnotated(Set<AT> ats) {
         this.ats = ats;
-    }    
+    }
     
     @Override
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String name) {        
