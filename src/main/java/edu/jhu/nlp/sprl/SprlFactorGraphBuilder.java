@@ -285,7 +285,7 @@ public class SprlFactorGraphBuilder {
             RoleVar roleVar = null;
             String goldSrl = null;
             if (givenSrl) {
-                SrlEdge srlEdge = sent.getSrlGraph().getEdge(i, j);
+                SrlEdge srlEdge = sent.getSrlGraph().toSrlGraph().getEdge(i, j);
                 goldSrl = srlEdge != null ? srlEdge.getLabel() : RoleVar.getNilStateName();
             } else {
                 roleVar = roleVars[i][j];

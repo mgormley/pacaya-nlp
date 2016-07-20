@@ -73,6 +73,7 @@ public class AnnoSentence {
     private DepEdgeMask depEdgeMask;
     // Known SRL predicates
     private IntHashSet knownPreds;
+    private Set<Pair<Integer, Integer>> knownSrlPairs;
     // Semantic role labeling (SRL) graph
     private DepGraph srlGraph;
     // Constituency parse.
@@ -530,10 +531,10 @@ public class AnnoSentence {
     }
 
     public void setKnownPairsFromSrlGraph() {
-        if (srlGraph == null) {
+        if (srlGraph.toSrlGraph() == null) {
             throw new IllegalStateException("This can only be called if srlGraph is non-null.");
         }
-        knownSrlPairs = srlGraph.getKnownSrlPairs();
+        knownSrlPairs = srlGraph.toSrlGraph().getKnownSrlPairs();
     }
 
     /* ----------- Getters/Setters for internal storage ------------ */

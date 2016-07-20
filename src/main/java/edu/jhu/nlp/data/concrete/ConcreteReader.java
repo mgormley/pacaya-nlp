@@ -341,7 +341,7 @@ public class ConcreteReader {
         int i = 0;
         for (SrlGraph g : getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get1()) {
             AnnoSentence sent = tmpSents.get(i);
-            sent.setSrlGraph(g);
+            sent.setSrlGraph(g.toDepGraph());
             sent.setKnownPredsFromSrlGraph();
             numSrlPredicates += g.getNumPreds();
             sent.setKnownPairsFromSrlGraph();
