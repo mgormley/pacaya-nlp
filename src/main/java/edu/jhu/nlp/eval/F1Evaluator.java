@@ -19,7 +19,7 @@ import edu.jhu.prim.tuple.Pair;
 public abstract class F1Evaluator implements Evaluator {
 
     private static final Logger log = LoggerFactory.getLogger(F1Evaluator.class);
-    private static final Reporter rep = Reporter.getReporter(NerEvaluator.class);
+    private static final Reporter rep = Reporter.getReporter(F1Evaluator.class);
 
     private double precision;
     private double recall;

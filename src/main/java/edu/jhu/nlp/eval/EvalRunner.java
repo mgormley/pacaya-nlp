@@ -34,7 +34,6 @@ public class EvalRunner {
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
     public static boolean dpSkipPunctuation = false;
     
-
     // Options for data
     @Opt(hasArg = true, required = true, description = "Predicted data input file or directory.")
     public static File pred = null;
@@ -62,7 +61,8 @@ public class EvalRunner {
         // POS Tagging.
         eval.add(new PosTagAccuracy());
         // Dependency Parsing.
-        eval.add(new DepParseAccuracy(dpSkipPunctuation));
+        eval.add(new DepParseAccuracy(dpSkipPunctuation, false));
+        eval.add(new DepParseAccuracy(dpSkipPunctuation, true));
         eval.add(new DepParseExactMatch(dpSkipPunctuation));
         // SRL...
         eval.add(new SrlPredIdAccuracy());
