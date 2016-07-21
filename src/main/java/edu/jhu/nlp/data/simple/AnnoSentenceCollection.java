@@ -184,6 +184,14 @@ public class AnnoSentenceCollection extends ArrayList<AnnoSentence> {
         this.sourceSents = sourceSents;
     }
 
+    public String getText() {
+        List<String> sentences = new ArrayList<>();
+        for (AnnoSentence s : this) {
+            sentences.add(String.join(" ", s.getWords()));
+        }
+        return String.join("\n", sentences);
+    }
+
     /**
      * Divides the sentences into numFolds different folds. The remainder is appended to the last fold.
      */

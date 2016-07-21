@@ -31,14 +31,14 @@ import edu.jhu.prim.tuple.Pair;
 
 /**
  * Simple representation of a single sentence with many annotations.
- * 
+ *
  * This representation only uses strings, without String objects or Alphabet objects.
- * 
+ *
  * @author mgormley
  * @author mmitchell
  */
 public class AnnoSentence {
-    
+
     // Words
     private List<String> words;
     // 5-gram prefix if the word is longer than 5 characters
@@ -94,10 +94,10 @@ public class AnnoSentence {
     private IntHashSet knownSprlPreds;
     private Set<Pair<Integer, Integer>> knownSprlPairs;
     private Set<Pair<Integer, Integer>> pairsToSkip;
-         
+
     /** The original object (e.g. CoNLL09Sentence) used to create this sentence. */
     private Object sourceSent;
-    
+
     public AnnoSentence() {
 
     }
@@ -141,7 +141,7 @@ public class AnnoSentence {
         newSent.pairsToSkip = (this.pairsToSkip == null) ? null : new HashSet<>(this.pairsToSkip);
         return newSent;
     }
-    
+
     public AnnoSentence getShallowCopy() {
         AnnoSentence newSent = new AnnoSentence();
         for (AT at : AT.values()) {
@@ -187,7 +187,7 @@ public class AnnoSentence {
             removeAt(at);
         }
     }
-    
+
     /**
      * @return a list of the annotation types present in this sentence
      */
@@ -198,7 +198,7 @@ public class AnnoSentence {
                 ats.add(at);
             }
         }
-        return ats; 
+        return ats;
     }
 
     public void removeAt(AT at) {
@@ -232,7 +232,7 @@ public class AnnoSentence {
         default: throw new RuntimeException("not implemented for " + at);
         }
     }
-    
+
     public boolean hasAt(AT at) {
         switch (at) {
         case WORD: return this.words != null;
@@ -260,11 +260,11 @@ public class AnnoSentence {
         case NER: return this.namedEntities != null;
         case NE_PAIRS: return this.nePairs != null;
         case REL_LABELS: return this.relLabels != null;
-        case RELATIONS: return this.relations != null;        
+        case RELATIONS: return this.relations != null;
         default: throw new RuntimeException("not implemented for " + at);
         }
     }
-    
+
     public void intern() {
         QLists.intern(words);
         QLists.intern(prefixes);
@@ -280,7 +280,7 @@ public class AnnoSentence {
         }
         QLists.intern(chunks);
         QLists.intern(neTags);
-        QLists.intern(deprels);        
+        QLists.intern(deprels);
         if (naryTree != null) {
             naryTree.intern();
         }
@@ -344,14 +344,14 @@ public class AnnoSentence {
             sb.append(",\n");
         }
     }
-    
+
     /* -------------------------------- Interesting getters / setters ---------------------------- */
-    
+
     /** Gets the i'th word as a String. */
     public String getWord(int i) {
         return words.get(i);
     }
-    
+
     /** Gets the i'th prefix of 5 characters as a String. */
     public String getPrefix(int i) {
         return prefixes.get(i);
@@ -366,7 +366,7 @@ public class AnnoSentence {
     public String getCposTag(int i) {
         return cposTags.get(i);
     }
-    
+
     /** Gets the i'th Strict POS tag. */
     public StrictPosTag getStrictPosTag(int i) {
         return strictPosTags.get(i);
@@ -376,11 +376,11 @@ public class AnnoSentence {
     public String getCluster(int i) {
         return clusters.get(i);
     }
-    
+
     public int getEmbedId(int i) {
         return embedIds.get(i);
     }
-    
+
     /** Gets the i'th lemma as a String. */
     public String getLemma(int i) {
         return lemmas.get(i);
@@ -390,12 +390,12 @@ public class AnnoSentence {
     public String getChunk(int i) {
         return chunks.get(i);
     }
-    
+
     /** Gets the i'th chunk as a String. */
     public String getNeTag(int i) {
         return neTags.get(i);
     }
-    
+
     /** Gets the index of the parent of the i'th word. */
     public int getParent(int i) {
         return parents[i];
@@ -405,7 +405,7 @@ public class AnnoSentence {
     public boolean isDepEdgePruned(int parent, int child) {
         return depEdgeMask.isPruned(parent, child);
     }
-    
+
     /** Gets the features (e.g. morphological features) of the i'th word. */
     public List<String> getFeats(int i) {
         return feats.get(i);
@@ -417,14 +417,14 @@ public class AnnoSentence {
         if (deprels == null) { return null; }
         return deprels.get(i);
     }
-        
+
     /**
      * Gets a list of words corresponding to a token span.
      */
     public List<String> getWords(Span span) {
         return getSpan(words, span);
     }
-    
+
     /**
      * Gets a list of words corresponding to a token span.
      */
@@ -438,28 +438,28 @@ public class AnnoSentence {
     public List<Integer> getParents(Span span) {
         return getSpan(parents, span);
     }
-    
+
     /**
      * Gets a list of POS tags corresponding to a token span.
      */
     public List<String> getPosTags(Span span) {
         return getSpan(posTags, span);
     }
-    
+
     /**
      * Gets a list of coarse POS tags corresponding to a token span.
      */
     public List<String> getCposTags(Span span) {
         return getSpan(cposTags, span);
     }
-    
+
     /**
      * Gets a list of strict POS tags corresponding to a token span.
      */
     public List<StrictPosTag> getStrictPosTags(Span span) {
         return getSpan(strictPosTags, span);
     }
-    
+
     /**
      * Gets a list of Distributional Similarity Cluster IDs corresponding to a token span.
      */
@@ -473,7 +473,7 @@ public class AnnoSentence {
     public List<String> getLemmas(Span span) {
         return getSpan(lemmas, span);
     }
-    
+
     // TODO: Consider moving this to LabelSequence.
     private static <T> List<T> getSpan(List<T> seq, Span span) {
         return seq.subList(span.start(), span.end());
@@ -487,19 +487,19 @@ public class AnnoSentence {
         }
         return list;
     }
-    
+
     /**
      * Gets the shortest dependency path between two tokens.
-     * 
+     *
      * <p>
      * For the tree: x0 <-- x1 --> x2, represented by parents=[1, -1, 1] the
      * dependency path from x0 to x2 would be a list [(0, UP), (1, DOWN)]
      * </p>
-     * 
+     *
      * <p>
      * See DepTreeTest for examples.
      * </p>
-     * 
+     *
      * @param start The position of the start token.
      * @param end The position of the end token.
      * @return The path as a list of pairs containing the word positions and the
@@ -509,15 +509,15 @@ public class AnnoSentence {
     public List<Pair<Integer, ParentsArray.Dir>> getDependencyPath(int start, int end) {
         return ParentsArray.getDependencyPath(start, end, parents);
     }
-    
+
     public int size() {
         return words.size();
     }
-    
+
     public boolean isKnownPred(int i) {
         return knownPreds.contains(i);
     }
-    
+
     public void setKnownPredsFromSrlGraph() {
         if (srlGraph == null) {
             throw new IllegalStateException("This can only be called if srlGraph is non-null.");
@@ -538,7 +538,7 @@ public class AnnoSentence {
     }
 
     /* ----------- Getters/Setters for internal storage ------------ */
-        
+
     public List<String> getWords() {
         return words;
     }
@@ -546,7 +546,7 @@ public class AnnoSentence {
     public void setWords(List<String> words) {
         this.words = words;
     }
-    
+
     public List<String> getPrefixes() {
         return prefixes;
     }
@@ -570,7 +570,7 @@ public class AnnoSentence {
     public void setPosTags(List<String> posTags) {
         this.posTags = posTags;
     }
-    
+
     public List<String> getCposTags() {
         return cposTags;
     }
@@ -578,7 +578,7 @@ public class AnnoSentence {
     public void setCposTags(List<String> cposTags) {
         this.cposTags = cposTags;
     }
-        
+
     public List<StrictPosTag> getStrictPosTags() {
         return strictPosTags;
     }
@@ -594,7 +594,7 @@ public class AnnoSentence {
     public void setClusters(List<String> clusters) {
         this.clusters = clusters;
     }
-        
+
     public IntArrayList getEmbedIds() {
         return embedIds;
     }
@@ -610,7 +610,7 @@ public class AnnoSentence {
     public void setChunks(List<String> chunks) {
         this.chunks = chunks;
     }
-    
+
     public List<String> getNeTags() {
         return neTags;
     }
@@ -638,7 +638,7 @@ public class AnnoSentence {
     public IntHashSet getKnownPreds() {
         return knownPreds;
     }
-    
+
     public void setKnownPreds(IntHashSet knownPreds) {
         this.knownPreds = knownPreds;
     }
@@ -649,11 +649,11 @@ public class AnnoSentence {
     public Set<Pair<Integer, Integer>> getKnownSrlPairs() {
         return knownSrlPairs;
     }
-    
+
     public void setKnownSrlPreds(Set<Pair<Integer, Integer>> knownSrlPairs) {
         this.knownSrlPairs = knownSrlPairs;
     }
-    
+
 
 
     /** Constructs a new list containing the predicate senses. */
@@ -667,11 +667,11 @@ public class AnnoSentence {
         }
         return senses;
     }
-    
+
     public void setSrlGraph(DepGraph srlGraph) {
         this.srlGraph = srlGraph;
     }
-    
+
     public List<String> getDeprels() {
         return deprels;
     }
@@ -687,7 +687,7 @@ public class AnnoSentence {
     public void setFeats(List<List<String>> feats) {
         this.feats = feats;
     }
-    
+
     public NaryTree getNaryTree() {
         return naryTree;
     }
@@ -695,12 +695,12 @@ public class AnnoSentence {
     public void setNaryTree(NaryTree naryTree) {
         this.naryTree = naryTree;
     }
-    
+
     /** Gets the original object (e.g. CoNLL09Sentence) used to create this sentence. */
     public Object getSourceSent() {
         return sourceSent;
     }
-    
+
     /** Sets the original object (e.g. CoNLL09Sentence) used to create this sentence. */
     public void setSourceSent(Object sourceSent) {
         this.sourceSent = sourceSent;
@@ -709,11 +709,11 @@ public class AnnoSentence {
     public NerMentions getNamedEntities() {
         return namedEntities;
     }
-    
+
     public void setNamedEntities(NerMentions namedEntities) {
         this.namedEntities = namedEntities;
     }
-    
+
     public List<Pair<NerMention, NerMention>> getNePairs() {
 		return nePairs;
 	}
@@ -721,7 +721,7 @@ public class AnnoSentence {
     public void setNePairs(List<Pair<NerMention, NerMention>> nePairs) {
         this.nePairs = nePairs;
     }
-    
+
     public List<String> getRelLabels() {
         return relLabels;
     }

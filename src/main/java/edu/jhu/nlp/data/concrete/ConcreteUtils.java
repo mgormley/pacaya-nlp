@@ -38,13 +38,8 @@ public class ConcreteUtils {
         AnnotationMetadata tokenizationMetadata = new AnnotationMetadata();
         tokenizationMetadata.setTimestamp(System.currentTimeMillis());
         tokenizationMetadata.setTool(tokTool);
-        Communication comm;
-        try {
-            comm = CommunicationFactory.create(commId);
-        } catch (ConcreteException e) {
-            e.printStackTrace();
-            return null;
-        }
+        Communication comm = new Communication();
+        comm.setId(commId);
         comm.setType("corpus");
         comm.setMetadata(commMetadata);
 
