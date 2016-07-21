@@ -32,7 +32,6 @@ import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointFactorTemplate;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorGraphBuilderPrm;
 import edu.jhu.nlp.sprl.SprlFactorGraphBuilder.SprlFactorType;
-import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
@@ -80,7 +79,7 @@ public class SprlFactorGraphBuilderTest {
 
     /**
      * prepares a list of train examples to initializes the
-     * 
+     *
      * @param tPrm
      * @return
      */
@@ -118,13 +117,13 @@ public class SprlFactorGraphBuilderTest {
         ofcPrm.featCountCutoff = 1;
         // I'm not sure if this is really hooked up (I can't find where it makes
         // a difference)
-        ofcPrm.includeUnsupportedFeatures = false;
+//        ofcPrm.includeUnsupportedFeatures = false;
         ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(ofcPrm, new FactorTemplateList());
 
         CorpusStatisticsPrm csPrm = new CorpusStatisticsPrm();
         csPrm.cutoff = 0;
         csPrm.language = "en";
-        csPrm.normalizeWords = false;
+//        csPrm.normalizeWords = false;
         csPrm.topN = 100;
         csPrm.useGoldSyntax = true;
 
@@ -393,10 +392,9 @@ public class SprlFactorGraphBuilderTest {
                     p.sprlBuilder.annoToConfig(p.sent, p.vc);
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -447,10 +445,9 @@ public class SprlFactorGraphBuilderTest {
                     p.sprlBuilder.annoToConfig(p.sent, p.vc);
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -501,10 +498,9 @@ public class SprlFactorGraphBuilderTest {
                 encode = p -> {
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -626,10 +622,9 @@ public class SprlFactorGraphBuilderTest {
                 encode = p -> {
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -733,10 +728,9 @@ public class SprlFactorGraphBuilderTest {
                     p.sprlBuilder.annoToConfig(p.sent, p.vc);
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -787,10 +781,9 @@ public class SprlFactorGraphBuilderTest {
                     p.sprlBuilder.annoToConfig(p.sent, p.vc);
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -841,10 +834,9 @@ public class SprlFactorGraphBuilderTest {
                     p.sprlBuilder.annoToConfig(p.sent, p.vc);
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -947,10 +939,9 @@ public class SprlFactorGraphBuilderTest {
                 encode = p -> {
                     p.srlBuilder = new SrlFactorGraphBuilder(p.srlPrm);
                     p.srlBuilder.build(p.isent, p.cs, p.ofc, p.fg);
+                    p.srlBuilder.addVarAssignments(p.sent.getSrlGraph(), p.vc);
                     SprlFactorGraphBuilder.addSprlSrlFactors(p.sent, p.ofc, p.cs, p.fg, p.sprlBuilder, p.srlBuilder,
                             p.sprlPrm.pairwiseFactors);
-                    SrlEncoder.addSrlTrainAssignment(p.sent, p.sent.getSrlGraph(), p.srlBuilder, p.vc,
-                            p.srlPrm.predictSense, p.srlPrm.predictPredPos, p.srlPrm.predictPredPos);
                 };
             }
         });
@@ -985,5 +976,5 @@ public class SprlFactorGraphBuilderTest {
     public void testEnum() {
         assertEquals(SprlFactorType.SPRL_UNARY, SprlFactorType.valueOf(SprlFactorType.SPRL_UNARY.name()));
     }
-    
+
 }

@@ -62,7 +62,7 @@ public class SprlLearningTest {
         sgdPrm.sched = new FixedStep(1.0);
         crfPrm.batchOptimizer = new SGD(sgdPrm);
         crfPrm.optimizer = null;
-        crfPrm.regularizer = new L2(1.0 / .1);
+//        crfPrm.regularizer = new L2(1.0 / .1);
         return crfPrm;
     }
 
@@ -96,7 +96,7 @@ public class SprlLearningTest {
         fePrm.featureHashMod = -1;
         fePrm.argTemplates = getFeatTemplates(argTemplates); 
         fePrm.senseTemplates = getFeatTemplates(senseTemplates); 
-        jointPrm.ofcPrm.includeUnsupportedFeatures = false;
+//        jointPrm.ofcPrm.includeUnsupportedFeatures = false;
         jointPrm.buPrm.fgPrm.srlPrm.roleStructure = RoleStructure.PAIRS_GIVEN;
 //        jointPrm.buPrm.fgPrm.enforceSprlNilAgreement = true;
         jointPrm.buPrm.fgPrm.includeDp = false;
