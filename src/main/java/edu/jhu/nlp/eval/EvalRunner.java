@@ -3,7 +3,6 @@ package edu.jhu.nlp.eval;
 import java.io.File;
 import java.io.IOException;
 
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,9 +11,10 @@ import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.AnnoSentenceReaderPrm;
 import edu.jhu.nlp.data.simple.AnnoSentenceReader.DatasetType;
-import edu.jhu.nlp.data.simple.CorpusHandler;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
+import edu.jhu.nlp.sprl.SprlEvaluator;
+import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.pacaya.util.Threads;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
@@ -33,7 +33,7 @@ public class EvalRunner {
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
     public static boolean dpSkipPunctuation = false;
-    
+
     // Options for data
     @Opt(hasArg = true, required = true, description = "Predicted data input file or directory.")
     public static File pred = null;
@@ -41,7 +41,7 @@ public class EvalRunner {
     public static File gold = null;
     @Opt(hasArg = true, required = true, description = "Type of data.")
     public static DatasetType type = null;
-    
+
     public static AnnoSentenceCollection getData(File path, String name, DatasetType type) throws IOException {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
         prm.name = name;
@@ -49,7 +49,7 @@ public class EvalRunner {
         reader.loadSents(path, type);
         return reader.getData();
     }
-    
+
     public static void run() throws IOException {
         // The evaluation pipeline.
         EvalPipeline eval = new EvalPipeline();
@@ -67,23 +67,39 @@ public class EvalRunner {
         // SRL...
         eval.add(new SrlPredIdAccuracy());
         eval.add(new SrlSelfLoops());
+        //TODO: I added the alst false to all of those to shutup the compiler
         // Unlabled predicate position identification.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false, false)));
         // Labeled predicate sense classification.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false, false)));
         // SRL without sense, assuming predicate positions are given.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true, false)));
         // Full SRL, assuming predicate positions are given.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true, false)));
+        // Unlabled predicate position identification.
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false, true)));
+        // Labeled predicate sense classification.
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false, true)));
+        // SRL without sense, assuming predicate positions are given.
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true, true)));
+        // Full SRL, assuming predicate positions are given.
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true, true)));
+        // SPRL...
+        eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, true, true, true));
+        eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, false, false, false));
+        eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, false, false, false, false));
+        eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, false, false, false));
+        eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, true, false, false));
+
         // Relation extraction.
         eval.add(new RelationEvaluator());
         // Proportion of annotations.
         eval.add(new ProportionAnnotated(AT.values()));
-        
+
         // Read data.
         AnnoSentenceCollection predSents = getData(pred, "pred", type);
         AnnoSentenceCollection goldSents = getData(gold, "gold", type);
-        
+
         // Evaluate.
         eval.evaluate(predSents, goldSents, "pred/gold");
     }
@@ -100,5 +116,5 @@ public class EvalRunner {
 
         EvalRunner.run();
     }
-    
+
 }
