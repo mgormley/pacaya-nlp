@@ -161,7 +161,7 @@ public class ConcreteWriter {
             log.error(String.format("# sents in Communication = %d # sents in AnnoSentenceCollection = %d", numSents, sents.size()));
             log.error("The number of sentences in the Communication do not match the number in the AnnoSentenceCollection." +
                     "This can occur when the maximum sentence length or the total number of sentences is restricted.");
-            throw new RuntimeException("The number of sentences in the Communication do not match the number in the AnnoSentenceCollection.");
+            //throw new RuntimeException("The number of sentences in the Communication do not match the number in the AnnoSentenceCollection.");
         }
         if (prm.addDepParse) {
             addDependencyParse(sents, comm);
@@ -576,12 +576,12 @@ public class ConcreteWriter {
         // make sure that the sentences line up
         if(ts.size() != sentences.size()) {
             log.error("Number of sentences don't match");
-            throw new RuntimeException("Number of sentences don't match");
+            //throw new RuntimeException("Number of sentences don't match");
         }
         for(int i=0; i<sentences.size(); i++) {
             if(ts.get(i).getTokenList().getTokenListSize() != sentences.get(i).size()) {
                 log.error("Sentence lengths don't match");
-                throw new RuntimeException("Sentence lengths don't match");
+                //throw new RuntimeException("Sentence lengths don't match");
             }
         }
         return ts;
