@@ -32,6 +32,16 @@ public class TemplateLanguage {
 
     /* -------------------- Structures of the Little Language ---------------- */
 
+    /**
+     * Annotation Type. These describe which part of a AnnoSentence must
+     * be present in order to utilize each structure.
+     */
+    public enum AT {
+        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED_IDX, MORPHO, CHUNKS, DEP_TREE, DEPREL,
+        DEP_EDGE_MASK, SRL_PRED_IDX, SRL_PAIR_IDX, SRL, NARY_TREE, NE_TAGS, NER, NE_PAIRS, RELATIONS, REL_LABELS,
+        SPRL_PRED_IDX, SPRL_PAIR_IDX, SPRL, PAIRS_TO_SKIP;
+    }
+
     /** Word property. A mapping from a position to a string. */
     public enum TokProperty {
         INDEX, WORD, LEMMA, POS, CPOS, STRICT_POS, BC0, BC1, MORPHO, DEPREL, LC, CAPITALIZED, WORD_TOP_N,
@@ -128,16 +138,6 @@ public class TemplateLanguage {
     }
 
     /* -------------------- Descriptions of the Language Elements ---------------- */
-
-    /**
-     * Annotation Type. These describe which part of a AnnoSentence must
-     * be present in order to utilize each structure.
-     */
-    public enum AT {
-        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED_IDX, MORPHO, CHUNKS, DEP_TREE, DEPREL,
-        DEP_EDGE_MASK, SRL_PRED_IDX, SRL_PAIR_IDX, SRL, NARY_TREE, NE_TAGS, NER, NE_PAIRS, RELATIONS, REL_LABELS,
-        SPRL_PRED_IDX, SPRL_PAIR_IDX, SPRL, PAIRS_TO_SKIP;
-    }
 
     public static Description getDescByName(String name) {
         name = Description.normalizeName(name);

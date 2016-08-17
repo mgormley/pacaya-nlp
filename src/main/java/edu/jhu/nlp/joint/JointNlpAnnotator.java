@@ -104,29 +104,6 @@ public class JointNlpAnnotator implements Trainable {
         this.embeddings = embeddings;
     }
 
-    private void maybeWriteGraphs(FgExampleList data, JointNlpFgModel model, String category) {
-        if (prm.exportTrainToLibDAI != null) {
-            Path outDir = Paths.get(prm.exportTrainToLibDAI, category);
-            // create directory if doesn't already exist
-            if (!Files.exists(outDir)) {
-                try {
-                    Files.createDirectories(outDir);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    return;
-                }
-            }
-            // write out each fg
-            log.info(String.format("Writing libdai formatted factor graph files to: %s",  outDir.toAbsolutePath().toString()));
-            for (int i = 0; i < data.size(); i++) {
-                LFgExample example = data.get(i);
-                FactorGraph fg = example.getFactorGraph();
-                fg.updateFromModel(model);
-                LibDaiFgIo.write(fg, Paths.get(outDir.toString(), String.format("%d.fg", i)));
-            }
-        }
-    }
-
     @Override
     public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold,
             AnnoSentenceCollection devInput, AnnoSentenceCollection devGold) {
@@ -173,6 +150,29 @@ public class JointNlpAnnotator implements Trainable {
         trainer.train(model, data, getValidationFn(devInput, devGold, "dev"));
         maybeWriteGraphs(data, model, "after");
         ofc.getTemplates().stopGrowth();
+    }
+
+    private void maybeWriteGraphs(FgExampleList data, JointNlpFgModel model, String category) {
+        if (prm.exportTrainToLibDAI != null) {
+            Path outDir = Paths.get(prm.exportTrainToLibDAI, category);
+            // create directory if doesn't already exist
+            if (!Files.exists(outDir)) {
+                try {
+                    Files.createDirectories(outDir);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return;
+                }
+            }
+            // write out each fg
+            log.info(String.format("Writing libdai formatted factor graph files to: %s",  outDir.toAbsolutePath().toString()));
+            for (int i = 0; i < data.size(); i++) {
+                LFgExample example = data.get(i);
+                FactorGraph fg = example.getFactorGraph();
+                fg.updateFromModel(model);
+                LibDaiFgIo.write(fg, Paths.get(outDir.toString(), String.format("%d.fg", i)));
+            }
+        }
     }
 
     public Function getValidationFn(final AnnoSentenceCollection devInput, final AnnoSentenceCollection devGold, String devName) {
