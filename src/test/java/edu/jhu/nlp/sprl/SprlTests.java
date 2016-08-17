@@ -12,7 +12,6 @@ import edu.jhu.nlp.data.concrete.ConcreteReaderTest;
     CounterTest.class,
     BinarySprlLabelConverterTest.class,
     SprlPropertiesTest.class,
-    SprlConcreteEvaluatorTest.class,
     SprlEvaluatorTest.class,
     SprlFactorGraphBuilderTest.class,
     SprlLearningTest.class,
