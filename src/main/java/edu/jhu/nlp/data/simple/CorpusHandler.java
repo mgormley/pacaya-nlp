@@ -204,7 +204,7 @@ public class CorpusHandler {
     private static void writeNewConcrete(AnnoSentenceWriter writer, File outfile, AnnoSentenceCollection sents,
             List<AT> ats) throws IOException {
         Object oldSourceSents = sents.getSourceSents();
-        Communication comm = ConcreteUtils.ingestText(sents.getText(), "corpus", "corpus", "tokenization");
+        Communication comm = ConcreteUtils.ingestText(ConcreteUtils.getText(sents), "corpus", "corpus", "tokenization");
         sents.setSourceSents(java.util.Collections.singletonList(comm));
         writer.write(outfile, DatasetType.CONCRETE, sents, ats);
         sents.setSourceSents(oldSourceSents);

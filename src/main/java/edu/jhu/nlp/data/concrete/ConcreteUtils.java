@@ -22,14 +22,15 @@ import edu.jhu.hlt.concrete.section.SectionFactory;
 import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.uuid.UUIDFactory;
 import edu.jhu.nlp.data.simple.AnnoSentence;
+import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 
 public class ConcreteUtils {
 
     private ConcreteUtils() { }
-    
+
     /**
      * @return A concrete communication containing the tokens of the text, split into sections by newlines (skipping blank lines), and tokenized on whitespace which are replaced by single spaces
-     * @throws ConcreteException 
+     * @throws ConcreteException
      */
     public static Communication ingestText(String text, String commId, String commTool, String tokTool) {
         AnnotationMetadata commMetadata = new AnnotationMetadata();
@@ -81,9 +82,17 @@ public class ConcreteUtils {
         return comm;
     }
 
+    public static String getText(AnnoSentenceCollection sents) {
+        List<String> sentences = new ArrayList<>();
+        for (AnnoSentence s : sents) {
+            sentences.add(String.join(" ", s.getWords()));
+        }
+        return String.join("\n", sentences);
+    }
+
     public static TokenTagging getFirstXTags(Tokenization tokenization, String taggingType) {
         return getFirstXTagsWithName(tokenization, taggingType, null);
-    }    
+    }
 
     public static TokenTagging getFirstXTagsWithName(Tokenization tokenization, String taggingType, String toolName) {
         if (!tokenization.isSetTokenTaggingList()) {
@@ -99,11 +108,11 @@ public class ConcreteUtils {
         }
         return null;
     }
-    
+
     public static DependencyParse getFirstDependencyParse(Tokenization tokenization) {
         return getFirstDependencyParseWithName(tokenization, null);
     }
-    
+
     public static DependencyParse getFirstDependencyParseWithName(Tokenization tokenization, String toolName) {
         List<DependencyParse> parseList = tokenization.getDependencyParseList();
         if (parseList == null) {
@@ -117,11 +126,11 @@ public class ConcreteUtils {
         }
         return null;
     }
-    
+
     public static Parse getFirstParse(Tokenization tokenization) {
         return getFirstParseWithName(tokenization, null);
     }
-    
+
     public static Parse getFirstParseWithName(Tokenization tokenization, String toolName) {
         List<Parse> parseList = tokenization.getParseList();
         if (parseList == null) {
@@ -143,31 +152,31 @@ public class ConcreteUtils {
         }
         return n;
     }
-    
+
     public static EntityMentionSet getFirstEntityMentionSetWithName(Communication comm, String toolName) {
         List<EntityMentionSet> cEmsList = comm.getEntityMentionSetList();
         if (cEmsList == null) {
             return null;
         }
-        for (EntityMentionSet cEms : cEmsList) {            
+        for (EntityMentionSet cEms : cEmsList) {
             if (toolName == null || cEms.getMetadata().getTool().contains(toolName)) {
                 return cEms;
             }
         }
         return null;
     }
-    
+
     public static SituationMentionSet getFirstSituationMentionSetWithName(Communication comm, String toolName) {
         List<SituationMentionSet> cSmsList = comm.getSituationMentionSetList();
         if (cSmsList == null) {
             return null;
         }
-        for (SituationMentionSet cSms : cSmsList) {            
+        for (SituationMentionSet cSms : cSmsList) {
             if (toolName == null || cSms.getMetadata().getTool().contains(toolName)) {
                 return cSms;
             }
         }
         return null;
     }
-    
+
 }
