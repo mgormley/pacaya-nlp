@@ -606,12 +606,6 @@ public class ConcreteReader {
                 as.setParents(pair.get1());
                 as.setDeprels(pair.get2());
             }
-            /* TODO: deal with getting rid of parents now
-             * int[] parents = getParents(depParse, numWords);
-            as.setParents(parents);
-            String[] deprels = getDeprels(depParse, numWords);
-            as.setDeprels(Arrays.asList(deprels));
-            */
         }
 
         // Constituency Parse
