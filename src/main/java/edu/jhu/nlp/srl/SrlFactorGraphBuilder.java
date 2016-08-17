@@ -36,7 +36,7 @@ import edu.jhu.prim.tuple.Pair;
 
 /**
  * A factor graph builder for SRL.
- * 
+ *
  * @author mmitchell
  * @author mgormley
  */
@@ -46,7 +46,7 @@ public class SrlFactorGraphBuilder implements Serializable {
 
     public static final String TEMPLATE_KEY_FOR_UNKNOWN_SENSE = SrlFactorTemplate.SENSE_UNARY + "_" + CorpusStatistics.UNKNOWN_SENSE;
     public static final String TEMPLATE_KEY_FOR_UNKNOWN_SENSE_ROLE = SrlFactorTemplate.SENSE_ROLE_BINARY + "_" + CorpusStatistics.UNKNOWN_SENSE;
-    private static final Logger log = LoggerFactory.getLogger(SrlFactorGraphBuilder.class); 
+    private static final Logger log = LoggerFactory.getLogger(SrlFactorGraphBuilder.class);
 
     /**
      * Parameters for the SrlFactorGraph.
@@ -76,16 +76,15 @@ public class SrlFactorGraphBuilder implements Serializable {
         public boolean predictPredPos = false;
         /** Feature extractor options for SRL. */
         public SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
-        /** Whether to use FCM factors. */ 
+        /** Whether to use FCM factors. */
         public boolean fcmFactors = false;
-        /** Whether to treat the embeddings as model parameters. */ 
+        /** Whether to treat the embeddings as model parameters. */
         public boolean fcmFineTuning = false;
-        /** FCM word features flags. */ 
+        /** FCM word features flags. */
         public SrlWordFeaturesPrm fcmWfPrm = new SrlWordFeaturesPrm();
     }
 
     public enum RoleStructure {
-        /** Defines Role variables each of the "known" predicates with all possible arguments. */
         /** Defines Role variables for only known predicate-argument pairs. */
         PAIRS_GIVEN,
         /**
@@ -98,25 +97,25 @@ public class SrlFactorGraphBuilder implements Serializable {
         /** Do not predict roles. */
         NO_ROLES,
     }
-    
+
     public enum SrlFactorTemplate {
         ROLE_UNARY,
-        SENSE_UNARY, 
+        SENSE_UNARY,
         SENSE_ROLE_BINARY,
     }
-    
+
     /**
      * Role variable.
-     * 
+     *
      * @author mgormley
      */
     public static class RoleVar extends Var {
-        
+
         private static final long serialVersionUID = 1L;
 
         private int parent;
         private int child;
-        
+
         public RoleVar(VarType type, int numStates, String name, List<String> stateNames, int parent, int child) {
             super(type, numStates, name, stateNames);
             this.parent = parent;
@@ -130,20 +129,20 @@ public class SrlFactorGraphBuilder implements Serializable {
         public int getChild() {
             return child;
         }
-        
+
         public static String getNilStateName() {
             return "_";
         }
-        
+
         public int getNilState() {
             return getState(getNilStateName());
         }
-        
+
     }
-    
+
     /**
-     * Sense variable. 
-     * 
+     * Sense variable.
+     *
      * @author mgormley
      */
     public static class SenseVar extends Var {
@@ -151,7 +150,7 @@ public class SrlFactorGraphBuilder implements Serializable {
         private static final long serialVersionUID = 1L;
 
         private int parent;
-        
+
         public SenseVar(VarType type, int numStates, String name, List<String> stateNames, int parent) {
             super(type, numStates, name, stateNames);
             this.parent = parent;
@@ -175,72 +174,10 @@ public class SrlFactorGraphBuilder implements Serializable {
     private int n;
 
     // Cached for reuse by the joint factors.
-    private ObsFeatureExtractor obsFe;         
-    
+    private ObsFeatureExtractor obsFe;
+
     public SrlFactorGraphBuilder(SrlFactorGraphBuilderPrm prm) {
         this.prm = prm;
-    }
-
-    /**
-     * Helper function that returns the possible predicate argument pairs according to the partial annotations in sent
-     * if fromSrl, then the known pairs and known preds will be from the srl information in sent, otherwise it will come
-     * from the sprl information
-     */
-    public static List<Pair<Integer, Integer>> getPossibleRolePairs(AnnoSentence sent, RoleStructure rS,
-            boolean allowPredArgSelfLoops, boolean fromSrl) {
-        IntSet knownPreds = fromSrl ? sent.getKnownPreds() : sent.getKnownSprlPreds(); 
-        Set<Pair<Integer, Integer>> knownPairs = fromSrl ? sent.getKnownSrlPairs() : sent.getKnownSprlPairs(); 
-        return getPossibleRolePairs(sent.size(), knownPreds, knownPairs, sent.getPairsToSkip(), rS, allowPredArgSelfLoops); 
-    }
-
-    /**
-     * Returns a list of pairs (i,j) for which a role variable should be built
-     * according to the provided roleStructure.
-     * 
-     * @param isent
-     *            Sentence to get pairs for.
-     * @param rS
-     *            RoleStructure describing which pairs to include.
-     * @param allowPredArgSelfLoops
-     *            boolean indicating if pairs (i,i) should be included.
-     * @return
-     */
-    public static List<Pair<Integer, Integer>> getPossibleRolePairs(int n, IntSet knownPreds, Collection<Pair<Integer, Integer>> knownPairs, Collection<Pair<Integer, Integer>> pairsToSkip, RoleStructure rS,
-            boolean allowPredArgSelfLoops) {
-        List<Pair<Integer, Integer>> toReturn = new ArrayList<>();
-        if (rS == RoleStructure.PAIRS_GIVEN) {
-            toReturn.addAll(knownPairs);
-            toReturn.sort(ComparablePair.naturalOrder());
-        } else if (rS == RoleStructure.PREDS_GIVEN) {
-            // CoNLL-friendly model; preds given
-            IntIter iter = knownPreds.iterator();
-            while (iter.hasNext()) {
-                int i = iter.next();
-                for (int j = 0; j < n; j++) {
-                    if (i == j && !allowPredArgSelfLoops) {
-                        continue;
-                    }
-                    toReturn.add(new Pair<>(i, j));
-                }
-            }
-        } else if (rS == RoleStructure.ALL_PAIRS) {
-            // n**2 model
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    if (i != j || allowPredArgSelfLoops) {
-                        toReturn.add(new Pair<>(i, j));
-                    }
-                }
-            }
-        } else if (rS == RoleStructure.NO_ROLES) {
-            // No role variables.
-        } else {
-            throw new IllegalArgumentException("Unsupported model structure: " + rS);
-        }
-        if (pairsToSkip != null) {
-            toReturn.removeAll(pairsToSkip);
-        }
-        return toReturn;
     }
 
     /**
@@ -248,7 +185,7 @@ public class SrlFactorGraphBuilder implements Serializable {
      */
     public void build(IntAnnoSentence isent, CorpusStatistics cs, ObsFeatureConjoiner ofc,
             FactorGraph fg) {
-        AnnoSentence sent = isent.getAnnoSentence();                
+        AnnoSentence sent = isent.getAnnoSentence();
         List<String> words = sent.getWords();
         List<String> lemmas = sent.getLemmas();
         IntSet knownPreds = sent.getKnownPreds();
@@ -257,7 +194,7 @@ public class SrlFactorGraphBuilder implements Serializable {
 
         // Create feature extractor.
         obsFe = new SrlFeatureExtractor(prm.srlFePrm, isent, cs, ofc);
-        
+
         boolean predsOrPairsGiven = (prm.roleStructure == RoleStructure.PREDS_GIVEN)
                 || (prm.roleStructure == RoleStructure.PAIRS_GIVEN);
         // Check for null arguments.
@@ -316,7 +253,7 @@ public class SrlFactorGraphBuilder implements Serializable {
             }
         }
 
-                
+
         // Add the factors.
         for (int i = -1; i < n; i++) {
             // Get the lemma or UNK if we don't know it.
@@ -379,14 +316,14 @@ public class SrlFactorGraphBuilder implements Serializable {
         }
         return new RoleVar(roleVarType, roleStateNames.size(), roleVarName, roleStateNames, parent, child);
     }
-    
+
     private SenseVar createSenseVar(int parent, List<String> senseStateNames) {
         String senseVarName = "Sense_" + parent;
-        return new SenseVar(prm.srlVarType, senseStateNames.size(), senseVarName, senseStateNames, parent);            
+        return new SenseVar(prm.srlVarType, senseStateNames.size(), senseVarName, senseStateNames, parent);
     }
-    
+
     // ----------------- Public Getters -----------------
-    
+
     /**
      * Gets a Role variable.
      * @param i The parent position.
@@ -400,7 +337,7 @@ public class SrlFactorGraphBuilder implements Serializable {
             return null;
         }
     }
-    
+
     /**
      * Gets a predicate Sense variable.
      * @param i The position of the predicate.
@@ -452,7 +389,7 @@ public class SrlFactorGraphBuilder implements Serializable {
                         } else { // (prm.predictPredPos && !prm.predictPredSense)
                             // We use CorpusStatistics.UNKNOWN_SENSE to indicate that
                             // there exists a predicate at this position.
-                            vc.put(senseVar, CorpusStatistics.UNKNOWN_SENSE);   
+                            vc.put(senseVar, CorpusStatistics.UNKNOWN_SENSE);
                         }
                     } else {
                         // The "_" indicates that there is no predicate at this
@@ -492,7 +429,7 @@ public class SrlFactorGraphBuilder implements Serializable {
             return true;
         }
     }
- 
+
     /* ------------------------- Decode ------------------------- */
 
     // TODO: We used to decode only the PREDICTED vars, but now decode them all.
@@ -534,13 +471,75 @@ public class SrlFactorGraphBuilder implements Serializable {
         log.trace("SRL var count: {}", srlVarCount);
         return srl;
     }
-    
+
     public SenseVar[] getSenseVars() {
         return senseVars;
     }
 
     public SrlFactorGraphBuilderPrm getPrm() {
         return prm;
+    }
+
+    /**
+     * Helper function that returns the possible predicate argument pairs according to the partial annotations in sent
+     * if fromSrl, then the known pairs and known preds will be from the srl information in sent, otherwise it will come
+     * from the sprl information
+     */
+    public static List<Pair<Integer, Integer>> getPossibleRolePairs(AnnoSentence sent, RoleStructure rS,
+            boolean allowPredArgSelfLoops, boolean fromSrl) {
+        IntSet knownPreds = fromSrl ? sent.getKnownPreds() : sent.getKnownSprlPreds();
+        Set<Pair<Integer, Integer>> knownPairs = fromSrl ? sent.getKnownSrlPairs() : sent.getKnownSprlPairs();
+        return getPossibleRolePairs(sent.size(), knownPreds, knownPairs, sent.getPairsToSkip(), rS, allowPredArgSelfLoops);
+    }
+
+    /**
+     * Returns a list of pairs (i,j) for which a role variable should be built
+     * according to the provided roleStructure.
+     *
+     * @param isent
+     *            Sentence to get pairs for.
+     * @param rS
+     *            RoleStructure describing which pairs to include.
+     * @param allowPredArgSelfLoops
+     *            boolean indicating if pairs (i,i) should be included.
+     * @return
+     */
+    public static List<Pair<Integer, Integer>> getPossibleRolePairs(int n, IntSet knownPreds, Collection<Pair<Integer, Integer>> knownPairs, Collection<Pair<Integer, Integer>> pairsToSkip, RoleStructure rS,
+            boolean allowPredArgSelfLoops) {
+        List<Pair<Integer, Integer>> toReturn = new ArrayList<>();
+        if (rS == RoleStructure.PAIRS_GIVEN) {
+            toReturn.addAll(knownPairs);
+            toReturn.sort(ComparablePair.naturalOrder());
+        } else if (rS == RoleStructure.PREDS_GIVEN) {
+            // CoNLL-friendly model; preds given
+            IntIter iter = knownPreds.iterator();
+            while (iter.hasNext()) {
+                int i = iter.next();
+                for (int j = 0; j < n; j++) {
+                    if (i == j && !allowPredArgSelfLoops) {
+                        continue;
+                    }
+                    toReturn.add(new Pair<>(i, j));
+                }
+            }
+        } else if (rS == RoleStructure.ALL_PAIRS) {
+            // n**2 model
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i != j || allowPredArgSelfLoops) {
+                        toReturn.add(new Pair<>(i, j));
+                    }
+                }
+            }
+        } else if (rS == RoleStructure.NO_ROLES) {
+            // No role variables.
+        } else {
+            throw new IllegalArgumentException("Unsupported model structure: " + rS);
+        }
+        if (pairsToSkip != null) {
+            toReturn.removeAll(pairsToSkip);
+        }
+        return toReturn;
     }
 
 }
