@@ -510,12 +510,12 @@ public class JointNlpRunner {
             }
             if (CorpusHandler.getPredLatAts().contains(AT.SRL_PRED_IDX)) {
                 // Evaluate F1 of unlabled predicate position identification.
-                eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, predictPredPos, false, (roleStructure != RoleStructure.PAIRS_GIVEN))));
+                eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, predictPredPos, false)));
                 eval.add(new SrlPredIdAccuracy());
             }
             if (CorpusHandler.getPredLatAts().contains(AT.SRL)) {
                 eval.add(new SrlSelfLoops());
-                eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES), (roleStructure != RoleStructure.PAIRS_GIVEN))));
+                eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
                 eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, sprlBreakdownEval, sprlReportBaseline, true));

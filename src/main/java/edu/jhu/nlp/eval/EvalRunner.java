@@ -69,21 +69,13 @@ public class EvalRunner {
         eval.add(new SrlSelfLoops());
         //TODO: I added the alst false to all of those to shutup the compiler
         // Unlabled predicate position identification.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false, false)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false)));
         // Labeled predicate sense classification.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false, false)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false)));
         // SRL without sense, assuming predicate positions are given.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true, false)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true)));
         // Full SRL, assuming predicate positions are given.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true, false)));
-        // Unlabled predicate position identification.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, true, false, true)));
-        // Labeled predicate sense classification.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, false, true)));
-        // SRL without sense, assuming predicate positions are given.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, false, false, true, true)));
-        // Full SRL, assuming predicate positions are given.
-        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true, true)));
+        eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, true, false, true)));
         // SPRL...
         eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, true, true, true));
         eval.add(new SprlEvaluator(RoleStructure.PAIRS_GIVEN, true, false, false, false));

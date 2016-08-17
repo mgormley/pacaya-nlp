@@ -32,20 +32,16 @@ public class SrlEvaluator extends F1Evaluator implements Evaluator {
         public boolean evalPredSense = true;
         /** Whether to evaluate predicate position. */
         public boolean evalPredPosition = false;
-        /** Whether to evaluate predicate position. */
-        public boolean evalArgPosition = true;
         /** Whether to evaluate arguments (i.e. semantic roles). */
         public boolean evalRoles = true;
         /** Mimic eval09.pl definition of predicate sense equality. */
         public boolean mimicEval09pl = true;
-        public boolean evalAmbiguousSrlLabels = false;
         public SrlEvaluatorPrm() { }
-        public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles, boolean evalArgumentPosition) {
+        public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
             this.labeled = labeled;
             this.evalPredSense = evalSense;
             this.evalPredPosition = evalPredicatePosition;
             this.evalRoles = evalRoles;
-            this.evalArgPosition = evalArgumentPosition;
         }
     }
     
