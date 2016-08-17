@@ -43,6 +43,7 @@ public class CorpusHandler {
     public static int trainMinSentenceLength = 0;
     @Opt(hasArg = true, description = "Maximum number of sentences to include in train.")
     public static int trainMaxNumSentences = Integer.MAX_VALUE;
+
     // Options for dev data
     @Opt(hasArg = true, description = "Dev data input file or directory.")
     public static File dev = null;
@@ -74,6 +75,7 @@ public class CorpusHandler {
     public static int testMaxSentenceLength = Integer.MAX_VALUE;
     @Opt(hasArg = true, description = "Maximum number of sentences to include in test.")
     public static int testMaxNumSentences = Integer.MAX_VALUE;
+
     @Opt(hasArg=true, description="Whether the test data includes the gold labels.")
     public static boolean testHasGold = true;
     @Opt(hasArg = true, description = "Random proportion of train data to allocate as dev data.")
@@ -87,7 +89,7 @@ public class CorpusHandler {
     @Opt(hasArg = true, description = "Whether to projectivize the training depedendency parses")
     public static boolean trainProjectivize = false;
 
-    @Opt(hasArg = true, description = "Whether to create a fresh communication for the communication output (only applies when blahBlahOut == CONCRETE)")
+    @Opt(hasArg = true, description = "Whether to create a fresh communication for the communication output (only applies when {train,dev,test}{gold,pred}Out == CONCRETE)")
     public static boolean createNewCommunication = false;
 
     // Options for data munging.
@@ -110,19 +112,9 @@ public class CorpusHandler {
     public static String concreteDepParseTool = null;
     @Opt(hasArg = true, description = "Tool name of SRL for ConcreteReader (will also be used for NER and Relations).")
     public static String concreteSrlTool = null;
-//    @Opt(hasArg = true, description = "Some global SRL labels are missing; if pred-arg pairs having missing gold labels should be skipped then this tool should be the tool with the global srl labels.")
-//    public static String concreteMissingSrlTool = null;
     @Opt(hasArg = true, description = "Tool name of SPRL for ConcreteReader.")
     public static String concreteSprlTool = null;
-//    @Opt(hasArg = true, description = "Tool name to use when writing dependency parse for ConcreteWriter.")
-//    public static String concreteDepParseOutTool = null;
-//    @Opt(hasArg = true, description = "Tool name to use when writing SRL for ConcreteWriter (will also be used for NER and Relations and SPRL).")
-//    public static String concreteSrlOutTool = null;
 
-    ////// TODO: use these options... /////
-    // @Opt(hasArg=true, description="Whether to normalize and clean words.")
-    // public static boolean normalizeWords = false;
-    ///////////////////////////////////////
 
     private AnnoSentenceCollection trainGoldSents;
     private AnnoSentenceCollection trainInputSents;
@@ -199,31 +191,6 @@ public class CorpusHandler {
         }
         // Cache input train data.
         trainInputSents = trainGoldSents.getWithAtsRemoved(getGoldOnlyAts());
-    }
-
-    private static void writeNewConcrete(AnnoSentenceWriter writer, File outfile, AnnoSentenceCollection sents,
-            List<AT> ats) throws IOException {
-        Object oldSourceSents = sents.getSourceSents();
-        Communication comm = ConcreteUtils.ingestText(ConcreteUtils.getText(sents), "corpus", "corpus", "tokenization");
-        sents.setSourceSents(java.util.Collections.singletonList(comm));
-        writer.write(outfile, DatasetType.CONCRETE, sents, ats);
-        sents.setSourceSents(oldSourceSents);
-    }
-
-    private static void writeSents(File outFile, AnnoSentenceCollection sents, DatasetType outType, String writerName)
-            throws IOException {
-        if (outFile != null) {
-            // Write gold train data.
-            AnnoSentenceWriterPrm wPrm = new AnnoSentenceWriterPrm();
-            wPrm.name = writerName;
-            AnnoSentenceWriter writer = new AnnoSentenceWriter(wPrm);
-            if (outType == DatasetType.CONCRETE && createNewCommunication) {
-                writeNewConcrete(writer, outFile, sents, sents.get(0).getAts());
-            } else {
-                writer.write(outFile, outType, sents, sents.get(0).getAts()); //new HashSet<AT>());
-            }
-
-        }
     }
 
     public void writeTrainGold() throws IOException {
@@ -405,6 +372,32 @@ public class CorpusHandler {
     }
 
     // -------------------- Helper Methods --------------------------
+
+    private static void writeNewConcrete(AnnoSentenceWriter writer, File outfile, AnnoSentenceCollection sents,
+            List<AT> ats) throws IOException {
+        Object oldSourceSents = sents.getSourceSents();
+        Communication comm = ConcreteUtils.ingestText(ConcreteUtils.getText(sents), "corpus", "corpus", "tokenization");
+        sents.setSourceSents(java.util.Collections.singletonList(comm));
+        writer.write(outfile, DatasetType.CONCRETE, sents, ats);
+        sents.setSourceSents(oldSourceSents);
+    }
+
+    private static void writeSents(File outFile, AnnoSentenceCollection sents, DatasetType outType, String writerName)
+            throws IOException {
+        if (outFile != null) {
+            // Write gold train data.
+            AnnoSentenceWriterPrm wPrm = new AnnoSentenceWriterPrm();
+            wPrm.name = writerName;
+            AnnoSentenceWriter writer = new AnnoSentenceWriter(wPrm);
+            if (outType == DatasetType.CONCRETE && createNewCommunication) {
+                writeNewConcrete(writer, outFile, sents, sents.get(0).getAts());
+            } else {
+                writer.write(outFile, outType, sents, sents.get(0).getAts()); //new HashSet<AT>());
+            }
+
+        }
+    }
+
     private String checkedTool(String label, String toolFromParams) {
         if (toolFromParams == null) {
             log.warn(String.format("Since concrete %s tool is null, using first available tool", label));
@@ -420,7 +413,6 @@ public class CorpusHandler {
         prm.useGoldSyntax = useGoldSyntax;
         prm.rePrm.depParseTool = checkedTool("depParse", concreteDepParseTool);
         prm.rePrm.srlTool = checkedTool("srl", concreteSrlTool);
-//        prm.rePrm.missingSrlTool = concreteMissingSrlTool;
         prm.rePrm.sprlTool = checkedTool("sprl", concreteSprlTool);
         return prm;
     }
@@ -488,37 +480,4 @@ public class CorpusHandler {
         }
         return words;
     }
-
-    /*
-    public static Set<String> getKnownSprlProperties(AnnoSentenceCollection... data) {
-        Set<String> props = new TreeSet<>();
-        for (AnnoSentenceCollection collection : data) {
-            for (AnnoSentence sent : collection) {
-                if (sent.getSprl() != null) {
-                    for (Triple<Integer, Integer, String> e : sent.getSprl().getLabeledProperties()) {
-                        props.add(e.get3());
-                    }
-                }
-            }
-        }
-        return props;
-    }
-    
-    /** Gets a set containing all the words appearing in train/dev/test. */
-/*
-    public Set<String> getAllKnownSprlProperties() throws IOException {
-        log.info("Reading all data to build known words set.");
-        Set<String> props = new TreeSet<>();
-        if (this.hasTrain()) {
-            props.addAll(getKnownSprlProperties(getTrainInput()));
-        }
-        if (this.hasDev()) {
-            props.addAll(getKnownSprlProperties(getDevInput()));
-        }
-        if (this.hasTest()) {
-            props.addAll(getKnownSprlProperties(getTestInput()));
-        }
-        return props;
-    }
-    */
 }
