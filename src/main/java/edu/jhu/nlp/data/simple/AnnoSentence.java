@@ -123,7 +123,7 @@ public class AnnoSentence {
         newSent.parents = IntArrays.copyOf(this.parents);
         newSent.depEdgeMask = (this.depEdgeMask == null) ? null : new DepEdgeMask(this.depEdgeMask);
         newSent.knownPreds = (this.knownPreds == null) ? null : new IntHashSet(this.knownPreds);
-        //newSent.knownSrlPairs = (this.knownSrlPairs == null) ? null : new HashSet<>(this.knownSrlPairs);
+        newSent.knownSrlPairs = (this.knownSrlPairs == null) ? null : new HashSet<>(this.knownSrlPairs);
         newSent.namedEntities = new NerMentions(this.namedEntities);
         newSent.nePairs = QLists.copyOf(nePairs);
         newSent.relLabels = QLists.copyOf(relLabels);
@@ -649,12 +649,6 @@ public class AnnoSentence {
     public Set<Pair<Integer, Integer>> getKnownSrlPairs() {
         return knownSrlPairs;
     }
-
-    public void setKnownSrlPreds(Set<Pair<Integer, Integer>> knownSrlPairs) {
-        this.knownSrlPairs = knownSrlPairs;
-    }
-
-
 
     /** Constructs a new list containing the predicate senses. */
     public List<String> getPredSenses() {
