@@ -2,7 +2,6 @@ package edu.jhu.nlp.data.simple;
 
 import java.io.IOException;
 
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,6 +13,14 @@ import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
+
+/** TODO: make this more transparent:
+* Conll data has slots for both gold and automatically predicted POS, FEATS,
+* DEPS, and DEPRELS, by --useGoldSyntax True will use the gold and
+* --useGoldSyntax False will use the automatic labels. Currently, the
+* conll_writer writes the single field in anno_sentence out as both fields.
+*
+*/
 
 public class CorpusConverter {
 
