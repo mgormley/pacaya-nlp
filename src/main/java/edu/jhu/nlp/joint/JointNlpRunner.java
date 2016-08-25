@@ -317,11 +317,6 @@ public class JointNlpRunner {
     public static boolean acl14DepFeats = true;
     @Opt(hasArg = true, description = "Whether to use the fast feature set for dep parsing.")
     public static boolean dpFastFeats = true;
-    @Opt(hasArg = true, description = "Whether to skip features that look at lemma.")
-    public static boolean noLemma = false;
-
-    @Opt(hasArg = true, description = "Comma separated list of ATs; feature templates that use any of these will be filtered for dep, arg and sense.")
-    public static String filterFeatsWith = null;
 
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
@@ -682,11 +677,7 @@ public class JointNlpRunner {
         srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
         srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
-        if (noLemma) {
-            srlFePrm.argTemplates = TemplateLanguage.filterOutFeats(srlFePrm.argTemplates, TokProperty.LEMMA);
-            srlFePrm.senseTemplates = TemplateLanguage.filterOutFeats(srlFePrm.senseTemplates, TokProperty.LEMMA);
-        }
-        for (AT at : CorpusHandler.getAts(filterFeatsWith)) {
+        for (AT at : CorpusHandler.getRemoveAts()) {
             srlFePrm.argTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.argTemplates, at);
             srlFePrm.senseTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.senseTemplates, at);
         }
