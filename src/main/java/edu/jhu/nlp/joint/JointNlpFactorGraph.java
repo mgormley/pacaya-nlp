@@ -1,6 +1,5 @@
 package edu.jhu.nlp.joint;
 
-import static edu.jhu.pacaya.sch.util.Indexed.enumerate;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -39,7 +38,6 @@ import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.gm.model.globalfac.LinkVar;
-import edu.jhu.pacaya.sch.util.Indexed;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.pacaya.util.collections.QLists;
 
@@ -91,10 +89,6 @@ public class JointNlpFactorGraph extends FactorGraph {
         public boolean includeSprl = false;
         public SprlFactorGraphBuilderPrm sprlPrm = new SprlFactorGraphBuilderPrm();
         public boolean sprlSrlFactors = false;
-        // this enforcement may happen by way of specializing the srlSprl factors or by adding
-        // additional variables if srl isn't being modeled
-        //public boolean enforceSprlNilAgreement = true;
-        //public boolean featurizeSrlSprlPairwise = false;
     }
 
     public static LinkedList<Serializable> makeKey(Serializable... args) {
@@ -118,7 +112,7 @@ public class JointNlpFactorGraph extends FactorGraph {
     private SrlFactorGraphBuilder srl;
     private RelationsFactorGraphBuilder rel;
     private SprlFactorGraphBuilder sprl;
-    
+
     public JointNlpFactorGraph(JointNlpFactorGraphPrm prm, AnnoSentence sent, CorpusStatistics cs,
             ObsFeatureConjoiner ofc) {
         this.prm = prm;
@@ -156,10 +150,71 @@ public class JointNlpFactorGraph extends FactorGraph {
             rel.build(sent, ofc, fg, cs);
         }
         if (prm.includeDp && prm.includeSrl) {
-            addDpSrlFactors(ofc, fg);
+            // Add the joint factors.
+            TemplateFeatureExtractor fe = null;
+            List<FeatTemplate> templates = null;
+            if (!prm.useSrlFeatsForLinkRoleFactors) {
+                fe = new TemplateFeatureExtractor(sent, cs);
+                templates = QLists.getList(
+                        new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.WORD), // word(p)
+                        new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.WORD), // word(c)
+                        new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.POS), // pos(p)
+                        new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.POS) // pos(c)
+                        );
+            }
+            LinkVar[][] childVars = dp.getChildVars();
+            RoleVar[][] roleVars = srl.getRoleVars();
+            for (int i = -1; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i != -1) {
+                     // Add binary factors between Roles and Links.
+                        if (roleVars[i][j] != null && childVars[i][j] != null) {
+                            if (prm.useSrlFeatsForLinkRoleFactors) {
+                                addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]),
+                                        JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
+                            } else {
+                                LocalObservations local = LocalObservations.newPidxCidx(i, j);
+                                addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], childVars[i][j]),
+                                        JointFactorTemplate.LINK_ROLE_BINARY, ofc, local , fe,
+                                        templates, prm.srlPrm.srlFePrm.featureHashMod)
+                                        );
+                            }
+                        }
+                    }
+                }
+            }
         }
         if (prm.includePos && prm.includeSrl) {
-            addPosSrlFactors(sent, ofc, fg, cs);
+            // Add the joint factors.
+            TemplateFeatureExtractor fe = new TemplateFeatureExtractor(sent, cs);
+            List<FeatTemplate> templates = QLists.getList(
+                    new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.WORD), // word(p)
+                    new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.WORD), // word(c)
+                    new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.BC0), // bc0(p)
+                    new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.BC0) // bc0(c)
+                    );
+            List<Var> tagVars = pos.getTagVars();
+            RoleVar[][] roleVars = srl.getRoleVars();
+            for (int i = -1; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    if (i != -1) {
+                     // Add binary factors between Roles and Tags.
+                        if (roleVars[i][j] != null) {
+                            LocalObservations local = LocalObservations.newPidxCidx(i, j);
+                            if (tagVars.get(i) != null) {
+                                addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], tagVars.get(i)),
+                                        JointFactorTemplate.ROLE_P_TAG_BINARY, ofc, local , fe,
+                                        templates, prm.srlPrm.srlFePrm.featureHashMod));
+                                }
+                            if (tagVars.get(j) != null) {
+                                addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], tagVars.get(j)),
+                                        JointFactorTemplate.ROLE_C_TAG_BINARY, ofc, local , fe,
+                                        templates, prm.srlPrm.srlFePrm.featureHashMod));
+                            }
+                        }
+                    }
+                }
+            }
         }
         // SPRL interaction with SRL (including observed SPRL or observed SRL on SPRL)
         if (prm.sprlSrlFactors) {
@@ -167,57 +222,6 @@ public class JointNlpFactorGraph extends FactorGraph {
         }
     }
 
-    private void addPosSrlFactors(AnnoSentence sent, ObsFeatureConjoiner ofc, FactorGraph fg, CorpusStatistics cs) {
-        // Add the joint factors.
-        TemplateFeatureExtractor fe = new TemplateFeatureExtractor(sent, cs);
-        List<FeatTemplate> templates = QLists.getList(
-                new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.WORD), // word(p)
-                new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.WORD), // word(c)
-                new FeatTemplate1(Position.PARENT, PositionModifier.IDENTITY, TokProperty.BC0), // bc0(p)
-                new FeatTemplate1(Position.CHILD, PositionModifier.IDENTITY, TokProperty.BC0) // bc0(c)
-        );
-        List<Var> tagVars = pos.getTagVars();
-        RoleVar[][] roleVars = srl.getRoleVars();
-        for (int i = -1; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i != -1) {
-                    // Add binary factors between Roles and Tags.
-                    if (roleVars[i][j] != null) {
-                        LocalObservations local = LocalObservations.newPidxCidx(i, j);
-                        if (tagVars.get(i) != null) {
-                            fg.addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], tagVars.get(i)),
-                                    JointFactorTemplate.ROLE_P_TAG_BINARY, ofc, local, fe, templates,
-                                    prm.srlPrm.srlFePrm.featureHashMod));
-                        }
-                        if (tagVars.get(j) != null) {
-                            fg.addFactor(new TemplateFeatureFactor(new VarSet(roleVars[i][j], tagVars.get(j)),
-                                    JointFactorTemplate.ROLE_C_TAG_BINARY, ofc, local, fe, templates,
-                                    prm.srlPrm.srlFePrm.featureHashMod));
-                        }
-                    }
-                }
-            }
-        }
-
-    }
-
-    private void addDpSrlFactors(ObsFeatureConjoiner ofc, FactorGraph fg) {
-        // Add the joint factors.
-        LinkVar[][] childVars = dp.getChildVars();
-        RoleVar[][] roleVars = srl.getRoleVars();
-        for (int i = -1; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (i != -1) {
-                    // Add binary factors between Roles and Links.
-                    if (roleVars[i][j] != null && childVars[i][j] != null) {
-                        fg.addFactor(new ObsFeTypedFactor(new VarSet(roleVars[i][j], childVars[i][j]),
-                                JointFactorTemplate.LINK_ROLE_BINARY, ofc, srl.getFeatExtractor()));
-                    }
-                }
-            }
-        }
-    }
-    
     // ----------------- Creating Variables -----------------
 
     // ----------------- Public Getters -----------------
