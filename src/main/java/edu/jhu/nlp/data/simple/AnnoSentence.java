@@ -3,12 +3,9 @@ package edu.jhu.nlp.data.simple;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.stream.Collectors;
 
 import edu.jhu.nlp.data.DepEdgeMask;
@@ -17,7 +14,6 @@ import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
-import edu.jhu.nlp.data.conll.SrlGraph;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
@@ -765,41 +761,6 @@ public class AnnoSentence {
 
     public Set<Pair<Integer, Integer>> getKnownSprlPairs() {
         return knownSprlPairs;
-    }
-
-    /**
-     * Return a sorted list of the indexes that are descended from the provided head index
-     */
-    public List<Integer> getDescendents(int head) {
-        Map<Integer, Set<Integer>> parentToChildren = new HashMap<>();
-        // initialize empty child list for each node
-        for (int i = 0; i < size(); i++) {
-            parentToChildren.put(i, new HashSet<>());
-        }
-        // append child to the end of parents list of children
-        for (int i = 0; i < size(); i++) {
-            int parent = parents[i];
-            if (parent >= 0) {
-                parentToChildren.get(parent).add(i);
-            }
-        }
-        // start the descendents and fringe with just the root
-        // then loop over things on the fringe, adding any new descendents until we visit all children
-        Set<Integer> descendents = new TreeSet<>();
-        descendents.add(head);
-        Set<Integer> fringe = new HashSet<>();
-        fringe.add(head);
-        while (!fringe.isEmpty()) {
-            int node = fringe.iterator().next();
-            fringe.remove(node);
-            for (int d : parentToChildren.get(node)) {
-                if (!descendents.contains(d)) {
-                    fringe.add(d);
-                    descendents.add(d);
-                }
-            }
-        }
-        return new ArrayList<>(descendents);
     }
 
     public void setPairsToSkip(Set<Pair<Integer, Integer>> missingLabels) {
