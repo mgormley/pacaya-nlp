@@ -319,20 +319,9 @@ public class JointNlpRunner {
     public static boolean dpFastFeats = true;
     @Opt(hasArg = true, description = "Whether to skip features that look at lemma.")
     public static boolean noLemma = false;
-    @Opt(hasArg = true, description = "Whether to skip features that look at morpho feats.")
-    public static boolean noMorpho = false;
 
-    @Opt(hasArg = true, description = "Whether to skip features that look at deprel.")
-    public static boolean noDeprelFeats = false;
-    @Opt(hasArg = true, description = "Whether to skip features that look at dep_tree.")
-    public static boolean noDepTreeFeats = false;
     @Opt(hasArg = true, description = "Comma separated list of ATs; feature templates that use any of these will be filtered for dep, arg and sense.")
     public static String filterFeatsWith = null;
-
-    // Options for data munging.
-    @Deprecated
-    @Opt(hasArg=true, description="Whether to normalize and clean words.")
-    public static boolean normalizeWords = false;
 
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
@@ -598,14 +587,12 @@ public class JointNlpRunner {
             prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
 
-        boolean includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);
-        boolean includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
-
+        // Determine which Annotation Types to include in the JointNlpFactorGraph
         prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
         prm.fgPrm.includeRel = CorpusHandler.getPredLatAts().contains(AT.REL_LABELS);
-        prm.fgPrm.includeSrl = includeSrl;
-        prm.fgPrm.includeSprl = includeSprl;
+        prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
+        prm.fgPrm.includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);;
 
         // Joint features.
         if (acl14DepFeats) {
@@ -871,6 +858,4 @@ public class JointNlpRunner {
         JointNlpRunner pipeline = new JointNlpRunner();
         pipeline.run();
     }
-
-
 }
