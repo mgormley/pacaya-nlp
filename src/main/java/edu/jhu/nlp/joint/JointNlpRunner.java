@@ -6,19 +6,16 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
-import edu.jhu.hlt.optimize.function.Function;
 import edu.jhu.nlp.AnnoPipeline;
 import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
@@ -71,7 +68,6 @@ import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.nlp.srl.SrlFeatureSelection;
-import edu.jhu.nlp.srl.SrlWordFeatures;
 import edu.jhu.nlp.srl.SrlWordFeatures.SrlWordFeaturesPrm;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
@@ -264,13 +260,8 @@ public class JointNlpRunner {
     public static VarType srlVarType = VarType.LATENT;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between srl and sprl. If either sprl or srl are not included, then these become unary factors that are tied to the gold labels that are not being predicted.")
     public static boolean sprlSrlFactors = false;
-    // TODO: replace this with opportunity to just load a different template
-//    @Opt(hasArg = true, description = "Whether to extract the complicated features for the pairwise factors between srl and sprl.")
-//    public static boolean sprlSrlFactorsFeaturized = false;
     @Opt(hasArg = true, description = "Whether to include pairwise factors between all sprl questions for a given pred-arg pair.")
     public static boolean sprlAllPairs = false;
-    //@Opt(hasArg = true, description = "Whether to (add latent variable and pairwise factor)/(modify sprlSrlFactors) to includ the hard constraint that all sprl responses for a given pred-arg pair must agree as to whether or not it is an arg for the pred")
-    //public static boolean enforceSprlNilAgreement = true;
     @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
     public static boolean sprlBreakdownEval = false;
     @Opt(hasArg = true, description = "Whether to compute the property-specific label optimal baseline (might not want this on final test data)")
@@ -283,9 +274,7 @@ public class JointNlpRunner {
     public static int sprlPipelineIndex = -1;
     @Opt(hasArg=true, description="Prefix path to where to print libda formated factor graphs for training data")
     public static String exportGraphsPath = null;
-    
-    // the order of the sprl questions
-    //public static List<Property> sprlPipelineOrder = Arrays.asList(Property.values());
+
 
     // TODO: add different order of property prediction
     // TODO: have the corpus statistics figure out what the properties instead of having an enum; that way things
@@ -339,7 +328,7 @@ public class JointNlpRunner {
     public static boolean noDepTreeFeats = false;
     @Opt(hasArg = true, description = "Comma separated list of ATs; feature templates that use any of these will be filtered for dep, arg and sense.")
     public static String filterFeatsWith = null;
-    
+
     // Options for data munging.
     @Deprecated
     @Opt(hasArg=true, description="Whether to normalize and clean words.")
@@ -611,7 +600,6 @@ public class JointNlpRunner {
 
         boolean includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);
         boolean includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
-        //boolean includeIsArgVars = includeSprl && enforceSprlNilAgreement && !(sprlSrlFactors && includeSrl);
 
         prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
         prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
@@ -626,14 +614,9 @@ public class JointNlpRunner {
             prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
         }
 
-       // prm.fgPrm.enforceSprlNilAgreement = enforceSprlNilAgreement;
-
-        //prm.fgPrm.sprlPrm.sprlPipelineIndex = sprlPipelineIndex;
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
-//        prm.fgPrm.featurizeSrlSprlPairwise = sprlSrlFactorsFeaturized;
         prm.fgPrm.sprlPrm.unaryFactors = srlUnaryFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
-        //prm.fgPrm.sprlPrm.extraVariablesForNilAgreement = includeIsArgVars;  
         prm.fgPrm.sprlPrm.roleStructure = roleStructure;
         prm.fgPrm.sprlPrm.allowPredArgSelfLoops= allowPredArgSelfLoops;
 
@@ -889,5 +872,5 @@ public class JointNlpRunner {
         pipeline.run();
     }
 
-    
+
 }
