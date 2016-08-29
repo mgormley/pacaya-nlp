@@ -224,6 +224,8 @@ public class JointNlpRunner {
     public static boolean srlFcmFineTuning = false;
     @Opt(hasArg = true, description = "Whether to include unary factors on the SRL variables.")
     public static boolean srlUnaryFactors = true;
+    @Opt(hasArg = true, description = "Whether to include unary factors on the SPRL variables.")
+    public static boolean sprlUnaryFactors = true;
 
     // Options for SRL feature selection.
     @Opt(hasArg = true, description = "Whether to do feature selection.")
@@ -597,7 +599,7 @@ public class JointNlpRunner {
         }
 
         prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
-        prm.fgPrm.sprlPrm.unaryFactors = srlUnaryFactors;
+        prm.fgPrm.sprlPrm.unaryFactors = sprlUnaryFactors;
         prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
         prm.fgPrm.sprlPrm.roleStructure = roleStructure;
         prm.fgPrm.sprlPrm.allowPredArgSelfLoops= allowPredArgSelfLoops;
