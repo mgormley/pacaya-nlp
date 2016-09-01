@@ -313,7 +313,7 @@ public class ConcreteWriter {
                 AnnoSentence sent = sents.get(i);
                 Tokenization t = tokenizations.get(i);
                 for(SituationMention sm : makeSituationMentions(
-                        includeSrl ? sent.getSrlGraph().toSrlGraph() : null,
+                        includeSrl && sent.getSrlGraph() != null ? sent.getSrlGraph().toSrlGraph() : null,
                         includeSprl ? sent.getSprl() : null, sent.getWords(), t, ems, tool)) {
                     sms.addToMentionList(sm);
                 }
