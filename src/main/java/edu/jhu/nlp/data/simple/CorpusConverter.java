@@ -23,7 +23,7 @@ import edu.jhu.pacaya.util.cli.Opt;
 */
 public class CorpusConverter {
 
-    private static final Logger log = LoggerFactory.getLogger(NerRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(CorpusConverter.class);
 
     @Opt(description="Perform relation munging.")
     public static boolean mungeRelations = true;
