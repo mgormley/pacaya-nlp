@@ -72,7 +72,9 @@ public abstract class F1Evaluator implements Evaluator {
         log.info(String.format("%s # sents not annotated on %s: %d", dataType, dataName, numMissing));
         log.info(String.format("%s # instances on %s: %d", dataType, dataName, numInstances));
 
-        log.info(String.format("%s Accuracy on %s: %.4f", dataType, dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
+        // This is not simply tag accuracy for NER and so shouldn't be included.
+        //log.info(String.format("%s Accuracy on %s: %.4f", dataType, dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
+        
         log.info(String.format("%s Precision on %s: %.4f", dataType, dataName, precision));
         log.info(String.format("%s Recall on %s: %.4f", dataType, dataName, recall));
         log.info(String.format("%s F1 on %s: %.4f", dataType, dataName, f1));

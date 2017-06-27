@@ -4,6 +4,8 @@ import static edu.jhu.nlp.data.simple.AlphabetStore.TOK_END_INT;
 import static edu.jhu.nlp.data.simple.AlphabetStore.TOK_START_INT;
 import static edu.jhu.nlp.data.simple.AlphabetStore.TOK_WALL_INT;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureB___;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSBBB;
+import static edu.jhu.nlp.features.BitPacking.encodeFeatureSBB_;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureSB__;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureSSB_;
 import static edu.jhu.nlp.features.BitPacking.encodeFeatureSS__;
@@ -72,20 +74,57 @@ public class BitshiftTokenFeatures {
         public static final byte rhW = next();
         public static final byte llhW = next();
         public static final byte rrhW = next();
+        public static final byte hPr = next();
+        public static final byte lhPr = next();
+        public static final byte rhPr = next();
+        public static final byte llhPr = next();
+        public static final byte rrhPr = next();
+        public static final byte hSu = next();
+        public static final byte lhSu = next();
+        public static final byte rhSu = next();
+        public static final byte llhSu = next();
+        public static final byte rrhSu = next();
+
+        public static final byte hP_lhP = next();
+        public static final byte hP_lhP_llhP = next();
+        public static final byte hP_rhP = next();
+        public static final byte hP_rhP_rrhP = next();
+        public static final byte hC_lhC = next();
+        public static final byte hC_lhC_llhC = next();
+        public static final byte hC_rhC_rrhC = next();
+        public static final byte hC_rhC = next();
+
         public static final byte hP = next();
-        public static final byte lhP = next();
-        public static final byte rhP = next();
-        public static final byte llhP = next();
-        public static final byte rrhP = next();
-        public static final byte hS = next();
-        public static final byte lhS = next();
-        public static final byte rhS = next();
-        public static final byte llhS = next();
-        public static final byte rrhS = next();
+        public static final byte hL = next();
+        public static final byte hW_hP = next();
+        public static final byte hC = next();
+        public static final byte hW_hC = next();
+        
+        //        public static byte lhP;
+        //        public static byte lhC;
+        //        public static byte lhL;
+        //        public static byte lhW_lhP;
+        //        public static byte lhW_lhC;
+        //        public static byte rhP;
+        //        public static byte rhC;
+        //        public static byte rhL;
+        //        public static byte rhW_rhP;
+        //        public static byte rhW_rhC;
+        //        public static byte llhP;
+        //        public static byte llhC;
+        //        public static byte llhL;
+        //        public static byte llhW_llhP;
+        //        public static byte llhW_llhC;
+        //        public static byte rrhP;
+        //        public static byte rrhC;
+        //        public static byte rrhL;
+        //        public static byte rrhW_rrhP;
+        //        public static byte rrhW_rrhC;
     }
     
     public static void addUnigramFeatures(IntAnnoSentence sent, int head, FeatureVector feats, int mod, short tagConfig) {
-        addWordFeatures(sent, head, feats, mod, FeatureCollection.UNIGRAM, tagConfig);
+        //addWordFeatures(sent, head, feats, mod, FeatureCollection.UNIGRAM, tagConfig);
+        addRichTokenFeatures(sent, head, feats, mod, tagConfig, 2, false, false);
     }
     
     public static void addBigramFeatures(IntAnnoSentence sent, int head, FeatureVector feats, int mod, short tagConfig) {
@@ -110,7 +149,7 @@ public class BitshiftTokenFeatures {
         short rrhWord = (head+2 >= sentLen) ? TOK_END_INT : sent.getWord(head+2);
 
         // Word properties.
-        byte hCap = (byte)(sent.isCapitalized(head) ? 1 : 0); // 1-bit
+        byte hCap = (head < 0) ? 0 : (byte)(sent.isCapitalized(head) ? 1 : 0); // 1-bit
         
         byte len;
         
@@ -154,21 +193,185 @@ public class BitshiftTokenFeatures {
         
         // Prefix.
         len = 1;
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hP, flags, tagConfig, hPre1, len));
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.lhP, flags, tagConfig, lhPre1, len)); 
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rhP, flags, tagConfig, rhPre1, len));
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.llhP, flags, tagConfig, llhPre1, len));
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rrhP, flags, tagConfig, rrhPre1, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hPr, flags, tagConfig, hPre1, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.lhPr, flags, tagConfig, lhPre1, len)); 
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rhPr, flags, tagConfig, rhPre1, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.llhPr, flags, tagConfig, llhPre1, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rrhPr, flags, tagConfig, rrhPre1, len));
 
         // Suffix.
         len = 3;
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hS, flags, tagConfig, hSuf3, len));
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.lhS, flags, tagConfig, lhSuf3, len)); 
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rhS, flags, tagConfig, rhSuf3, len));
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.llhS, flags, tagConfig, llhSuf3, len));
-        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rrhS, flags, tagConfig, rrhSuf3, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hSu, flags, tagConfig, hSuf3, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.lhSu, flags, tagConfig, lhSuf3, len)); 
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rhSu, flags, tagConfig, rhSuf3, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.llhSu, flags, tagConfig, llhSuf3, len));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.rrhSu, flags, tagConfig, rrhSuf3, len));
+    }
+    
+
+    /**
+     * Token features.
+     */
+    public static void addRichTokenFeatures(final IntAnnoSentence sent, final int head, 
+            final FeatureVector feats, final int mod,
+            final short tagConfig,
+            final int maxTokenContext,
+            final boolean useLemmaFeats,
+            final boolean useCoarseTags) {
+        
+        int sentLen = sent.size();
+
+        // words/tags/lemmas.
+        byte hPos = (head < 0) ? TOK_START_INT : sent.getPosTag(head);
+        byte hCpos = 0;
+        if (useCoarseTags) {
+            hCpos = (head < 0) ? TOK_START_INT : sent.getCposTag(head);
+        }
+
+        // Surrounding words / POS tags. 
+        // One token to the left (l) and right (r).
+        //
+        byte lhPos = (head-1 < 0) ? TOK_START_INT : sent.getPosTag(head-1);
+        byte rhPos = (head+1 >= sentLen) ? TOK_END_INT : sent.getPosTag(head+1);
+        //
+        byte lhCpos = 0, rhCpos = 0;
+        if (useCoarseTags) {
+            lhCpos = (head-1 < 0) ? TOK_START_INT : sent.getCposTag(head-1);
+            rhCpos = (head+1 >= sentLen) ? TOK_END_INT : sent.getCposTag(head+1);
+        }
+        // Two tokens to the left (ll) and right (rr).
+        //
+        byte llhPos = (head-2 < 0) ? TOK_START_INT : sent.getPosTag(head-2);
+        byte rrhPos = (head+2 >= sentLen) ? TOK_END_INT : sent.getPosTag(head+2);
+        //
+        byte llhCpos = 0, rrhCpos = 0;
+        if (useCoarseTags) {
+            llhCpos = (head-2 < 0) ? TOK_START_INT : sent.getCposTag(head-2);
+            rrhCpos = (head+2 >= sentLen) ? TOK_END_INT : sent.getCposTag(head+2);
+        }
+        
+        // Flags for the type of feature. (NOTE: Currently, these are only used for the offset in addSimpleTokenFeatures).
+        byte flags = 0;
+
+        // --------------------------------------------------------------------
+        // Bias Feature.
+        // --------------------------------------------------------------------        
+        addFeat(feats, mod, encodeFeatureB___(TokTs.BIAS, flags, (byte)0));
+
+        // --------------------------------------------------------------------
+        // Unigram Features.
+        // --------------------------------------------------------------------
+        
+        addSimpleTokenFeatures(sent, head, (byte)0, feats, mod, useLemmaFeats, useCoarseTags, tagConfig);
+        if (maxTokenContext >= 1) {
+            addSimpleTokenFeatures(sent, head, (byte)1, feats, mod, useLemmaFeats, useCoarseTags, tagConfig);
+            addSimpleTokenFeatures(sent, head, (byte)-1, feats, mod, useLemmaFeats, useCoarseTags, tagConfig);
+        }
+        if (maxTokenContext >= 2) {
+            addSimpleTokenFeatures(sent, head, (byte)2, feats, mod, useLemmaFeats, useCoarseTags, tagConfig);
+            addSimpleTokenFeatures(sent, head, (byte)-2, feats, mod, useLemmaFeats, useCoarseTags, tagConfig);
+        }
+        
+        // --------------------------------------------------------------------
+        // Sequential Bigram and Trigram Features.
+        // --------------------------------------------------------------------
+
+        if (maxTokenContext >= 1) {
+            addFeat(feats, mod, encodeFeatureSBB_(TokTs.hP_lhP, flags, tagConfig, hPos, lhPos));
+            addFeat(feats, mod, encodeFeatureSBB_(TokTs.hP_rhP, flags, tagConfig, hPos, rhPos));
+            if (useCoarseTags) {         
+                addFeat(feats, mod, encodeFeatureSBB_(TokTs.hC_lhC, flags, tagConfig, hCpos, lhCpos));
+                addFeat(feats, mod, encodeFeatureSBB_(TokTs.hC_rhC, flags, tagConfig, hCpos, rhCpos));
+            }
+        }
+        if (maxTokenContext >= 2) {
+            addFeat(feats, mod, encodeFeatureSBBB(TokTs.hP_lhP_llhP, flags, tagConfig, hPos, lhPos, llhPos));
+            addFeat(feats, mod, encodeFeatureSBBB(TokTs.hP_rhP_rrhP, flags, tagConfig, hPos, rhPos, rrhPos));   
+            if (useCoarseTags) {         
+                addFeat(feats, mod, encodeFeatureSBBB(TokTs.hC_lhC_llhC, flags, tagConfig, hCpos, lhCpos, llhCpos));
+                addFeat(feats, mod, encodeFeatureSBBB(TokTs.hC_rhC_rrhC, flags, tagConfig, hCpos, rhCpos, rrhCpos));
+            }
+        }
     }
 
+    /**
+     * Features of a single token positioned at center+offset. The offset is included in the flags.
+     */
+    private static void addSimpleTokenFeatures(final IntAnnoSentence sent, final int center, final byte offset, 
+            final FeatureVector feats, final int mod,
+            final boolean useLemmaFeats,
+            final boolean useCoarseTags,
+            final short tagConfig) {
+        int sentLen = sent.size();
+        final int head = center + offset;
+        final byte flags = offset;
+        
+        // Positional features.
+        byte hFirst = (byte) ((head == 0) ? 1 : 0);
+
+        // Word properties.
+        byte hCap = (head < 0 || head >= sentLen) ? 0 : (byte)(sent.isCapitalized(head) ? 1 : 0); // 1-bit
+        
+        // words/tags/lemmas.
+        short hWord = (head < 0) ? TOK_START_INT : (head >= sentLen) ? TOK_END_INT : sent.getWord(head);
+        byte hPos = (head < 0) ? TOK_START_INT : (head >= sentLen) ? TOK_END_INT : sent.getPosTag(head);
+        short hLemma = 0;
+        if (useLemmaFeats) {
+            hLemma = (head < 0) ? TOK_START_INT : (head >= sentLen) ? TOK_END_INT : sent.getLemma(head);
+        }
+        byte hCpos = 0;
+        if (useCoarseTags) {
+            hCpos = (head < 0) ? TOK_START_INT : (head >= sentLen) ? TOK_END_INT : sent.getCposTag(head);
+        }
+        
+        byte len;
+        // Prefixes
+        len = 1;
+        short hPre1 = (head < 0) ? TOK_START_INT : (head >= sentLen) ? TOK_END_INT : sent.getPrefix(head, len);
+        // Suffixes
+        len = 3;
+        short hSuf3 = (head < 0) ? TOK_START_INT : (head >= sentLen) ? TOK_END_INT : sent.getSuffix(head, len);
+        
+        // --------------------------------------------------------------------
+        // Unigram features only.
+        // --------------------------------------------------------------------        
+        
+        // Head Only.
+        addFeat(feats, mod, encodeFeatureSS__(TokTs.hW, flags, tagConfig, hWord));
+        
+        // Position.
+        addFeat(feats, mod, encodeFeatureSB__(TokTs.hFirst, flags, tagConfig, hFirst));
+
+        // Word properties.
+        addFeat(feats, mod, encodeFeatureSB__(TokTs.hCap, flags, tagConfig, hCap));
+        
+        // Word.
+        addFeat(feats, mod, encodeFeatureSS__(TokTs.hW, flags, tagConfig, hWord));
+        
+        // Prefix.
+        len = 1;
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hPr, flags, tagConfig, hPre1, len));
+
+        // Suffix.
+        len = 3;
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hSu, flags, tagConfig, hSuf3, len));
+
+        // POS Tag
+        addFeat(feats, mod, encodeFeatureSB__(TokTs.hP, flags, tagConfig, hPos));
+        addFeat(feats, mod, encodeFeatureSSB_(TokTs.hW_hP, flags, tagConfig, hWord, hPos));
+        
+        // Coarse POS Tag
+        if (useCoarseTags) {
+            addFeat(feats, mod, encodeFeatureSB__(TokTs.hC, flags, tagConfig, hCpos));
+            addFeat(feats, mod, encodeFeatureSSB_(TokTs.hW_hC, flags, tagConfig, hWord, hCpos));            
+        }
+        
+        // Lemma
+        if (useLemmaFeats) {
+            addFeat(feats, mod, encodeFeatureSS__(TokTs.hL, flags, tagConfig, hLemma));
+        }
+    }
+    
     public static void addFeat(FeatureVector feats, int mod, long feat, double value) {
         int hash = MurmurHash.hash32(feat);
         if (mod > 0) {

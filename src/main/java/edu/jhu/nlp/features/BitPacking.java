@@ -50,6 +50,11 @@ public final class BitPacking {
         return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) 
                 | ((b2 & BYTE_MAX) << 32) | ((b3 & BYTE_MAX) << 40);
     }
+
+    public static final long encodeFeatureSBBB(byte template, byte flags, short s1, byte b2, byte b3, byte b4) {
+        return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) 
+                | ((b2 & BYTE_MAX) << 32) | ((b3 & BYTE_MAX) << 40) | ((b4 & BYTE_MAX) << 48);
+    }
     
     public static final long encodeFeatureSBBBB(byte template, byte flags, short s1, byte b2, byte b3, byte b4, byte b5) {
         return (template & BYTE_MAX) | ((flags & BYTE_MAX) << 8) | ((s1 & SHORT_MAX) << 16) 
