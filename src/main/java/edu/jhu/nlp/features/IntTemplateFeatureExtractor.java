@@ -562,6 +562,8 @@ public class IntTemplateFeatureExtractor {
         case LEMMA: return isent.getLemma(idx);
         case POS: return isent.getPosTag(idx);
         case CPOS: return isent.getCposTag(idx);
+        case STRICT_POS: return isent.getStrictPosTag(idx);
+        case PRED_SENSE: return isent.getSrlPredSense(idx);
         case BC0: return isent.getClusterPrefix(idx, 5);
         case BC1: return isent.getCluster(idx);
         case DEPREL: return isent.getDeprel(idx);
@@ -569,7 +571,6 @@ public class IntTemplateFeatureExtractor {
         case MORPHO1: return safeGet(isent.getFeats(idx), 0);
         case MORPHO2: return safeGet(isent.getFeats(idx), 1);
         case MORPHO3: return safeGet(isent.getFeats(idx), 2);
-        case UNK: throw new RuntimeException("not implemented");
         default:
             throw new IllegalStateException();
         }

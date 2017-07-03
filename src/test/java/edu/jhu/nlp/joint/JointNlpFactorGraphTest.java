@@ -210,8 +210,8 @@ public class JointNlpFactorGraphTest {
         assertEquals(0, sfg.getSenseVar(0).getParent());
         assertEquals(2, sfg.getSenseVar(2).getParent());
         
-        assertEquals(QLists.getList("w1.01", "w1.02", "_"), sfg.getSenseVar(0).getStateNames());
-        assertEquals(QLists.getList("w3.01", "w3.02", "_"), sfg.getSenseVar(2).getStateNames());
+        assertEquals(QLists.getList("w1.01", "w1.02"), sfg.getSenseVar(0).getStateNames());
+        assertEquals(QLists.getList("w3.01", "w3.02"), sfg.getSenseVar(2).getStateNames());
         
         // Assertions about the Sense factors.
         int numSenseFactors = 0;

@@ -1,8 +1,8 @@
 # Bjorkelund et al. (2009) unigram feature templates for argument identification and classification. 
 #
 
-# Sense << TODO: This requires a change to our model.
-
+# PredLemmaSense
+predSense(p)
 # PredWord
 word(p)
 # PredPOS

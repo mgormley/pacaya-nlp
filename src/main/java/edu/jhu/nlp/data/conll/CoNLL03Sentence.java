@@ -69,6 +69,15 @@ public class CoNLL03Sentence implements Iterable<CoNLL03Token> {
         s.setNeTags(this.getNeTags());
         return s;
     }
+    
+    public static CoNLL03Sentence fromAnnoSentence(AnnoSentence s) {
+        List<CoNLL03Token> toks = new ArrayList<CoNLL03Token>();
+        for (int i=0; i<s.size(); i++) {
+            CoNLL03Token e = new CoNLL03Token(s.getWord(i), s.getPosTag(i), s.getChunk(i), s.getNeTag(i));
+            toks.add(e);
+        }
+        return new CoNLL03Sentence(toks);
+    }
 
     public List<String> getWords() {
         List<String> words = new ArrayList<String>(size());

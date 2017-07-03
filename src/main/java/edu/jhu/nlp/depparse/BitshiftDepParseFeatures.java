@@ -424,16 +424,22 @@ public class BitshiftDepParseFeatures {
         byte verbsBetweenCode = SafeCast.safeIntToUnsignedByte(0x0 | (numVerbsBetween << 4));
         byte puncsBetweenCode = SafeCast.safeIntToUnsignedByte(0x1 | (numPuncsBetween << 4));
         byte conjsBetweenCode = SafeCast.safeIntToUnsignedByte(0x2 | (numConjsBetween << 4));
-        
+
         // Head (h) and modifier (m) words/tags/lemmas.
         short hWord = (head < 0) ? TOK_WALL_INT : sent.getWord(head);
         short mWord = (modifier < 0) ? TOK_WALL_INT : sent.getWord(modifier);
         byte hPos = (head < 0) ? TOK_WALL_INT : sent.getPosTag(head);
         byte mPos = (modifier < 0) ? TOK_WALL_INT : sent.getPosTag(modifier);
-        short hLemma = (head < 0) ? TOK_WALL_INT : sent.getLemma(head);
-        short mLemma = (modifier < 0) ? TOK_WALL_INT : sent.getLemma(modifier);
-        byte hCpos = (head < 0) ? TOK_WALL_INT : sent.getCposTag(head);
-        byte mCpos = (modifier < 0) ? TOK_WALL_INT : sent.getCposTag(modifier);
+        short hLemma = 0, mLemma = 0;
+        if (useLemmaFeats) {
+            hLemma = (head < 0) ? TOK_WALL_INT : sent.getLemma(head);
+            mLemma = (modifier < 0) ? TOK_WALL_INT : sent.getLemma(modifier);
+        }
+        byte hCpos = 0, mCpos = 0;
+        if (useCoarseTags) {
+            hCpos = (head < 0) ? TOK_WALL_INT : sent.getCposTag(head);
+            mCpos = (modifier < 0) ? TOK_WALL_INT : sent.getCposTag(modifier);
+        }
 
         // Surrounding words / POS tags. 
         // One token to the left (l) and right (r).
@@ -447,16 +453,21 @@ public class BitshiftDepParseFeatures {
         byte rhPos = (head+1 >= sentLen) ? TOK_END_INT : sent.getPosTag(head+1);
         byte rmPos = (modifier+1 >= sentLen) ? TOK_END_INT : sent.getPosTag(modifier+1);
         //
-        short lhLemma = (head-1 < 0) ? TOK_START_INT : sent.getLemma(head-1);
-        short lmLemma = (modifier-1 < 0) ? TOK_START_INT : sent.getLemma(modifier-1);
-        short rhLemma = (head+1 >= sentLen) ? TOK_END_INT : sent.getLemma(head+1);
-        short rmLemma = (modifier+1 >= sentLen) ? TOK_END_INT : sent.getLemma(modifier+1);
+        short lhLemma = 0, lmLemma = 0, rhLemma = 0, rmLemma = 0;
+        if (useLemmaFeats) {
+            lhLemma = (head-1 < 0) ? TOK_START_INT : sent.getLemma(head-1);
+            lmLemma = (modifier-1 < 0) ? TOK_START_INT : sent.getLemma(modifier-1);
+            rhLemma = (head+1 >= sentLen) ? TOK_END_INT : sent.getLemma(head+1);
+            rmLemma = (modifier+1 >= sentLen) ? TOK_END_INT : sent.getLemma(modifier+1);
+        }
         //
-        byte lhCpos = (head-1 < 0) ? TOK_START_INT : sent.getCposTag(head-1);
-        byte lmCpos = (modifier-1 < 0) ? TOK_START_INT : sent.getCposTag(modifier-1);
-        byte rhCpos = (head+1 >= sentLen) ? TOK_END_INT : sent.getCposTag(head+1);
-        byte rmCpos = (modifier+1 >= sentLen) ? TOK_END_INT : sent.getCposTag(modifier+1);
-        
+        byte lhCpos = 0, lmCpos = 0, rhCpos = 0, rmCpos = 0;
+        if (useCoarseTags) {
+            lhCpos = (head-1 < 0) ? TOK_START_INT : sent.getCposTag(head-1);
+            lmCpos = (modifier-1 < 0) ? TOK_START_INT : sent.getCposTag(modifier-1);
+            rhCpos = (head+1 >= sentLen) ? TOK_END_INT : sent.getCposTag(head+1);
+            rmCpos = (modifier+1 >= sentLen) ? TOK_END_INT : sent.getCposTag(modifier+1);
+        }
         // Two tokens to the left (ll) and right (rr).
         short llhWord = (head-2 < 0) ? TOK_START_INT : sent.getWord(head-2);
         short llmWord = (modifier-2 < 0) ? TOK_START_INT : sent.getWord(modifier-2);
@@ -468,16 +479,21 @@ public class BitshiftDepParseFeatures {
         byte rrhPos = (head+2 >= sentLen) ? TOK_END_INT : sent.getPosTag(head+2);
         byte rrmPos = (modifier+2 >= sentLen) ? TOK_END_INT : sent.getPosTag(modifier+2);
         //
-        short llhLemma = (head-2 < 0) ? TOK_START_INT : sent.getLemma(head-2);
-        short llmLemma = (modifier-2 < 0) ? TOK_START_INT : sent.getLemma(modifier-2);
-        short rrhLemma = (head+2 >= sentLen) ? TOK_END_INT : sent.getLemma(head+2);
-        short rrmLemma = (modifier+2 >= sentLen) ? TOK_END_INT : sent.getLemma(modifier+2);
+        short llhLemma = 0, llmLemma = 0, rrhLemma = 0, rrmLemma = 0;
+        if (useLemmaFeats) {
+            llhLemma = (head-2 < 0) ? TOK_START_INT : sent.getLemma(head-2);
+            llmLemma = (modifier-2 < 0) ? TOK_START_INT : sent.getLemma(modifier-2);
+            rrhLemma = (head+2 >= sentLen) ? TOK_END_INT : sent.getLemma(head+2);
+            rrmLemma = (modifier+2 >= sentLen) ? TOK_END_INT : sent.getLemma(modifier+2);
+        }
         //
-        byte llhCpos = (head-2 < 0) ? TOK_START_INT : sent.getCposTag(head-2);
-        byte llmCpos = (modifier-2 < 0) ? TOK_START_INT : sent.getCposTag(modifier-2);
-        byte rrhCpos = (head+2 >= sentLen) ? TOK_END_INT : sent.getCposTag(head+2);
-        byte rrmCpos = (modifier+2 >= sentLen) ? TOK_END_INT : sent.getCposTag(modifier+2); 
-        
+        byte llhCpos = 0, llmCpos = 0, rrhCpos = 0, rrmCpos = 0;
+        if (useCoarseTags) {
+            llhCpos = (head-2 < 0) ? TOK_START_INT : sent.getCposTag(head-2);
+            llmCpos = (modifier-2 < 0) ? TOK_START_INT : sent.getCposTag(modifier-2);
+            rrhCpos = (head+2 >= sentLen) ? TOK_END_INT : sent.getCposTag(head+2);
+            rrmCpos = (modifier+2 >= sentLen) ? TOK_END_INT : sent.getCposTag(modifier+2); 
+        }
         // Flags for the type of feature.
         byte flags = pairType; // 4 bits.
         flags |= (direction << 4); // 1 more bit.

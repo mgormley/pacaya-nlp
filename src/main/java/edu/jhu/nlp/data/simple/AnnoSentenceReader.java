@@ -13,6 +13,8 @@ import edu.jhu.nlp.data.concrete.ConcreteReader.ConcreteReaderPrm;
 import edu.jhu.nlp.data.concrete.ListCloseableIterable;
 import edu.jhu.nlp.data.conll.CoNLL02Reader;
 import edu.jhu.nlp.data.conll.CoNLL02Sentence;
+import edu.jhu.nlp.data.conll.CoNLL03Reader;
+import edu.jhu.nlp.data.conll.CoNLL03Sentence;
 import edu.jhu.nlp.data.conll.CoNLL08Reader;
 import edu.jhu.nlp.data.conll.CoNLL08Sentence;
 import edu.jhu.nlp.data.conll.CoNLL09Reader;
@@ -48,7 +50,7 @@ public class AnnoSentenceReader {
     }
 
     public enum DatasetType {
-        SYNTHETIC, PTB, CONLL_2002, CONLL_X, CONLL_2008, CONLL_2009, 
+        SYNTHETIC, PTB, CONLL_2002, CONLL_2003, CONLL_X, CONLL_2008, CONLL_2009, 
         CONCRETE, SEMEVAL_2010, DEP_EDGE_MASK, JSON
     };
 
@@ -110,6 +112,8 @@ public class AnnoSentenceReader {
                 reader = ConvCloseableIterable.getInstance(new CoNLLXReader(fis), new CoNLLX2Anno());
             } else if (type == DatasetType.CONLL_2002) {
                 reader = ConvCloseableIterable.getInstance(new CoNLL02Reader(fis), new CoNLL022Anno());
+            } else if (type == DatasetType.CONLL_2003) {
+                reader = ConvCloseableIterable.getInstance(new CoNLL03Reader(fis), new CoNLL032Anno());
             } else if (type == DatasetType.SEMEVAL_2010) {
                 reader = ConvCloseableIterable.getInstance(new SemEval2010Reader(fis), new SemEval20102Anno());
             } else if (type == DatasetType.JSON) {
@@ -185,6 +189,15 @@ public class AnnoSentenceReader {
 
         @Override
         public AnnoSentence convert(CoNLL02Sentence x) {
+            return x.toAnnoSentence();
+        }
+        
+    }
+
+    public class CoNLL032Anno implements Converter<CoNLL03Sentence, AnnoSentence> {
+
+        @Override
+        public AnnoSentence convert(CoNLL03Sentence x) {
             return x.toAnnoSentence();
         }
         

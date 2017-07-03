@@ -2,10 +2,13 @@ package edu.jhu.nlp.joint;
 
 import java.util.Date;
 
-import org.apache.commons.cli.ParseException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import edu.jhu.hlt.optimize.AdaDelta;
 import edu.jhu.hlt.optimize.AdaDelta.AdaDeltaPrm;
+import edu.jhu.hlt.optimize.AdaGradComidL1;
+import edu.jhu.hlt.optimize.AdaGradComidL1.AdaGradComidL1Prm;
 import edu.jhu.hlt.optimize.AdaGradComidL2;
 import edu.jhu.hlt.optimize.AdaGradComidL2.AdaGradComidL2Prm;
 import edu.jhu.hlt.optimize.AdaGradSchedule;
@@ -13,15 +16,16 @@ import edu.jhu.hlt.optimize.AdaGradSchedule.AdaGradSchedulePrm;
 import edu.jhu.hlt.optimize.BottouSchedule;
 import edu.jhu.hlt.optimize.BottouSchedule.BottouSchedulePrm;
 import edu.jhu.hlt.optimize.LBFGS;
+import edu.jhu.hlt.optimize.LBFGS_port.LBFGSPrm;
 import edu.jhu.hlt.optimize.Optimizer;
 import edu.jhu.hlt.optimize.SGD;
 import edu.jhu.hlt.optimize.SGD.SGDPrm;
 import edu.jhu.hlt.optimize.SGDFobos;
 import edu.jhu.hlt.optimize.SGDFobos.SGDFobosPrm;
+import edu.jhu.hlt.optimize.function.BatchFunctionOpts;
 import edu.jhu.hlt.optimize.function.DifferentiableBatchFunction;
 import edu.jhu.hlt.optimize.function.DifferentiableFunction;
-import edu.jhu.hlt.optimize.function.Regularizer;
-import edu.jhu.hlt.optimize.functions.L2;
+import edu.jhu.hlt.optimize.function.DifferentiableFunctionOpts;
 import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.prim.tuple.Pair;
 
@@ -29,17 +33,19 @@ public class OptimizerFactory {
 
     public static enum OptimizerType { LBFGS, SGD, ADAGRAD, ADAGRAD_COMID, ADADELTA, FOBOS, ASGD }
 
-    public enum RegularizerType { L2, NONE };
-    
+    private static final Logger log = LoggerFactory.getLogger(OptimizerFactory.class);
+
     // Options for optimization.
     @Opt(hasArg=true, description="The optimization method to use for training.")
     public static OptimizerType optimizer = OptimizerType.ADAGRAD_COMID;
-    @Opt(hasArg=true, description="The variance for the L2 regularizer.")
-    public static double l2variance = 1.0;
-    @Opt(hasArg=true, description="The type of regularizer.")
-    public static RegularizerType regularizer = RegularizerType.NONE;
+    @Opt(hasArg=true, description="The weight on the L1 regularizer.")
+    public static double l1Lambda = 0.0;
+    @Opt(hasArg=true, description="The weight on the L2 regularizer.")
+    public static double l2Lambda = 1.0;
     @Opt(hasArg=true, description="Max iterations for L-BFGS training.")
-    public static int maxLbfgsIterations = 1000;
+    public static int lbfgsMaxIters = 1000;
+    @Opt(hasArg=true, description="Number of iterations to cache for LBFGS training.")
+    public static int lbfgsCachedIters = 6;
     @Opt(hasArg=true, description="Number of effective passes over the dataset for SGD.")
     public static int sgdNumPasses = 30;
     @Opt(hasArg=true, description="The batch size to use at each step of SGD.")
@@ -72,10 +78,19 @@ public class OptimizerFactory {
     public static Date stopTrainingBy = null;
 
     public static Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> getOptimizers() {
+        if (OptimizerFactory.stopTrainingBy != null && new Date().after(OptimizerFactory.stopTrainingBy)) {
+            log.warn("Training will never begin since stopTrainingBy has already happened: " + OptimizerFactory.stopTrainingBy);
+            log.warn("Ignoring stopTrainingBy by setting it to null.");
+            OptimizerFactory.stopTrainingBy = null;
+        }
+
         Optimizer<DifferentiableFunction> opt;
         Optimizer<DifferentiableBatchFunction> batchOpt;
         if (optimizer == OptimizerType.LBFGS) {
-            opt = new LBFGS();
+            LBFGSPrm prm = new LBFGSPrm();
+            prm.max_iterations = lbfgsMaxIters;
+            prm.m = lbfgsCachedIters;
+            opt = DifferentiableFunctionOpts.getRegularizedOptimizer(new LBFGS(prm), l1Lambda, l2Lambda);
             batchOpt = null;
         } else if (optimizer == OptimizerType.SGD || optimizer == OptimizerType.ASGD  ||
                 optimizer == OptimizerType.ADAGRAD || optimizer == OptimizerType.ADADELTA) {
@@ -84,12 +99,12 @@ public class OptimizerFactory {
             if (optimizer == OptimizerType.SGD){
                 BottouSchedulePrm boPrm = new BottouSchedulePrm();
                 boPrm.initialLr = sgdInitialLr;
-                boPrm.lambda = 1.0 / l2variance;
+                boPrm.lambda = l1Lambda + l2Lambda;
                 sgdPrm.sched = new BottouSchedule(boPrm);
             } else if (optimizer == OptimizerType.ASGD){
                 BottouSchedulePrm boPrm = new BottouSchedulePrm();
                 boPrm.initialLr = sgdInitialLr;
-                boPrm.lambda = 1.0 / l2variance;
+                boPrm.lambda = l1Lambda + l2Lambda;
                 boPrm.power = 0.75;
                 sgdPrm.sched = new BottouSchedule(boPrm);
                 sgdPrm.averaging = true;
@@ -106,45 +121,50 @@ public class OptimizerFactory {
                 sgdPrm.sched = new AdaDelta(adaDeltaPrm);
                 sgdPrm.autoSelectLr = false;
             }
-            batchOpt = new SGD(sgdPrm);
+            batchOpt = BatchFunctionOpts.getRegularizedOptimizer(new SGD(sgdPrm), l1Lambda, l2Lambda);
         } else if (optimizer == OptimizerType.ADAGRAD_COMID) {
-            AdaGradComidL2Prm sgdPrm = new AdaGradComidL2Prm();
-            setSgdPrm(sgdPrm);
-            //TODO: sgdPrm.l1Lambda = l1Lambda;
-            sgdPrm.l2Lambda = 1.0 / l2variance;
-            sgdPrm.eta = adaGradEta;
-            sgdPrm.constantAddend = adaGradConstantAddend;
-            sgdPrm.initialSumSquares = adaGradInitialSumSquares;
-            sgdPrm.sched = null;
-            opt = null;
-            batchOpt = new AdaGradComidL2(sgdPrm);
+            if (l1Lambda > 0 && l2Lambda > 0) {
+                // TODO: Implement this optimizer.
+                throw new RuntimeException("ADAGRAD_COMID with l1lambda > 0 && l2lambda > 0 is not yet implemented");
+            }
+            if (l1Lambda > 0) {
+                AdaGradComidL1Prm sgdPrm = new AdaGradComidL1Prm();
+                setSgdPrm(sgdPrm);
+                sgdPrm.l1Lambda = l1Lambda;
+                sgdPrm.eta = adaGradEta;
+                sgdPrm.constantAddend = adaGradConstantAddend;
+                sgdPrm.initialSumSquares = adaGradInitialSumSquares;
+                sgdPrm.sched = null;
+                opt = null;
+                batchOpt = new AdaGradComidL1(sgdPrm);
+            } else {
+                AdaGradComidL2Prm sgdPrm = new AdaGradComidL2Prm();
+                setSgdPrm(sgdPrm);
+                sgdPrm.l2Lambda = l2Lambda;
+                sgdPrm.eta = adaGradEta;
+                sgdPrm.constantAddend = adaGradConstantAddend;
+                sgdPrm.initialSumSquares = adaGradInitialSumSquares;
+                sgdPrm.sched = null;
+                opt = null;
+                batchOpt = new AdaGradComidL2(sgdPrm);
+            }
         } else if (optimizer == OptimizerType.FOBOS) {
             SGDFobosPrm sgdPrm = new SGDFobosPrm();
             setSgdPrm(sgdPrm);
-            //TODO: sgdPrm.l1Lambda = l1Lambda;            
-            sgdPrm.l2Lambda = 1.0 / l2variance;
+            sgdPrm.l1Lambda = l1Lambda;
+            sgdPrm.l2Lambda = l2Lambda;
             BottouSchedulePrm boPrm = new BottouSchedulePrm();
             boPrm.initialLr = sgdInitialLr;
-            boPrm.lambda = 1.0 / l2variance;
-            sgdPrm.sched = new BottouSchedule(boPrm);  
+            boPrm.lambda = l1Lambda + l2Lambda;
+            sgdPrm.sched = new BottouSchedule(boPrm);
             opt = null;
             batchOpt = new SGDFobos(sgdPrm);
         } else {
             throw new RuntimeException("Optimizer not supported: " + optimizer);
-        }        
+        }
         return new Pair<>(opt, batchOpt);
     }
 
-    public static Regularizer getRegularizer() throws ParseException {
-        if (regularizer == RegularizerType.L2) {
-            return new L2(l2variance);
-        } else if (regularizer == RegularizerType.NONE) {
-            return null;
-        } else {
-            throw new ParseException("Unsupported regularizer: " + regularizer);
-        }
-    }
-    
     private static SGDPrm getSgdPrm() {
         SGDPrm prm = new SGDPrm();
         setSgdPrm(prm);
@@ -159,11 +179,11 @@ public class OptimizerFactory {
         prm.autoSelectLr = sgdAutoSelectLr;
         prm.autoSelectFreq = sgdAutoSelecFreq;
         prm.computeValueOnNonFinalIter = sgdComputeValueOnNonFinalIter;
-        prm.averaging = sgdAveraging; 
-        prm.earlyStopping = sgdEarlyStopping; 
+        prm.averaging = sgdAveraging;
+        prm.earlyStopping = sgdEarlyStopping;
         // Make sure we correctly set the schedule somewhere else.
         prm.sched = null;
     }
 
-    
+
 }

@@ -6,12 +6,10 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Date;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +23,7 @@ import edu.jhu.nlp.EvalPipeline;
 import edu.jhu.nlp.TransientAnnotator;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.data.simple.CorpusHandler;
+import edu.jhu.nlp.data.simple.Experiments;
 import edu.jhu.nlp.depparse.BitshiftDepParseFeatureExtractor.BitshiftDepParseFeatureExtractorPrm;
 import edu.jhu.nlp.depparse.DepParseFactorGraphBuilder.DepParseFactorGraphBuilderPrm;
 import edu.jhu.nlp.depparse.DepParseFeatureExtractor.DepParseFeatureExtractorPrm;
@@ -48,8 +47,10 @@ import edu.jhu.nlp.eval.SrlEvaluator;
 import edu.jhu.nlp.eval.SrlEvaluator.SrlEvaluatorPrm;
 import edu.jhu.nlp.eval.SrlPredIdAccuracy;
 import edu.jhu.nlp.eval.SrlSelfLoops;
+import edu.jhu.nlp.features.TemplateLanguage;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.features.TemplateLanguage.FeatTemplate;
+import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
 import edu.jhu.nlp.features.TemplateReader;
 import edu.jhu.nlp.features.TemplateSets;
 import edu.jhu.nlp.joint.IGFeatureTemplateSelector.IGFeatureTemplateSelectorPrm;
@@ -62,10 +63,12 @@ import edu.jhu.nlp.relations.RelationMunger.RelationDataPostproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
 import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelationsFactorGraphBuilderPrm;
+import edu.jhu.nlp.sprl.SprlEvaluator;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.RoleStructure;
 import edu.jhu.nlp.srl.SrlFactorGraphBuilder.SrlFactorGraphBuilderPrm;
 import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
 import edu.jhu.nlp.srl.SrlFeatureSelection;
+import edu.jhu.nlp.srl.SrlWordFeatures.SrlWordFeaturesPrm;
 import edu.jhu.nlp.tag.BrownClusterTagger;
 import edu.jhu.nlp.tag.BrownClusterTagger.BrownClusterTaggerPrm;
 import edu.jhu.nlp.tag.FileMapTagReducer;
@@ -109,7 +112,7 @@ import edu.jhu.prim.util.math.FastMath;
 import edu.jhu.prim.util.random.Prng;
 
 /**
- * Pipeline runner for SRL experiments.
+ * Pipeline runner for Joint NLP experiments.
  * @author mgormley
  * @author mmitchell
  */
@@ -118,18 +121,18 @@ public class JointNlpRunner {
     public enum ErmaLoss { L2DIST, EXPECTED_RECALL, SOFTMAX_MBR };
 
     public enum Inference { BRUTE_FORCE, BP, DP };
-    
+
     public enum AlgebraType {
         REAL(RealAlgebra.getInstance()), LOG(LogSemiring.getInstance()), LOG_SIGN(LogSignAlgebra.getInstance()),
         // SHIFTED_REAL and SPLIT algebras are for testing only.
         SHIFTED_REAL(ShiftedRealAlgebra.getInstance()), SPLIT(SplitAlgebra.getInstance());
 
         private Algebra s;
-        
+
         private AlgebraType(Algebra s) {
             this.s = s;
         }
-        
+
         public Algebra getAlgebra() {
             return s;
         }
@@ -145,7 +148,7 @@ public class JointNlpRunner {
     public static int threads = 1;
     @Opt(hasArg = true, description = "Whether to use a log-add table for faster computation.")
     public static boolean useLogAddTable = false;
-    
+
     // Options for model IO
     @Opt(hasArg = true, description = "File from which to read a serialized model.")
     public static File modelIn = null;
@@ -163,7 +166,7 @@ public class JointNlpRunner {
     // Options for initialization.
     @Opt(hasArg = true, description = "How to initialize the parameters of the model.")
     public static InitParams initParams = InitParams.UNIFORM;
-    
+
     // Options for inference.
     @Opt(hasArg = true, description = "Type of inference method.")
     public static Inference inference = Inference.BP;
@@ -181,17 +184,17 @@ public class JointNlpRunner {
     public static double bpConvergenceThreshold = 1e-3;
     @Opt(hasArg = true, description = "Directory to dump debugging information for BP.")
     public static File bpDumpDir = null;
-    
+
     // Options for Brown clusters.
     @Opt(hasArg = true, description = "Brown cluster file")
     public static File brownClusters = null;
     @Opt(hasArg = true, description = "Max length for the brown clusters")
     public static int bcMaxTagLength = Integer.MAX_VALUE;
-    
+
     // Options for Tag Maps
     @Opt(hasArg = true, description = "Type or file indicating tag mapping")
     public static File reduceTags = null;
-    
+
     // Options for Embeddings.
     @Opt(hasArg=true, description="Path to word embeddings text file.")
     public static File embeddingsFile = null;
@@ -201,7 +204,7 @@ public class JointNlpRunner {
     public static double embScalar = 1.0;
     @Opt(hasArg=true, description="Whether to use entity mention specific embeddings.")
     public static boolean entitySpecificEmbeddings = false;
-    
+
     // Options for SRL factor graph structure.
     @Opt(hasArg = true, description = "The structure of the Role variables.")
     public static RoleStructure roleStructure = RoleStructure.PREDS_GIVEN;
@@ -219,10 +222,10 @@ public class JointNlpRunner {
     public static boolean srlFcmFactors = false;
     @Opt(hasArg = true, description = "Whether to treat the embeddings as model parameters.")
     public static boolean srlFcmFineTuning = false;
-    
-    // Options for joint factor graph structure.
-    @Opt(hasArg = true, description = "Whether to include unary factors in the model.")
-    public static boolean unaryFactors = false;
+    @Opt(hasArg = true, description = "Whether to include unary factors on the SRL variables.")
+    public static boolean srlUnaryFactors = true;
+    @Opt(hasArg = true, description = "Whether to include unary factors on the SPRL variables.")
+    public static boolean sprlUnaryFactors = true;
 
     // Options for SRL feature selection.
     @Opt(hasArg = true, description = "Whether to do feature selection.")
@@ -230,21 +233,19 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "The number of feature bigrams to form.")
     public static int numFeatsToSelect = 32;
     @Opt(hasArg = true, description = "The max number of sentences to use for feature selection")
-    public static int numSentsForFeatSelect = 1000;    
-    
+    public static int numSentsForFeatSelect = 1000;
+
     // Options for feature extraction.
     @Opt(hasArg = true, description = "For testing only: whether to use only the bias feature.")
     public static boolean biasOnly = false;
     @Opt(hasArg = true, description = "The value of the mod for use in the feature hashing trick. If <= 0, feature-hashing will be disabled.")
     public static int featureHashMod = 524288; // 2^19
-    
+
     // Options for SRL feature extraction.
     @Opt(hasArg = true, description = "Cutoff for OOV words.")
     public static int cutoff = 3;
     @Opt(hasArg = true, description = "For preprocessing: Minimum feature count for caching.")
-    public static int featCountCutoff = 4;
-    @Opt(hasArg = true, description = "Whether to include unsupported features.")
-    public static boolean includeUnsupportedFeatures = false;
+    public static int featCountCutoff = 1;
     @Opt(hasArg = true, description = "Whether to include pairs of features.")
     public static boolean useTemplates = false;
     @Opt(hasArg = true, description = "Sense feature templates.")
@@ -257,11 +258,34 @@ public class JointNlpRunner {
     public static File argFeatTplsOut = null;
     @Opt(hasArg = true, description = "Whether to include extra ACL '14 style arg features.")
     public static boolean srlExtraArgFeats = false;
+    @Opt(hasArg = true, description = "The type of the SRL role / sense variables.")
+    public static VarType srlVarType = VarType.LATENT;
+    @Opt(hasArg = true, description = "Whether to include pairwise factors between srl and sprl. If either sprl or srl are not included, then these become unary factors that are tied to the gold labels that are not being predicted.")
+    public static boolean sprlSrlFactors = false;
+    @Opt(hasArg = true, description = "Whether to include pairwise factors between all sprl questions for a given pred-arg pair.")
+    public static boolean sprlAllPairs = false;
+    @Opt(hasArg = true, description = "Whether to evaluate each sprl property separately")
+    public static boolean sprlBreakdownEval = false;
+    @Opt(hasArg = true, description = "Whether to compute the property-specific label optimal baseline (might not want this on final test data)")
+    public static boolean sprlReportBaseline = false;
+    @Opt(hasArg = true, description = "Only look at srl in validation function for srl with sprl")
+    public static boolean favorSrlValidation = false;
+    @Opt(hasArg = true, description = "Only look at sprl in validation function for srl with sprl")
+    public static boolean favorSprlValidation = false;
+    @Opt(hasArg = true, description = "If > 0, then only predict the ith property using observed features of the previous properties")
+    public static int sprlPipelineIndex = -1;
+    @Opt(hasArg=true, description="Prefix path to where to print libda formated factor graphs for training data")
+    public static String exportGraphsPath = null;
+
+
+    // TODO: add different order of property prediction
+    // TODO: have the corpus statistics figure out what the properties instead of having an enum; that way things
+    // still work when the SPRL questions change
 
     // Options for POS tagging factor graph structure.
     @Opt(hasArg = true, description = "The type of the tag variables.")
     public static VarType posTagVarType = VarType.LATENT;
-    
+
     // Options for dependency parse factor graph structure.
     @Opt(hasArg = true, description = "The type of the link variables.")
     public static VarType linkVarType = VarType.LATENT;
@@ -275,7 +299,9 @@ public class JointNlpRunner {
     public static boolean headBigramFactors = false;
     @Opt(hasArg = true, description = "Whether to exclude non-projective grandparent factors.")
     public static boolean excludeNonprojectiveGrandparents = true;
-    
+    @Opt(hasArg = true, description = "Whether to include unary factors on the dependency edge variables.")
+    public static boolean dpUnaryFactors = true;
+
     // Options for dependency parsing pruning.
     @Opt(hasArg = true, description = "File from which to read a first-order pruning model.")
     public static File pruneModel = null;
@@ -288,16 +314,11 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "1st-order factor feature templates.")
     public static String dp1FeatTpls = TemplateSets.mcdonaldDepFeatsResource;
     @Opt(hasArg = true, description = "2nd-order factor feature templates.")
-    public static String dp2FeatTpls = TemplateSets.carreras07Dep2FeatsResource;   
+    public static String dp2FeatTpls = TemplateSets.carreras07Dep2FeatsResource;
     @Opt(hasArg = true, description = "Whether to use SRL features for dep parsing.")
     public static boolean acl14DepFeats = true;
     @Opt(hasArg = true, description = "Whether to use the fast feature set for dep parsing.")
     public static boolean dpFastFeats = true;
-    
-    // Options for data munging.
-    @Deprecated
-    @Opt(hasArg=true, description="Whether to normalize and clean words.")
-    public static boolean normalizeWords = false;
 
     // Options for caching.
     @Opt(hasArg = true, description = "The type of cache/store to use for training/testing instances.")
@@ -305,12 +326,12 @@ public class JointNlpRunner {
     @Opt(hasArg = true, description = "When caching, the maximum number of examples to keep cached in memory or -1 for SoftReference caching.")
     public static int maxEntriesInMemory = 100;
     @Opt(hasArg = true, description = "Whether to gzip an object before caching it.")
-    public static boolean gzipCache = false;    
-    
+    public static boolean gzipCache = false;
+
     // Options for training.
     @Opt(hasArg=true, description="The type of trainer to use (e.g. conditional log-likelihood, ERMA).")
     public static Trainer trainer = Trainer.CLL;
-    
+
     // Options for training with ERMA.
     // TODO: Remove the "dp" prefixes on these flags.
     @Opt(hasArg=true, description="The start temperature for the softmax MBR decoder for dependency parsing.")
@@ -323,38 +344,31 @@ public class JointNlpRunner {
     public static boolean dpAnnealMse = true;
     @Opt(hasArg=true, description="Whether to transition from L2DIST to the softmax MBR decoder with expected recall.")
     public static ErmaLoss dpLoss = ErmaLoss.L2DIST;
-    
+
     // Options for evaluation.
     @Opt(hasArg=true, description="Whether to skip punctuation in dependency parse evaluation.")
     public static boolean dpSkipPunctuation = false;
-    @Opt(hasArg=true, description="Whether to evaluate test data.")
-    public static boolean evalTest = true;
-    
+
     private static ArgParser parser;
-    
+
     public JointNlpRunner() { }
 
-    public void run() throws ParseException, IOException {  
+    public void run() throws IOException {
         Timer t = new Timer();
         t.start();
         FastMath.useLogAddTable = useLogAddTable;
         if (useLogAddTable) {
             log.warn("Using log-add table instead of exact computation. When using global factors, this may result in numerical instability.");
         }
-        if (OptimizerFactory.stopTrainingBy != null && new Date().after(OptimizerFactory.stopTrainingBy)) {
-            log.warn("Training will never begin since stopTrainingBy has already happened: " + OptimizerFactory.stopTrainingBy);
-            log.warn("Ignoring stopTrainingBy by setting it to null.");
-            OptimizerFactory.stopTrainingBy = null;
-        }
-        
+
         // Initialize the data reader/writer.
         CorpusHandler corpus = new CorpusHandler();
-        
+
         // Get a model.
         if (modelIn == null && !corpus.hasTrain()) {
-        	throw new ParseException("Either --modelIn or --train must be specified.");
+        	throw new IllegalStateException("Either --modelIn or --train must be specified.");
         }
-        
+
         // The annotation pipeline.
         AnnoPipeline anno = new AnnoPipeline();
         // The evaluation pipeline.
@@ -395,7 +409,7 @@ public class JointNlpRunner {
             // Add word embeddings.
             if (embeddingsFile != null) {
                 Set<String> words = corpus.getAllKnownWords();
-                EmbeddingsAnnotator embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm(), words);               
+                EmbeddingsAnnotator embedAnno = new EmbeddingsAnnotator(getEmbeddingsAnnotatorPrm(), words);
                 if (parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class).useEmbeddingFeatures == true) {
                     embeds = embedAnno.getEmbeddings();
                 }
@@ -403,12 +417,12 @@ public class JointNlpRunner {
             } else {
                 log.debug("No embeddings file specified.");
             }
-            
+
             if (JointNlpRunner.modelIn == null) {
                 // Feature selection at train time only for SRL.
                 anno.add(new TransientAnnotator(new SrlFeatureSelection(prm.buPrm.fgPrm)));
             }
-            
+
             if (pruneByDist) {
                 // Prune via the distance-based pruner.
                 anno.add(new PosTagDistancePruner());
@@ -462,107 +476,58 @@ public class JointNlpRunner {
                 eval.add(new OraclePruningAccuracy(dpSkipPunctuation));
                 eval.add(new OraclePruningExactMatch(dpSkipPunctuation));
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.POS)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.POS)) {
                 eval.add(new PosTagAccuracy());
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.DEP_TREE)) {
                 eval.add(new DepParseAccuracy(dpSkipPunctuation));
                 eval.add(new DepParseExactMatch(dpSkipPunctuation));
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL_PRED_IDX)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.SRL_PRED_IDX)) {
                 // Evaluate F1 of unlabled predicate position identification.
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(false, false, predictPredPos, false)));
                 eval.add(new SrlPredIdAccuracy());
             }
-            if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL)) {
+            if (CorpusHandler.getPredLatAts().contains(AT.SRL)) {
                 eval.add(new SrlSelfLoops());
                 eval.add(new SrlEvaluator(new SrlEvaluatorPrm(true, predictSense, predictPredPos, (roleStructure != RoleStructure.NO_ROLES))));
+            }
+            if (CorpusHandler.getGoldOnlyAts().contains(AT.SPRL)) {
+                eval.add(new SprlEvaluator(roleStructure, allowPredArgSelfLoops, sprlBreakdownEval, sprlReportBaseline, true));
             }
             if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
                 eval.add(new RelationEvaluator());
             }
             eval.add(new ProportionAnnotated(CorpusHandler.getPredAts()));
         }
-        
-        {
-            // Either of train or dev might be null.
-            AnnoSentenceCollection trainGold = corpus.getTrainGold();
-            AnnoSentenceCollection trainInput = corpus.getTrainInput();
-            AnnoSentenceCollection devGold = corpus.getDevGold();
-            AnnoSentenceCollection devInput = corpus.getDevInput();
 
-            if (corpus.hasTrain()) {
-                // Preprocess the gold train data and write it out.
-                prep.annotate(trainGold);
-                corpus.writeTrainGold();
+        Experiments.trainAnnoEvalPrepGold(corpus, anno, eval, prep);
+
+        if (corpus.hasTrain()) {
+            // Save the joint model.
+            if (jointAnno != null && modelOut != null) {
+                jointAnno.saveModel(modelOut);
             }
-            if (corpus.hasDev()) {
-                // Preprocess the gold dev data and write it out.
-                prep.annotate(devGold);
-                corpus.writeDevGold();
+            if (jointAnno != null && printModel != null) {
+                jointAnno.printModel(printModel);
             }
-            
-            if (corpus.hasTrain()) {
-                // Train a model. (AnnoPipeline also annotates all the train and dev input.)
-                anno.train(trainInput, trainGold, devInput, devGold);
-                
-                // Save the model.
-                if (jointAnno != null && modelOut != null) {
-                    jointAnno.saveModel(modelOut);
-                }
-                if (jointAnno != null && printModel != null) {
-                    jointAnno.printModel(printModel);
-                }
-                if (pipeOut != null) {
-                    log.info("Serializing pipeline to file: " + pipeOut);
-                    QFiles.serialize(anno, pipeOut);
-                }
-            } else if (corpus.hasDev()) { // but not train
-                anno.annotate(devInput);
+            // Save the entire pipeline.
+            if (pipeOut != null) {
+                log.info("Serializing pipeline to file: " + pipeOut);
+                QFiles.serialize(anno, pipeOut);
             }
-            
-            if (corpus.hasTrain()) {
-                // Decode and evaluate. the train data.
-                corpus.writeTrainPreds(trainInput);
-                eval.evaluate(trainInput, trainGold, "train");
-                corpus.clearTrainCache();
-            }
-            if (corpus.hasDev()) {
-                // Decode and evaluate the dev data.
-                corpus.writeDevPreds(devInput);
-                eval.evaluate(devInput, devGold, "dev");
-                corpus.clearDevCache();
-            }
-        }
-        
-        if (corpus.hasTest()) {
-            // Decode test data.
-            String name = "test";
-            AnnoSentenceCollection testInput = corpus.getTestInput();
-            anno.annotate(testInput);
-            corpus.writeTestPreds(testInput);
-            // Evaluate test data.
-            AnnoSentenceCollection testGold = corpus.getTestGold();
-            prep.annotate(testGold);
-            corpus.writeTestGold();
-            if (evalTest) {
-                eval.evaluate(testInput, testGold, name);
-            } else {
-                (new ProportionAnnotated(CorpusHandler.getPredAts())).evaluate(testInput, testGold, name);
-            }
-            corpus.clearTestCache();
         }
         t.stop();
         rep.report("elapsedSec", t.totSec());
     }
-    
+
     /**
      * TODO: Deprecate this class. This is only a hold over until we remove the dependence of
      * CommunicationsAnnotator on these options being correctly set.
-     * 
+     *
      * @author mgormley
      */
-    public static class EnsureStaticOptionsAreSet implements Annotator {        
+    public static class EnsureStaticOptionsAreSet implements Annotator {
         private static final long serialVersionUID = 1L;
         private static final Logger log = LoggerFactory.getLogger(EnsureStaticOptionsAreSet.class);
         private final boolean singleRoot = InsideOutsideDepParse.singleRoot;
@@ -578,7 +543,7 @@ public class JointNlpRunner {
             return Collections.emptySet();
         }
     }
-    
+
     /* --------- Factory Methods ---------- */
 
     public static IGFeatureTemplateSelectorPrm getInformationGainFeatureSelectorPrm() {
@@ -591,7 +556,7 @@ public class JointNlpRunner {
         return prm;
     }
 
-    private static JointNlpAnnotatorPrm getJointNlpAnnotatorPrm() throws ParseException {
+    private static JointNlpAnnotatorPrm getJointNlpAnnotatorPrm() {
         JointNlpAnnotatorPrm prm = new JointNlpAnnotatorPrm();
         prm.crfPrm = getCrfTrainerPrm();
         prm.csPrm = getCorpusStatisticsPrm();
@@ -600,9 +565,12 @@ public class JointNlpRunner {
         prm.ofcPrm = getObsFeatureConjoinerPrm();
         prm.dpSkipPunctuation = dpSkipPunctuation;
         prm.buPrm = getJointNlpFgExampleBuilderPrm();
+        prm.favorSprlValidation = favorSprlValidation;
+        prm.favorSrlValidation = favorSrlValidation;
+        prm.exportTrainToLibDAI = exportGraphsPath;
         return prm;
     }
-    
+
     private static JointNlpFgExampleBuilderPrm getJointNlpFgExampleBuilderPrm() {
         JointNlpFgExampleBuilderPrm prm = new JointNlpFgExampleBuilderPrm();
         // Part-of-speech tagging factor graph.
@@ -612,20 +580,37 @@ public class JointNlpRunner {
         // SRL factor graph.
         prm.fgPrm.srlPrm = getSrlFactorGraphBuilderPrm();
         // Relation factor graph.
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS)) {
+        if (CorpusHandler.getPredLatAts().contains(AT.REL_LABELS)) {
             prm.fgPrm.relPrm = parser.getInstanceFromParsedArgs(RelationsFactorGraphBuilderPrm.class);
         }
-        
-        prm.fgPrm.includePos = CorpusHandler.getGoldOnlyAts().contains(AT.POS);
-        prm.fgPrm.includeDp = CorpusHandler.getGoldOnlyAts().contains(AT.DEP_TREE);
-        prm.fgPrm.includeSrl = CorpusHandler.getGoldOnlyAts().contains(AT.SRL);
-        prm.fgPrm.includeRel = CorpusHandler.getGoldOnlyAts().contains(AT.REL_LABELS);
-                
+
+        // Determine which Annotation Types to include in the JointNlpFactorGraph
+        prm.fgPrm.includePos = CorpusHandler.getPredLatAts().contains(AT.POS);
+        prm.fgPrm.includeDp = CorpusHandler.getPredLatAts().contains(AT.DEP_TREE);
+        prm.fgPrm.includeRel = CorpusHandler.getPredLatAts().contains(AT.REL_LABELS);
+        prm.fgPrm.includeSrl = CorpusHandler.getPredLatAts().contains(AT.SRL);
+        prm.fgPrm.includeSprl = CorpusHandler.getPredLatAts().contains(AT.SPRL);;
+
+        // Joint features.
+        if (acl14DepFeats) {
+            prm.fgPrm.useSrlFeatsForLinkRoleFactors = true;
+        } else {
+            prm.fgPrm.useSrlFeatsForLinkRoleFactors = false;
+        }
+
+        prm.fgPrm.sprlSrlFactors = sprlSrlFactors;
+        prm.fgPrm.sprlPrm.unaryFactors = sprlUnaryFactors;
+        prm.fgPrm.sprlPrm.pairwiseFactors = sprlAllPairs;
+        prm.fgPrm.sprlPrm.roleStructure = roleStructure;
+        prm.fgPrm.sprlPrm.allowPredArgSelfLoops= allowPredArgSelfLoops;
+
+        // TODO: probably should decouple the sprl feature extraction from the srl feature extraction
+        prm.fgPrm.sprlPrm.srlFePrm = prm.fgPrm.srlPrm.srlFePrm;
         // Example construction and storage.
         prm.exPrm.cacheType = cacheType;
         prm.exPrm.gzipped = gzipCache;
         prm.exPrm.maxEntriesInMemory = maxEntriesInMemory;
-        
+
         return prm;
     }
 
@@ -638,11 +623,11 @@ public class JointNlpRunner {
 
     private static DepParseFactorGraphBuilderPrm getDepParseFactorGraphBuilderPrm() {
         DepParseFactorGraphBuilderPrm dpPrm = new DepParseFactorGraphBuilderPrm();
-        
+
         // Dependency Parsing factor graph structure.
         dpPrm.linkVarType = linkVarType;
         dpPrm.useProjDepTreeFactor = useProjDepTreeFactor;
-        dpPrm.unaryFactors = unaryFactors;
+        dpPrm.unaryFactors = dpUnaryFactors;
         dpPrm.excludeNonprojectiveGrandparents = excludeNonprojectiveGrandparents;
         dpPrm.grandparentFactors = grandparentFactors;
         dpPrm.arbitrarySiblingFactors = arbitrarySiblingFactors;
@@ -654,44 +639,50 @@ public class JointNlpRunner {
         dpFePrm.biasOnly = biasOnly;
         dpFePrm.firstOrderTpls = getFeatTpls(dp1FeatTpls);
         dpFePrm.secondOrderTpls = getFeatTpls(dp2FeatTpls);
+
         dpFePrm.featureHashMod = featureHashMod;
         dpFePrm.onlyFast = dpFastFeats;
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && acl14DepFeats) {
+        if (CorpusHandler.getPredLatAts().contains(AT.SRL) && acl14DepFeats) {
             // This special case is only for historical consistency.
             dpFePrm.onlyTrueBias = false;
             dpFePrm.onlyTrueEdges = false;
             dpFePrm.onlyFast = false; // Overrides command line option.
         }
-        // Bitshift feature extraction.        
+        // Bitshift feature extraction.
         BitshiftDepParseFeatureExtractorPrm bsDpFePrm = parser.getInstanceFromParsedArgs(BitshiftDepParseFeatureExtractorPrm.class);
         bsDpFePrm.featureHashMod = featureHashMod;
 
         dpPrm.dpFePrm = dpFePrm;
-        dpPrm.bsDpFePrm = bsDpFePrm;     
+        dpPrm.bsDpFePrm = bsDpFePrm;
         return dpPrm;
     }
-    
+
     private static SrlFactorGraphBuilderPrm getSrlFactorGraphBuilderPrm() {
         SrlFactorGraphBuilderPrm srlPrm = new SrlFactorGraphBuilderPrm();
         // Semantic Role Labeling factor graph structure.
+        srlPrm.srlVarType = srlVarType;
         srlPrm.makeUnknownPredRolesLatent = makeUnknownPredRolesLatent;
         srlPrm.roleStructure = roleStructure;
         srlPrm.allowPredArgSelfLoops = allowPredArgSelfLoops;
-        srlPrm.unaryFactors = unaryFactors;
+        srlPrm.unaryFactors = srlUnaryFactors;
         srlPrm.binarySenseRoleFactors = binarySenseRoleFactors;
         srlPrm.predictSense = predictSense;
         srlPrm.predictPredPos = predictPredPos;
         srlPrm.fcmFactors = srlFcmFactors;
         srlPrm.fcmFineTuning = srlFcmFineTuning;
-        
+        srlPrm.fcmWfPrm = parser.getInstanceFromParsedArgs(SrlWordFeaturesPrm.class);
+
         // SRL Feature Extraction.
         SrlFeatureExtractorPrm srlFePrm = new SrlFeatureExtractorPrm();
         srlFePrm.biasOnly = biasOnly;
-        srlFePrm.useTemplates = useTemplates;       
+        srlFePrm.useTemplates = useTemplates;
         srlFePrm.senseTemplates = getFeatTpls(senseFeatTpls);
         srlFePrm.argTemplates = getFeatTpls(argFeatTpls);
         srlFePrm.featureHashMod = featureHashMod;
-                
+        for (AT at : CorpusHandler.getRemoveAts()) {
+            srlFePrm.argTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.argTemplates, at);
+            srlFePrm.senseTemplates = TemplateLanguage.filterOutRequiring(srlFePrm.senseTemplates, at);
+        }
         srlPrm.srlFePrm = srlFePrm;
         return srlPrm;
     }
@@ -699,10 +690,9 @@ public class JointNlpRunner {
     private static ObsFeatureConjoinerPrm getObsFeatureConjoinerPrm() {
         ObsFeatureConjoinerPrm prm = new ObsFeatureConjoinerPrm();
         prm.featCountCutoff = featCountCutoff;
-        prm.includeUnsupportedFeatures = includeUnsupportedFeatures;
         return prm;
     }
-    
+
     /**
      * Gets feature templates from multiple files or resources.
      * @param featTpls A colon separated list of paths to feature template files or resources.
@@ -715,7 +705,7 @@ public class JointNlpRunner {
         for (String path : featTpls.split(":")) {
             if (path.equals("coarse1") || path.equals("coarse2")) {
                 List<FeatTemplate> coarseUnigramSet;
-                if (path.equals("coarse1")) { 
+                if (path.equals("coarse1")) {
                     coarseUnigramSet = TemplateSets.getCoarseUnigramSet1();
                 } else if (path.equals("coarse2")) {
                     coarseUnigramSet = TemplateSets.getCoarseUnigramSet2();
@@ -736,7 +726,7 @@ public class JointNlpRunner {
             }
         }
         tpls.addAll(tr.getTemplates());
-        
+
         return new ArrayList<FeatTemplate>(tpls);
     }
 
@@ -745,13 +735,12 @@ public class JointNlpRunner {
         prm.cutoff = cutoff;
         prm.language = CorpusHandler.language;
         prm.useGoldSyntax = CorpusHandler.useGoldSyntax;
-        prm.normalizeWords = normalizeWords;
         return prm;
     }
-    
-    private static CrfTrainerPrm getCrfTrainerPrm() throws ParseException {
+
+    private static CrfTrainerPrm getCrfTrainerPrm() {
         FgInferencerFactory infPrm = getInfFactory();
-        
+
         CrfTrainerPrm prm = new CrfTrainerPrm();
         prm.infFactory = infPrm;
         if (infPrm instanceof BeliefsModuleFactory) {
@@ -761,9 +750,8 @@ public class JointNlpRunner {
         Pair<Optimizer<DifferentiableFunction>, Optimizer<DifferentiableBatchFunction>> opts = OptimizerFactory.getOptimizers();
         prm.optimizer = opts.get1();
         prm.batchOptimizer = opts.get2();
-        prm.regularizer = OptimizerFactory.getRegularizer();
         prm.trainer = trainer;
-        
+
         // TODO: add options for other loss functions.
         if (prm.trainer == Trainer.ERMA) {
             if (dpLoss == ErmaLoss.SOFTMAX_MBR) {
@@ -781,14 +769,14 @@ public class JointNlpRunner {
             } else if (dpLoss == ErmaLoss.EXPECTED_RECALL) {
                 prm.dlFactory = new ExpectedRecallFactory();
             } else {
-                throw new ParseException("Unsupported loss: " + dpLoss.name());
+                throw new RuntimeException("Unsupported loss: " + dpLoss.name());
             }
         }
-        
+
         return prm;
     }
 
-    private static FgInferencerFactory getInfFactory() throws ParseException {
+    private static FgInferencerFactory getInfFactory() {
         if (inference == Inference.BRUTE_FORCE) {
             BruteForceInferencerPrm prm = new BruteForceInferencerPrm(algebra.getAlgebra());
             return prm;
@@ -807,17 +795,17 @@ public class JointNlpRunner {
             return bpPrm;
         } else if (inference == Inference.DP) {
             if (CorpusHandler.getPredAts().equals(QSets.getSet(AT.DEP_TREE))
-                    && grandparentFactors && !arbitrarySiblingFactors && !headBigramFactors) { 
+                    && grandparentFactors && !arbitrarySiblingFactors && !headBigramFactors) {
                 return new O2AllGraFgInferencerFactory(algebra.getAlgebra());
             } else {
-                throw new ParseException("DP inference only supported for dependency parsing with all grandparent factors.");
+                throw new IllegalStateException("DP inference only supported for dependency parsing with all grandparent factors.");
             }
         } else {
-            throw new ParseException("Unsupported inference method: " + inference);
+            throw new RuntimeException("Unsupported inference method: " + inference);
         }
     }
 
-    private static JointNlpDecoderPrm getDecoderPrm() throws ParseException {
+    private static JointNlpDecoderPrm getDecoderPrm() {
         MbrDecoderPrm mbrPrm = new MbrDecoderPrm();
         mbrPrm.infFactory = getInfFactory();
         mbrPrm.loss = Loss.L1;
@@ -841,44 +829,26 @@ public class JointNlpRunner {
         prm.entitySpecificEmbeddings = entitySpecificEmbeddings;
         return prm;
     }
-    
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(JointNlpRunner.class);
-            parser.registerClass(JointNlpRunner.class);
-            parser.registerClass(OptimizerFactory.class);
-            parser.registerClass(CorpusHandler.class);
-            parser.registerClass(RelationMungerPrm.class);
-            parser.registerClass(RelationsFactorGraphBuilderPrm.class);
-            parser.registerClass(InsideOutsideDepParse.class);      
-            parser.registerClass(ReporterManager.class);
-            parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);
-            parser.parseArgs(args);
-            JointNlpRunner.parser = parser;
-            
-            ReporterManager.init(ReporterManager.reportOut, true);
-            Prng.seed(seed);
-            Threads.initDefaultPool(threads);
 
-            JointNlpRunner pipeline = new JointNlpRunner();
-            pipeline.run();
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        } finally {
-            Threads.shutdownDefaultPool();
-            ReporterManager.close();
-        }
-        
-        System.exit(exitCode);
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(JointNlpRunner.class);
+        parser.registerClass(JointNlpRunner.class);
+        parser.registerClass(OptimizerFactory.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.registerClass(RelationMungerPrm.class);
+        parser.registerClass(RelationsFactorGraphBuilderPrm.class);
+        parser.registerClass(InsideOutsideDepParse.class);
+        parser.registerClass(ReporterManager.class);
+        parser.registerClass(BitshiftDepParseFeatureExtractorPrm.class);
+        parser.registerClass(SrlWordFeaturesPrm.class);
+        parser.parseArgs(args);
+        JointNlpRunner.parser = parser;
+
+        ReporterManager.init(ReporterManager.reportOut, true);
+        Prng.seed(seed);
+        Threads.initDefaultPool(threads);
+
+        JointNlpRunner pipeline = new JointNlpRunner();
+        pipeline.run();
     }
-
 }

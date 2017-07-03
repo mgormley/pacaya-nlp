@@ -19,29 +19,40 @@ import edu.jhu.pacaya.util.collections.QLists;
 
 /**
  * Defines a 'little language' for structured feature templates.
- * 
+ *
  * @author mgormley
  */
 public class TemplateLanguage {
-    
+
     private static final Logger log = LoggerFactory.getLogger(TemplateLanguage.class);
 
     private TemplateLanguage() {
         // Private constructor.
     }
-    
+
     /* -------------------- Structures of the Little Language ---------------- */
-        
+
+    /**
+     * Annotation Type. These describe which part of a AnnoSentence must
+     * be present in order to utilize each structure.
+     */
+    public enum AT {
+        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED_IDX, MORPHO, CHUNKS, DEP_TREE, DEPREL,
+        DEP_EDGE_MASK, SRL_PRED_IDX, SRL_PAIR_IDX, SRL, NARY_TREE, NE_TAGS, NER, NE_PAIRS, RELATIONS, REL_LABELS,
+        SPRL_PRED_IDX, SPRL_PAIR_IDX, SPRL, PAIRS_TO_SKIP;
+    }
+
     /** Word property. A mapping from a position to a string. */
     public enum TokProperty {
-        INDEX, WORD, LEMMA, POS, CPOS, BC0, BC1, MORPHO, DEPREL, LC, UNK, CAPITALIZED, WORD_TOP_N,
+        INDEX, WORD, LEMMA, POS, CPOS, STRICT_POS, BC0, BC1, MORPHO, DEPREL, LC, CAPITALIZED, WORD_TOP_N,
+        PRED_SENSE,
         CHPRE1, CHPRE2, CHPRE3, CHPRE4, CHPRE5,
         CHSUF1, CHSUF2, CHSUF3, CHSUF4, CHSUF5,
         //
-        MORPHO1, MORPHO2, MORPHO3;        
+        MORPHO1, MORPHO2, MORPHO3;
     }
 
-    /** Word property list expansion. A mapping from a position to a list of strings. */ 
+    /** Word property list expansion. A mapping from a position to a list of strings. */
     public enum TokPropList {
         EACH_MORPHO,
         // Not implemented:
@@ -101,47 +112,38 @@ public class TemplateLanguage {
         //
         RULE_IS_UNARY;
         // TODO: Not implemented:
-        // PRED_VOICE_WORD_OR_POS,        
+        // PRED_VOICE_WORD_OR_POS,
     }
-    
+
     /** The pieces of a CNF rule. */
     public enum RulePiece {
         PARENT, LEFT_CHILD, RIGHT_CHILD
     }
-    
+
     /** Symbol property. A mapping from a rule piece to a string. */
     public enum SymbolProperty {
-        TAG, 
-        // Not implemented: 
+        TAG,
+        // Not implemented:
         // BASE_TAG, PARENT_TAG, BASE_PARENT_TAG
     }
-    
+
     /** Named entity mentions. */
     public enum Mention {
         M_1, M_2,
     }
-    
+
     /** Mention properties. */
     public enum MentionProperty {
         ENTITY_TYPE, PHRASE_TYPE,
     }
-    
+
     /* -------------------- Descriptions of the Language Elements ---------------- */
 
-    /**
-     * Annotation Type. These describe which part of a AnnoSentence must
-     * be present in order to utilize each structure.
-     */
-    public enum AT {
-        WORD, PREFIX, LEMMA, POS, CPOS, STRICT_POS, BROWN, EMBED_IDX, MORPHO, CHUNKS, DEP_TREE, DEPREL, 
-        DEP_EDGE_MASK, SRL_PRED_IDX, SRL, NARY_TREE, NE_TAGS, NER, NE_PAIRS, RELATIONS, REL_LABELS;
-    }
-        
     public static Description getDescByName(String name) {
         name = Description.normalizeName(name);
         return nameDescMap.get(name);
     }
-    
+
     public static String getNameFromDesc(FeatTemplate tpl) {
         List<Enum<?>> struc = tpl.getStructure();
         StringBuilder name = new StringBuilder();
@@ -168,15 +170,15 @@ public class TemplateLanguage {
         }
         return name.toString();
     }
-    
+
     private static ArrayList<Description> desc = new ArrayList<Description>();
     private static Map<Enum<?>, Description> enumDescMap = new HashMap<Enum<?>, Description>();
     private static Map<String, Description> nameDescMap = new HashMap<String, Description>();
-    
+
     private static void desc(Enum<?> obj, String name, String description, AT... requiredLevels) {
         desc.add(new Description(obj, name, description, requiredLevels));
     }
-    
+
     static {
         /** Positions. */
         desc(Position.PARENT, "p", "Parent");
@@ -191,41 +193,42 @@ public class TemplateLanguage {
         desc(Position.M_2_START, "m2s", "Mention 2 start");
         desc(Position.M_2_END, "m2e", "Mention 2 end");
         desc(Position.M_2_HEAD, "m2h", "Mention 2 head");
-        
+
         /** CNF Rule pieces. */
         desc(RulePiece.PARENT, "ruleP", "Rule parent");
         desc(RulePiece.LEFT_CHILD, "ruleLc", "Rule left child");
         desc(RulePiece.RIGHT_CHILD, "ruleRc", "Rule right child");
-        
+
         /** Symbol property. A mapping from a rule piece to a string. */
         desc(SymbolProperty.TAG, "tag", "Symbol");
         // TODO: Add ATs
         //desc(SymbolProperty.BASE_TAG, "bTag", "Base symbol");
         //desc(SymbolProperty.PARENT_TAG, "pTag", "Parent symbol annotation");
         //desc(SymbolProperty.BASE_PARENT_TAG, "bpTag", "Base of parent symbol annotation");
-        
+
         /** Named entity mentions. */
         desc(Mention.M_1, "m1", "Mention 1");
         desc(Mention.M_2, "m2", "Mention 2");
-        
+
         /** Mention properties. */
         desc(MentionProperty.ENTITY_TYPE, "entityType", "Entity type");
         desc(MentionProperty.PHRASE_TYPE, "mentionType", "Phrase type");
-        
+
         /** Word property. A mapping from a position to a string. */
         desc(TokProperty.WORD, "word", "Word", AT.WORD);
         desc(TokProperty.LEMMA, "lemma", "Lemma", AT.LEMMA);
         desc(TokProperty.POS, "pos", "POS Tag", AT.POS);
         desc(TokProperty.CPOS, "cpos", "Coarse POS Tag", AT.CPOS);
+        desc(TokProperty.STRICT_POS, "spos", "Strict POS Tag", AT.STRICT_POS);
         desc(TokProperty.BC0, "bc0", "Coarse-grained Brown cluster", AT.BROWN);
         desc(TokProperty.BC1, "bc1", "Fine-grained Brown cluster", AT.BROWN);
         desc(TokProperty.MORPHO, "morpho", "Morphological features", AT.MORPHO);
         desc(TokProperty.DEPREL, "deprel", "Dependency relation to head", AT.DEPREL);
         desc(TokProperty.LC, "lc", "Lower-cased word", AT.WORD);
-        desc(TokProperty.UNK, "unk", "Unknown word class", AT.WORD);
         desc(TokProperty.CAPITALIZED, "capitalized", "Whether this word starts with a capital letter", AT.WORD);
         desc(TokProperty.WORD_TOP_N, "wordTopN", "Word if it's in the top N", AT.WORD);
         desc(TokProperty.INDEX, "index", "The position itself", AT.WORD);
+        desc(TokProperty.PRED_SENSE, "predSense", "The predicate sense", AT.SRL);
 
         desc(TokProperty.CHPRE1, "chpre1", "1-character prefix of a word", AT.WORD);
         desc(TokProperty.CHPRE2, "chpre2", "2-character prefix of a word", AT.WORD);
@@ -238,18 +241,18 @@ public class TemplateLanguage {
         desc(TokProperty.CHSUF3, "chsuf3", "3-character suffix of a word", AT.WORD);
         desc(TokProperty.CHSUF4, "chsuf4", "4-character suffix of a word", AT.WORD);
         desc(TokProperty.CHSUF5, "chsuf5", "5-character suffix of a word", AT.WORD);
-        
+
         desc(TokProperty.MORPHO1, "morpho1", "Morphological feature 1", AT.MORPHO);
         desc(TokProperty.MORPHO2, "morpho2", "Morphological feature 2", AT.MORPHO);
         desc(TokProperty.MORPHO3, "morpho3", "Morphological feature 3", AT.MORPHO);
-        
-        /** Word property list expansion. A mapping from a position to a list of strings. */ 
+
+        /** Word property list expansion. A mapping from a position to a list of strings. */
         desc(TokPropList.EACH_MORPHO, "eachmorpho", "Morphological features", AT.MORPHO);
-        // TODO: 
+        // TODO:
         // desc(TokPropList.CH, "ch", "Each character of the word", AT.WORD);
         // desc(TokPropList.CHPRE_N, "chpre_n", "Character n-gram prefix", AT.WORD);
         // desc(TokPropList.CHSUF_N, "chsuf_n", "Character n-gram suffix", AT.WORD);
-   
+
         /** Directed Edge Property. A mapping from a directed edge to a string. */
         desc(EdgeProperty.DIR, "dir", "Direction of an edge in a path", AT.DEP_TREE);
         desc(EdgeProperty.EDGEREL, "edgerel", "Dependency relation of an edge in a path", AT.DEP_TREE);
@@ -298,9 +301,9 @@ public class TemplateLanguage {
         desc(ListModifier.UNIGRAM, "1gram", "Creates a separate feature for each element of the list.");
         desc(ListModifier.BIGRAM, "2gram", "Creates a separate feature for each bigram in the list.");
         desc(ListModifier.TRIGRAM, "3gram", "Creates a separate feature for each trigram in the list.");
-        
+
         /** Additional Features. Mapping from parent and child positions to a feature. */
-        // TODO: the first few templates below should be properties of a word pair. 
+        // TODO: the first few templates below should be properties of a word pair.
         desc(OtherFeat.RELATIVE, "relative(p,c)", "Relative position of p and c: before, after, on.", AT.WORD);
         desc(OtherFeat.DISTANCE, "distance(p,c)", "Distance binned into greater than: 2, 5, 10, 20, 30, or 40", AT.WORD);
         desc(OtherFeat.UNDIR_EDGE, "undiredge(p,c)", "Whether there is an undirected edge connecting p and c", AT.DEP_TREE);
@@ -313,7 +316,7 @@ public class TemplateLanguage {
         desc(OtherFeat.RULE_IS_UNARY, "ruleIsUnary", "Whether a rule is unary");
         // TODO:
         //desc(OtherFeat.PRED_VOICE_WORD_OR_POS, "p.voice+a.word / p.voice+a.t", "The predicate voice and the  word/POS of the argument.", AT.LABEL_DEP_TREE);
-        
+
         for (Description d : desc) {
             // Create the mapping of enums to their descriptions.
             enumDescMap.put(d.getObj(), d);
@@ -324,7 +327,7 @@ public class TemplateLanguage {
             nameDescMap.put(d.getName(), d);
         }
     }
-    
+
     /** Feature function description. */
     public static class Description {
         public static final Pattern whitespace = Pattern.compile("\\s+");
@@ -336,7 +339,7 @@ public class TemplateLanguage {
 
         /**
          * Private constructor.
-         * 
+         *
          * @param obj Object being described.
          * @param name Name used in text for this function.
          * @param description Plain text description of this property.
@@ -369,7 +372,7 @@ public class TemplateLanguage {
             return String.format("%-17s %-27s %-20s %-20s", obj, name, Arrays.toString(requiredLevels), description);
         }
     }
-    
+
     /* -------------------- Structure Feature Templates ---------------- */
 
     public static final String TEMPLATE_SEP = "+";
@@ -407,17 +410,17 @@ public class TemplateLanguage {
             return false;
         }
     }
-    
+
     /**
-     * For feature templates of the form: 
+     * For feature templates of the form:
      *     bc1(p)
      *     dr(head(c))
      *     bc0(first(t, NOUN, path(p, root)))
      */
     public static class FeatTemplate1 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
-        public Position pos; 
-        public PositionModifier mod; 
+        public Position pos;
+        public PositionModifier mod;
         public TokProperty prop;
         /**
          * Constructor.
@@ -434,17 +437,17 @@ public class TemplateLanguage {
             return QLists.getList(prop, mod, pos);
         }
     }
-    
+
     /**
-     * For feature templates of the form: 
+     * For feature templates of the form:
      *     morpho(p)
      * which extract multiple features of a single token.
      */
     public static class FeatTemplate2 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
         public Position pos;
-        public PositionModifier mod; 
-        public TokPropList prop; 
+        public PositionModifier mod;
+        public TokPropList prop;
         /**
          * Constructor.
          * @param pos Position to start from.
@@ -462,19 +465,19 @@ public class TemplateLanguage {
     }
 
     /**
-     * For feature templates of the form: 
+     * For feature templates of the form:
      *    noDup(bc0+dir(path(lca(p,c),root)))
      *    seq(bc0(children(p)))
      *    noDup(t(line(p,c)))
      */
     public static class FeatTemplate3 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
-        public PositionList pl; 
-        public TokProperty prop; 
+        public PositionList pl;
+        public TokProperty prop;
         public EdgeProperty eprop;
         public ListModifier lmod;
         /**
-         * Constructor. 
+         * Constructor.
          * @param pl Position list which is a function of the parent/child positions.
          * @param prop (OPTIONAL) Property to extract from the position list or null.
          * @param eprop (OPTIONAL) Edge property to extract from the path or null.
@@ -490,15 +493,15 @@ public class TemplateLanguage {
             return QLists.getList(prop, eprop, lmod, pl);
         }
     }
-    
+
     /**
-     * For feature templates of the form: 
+     * For feature templates of the form:
      *     tag(ruleP)
      *     bTag(ruleLc)
      */
     public static class FeatTemplate4 extends FeatTemplate {
         private static final long serialVersionUID = 1L;
-        public RulePiece piece; 
+        public RulePiece piece;
         public SymbolProperty prop;
         /**
          * Constructor.
@@ -513,9 +516,9 @@ public class TemplateLanguage {
             return QLists.getList(prop, piece);
         }
     }
-    
+
     /**
-     * For standalone feature templates of the form: 
+     * For standalone feature templates of the form:
      *    DepSubCat
      *    geneology(p,c)
      */
@@ -523,7 +526,7 @@ public class TemplateLanguage {
         private static final long serialVersionUID = 1L;
         public OtherFeat feat;
         /**
-         * Constructor. 
+         * Constructor.
          * @param feat The special feature.
          */
         public FeatTemplate0(OtherFeat feat) {
@@ -536,7 +539,7 @@ public class TemplateLanguage {
             return s;
         }
     }
-        
+
     /**
      * For n-gram feature templates of the form:
      *     w(p) + bc0(-1(c))
@@ -568,18 +571,18 @@ public class TemplateLanguage {
         private static String[] toNames(FeatTemplate[] tpls) {
             String[] names = new String[tpls.length];
             for (int i=0; i<tpls.length; i++) {
-                names[i] = tpls[i].getName();                
+                names[i] = tpls[i].getName();
             }
             return names;
         }
     }
-    
+
     /* -------------------- Utilities for Checking Feature Template Sets ---------------- */
-    
+
     public static boolean hasRequiredAnnotationTypes(AnnoSentence sent, List<FeatTemplate> tpls) {
         return hasRequiredAnnotationTypes(sent, getRequiredAnnotationTypes(tpls));
     }
-    
+
     public static boolean hasRequiredAnnotationTypes(AnnoSentence sent, Set<AT> types) {
         for (AT type : types) {
             if (!hasRequiredAnnotationType(sent, type)) {
@@ -588,7 +591,7 @@ public class TemplateLanguage {
         }
         return true;
     }
-    
+
     public static boolean hasRequiredAnnotationType(AnnoSentence sent, AT type) {
         return sent.hasAt(type);
     }
@@ -597,19 +600,19 @@ public class TemplateLanguage {
     public static void assertRequiredAnnotationTypes(AnnoSentence sent, List<FeatTemplate> tpls) {
         assertRequiredAnnotationTypes(sent, getRequiredAnnotationTypes(tpls));
     }
-    
+
     public static void assertRequiredAnnotationTypes(AnnoSentence sent, Set<AT> types) {
         for (AT type : types) {
             assertRequiredAnnotationType(sent, type);
         }
     }
-    
+
     public static void assertRequiredAnnotationType(AnnoSentence sent, AT type) {
         if (!hasRequiredAnnotationType(sent, type)) {
             throw new IllegalStateException("Missing required annotation type: " + type);
-        }        
+        }
     }
-    
+
     public static Set<AT> getRequiredAnnotationTypes(List<FeatTemplate> tpls) {
         HashSet<AT> types = new HashSet<AT>();
         for (FeatTemplate tpl : tpls) {
@@ -623,7 +626,7 @@ public class TemplateLanguage {
         }
         return types;
     }
-    
+
     public static void main(String[] args) {
         for (Description d : desc) {
             System.out.println(d);
@@ -657,5 +660,5 @@ public class TemplateLanguage {
         }
         return tplsNew;
     }
-    
+
 }

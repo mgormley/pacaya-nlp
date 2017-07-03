@@ -45,9 +45,7 @@ public class TemplateSetsTest {
         int numSense = tpls.size();
         System.out.println("Number of sense templates: " + numSense);
 
-        // Bjorkelund lists 32 features, one of which is Sense which we don't
-        // treat as observed.
-        assertEquals(31, numArg);
+        assertEquals(32, numArg);
         assertEquals(11, numSense);
     } 
     
@@ -79,7 +77,7 @@ public class TemplateSetsTest {
         int numSense = tpls.size();
         System.out.println("Number of sense templates: " + numSense);
 
-        assertEquals(48, numArg);
+        assertEquals(51, numArg);
         assertEquals(8, numSense);
     }
 

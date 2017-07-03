@@ -30,7 +30,7 @@ public class SrlWordFeaturesTest {
         
         FeatureNames alphabet = new FeatureNames();
         SrlWordFeaturesPrm prm = new SrlWordFeaturesPrm();
-        prm.embFeatType = SrlWordFeatType.HEAD_TYPE_LOC;
+        prm.srlEmbFeatType = SrlWordFeatType.HEAD_TYPE_LOC;
         SrlWordFeatures fe = new SrlWordFeatures(prm, sent, alphabet);
         List<FeatureVector> featsList = fe.getFeatures(rv);
         

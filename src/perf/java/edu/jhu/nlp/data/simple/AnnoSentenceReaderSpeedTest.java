@@ -48,13 +48,14 @@ public class AnnoSentenceReaderSpeedTest {
         t.start();
         AnnoSentenceCollection sents = read(ptbYmTrain, DatasetType.CONLL_X);
         AlphabetStore store = new AlphabetStore(sents);
-        // Include convertion to IntAnnoSentence.
+        // Include conversion to IntAnnoSentence.
         for (AnnoSentence sent : sents) {
             new IntAnnoSentence(sent, store);
         }
         t.stop();
         System.out.println("# sents: "+ sents.size());
         System.out.println("Tokens / sec: " + (sents.getNumTokens() / t.totSec()));
+        System.out.println("Total time (sec): " + (t.totSec()));
     }
     
     public static void main(String[] args) {

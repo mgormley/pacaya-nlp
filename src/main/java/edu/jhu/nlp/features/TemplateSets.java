@@ -30,6 +30,8 @@ public class TemplateSets {
     // Semantic Role Labeling feature sets.
     public static final String bjorkelundArgFeatsResource = "/edu/jhu/nlp/features/bjorkelund-arg-feats.txt";
     public static final String bjorkelundSenseFeatsResource = "/edu/jhu/nlp/features/bjorkelund-sense-feats.txt";
+    public static final String bjorkelundEnArgFeatsResource = "/edu/jhu/nlp/features/bjorkelund-en-arg-feats.txt";
+    public static final String bjorkelundEnSenseFeatsResource = "/edu/jhu/nlp/features/bjorkelund-en-sense-feats.txt";
 
     public static final String naradowskyArgFeatsResource = "/edu/jhu/nlp/features/naradowsky-arg-feats.txt";
     public static final String naradowskySenseFeatsResource = "/edu/jhu/nlp/features/naradowsky-sense-feats.txt";
@@ -131,7 +133,7 @@ public class TemplateSets {
             reader.readFromResource(resourceName);
             return reader.getTemplates();
         } catch (IOException e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
     }
     
@@ -177,7 +179,7 @@ public class TemplateSets {
         tpls.addAll(TemplateSets.getBjorkelundSenseUnigramFeatureTemplates());
         tpls.addAll(TemplateSets.getZhaoEnSenseUnigramFeatureTemplates());
         tpls.addAll(TemplateSets.getNaradowskySenseUnigramFeatureTemplates());
-        return TemplateLanguage.filterOutFeats(new ArrayList<FeatTemplate>(tpls), TokProperty.UNK);
+        return new ArrayList<>(tpls);
     }
     
     public static List<FeatTemplate> getCoarseUnigramSet1() {
@@ -251,9 +253,6 @@ public class TemplateSets {
         for (OtherFeat feat : otherFeats) {
             tpls.add(new FeatTemplate0(feat));
         }
-        
-        // TODO: UNK is currently only supported for English and Spanish, so we filter those feature out.
-        tpls = TemplateLanguage.filterOutFeats(tpls, TokProperty.UNK);
         
         return tpls;
     }

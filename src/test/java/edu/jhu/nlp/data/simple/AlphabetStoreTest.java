@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.Test;
 
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.nlp.tag.StrictPosTagAnnotator.StrictPosTag;
 import edu.jhu.pacaya.util.collections.QLists;
@@ -36,7 +37,8 @@ public class AlphabetStoreTest {
         assertEquals(9, store.clusterPrefixes.size());
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
-        
+        assertEquals(NUM_TOKENS, store.srlPredSenses.size());
+        assertEquals(NUM_TOKENS, store.srlArgs.size());
         
         // Check alphabet contents.
         assertEquals(TOK_UNK_STR, store.words.lookupObject(0));
@@ -82,6 +84,14 @@ public class AlphabetStoreTest {
         assertEquals(TOK_UNK_STR, store.deprels.lookupObject(0));
         assertEquals("deprel"+0, store.deprels.lookupObject(FIRST_TOK_ID));
         assertEquals(FIRST_TOK_ID, store.getDeprelIdx("deprel"+0));
+
+        assertEquals(TOK_UNK_STR, store.srlPredSenses.lookupObject(0));
+        assertEquals("srlPredSense"+0, store.srlPredSenses.lookupObject(FIRST_TOK_ID));
+        assertEquals(FIRST_TOK_ID, store.getSrlPredSenseIdx("srlPredSense"+0));
+
+        assertEquals(TOK_UNK_STR, store.srlArgs.lookupObject(0));
+        assertEquals("srlArg"+0, store.srlArgs.lookupObject(FIRST_TOK_ID));
+        assertEquals(FIRST_TOK_ID, store.getSrlArgIdx("srlArg"+0));
     }
 
     @Test
@@ -113,7 +123,9 @@ public class AlphabetStoreTest {
                 assertTrue(FIRST_TOK_ID < store.clusterPrefixes.size());
             }
             assertEquals(at == AT.MORPHO ? FIRST_TOK_ID : NUM_TOKENS, store.feats.size());
-            assertEquals(at == AT.DEPREL ? FIRST_TOK_ID : NUM_TOKENS, store.deprels.size());
+            assertEquals(at == AT.DEPREL ? FIRST_TOK_ID : NUM_TOKENS, store.deprels.size());            
+            assertEquals(at == AT.SRL ? FIRST_TOK_ID : NUM_TOKENS, store.srlPredSenses.size());
+            assertEquals(at == AT.SRL ? FIRST_TOK_ID : NUM_TOKENS, store.srlArgs.size());
         }
     }
     
@@ -137,26 +149,12 @@ public class AlphabetStoreTest {
         assertEquals(9, store.clusterPrefixes.size());
         assertEquals(NUM_TOKENS, store.feats.size());
         assertEquals(NUM_TOKENS, store.deprels.size());
+        assertEquals(NUM_TOKENS, store.srlPredSenses.size());
+        assertEquals(NUM_TOKENS, store.srlArgs.size());
     }
     
     @Test
     public void testWordCounts() {
-        {
-            AnnoSentenceCollection sents = getSents(true);
-            AlphabetStore store = new AlphabetStore(sents);
-            // Observed.
-            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+0)));
-            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+1)));
-            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+10)));
-            // Special tokens
-            assertEquals(65445, store.getWordTypeCount((short) AlphabetStore.TOK_UNK_INT));
-            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_START_INT));
-            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_END_INT));
-            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_WALL_INT));
-            // Mapped to UNK.
-            assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+101)));
-            assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+1000)));
-        }
         {
             AnnoSentenceCollection sents = getSents(false);
             AlphabetStore store = new AlphabetStore(sents);
@@ -172,6 +170,22 @@ public class AlphabetStoreTest {
             // Mapped to UNK.
             assertEquals(0, store.getWordTypeCount(store.getWordIdx("Word"+101)));
             assertEquals(0, store.getWordTypeCount(store.getWordIdx("Word"+1000)));
+        }
+        {
+            AnnoSentenceCollection sents = getSents(true);
+            AlphabetStore store = new AlphabetStore(sents);
+            // Observed.
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+0)));
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+1)));
+            assertEquals(3, store.getWordTypeCount(store.getWordIdx("Word"+10)));
+            // Special tokens
+            assertEquals(65445, store.getWordTypeCount((short) AlphabetStore.TOK_UNK_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_START_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_END_INT));
+            assertEquals(0, store.getWordTypeCount((short) AlphabetStore.TOK_WALL_INT));
+            // Mapped to UNK.
+            assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+101)));
+            assertEquals(65445, store.getWordTypeCount(store.getWordIdx("Word"+1000)));
         }
     }
 
@@ -224,6 +238,9 @@ public class AlphabetStoreTest {
                 s.setClusters(QLists.getList("cluster"+i));
                 s.setFeats(QLists.getList(QLists.getList("feat"+i)));
                 s.setDeprels(QLists.getList("deprel"+i));
+                s.setSrlGraph(new DepGraph(1));
+                s.getSrlGraph().set(-1, 0, "srlPredSense"+i);
+                s.getSrlGraph().set(0, 0, "srlArg"+i);
                 sents.add(s);
             }
         }
@@ -232,8 +249,10 @@ public class AlphabetStoreTest {
             // Add one token for word<i> for i in [100,..., 65545].
             int start=100;
             int end = 0xffff+10;
-            AnnoSentence s = getAnnoSentenceForRange(start, end);            
-            sents.add(s);
+            for (int i=start; i<end; i++) {
+                AnnoSentence s = getAnnoSentenceForRange(i, i+1);            
+                sents.add(s);
+            }
         }
         
         return sents;
@@ -251,7 +270,11 @@ public class AlphabetStoreTest {
         s.setDeprels(getList("deprel"+start));
         s.setFeats(getList(getList("feat"+start)));    
         s.setStrictPosTags(getList(StrictPosTag.values()[start%StrictPosTag.values().length]));
+        s.setSrlGraph(new DepGraph(len));
+        s.getSrlGraph().set(-1, 0, "srlPredSense"+start);
+        s.getSrlGraph().set(0, 0, "srlArg"+start);
         
+        int k=1;
         for (int i=start+1; i<end; i++) {
             s.getWords().add("Word"+i);
             s.getPrefixes().add("prefix"+i);
@@ -262,6 +285,9 @@ public class AlphabetStoreTest {
             s.getDeprels().add("deprel"+i);
             s.getFeats().add(getList("feat"+i));
             s.getStrictPosTags().add(StrictPosTag.values()[i%StrictPosTag.values().length]);
+            s.getSrlGraph().set(-1, k, "srlPredSense"+i);
+            s.getSrlGraph().set(k, k, "srlArg"+i);
+            k++;
         }
         return s;
     }
@@ -279,6 +305,8 @@ public class AlphabetStoreTest {
         assertEquals(true, store.clusters.isGrowing());
         assertEquals(true, store.feats.isGrowing());
         assertEquals(true, store.deprels.isGrowing());
+        assertEquals(true, store.srlPredSenses.isGrowing());
+        assertEquals(true, store.srlArgs.isGrowing());
         store.stopGrowth();
         assertEquals(false, store.words.isGrowing());
         assertEquals(false, store.lcWords.isGrowing());
@@ -288,7 +316,9 @@ public class AlphabetStoreTest {
         assertEquals(false, store.cposTags.isGrowing());
         assertEquals(false, store.clusters.isGrowing());
         assertEquals(false, store.feats.isGrowing());
-        assertEquals(false, store.deprels.isGrowing());        
+        assertEquals(false, store.deprels.isGrowing());
+        assertEquals(false, store.srlPredSenses.isGrowing());
+        assertEquals(false, store.srlArgs.isGrowing());
     }
     
 

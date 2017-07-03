@@ -1,0 +1,81 @@
+# Features selected as in Bjorkelund et al. (2009) for 'arg' language 'en'
+
+# deprel(c) + lemmaSense(p) ### NOT SUPPORTED
+# lemmaSense(p) ### NOT SUPPORTED
+# lemmaSense(p) + pos(rns(p)) ### NOT SUPPORTED
+# pos(c) + lemmaSense(p) ### NOT SUPPORTED
+# pos(dir(seq(path(p,c)))) + lemmaSense(p) ### NOT SUPPORTED
+# pos(lns(c)) + lemmaSense(p) ### NOT SUPPORTED
+# relative(p,c) + lemmaSense(p) ### NOT SUPPORTED
+##this was in a different order: path(p,c).dir.pos.seq
+# word(bag(children(p))) + lemmaSense(p) ### NOT SUPPORTED
+# word(c) + lemmaSense(p) ### NOT SUPPORTED
+
+# brown clusters as sense
+deprel(c) + bc1(p) ### ADDED
+bc1(p) ### ADDED
+bc1(p) + pos(rns(p)) ### ADDED
+pos(c) + bc1(p) ### ADDED
+pos(dir(seq(path(p,c)))) + bc1(p) ### ADDED
+pos(lns(c)) + bc1(p) ### ADDED
+relative(p,c) + bc1(p) ### ADDED
+# this was in a different order: path(p,c).dir.pos.seq
+word(bag(children(p))) + bc1(p) ### ADDED
+word(c) + bc1(p) ### ADDED
+
+# brown clusters as pos
+deprel(c) + bc0(c) ### ADDED
+deprel(c) + bc0(rmc(c)) ### ADDED
+bc0(bag(children(p))) ### ADDED
+bc0(c) ### ADDED
+bc0(c) + lemma(p) ### ADDED
+bc0(c) + relative(p,c) ### ADDED
+bc0(c) + word(c) ### ADDED
+bc0(dir(seq(path(p,c)))) ### ADDED
+bc0(dir(seq(path(p,c)))) + bc0(rns(c)) ### ADDED
+bc0(head(p)) ### ADDED
+bc0(lmc(c)) ### ADDED
+bc0(lmc(c)) + bc0(rmc(c)) ### ADDED
+bc0(lmc(c)) + bc0(rns(c)) ### ADDED
+bc0(lmc(c)) + word(p) ### ADDED
+bc0(lns(c)) ### ADDED
+bc0(p) ### ADDED
+bc0(rmc(c)) ### ADDED
+
+deprel(bag(children(p)))
+deprel(bag(children(p))) + relative(p,c)
+deprel(c)
+deprel(c) + deprel(bag(children(p)))
+deprel(c) + deprel(dir(seq(path(p,c))))
+deprel(c) + deprel(p)
+deprel(c) + pos(c)
+deprel(c) + pos(rmc(c))
+deprel(c) + word(head(p))
+deprel(dir(seq(path(p,c))))
+deprel(dir(seq(path(p,c)))) + relative(p,c)
+lemma(p)
+pos(bag(children(p)))
+pos(c)
+pos(c) + lemma(p)
+pos(c) + relative(p,c)
+pos(c) + word(c)
+pos(dir(seq(path(p,c))))
+pos(dir(seq(path(p,c)))) + pos(rns(c))
+pos(head(p))
+pos(lmc(c))
+pos(lmc(c)) + pos(rmc(c))
+pos(lmc(c)) + pos(rns(c))
+pos(lmc(c)) + word(p)
+pos(lns(c))
+pos(p)
+pos(rmc(c))
+relative(p,c)
+word(bag(children(p)))
+word(c)
+word(c) + relative(p,c)
+word(head(p))
+word(lmc(c))
+word(lns(c))
+word(p)
+word(rmc(c))
+word(rns(c))

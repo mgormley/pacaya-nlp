@@ -9,7 +9,6 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import edu.jhu.nlp.Annotator;
 import edu.jhu.nlp.CorpusStatistics.CorpusStatisticsPrm;
 import edu.jhu.nlp.Trainable;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
@@ -37,7 +36,7 @@ import edu.jhu.nlp.srl.SrlFeatureExtractor.SrlFeatureExtractorPrm;
  * 
  * @author mgormley
  */
-public class SrlFeatureSelection implements Annotator, Trainable {
+public class SrlFeatureSelection implements Trainable {
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(SrlFeatureSelection.class);
@@ -87,7 +86,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
             }
             argFeats.addAll(newFeats);
         }
-        if (CorpusHandler.getGoldOnlyAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
+        if (CorpusHandler.getPredLatAts().contains(AT.SRL) && JointNlpRunner.acl14DepFeats) {
             // Set the chosen templates for dependencing parsing.
             fgPrm.dpPrm.dpFePrm.firstOrderTpls = srlFePrm.argTemplates;
         }
@@ -106,8 +105,7 @@ public class SrlFeatureSelection implements Annotator, Trainable {
     private static void removeAts(JointNlpFactorGraphPrm fgPrm) {
         Set<AT> ats = new HashSet<>();
         ats.addAll(CorpusHandler.getRemoveAts());
-        ats.addAll(CorpusHandler.getLatAts()); 
-        ats.addAll(CorpusHandler.getPredAts());
+        ats.addAll(CorpusHandler.getGoldOnlyAts());
         if (JointNlpRunner.brownClusters == null) {
             // Filter out the Brown cluster features.
             log.warn("Filtering out Brown cluster features.");

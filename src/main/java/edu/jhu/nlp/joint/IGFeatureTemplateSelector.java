@@ -64,6 +64,8 @@ public class IGFeatureTemplateSelector {
         public int maxNumSentences = Integer.MAX_VALUE;
         /** Whether to do feature selection for sense features. */
         public boolean selectSense = true;
+        /** Whether to do feature selection for sense features. */
+        public boolean selectArgs = true;
     }
     
     private IGFeatureTemplateSelectorPrm prm;
@@ -89,8 +91,8 @@ public class IGFeatureTemplateSelector {
             CorpusStatisticsPrm csPrm, SrlFeatTemplates sft) {
         List<FeatTemplate> srlSense = prm.selectSense ? getFeatTemplatesForSrl(inputSents, goldSents, csPrm,
                 sft.srlSense, new SrlSenseExtractor()) : sft.srlSense;
-        List<FeatTemplate> srlArg = getFeatTemplatesForSrl(inputSents, goldSents, csPrm, sft.srlArg,
-                new SrlArgExtractor());
+        List<FeatTemplate> srlArg = prm.selectArgs ? getFeatTemplatesForSrl(inputSents, goldSents, csPrm, sft.srlArg,
+                new SrlArgExtractor()) : sft.srlArg;
         // Note we do NOT do feature selection on the dependency parsing templates.
         return new SrlFeatTemplates(srlSense, srlArg, sft.depParse);
     }
@@ -238,7 +240,7 @@ public class IGFeatureTemplateSelector {
             TemplateFeatureExtractor featExt = new TemplateFeatureExtractor(inputSent, cs);
 
             for (int pidx=-1; pidx<inputSent.size(); pidx++) {
-                for (int cidx=-1; cidx<inputSent.size(); cidx++) {
+                for (int cidx=0; cidx<inputSent.size(); cidx++) {
                     
                     // Feature Extraction.
                     List<String> feats = new ArrayList<String>();
@@ -386,7 +388,7 @@ public class IGFeatureTemplateSelector {
             for (int i=0; i<sents.size(); i++) {                
                 AnnoSentence sent = sents.get(i);
                 for (int pidx=-1; pidx<sent.size(); pidx++) {
-                    for (int cidx=-1; cidx<sent.size(); cidx++) {
+                    for (int cidx=0; cidx<sent.size(); cidx++) {
                         this.getValIdx(sent, pidx, cidx);
                     }
                 }
@@ -429,12 +431,7 @@ public class IGFeatureTemplateSelector {
             if (aidx == -1 || pidx == -1) {
                 return null;
             }
-            SrlEdge edge = sent.getSrlGraph().getEdge(pidx, aidx);
-            if (edge == null) {
-                return null;
-            } else {
-                return edge.getLabel();
-            }
+            return sent.getSrlGraph().get(pidx, aidx);
         }
         
     }
@@ -448,11 +445,8 @@ public class IGFeatureTemplateSelector {
 
         @Override
         public String getVal(AnnoSentence sent, int pidx, int aidx) {
-            if (aidx == -1 && pidx != -1) {
-                SrlPred pred = sent.getSrlGraph().getPredAt(pidx);
-                if (pred != null) {
-                    return pred.getLabel();
-                }
+            if (pidx == -1 && aidx != -1) {
+                return sent.getSrlGraph().get(pidx, aidx);
             }
             return null;
         }

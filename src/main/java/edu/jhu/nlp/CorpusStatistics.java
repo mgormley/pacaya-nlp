@@ -15,18 +15,17 @@ import java.util.TreeSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.NerMention;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AlphabetStore;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.features.SrlSignatureBuilder;
 import edu.jhu.nlp.relations.RelationMunger;
+import edu.jhu.nlp.sprl.SprlLabelConverter;
 import edu.jhu.pacaya.util.collections.QLists;
 import edu.jhu.prim.Primitives.MutableInt;
-import edu.jhu.prim.bimap.IntObjectBimap;
 import edu.jhu.prim.tuple.ComparablePair;
 import edu.jhu.prim.tuple.Pair;
+import edu.jhu.prim.tuple.Triple;
 
 /**
  * Extract corpus statistics about a CoNLL-2009 dataset.
@@ -44,32 +43,30 @@ public class CorpusStatistics implements Serializable {
         private static final long serialVersionUID = 1848012037725581753L;
         // TODO: Remove useGoldSyntax since it's no longer used in CorpusStatistics.
         public boolean useGoldSyntax = false;
-        public String language = "es";
+        public String language = null;
         /** Cutoff for OOV words. */
         public int cutoff = 3;
         /** Cutoff for topN words. */ 
         public int topN = 800;
-        /**
-         * Whether to normalize and clean words.
-         */
-        public boolean normalizeWords = false;
     }
 
     private static final long serialVersionUID = 1L;
     private static final Logger log = LoggerFactory.getLogger(CorpusStatistics.class);
     
     public static final String UNKNOWN_ROLE = "argUNK";
-    public static final String UNKNOWN_SENSE = "senseUNK";
+    public static final String UNKNOWN_SENSE = "senseUNK.01";
+    public static final List<String> PRED_SENSE_UNK_STATE_NAMES = QLists.getList(UNKNOWN_SENSE);
     public static final List<String> PRED_POSITION_STATE_NAMES = QLists.getList("_", UNKNOWN_SENSE);
 
     public Set<String> knownWords = new HashSet<String>();
-    public Set<String> knownUnks = new HashSet<String>();
     public Set<String> knownPostags = new HashSet<String>();
 
     public Set<String> topNWords = new HashSet<String>();
     
     public List<String> linkStateNames;
     public List<String> roleStateNames;
+    public List<String> sprlPropertyNames;
+    public List<String> sprlStateNames = new ArrayList<>();
     public List<String> relationStateNames;
     public List<String> posTagStateNames;
     // Mapping from predicate form to the set of predicate senses.
@@ -77,8 +74,6 @@ public class CorpusStatistics implements Serializable {
 
     public int maxSentLength = 0;
 
-    public SrlSignatureBuilder sig;
-    public Normalizer normalize;
     public AlphabetStore store;
     
     public CorpusStatisticsPrm prm;
@@ -86,8 +81,6 @@ public class CorpusStatistics implements Serializable {
     
     public CorpusStatistics(CorpusStatisticsPrm prm) {
         this.prm = prm;
-        this.normalize = new Normalizer(prm.normalizeWords);
-        this.sig = new SrlSignatureBuilder(new IntObjectBimap<String>());
         initialized = false;
     }
 
@@ -101,13 +94,14 @@ public class CorpusStatistics implements Serializable {
         }      
         
         Map<String,Set<String>> predSenseSetMap = new HashMap<String,Set<String>>();
+        Set<String> knownSprlProperties = new HashSet<String>();
+        Set<String> knownSprlStates = new HashSet<String>();
         Set<String> knownRoles = new HashSet<String>();
         Set<String> knownLinks = new HashSet<String>();
         Set<String> knownNeTypes = new TreeSet<String>();
         Set<String> knownNeSubtypes = new TreeSet<String>();
         Set<String> knownRelations = new TreeSet<String>();
         Map<String, MutableInt> words = new HashMap<String, MutableInt>();
-        Map<String, MutableInt> unks = new HashMap<String, MutableInt>();
         initialized = true;
         
         // Store the variable states we have seen before so
@@ -115,7 +109,6 @@ public class CorpusStatistics implements Serializable {
         // the Link variable. Applies to knownLinks, knownRoles.
         knownLinks.add("True");
         knownLinks.add("False");
-        knownUnks.add("UNK");
         knownRoles.add(UNKNOWN_ROLE);
         // This is a hack:  '_' won't actually be in any of the defined edges.
         // However, removing this messes up what we assume as default.
@@ -132,14 +125,7 @@ public class CorpusStatistics implements Serializable {
             
             // Word stats.
             for (int position = 0; position < sent.size(); position++) {
-                String wordForm = sent.getWord(position);
-                String cleanWord = normalize.clean(wordForm);
-                // Actually only need to do this for those words that are below
-                // threshold for knownWords.  
-                String unkWord = sig.getSignature(wordForm, position, prm.language);
-                unkWord = normalize.escape(unkWord);
-                addWord(words, cleanWord);
-                addWord(unks, unkWord);
+                addWord(words, sent.getWord(position));
             }
             
             // POS tag stats.
@@ -150,25 +136,39 @@ public class CorpusStatistics implements Serializable {
             }
             
             // SRL stats.
-            if (sent.getSrlGraph() != null) {
-                for (SrlEdge edge : sent.getSrlGraph().getEdges()) {
-                    String role = edge.getLabel();
-                    knownRoles.add(role);
-                }
-                for (SrlPred pred : sent.getSrlGraph().getPreds()) {
-                    int position = pred.getPosition();
-                    // If we don't have lemmas, then this is a map from underscore to all possible
-                    // predicate senses.
-                    String lemma = (sent.getLemmas() != null) ? sent.getLemma(position) : "_";
-                    Set<String> senses = predSenseSetMap.get(lemma);
-                    if (senses == null) {
-                        senses = new TreeSet<String>();
-                        predSenseSetMap.put(lemma, senses);
+            DepGraph srl = sent.getSrlGraph();
+            if (srl != null) {
+                for (int p=-1; p<srl.size(); p++) {
+                    for (int c=0; c<srl.size(); c++) {
+                        if (srl.get(p, c) != null) {
+                            if (p == -1) {
+                                // If we don't have lemmas, then this is a map from underscore to all possible
+                                // predicate senses.
+                                String lemma = (sent.getLemmas() != null) ? sent.getLemma(c) : "_";
+                                Set<String> senses = predSenseSetMap.get(lemma);
+                                if (senses == null) {
+                                    senses = new TreeSet<String>();
+                                    predSenseSetMap.put(lemma, senses);
+                                }
+                                senses.add(srl.get(p, c));
+                            } else {
+                                knownRoles.add(srl.get(p, c));
+                            }
+                        }
                     }
-                    senses.add(pred.getLabel());
                 }
             }
 
+            // SPRL stats.
+            if (sent.getSprl() != null) {
+                // the nil label will be included in the set of states used when building a variable if that is
+                // appropriate for the specified role structure
+                for (Triple<Integer, Integer, String> e : sent.getSprl().getLabeledProperties()) {
+                    knownSprlProperties.add(e.get3());
+                    knownSprlStates.add(sent.getSprl().get(e));
+                }
+            }
+            
             // Named Entity stats.
             if (sent.getNamedEntities() != null) {
                 for (int k=0; k<sent.getNamedEntities().size(); k++) {
@@ -197,12 +197,13 @@ public class CorpusStatistics implements Serializable {
         
         // For words and unknown word classes, we only keep those above some threshold.
         knownWords = getUnigramsAboveThreshold(words, prm.cutoff);
-        knownUnks = getUnigramsAboveThreshold(unks, prm.cutoff);
         
         topNWords = getTopNUnigrams(words, prm.topN, prm.cutoff);
         
         this.linkStateNames = new ArrayList<>(knownLinks);
         this.roleStateNames =  new ArrayList<>(knownRoles);
+        this.sprlPropertyNames =  new ArrayList<>(knownSprlProperties);
+        this.sprlStateNames =  new ArrayList<>(knownSprlStates);
         this.relationStateNames =  new ArrayList<>(knownRelations);
         this.posTagStateNames = new ArrayList<>(knownPostags);
         for (Entry<String,Set<String>> entry : predSenseSetMap.entrySet()) {
@@ -213,14 +214,50 @@ public class CorpusStatistics implements Serializable {
         log.info("Found {} POS tag types: {}", knownPostags.size(), knownPostags);
         log.info("Found {} SRL Predicate types.", predSenseListMap.size());
         log.info("Found {} SRL Role types: {}", roleStateNames.size(), roleStateNames);
+        log.info("Found {} SPRL Properties: {}", sprlPropertyNames.size(), sprlPropertyNames);
+        log.info("Found {} SPRL Property State Names: {}", sprlStateNames.size(), sprlStateNames);
         log.info("Found {} NER types: {}", knownNeTypes.size(), knownNeTypes);
+        log.info("Found {} NER subtypes: {}", knownNeSubtypes.size(), knownNeSubtypes);
         log.info("Found {} Relation types: {}", relationStateNames.size(), relationStateNames);        
         log.info("Num true positive relations: " + numTruePosRels);
         log.info("Num relations: " + numRels);
     }
+
+    public String getDefaultSense(String lemma, List<String> feats) {
+        if ("de".equals(prm.language)) {
+            return lemma + ".1";
+        } else if ("es".equals(prm.language) || "ca".equals(prm.language)) {
+            // This is the linguistically informed default used by Bjorkelund et al. (2009).
+            StringBuilder fb = new StringBuilder();
+            for (String feat : feats) {
+                fb.append(feat);
+                fb.append("_");
+            }
+            String f = fb.toString();
+            String suffix;
+            if (f.contains("postype=auxiliary")) {
+                suffix = "c2";
+            } else if (f.contains("postype=common")) {
+                suffix = "a2";
+            } else if (f.contains("postype=main")) {
+                suffix = "a2";
+            } else if (f.contains("postype=qualificative")) {
+                suffix = "b2";
+            } else if (f.contains("postype=semiauxiliary")) {
+                suffix = "c2";
+            } else {
+                suffix = "a2";
+            }
+            return lemma + "." + suffix;
+        } else if ("en".equals(prm.language) || "zh".equals(prm.language)) {
+            return lemma + ".01";
+        } else {
+            throw new RuntimeException("Language has no default predicate sense: " + prm.language);
+        }
+    }
     
     // ------------------- private ------------------- //
-
+    
     private static void addWord(Map<String, MutableInt> inputHash, String w) {
         MutableInt count = inputHash.get(w);
         if (count == null) {
@@ -265,7 +302,6 @@ public class CorpusStatistics implements Serializable {
         return "CorpusStatistics [" 
                 + "\n     knownWords=" + knownWords 
                 + ",\n     topNWords=" + topNWords
-                + ",\n     knownUnks=" + knownUnks
                 + ",\n     knownPostags=" + knownPostags 
                 + ",\n     linkStateNames=" + linkStateNames
                 + ",\n     roleStateNames=" + roleStateNames 

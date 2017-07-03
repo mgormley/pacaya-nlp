@@ -16,7 +16,7 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 import edu.jhu.pacaya.util.collections.QSets;
 
-public abstract class AbstractTagReducer extends AbstractParallelAnnotator implements Annotator {
+public abstract class AbstractTagReducer extends AbstractParallelAnnotator implements Annotator, TagReducer {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractTagReducer.class);
     private static final long serialVersionUID = 1L;

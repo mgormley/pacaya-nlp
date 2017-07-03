@@ -14,10 +14,16 @@ import edu.jhu.nlp.relations.RelationMunger.RelationDataPreproc;
 import edu.jhu.nlp.relations.RelationMunger.RelationMungerPrm;
 import edu.jhu.pacaya.util.cli.ArgParser;
 import edu.jhu.pacaya.util.cli.Opt;
-
+/** TODO: make this more transparent:
+* Conll data has slots for both gold and automatically predicted POS, FEATS,
+* DEPS, and DEPRELS, by --useGoldSyntax True will use the gold and
+* --useGoldSyntax False will use the automatic labels. Currently, the
+* conll_writer writes the single field in anno_sentence out as both fields.
+*
+*/
 public class CorpusConverter {
 
-    private static final Logger log = LoggerFactory.getLogger(NerRunner.class);
+    private static final Logger log = LoggerFactory.getLogger(CorpusConverter.class);
 
     @Opt(description="Perform relation munging.")
     public static boolean mungeRelations = true;
@@ -42,29 +48,14 @@ public class CorpusConverter {
         handler.writeTrainGold();
     }
     
-    public static void main(String[] args) {
-        int exitCode = 0;
-        ArgParser parser = null;
-        try {
-            parser = new ArgParser(CorpusConverter.class);
-            parser.registerClass(CorpusConverter.class);
-            parser.registerClass(CorpusHandler.class);
-            parser.registerClass(RelationMungerPrm.class);
-            parser.parseArgs(args);
+    public static void main(String[] args) throws IOException {
+        ArgParser parser = new ArgParser(CorpusConverter.class);
+        parser.registerClass(CorpusConverter.class);
+        parser.registerClass(CorpusHandler.class);
+        parser.registerClass(RelationMungerPrm.class);
+        parser.parseArgs(args);
 
-            CorpusConverter.run(parser);
-        } catch (ParseException e1) {
-            log.error(e1.getMessage());
-            if (parser != null) {
-                parser.printUsage();
-            }
-            exitCode = 1;
-        } catch (Throwable t) {
-            t.printStackTrace();
-            exitCode = 1;
-        }
-        
-        System.exit(exitCode);
+        CorpusConverter.run(parser);
     }
     
 }

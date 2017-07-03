@@ -28,13 +28,7 @@ public class CoNLL09BrownTagger {
     public static void main(String[] args) throws IOException {
         ArgParser parser = new ArgParser(CoNLL09BrownTagger.class);
         parser.registerClass(CoNLL09BrownTagger.class);
-        try {
-            parser.parseArgs(args);
-        } catch (ParseException e) {
-            log.error(e.getMessage());
-            parser.printUsage();
-            System.exit(1);
-        }
+        parser.parseArgs(args);
 
         BrownClusterTaggerPrm prm = new BrownClusterTaggerPrm();
         prm.maxTagLength = maxTagLength;

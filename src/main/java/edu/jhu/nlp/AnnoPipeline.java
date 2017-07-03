@@ -5,6 +5,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.features.TemplateLanguage.AT;
 
@@ -13,9 +16,10 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
  * 
  * @author mgormley
  */
-public class AnnoPipeline implements Trainable, Annotator {
+public class AnnoPipeline implements Trainable {
 
     private static final long serialVersionUID = 1L;
+    private static final Logger log = LoggerFactory.getLogger(AnnoPipeline.class);
     private List<Annotator> pipeline = new ArrayList<Annotator>();
     
     public void add(Annotator anno) {
@@ -25,13 +29,22 @@ public class AnnoPipeline implements Trainable, Annotator {
     @Override
     public void train(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold, 
             AnnoSentenceCollection devInput, AnnoSentenceCollection devGold) {
+        throw new UnsupportedOperationException("train() is not supported. Use trainAndAnnotate() instead.");
+    }
+    
+    @Override
+    public void trainAndAnnotate(AnnoSentenceCollection trainInput, AnnoSentenceCollection trainGold, 
+            AnnoSentenceCollection devInput, AnnoSentenceCollection devGold) {
         for (Annotator anno : pipeline) {
             if (anno instanceof Trainable) {
-                ((Trainable) anno).train(trainInput, trainGold, devInput, devGold);
-            }
-            anno.annotate(trainInput);
-            if (devInput != null) {
-                anno.annotate(devInput);
+                // Train and annotate.
+                ((Trainable) anno).trainAndAnnotate(trainInput, trainGold, devInput, devGold);
+            } else {
+                // Only annotate.
+                anno.annotate(trainInput);
+                if (devInput != null) {
+                    anno.annotate(devInput);
+                }
             }
         }
     }

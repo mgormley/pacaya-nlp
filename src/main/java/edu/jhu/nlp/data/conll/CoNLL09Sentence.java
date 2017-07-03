@@ -377,7 +377,7 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
         AnnoSentence s = new AnnoSentence();
         s.setSourceSent(cos);
         s.setWords(cos.getWords());
-        s.setSrlGraph(cos.getSrlGraph());
+        s.setSrlGraph(cos.getSrlGraph().toDepGraph());
         s.setKnownPredsFromSrlGraph();
         if (useGoldSyntax) {
             s.setLemmas(cos.getLemmas());
@@ -431,7 +431,7 @@ public class CoNLL09Sentence implements Iterable<CoNLL09Token> {
         
         // Update SRL columns from the SRL graph.
         // (This correctly handles null SRL graphs.)
-        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph(), false, true);
+        updatedSentence.setColsFromSrlGraph(sent.getSrlGraph() == null ? null : sent.getSrlGraph().toSrlGraph(), false, true);
         
         return updatedSentence;
     }

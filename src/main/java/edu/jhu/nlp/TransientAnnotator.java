@@ -10,7 +10,7 @@ import edu.jhu.nlp.features.TemplateLanguage.AT;
  * Annotator wrapper which skips serialization of its field.
  * @author mgormley
  */
-public class TransientAnnotator implements Annotator, Trainable {
+public class TransientAnnotator implements Trainable {
 
     private static final long serialVersionUID = 1L;
     private transient Annotator anno;

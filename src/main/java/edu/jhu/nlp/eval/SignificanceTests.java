@@ -186,6 +186,47 @@ public class SignificanceTests {
         }
         
     }
+
+    public static class NerF1Metric implements EvalMetric<AnnoSentence> {
+        
+        private Metric m;
+
+        public NerF1Metric(Metric m) {
+            assert m.name().startsWith("NER_");
+            this.m = m;
+        }
+        
+        @Override
+        public double[] getSufficientStats(AnnoSentence gold, AnnoSentence pred) {
+            NerEvaluator eval = new NerEvaluator();
+            eval.accum(gold, pred);
+            double[] ss = new double[3];
+            ss[0] = eval.getNumCorrectPositive();
+            ss[1] = eval.getNumPredictPositive();
+            ss[2] = eval.getNumTruePositive();
+            return ss;
+        }
+
+        @Override
+        public double getMetric(double[] ss) {
+            double numCorrectPositive = ss[0];
+            double numPredictPositive = ss[1];
+            double numTruePositive = ss[2];
+            double precision = (numPredictPositive == 0) ? 0.0 : numCorrectPositive / numPredictPositive;
+            double recall = (numTruePositive == 0) ? 0.0 :  numCorrectPositive / numTruePositive;
+            double f1 = (precision == 0.0 && recall == 0.0) ? 0.0 : (2 * precision * recall) / (precision + recall);  
+            if (m == Metric.NER_F1) {
+                return f1;
+            } else if (m == Metric.NER_P) {
+                return precision;
+            } else if (m == Metric.NER_R) {
+                return recall;
+            } else {
+                throw new IllegalArgumentException("Metric must be one of REL_F1, REL_P, REL_R.");
+            }
+        }
+        
+    }
     
     public static double fastPairedPermutationTestDpAcc(
             AnnoSentenceCollection goldSents, 
@@ -431,7 +472,9 @@ public class SignificanceTests {
         return diff;
     }
     
-    public enum Metric { POS_ACC, DP_ACC, SRL_P, SRL_R, SRL_F1, REL_P, REL_R, REL_F1 } 
+    public enum Metric { POS_ACC, DP_ACC, SRL_P, SRL_R, SRL_F1, REL_P, REL_R, REL_F1, NER_R, NER_P, NER_F1 } 
+    
+    public enum SigTest { PAIRED, BOOTSTRAP }
     
     @Opt(name="gold", required=true, hasArg=true, description="The path to the gold data")
     public static File _gold = null;
@@ -443,14 +486,16 @@ public class SignificanceTests {
     public static DatasetType _type = null;
     @Opt(name="metric", required=true, hasArg=true, description="The evaluation metric")
     public static Metric _metric = null;
+    @Opt(name="sigTest", hasArg=true, description="Type of significance test")
+    public static SigTest _sigTest = SigTest.PAIRED;
     
-    @Opt(name="skipPunct", required=true, hasArg=true, description="Whether to skip punctuation (dependency accuracy only)")
+    @Opt(name="skipPunct", hasArg=true, description="Whether to skip punctuation (dependency accuracy only)")
     public static boolean _skipPunct = false;
     @Opt(name="numSamples", hasArg=true, description="The number of samples to use for the significance test")
     public static int _numSamples = (int) Math.pow(2, 20);
     @Opt(name="maxNumSentences", hasArg=true, description="The maximum number of sentences")
     public static int _maxNumSentences = Integer.MAX_VALUE;
-
+    
     // TODO: Move this elsewhere?
     public static AnnoSentenceCollection getData(File path, DatasetType type, String name, int maxNumSents) throws IOException {
         AnnoSentenceReaderPrm prm = new AnnoSentenceReaderPrm();
@@ -484,55 +529,61 @@ public class SignificanceTests {
      *   - paired permutation:      73 seconds
      *   - bootstrap:               126 seconds
      */
-    public static void main(String[] args) throws ParseException, IOException {
+    public static void main(String[] args) throws IOException {
         ArgParser parser = new ArgParser(SignificanceTests.class);
         parser.registerClass(SignificanceTests.class);
         parser.registerClass(ReporterManager.class);
         parser.parseArgs(args);        
         ReporterManager.init(ReporterManager.reportOut, true);
-        try {
-            AnnoSentenceCollection goldSents = getData(_gold, _type, "gold", _maxNumSentences);
-            AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1", _maxNumSentences);
-            AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2", _maxNumSentences);
-            
-            EvalMetric<AnnoSentence> metric;
-            if (_metric == Metric.POS_ACC) {
-                metric = new PosTagAccuracyMetric(); 
-            } else if (_metric == Metric.DP_ACC) {
-                metric = new DepAccuracyMetric(_skipPunct);
-            } else if (_metric.name().startsWith("SRL_")) {
-                SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
-                // TODO: add command line options.
-                prm.evalPredPosition = false;
-                prm.evalRoles = true;
-                prm.evalPredSense = true;
-                prm.labeled = true;
-                metric = new SrlF1Metric(prm, _metric);
-            } else if (_metric.name().startsWith("REL_")) {
-                metric = new RelF1Metric(_metric);
-            } else {
-                throw new ParseException("Unsupported metric: " + _metric.name());
-            }
-            
-            if (_metric == Metric.DP_ACC) {
-                // 20 seconds for 2416 sentences.
-                double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
-                log.info("p-value (fast paired permutation): {}", ppt);
-                rep.report("p-value-ppt-fast", ppt);
-            } else if (_metric.name().startsWith("REL")) {
-                RelationEvaluator eval = new RelationEvaluator();
-                eval.evaluate(predSents1, goldSents, "pred1");
-                eval.evaluate(predSents2, goldSents, "pred2");
-            }
-            
+
+        // Load the data.
+        AnnoSentenceCollection goldSents = getData(_gold, _type, "gold", _maxNumSentences);
+        AnnoSentenceCollection predSents1 = getData(_pred1, _type, "pred1", _maxNumSentences);
+        AnnoSentenceCollection predSents2 = getData(_pred2, _type, "pred2", _maxNumSentences);
+        
+        // Select the evaluation metric.
+        EvalMetric<AnnoSentence> metric;
+        if (_metric == Metric.POS_ACC) {
+            metric = new PosTagAccuracyMetric(); 
+        } else if (_metric == Metric.DP_ACC) {
+            metric = new DepAccuracyMetric(_skipPunct);
+        } else if (_metric.name().startsWith("SRL_")) {
+            SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
+            // TODO: add command line options.
+            prm.evalPredPosition = false;
+            prm.evalRoles = true;
+            prm.evalPredSense = true;
+            prm.labeled = true;
+            metric = new SrlF1Metric(prm, _metric);
+        } else if (_metric.name().startsWith("REL_")) {
+            metric = new RelF1Metric(_metric);
+        } else if (_metric.name().startsWith("NER_")) {
+            metric = new NerF1Metric(_metric);
+        } else {
+            throw new IllegalStateException("Unsupported metric: " + _metric.name());
+        }
+        
+        if (_metric == Metric.DP_ACC) {
+            // 20 seconds for 2416 sentences.
+            double ppt = fastPairedPermutationTestDpAcc(goldSents, predSents1, predSents2, _skipPunct);
+            log.info("p-value (fast paired permutation): {}", ppt);
+            rep.report("p-value-ppt-fast", ppt);
+        } else if (_metric.name().startsWith("REL")) {
+            RelationEvaluator eval = new RelationEvaluator();
+            eval.evaluate(predSents1, goldSents, "pred1");
+            eval.evaluate(predSents2, goldSents, "pred2");
+        }
+        
+        if (_sigTest == SigTest.PAIRED) {
             double ppt = pairedPermutationTest(goldSents, predSents1, predSents2, _numSamples, metric);
             log.info("p-value (paired permutation): {}", ppt);
             rep.report("p-value-ppt", ppt);
+        } else if (_sigTest == SigTest.BOOTSTRAP) {
             double bts = bootstrapTest(goldSents, predSents1, predSents2, _numSamples, metric);
-            log.info("p-value (paired permutation): {}", bts);
+            log.info("p-value (bootstrap permutation): {}", bts);
             rep.report("p-value-bts", bts);
-        } finally {
-            ReporterManager.close();
+        } else {
+            throw new IllegalStateException("Unsupported significance test: " + _sigTest.name());
         }
     }
     

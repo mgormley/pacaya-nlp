@@ -77,6 +77,7 @@ public class RelationMunger implements Serializable {
     // TODO: This should not be a static method. It is currently hard coded so that it works fine
     // for ACE 2005 and SemEval, but that should be fixed.
     public static boolean isNoRelationLabel(String relation) {
+        if (relation == null) { return false; }
         return relation.startsWith("NO_RELATION") || relation.startsWith("Other");
     }
     
@@ -253,7 +254,8 @@ public class RelationMunger implements Serializable {
                     AnnoSentence single = sent.getShallowCopy();
                     single.setNePairs(QLists.getList(sent.getNePairs().get(k)));
                     single.setRelLabels(QLists.getList(sent.getRelLabels().get(k)));
-                    single.setNamedEntities(null);
+                    // NOTE: We don't set the NEs to null so that we can compute features such as # NEs between. 
+                    // single.setNamedEntities(null);
                     single.setRelations(null);
                     singles.add(single);
                 }

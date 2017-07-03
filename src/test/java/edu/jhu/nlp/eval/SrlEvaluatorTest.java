@@ -48,7 +48,7 @@ public class SrlEvaluatorTest {
                                        // Arg (incorrect: missing 2, 0, agent.)
         predSrl.set(2, 3, "theme");    // Arg (incorrect label)
         predSrl.set(-1, 0, "run.02");  // Pred (extra)
-        pred.setSrlGraph(predSrl.toSrlGraph());
+        pred.setSrlGraph(predSrl);
         pred.setKnownPredsFromSrlGraph();
         
         goldSrl.set(-1, 1, "like.01"); // Pred
@@ -58,7 +58,7 @@ public class SrlEvaluatorTest {
         goldSrl.set(-1, 2, "eat.01");  // Pred
         goldSrl.set(2, 0, "agent");    // Arg
         goldSrl.set(2, 3, "patient");  // Arg
-        gold.setSrlGraph(goldSrl.toSrlGraph());
+        gold.setSrlGraph(goldSrl);
         gold.setKnownPredsFromSrlGraph();
 
         System.out.println(pred.getSrlGraph());
@@ -80,71 +80,92 @@ public class SrlEvaluatorTest {
         assertEquals(0.0, eval.getRecall(), 1e-13);
         assertEquals(0.0, eval.getF1(), 1e-13);
     }
-    
+
     @Test
-    public void testUnlabeled() {
-        checkSrlPrecRecallF1(3, 4, 5, false, false, false, true);
+    public void testMissingPredictionsRoles() {
+        predSents.get(0).setSrlGraph(null);
+        checkSrlPrecRecallF1(0, 0, 0, 1, false, false, false, true, false);
     }
     
     @Test
-    public void testLabeled() {     
-        checkSrlPrecRecallF1(2, 4, 5, true, false, false, true);
+    public void testUnlabeledRoles() {
+        checkSrlPrecRecallF1(3, 4, 5, 0, false, false, false, true, false);
     }
     
     @Test
-    public void testUnlabeledSense() {
-        checkSrlPrecRecallF1(5, 6, 7, false, true, false, true);
+    public void testLabeledRoles() {     
+        checkSrlPrecRecallF1(2, 4, 5, 0, true, false, false, true, false);
     }
     
     @Test
-    public void testLabeledSense() {     
-        checkSrlPrecRecallF1(3, 6, 7, true, true, false, true);
+    public void testUnlabeledSenseRoles() {
+        checkSrlPrecRecallF1(5, 6, 7, 0, false, true, false, true, false);
+    }
+    
+    @Test
+    public void testLabeledSenseRoles() {     
+        checkSrlPrecRecallF1(3, 6, 7, 0, true, true, false, true, false);
     }
 
     @Test
-    public void testUnlabeledPosition() {
-        checkSrlPrecRecallF1(5, 7, 7, false, false, true, true);
+    public void testUnlabeledPositionRoles() {
+        checkSrlPrecRecallF1(5, 7, 7, 0, false, false, true, true, false);
     }
     
     @Test
-    public void testLabeledPosition() {     
-        checkSrlPrecRecallF1(4, 7, 7, true, false, true, true);
+    public void testLabeledPositionRoles() {     
+        checkSrlPrecRecallF1(4, 7, 7, 0, true, false, true, true, false);
     }
 
     @Test
-    public void testUnlabeledSensePosition() {
-        checkSrlPrecRecallF1(5, 7, 7, false, true, true, true);
+    public void testUnlabeledSensePositionRoles() {
+        checkSrlPrecRecallF1(5, 7, 7, 0, false, true, true, true, false);
     }
     
     @Test
-    public void testLabeledSensePosition() {     
-        checkSrlPrecRecallF1(3, 7, 7, true, true, true, true);
+    public void testLabeledSensePositionRoles() {     
+        checkSrlPrecRecallF1(3, 7, 7, 0, true, true, true, true, false);
     }
 
     @Test
-    public void testPositionNoRoles() {     
-        checkSrlPrecRecallF1(2, 3, 2, false, false, true, false);
+    public void testPosition() {     
+        checkSrlPrecRecallF1(2, 3, 2, 0, false, false, true, false, false);
     }
     
     @Test
-    public void testSensePositionNoRoles() {     
-        checkSrlPrecRecallF1(1, 3, 2, true, true, true, false);
+    public void testSensePosition() {     
+        checkSrlPrecRecallF1(1, 3, 2, 0, true, true, true, false, false);
+    }
+    
+    @Test
+    public void testLabeledSenseRolesEval09pl() {     
+        checkSrlPrecRecallF1(4, 6, 7, 0, true, true, false, true, true);
+    }
+
+    @Test
+    public void testLabeledSenseEval09pl() {     
+        // The extra predicted sense is not counted as a predicted positive.
+        checkSrlPrecRecallF1(2, 2, 2, 0, true, true, false, false, true);
     }
 
     protected void checkSrlPrecRecallF1(int numCorrectPositives, int numPredictedPositives, int numTruePositives, 
-            boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
-        double ep = (double) numCorrectPositives / numPredictedPositives;
-        double er = (double) numCorrectPositives / numTruePositives;
+            int numMissing, boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles, 
+            boolean mimicEval09pl) {
+        double ep = numPredictedPositives == 0 ? 0 : (double) numCorrectPositives / numPredictedPositives;
+        double er = numTruePositives == 0 ? 0 : (double) numCorrectPositives / numTruePositives;
+        double ef1 = (ep + er) == 0 ? 0 : 2 * ep * er / (ep + er);
         SrlEvaluatorPrm prm = new SrlEvaluatorPrm();
         prm.labeled = labeled;
         prm.evalPredSense = evalSense;
         prm.evalPredPosition = evalPredicatePosition;
         prm.evalRoles = evalRoles;
+        prm.mimicEval09pl = mimicEval09pl;
         SrlEvaluator eval = new SrlEvaluator(prm);
-        eval.evaluate(predSents, goldSents, "dataset name");
+        eval.evaluate(predSents, goldSents, "Train");
         assertEquals(ep, eval.getPrecision(), 1e-13);
         assertEquals(er, eval.getRecall(), 1e-13);
-        assertEquals(2 * ep * er / (ep + er), eval.getF1(), 1e-13);
+        assertEquals(ef1, eval.getF1(), 1e-13);
+        assertEquals(numMissing, eval.getNumMissing());
     }
 
 }

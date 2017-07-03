@@ -35,8 +35,7 @@ public class JointNlpFgModelTest {
             
             FactorTemplateList fts = ObsFeatureConjoinerTest.getFtl();
             ObsFeatureConjoinerPrm prm = new ObsFeatureConjoinerPrm();
-            prm.featCountCutoff = -1;
-            prm.includeUnsupportedFeatures = true;
+            prm.featCountCutoff = 0;
             ObsFeatureConjoiner ofc = new ObsFeatureConjoiner(prm, fts);
             ofc.init(null);
             

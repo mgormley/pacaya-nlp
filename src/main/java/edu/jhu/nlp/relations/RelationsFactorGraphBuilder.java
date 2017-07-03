@@ -17,10 +17,12 @@ import edu.jhu.nlp.relations.RelObsFeatures.EntityTypeRepl;
 import edu.jhu.nlp.relations.RelObsFeatures.RelObsFePrm;
 import edu.jhu.nlp.relations.RelWordFeatures.EmbFeatType;
 import edu.jhu.nlp.relations.RelWordFeatures.RelWordFeaturesPrm;
+import edu.jhu.nlp.relations.RelationsFactorGraphBuilder.RelVar;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
 import edu.jhu.pacaya.gm.model.FactorGraph;
 import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.gm.model.VarSet;
 import edu.jhu.pacaya.util.FeatureNames;
 import edu.jhu.pacaya.util.Prm;
@@ -34,6 +36,8 @@ public class RelationsFactorGraphBuilder {
     public static class RelationsFactorGraphBuilderPrm extends Prm {
         // TODO: Cleanup these names: drop "use" and add "rel" prefix.
         private static final long serialVersionUID = 1L;
+        @Opt(hasArg=true, description="The type of the relation variables.")
+        public VarType relVarType = VarType.PREDICTED;
         @Opt(hasArg=true, description="Whether to use the standard binary features.")
         public boolean useZhou05Features = true;
         @Opt(hasArg=true, description="Whether to use the embedding FCM features.")
@@ -98,7 +102,7 @@ public class RelationsFactorGraphBuilder {
     		NerMention ne2 = pair.get2();
             // Create relation variable.
             String name = RelVar.getDefaultName(ne1.getSpan(), ne2.getSpan());
-            RelVar rv = new RelVar(VarType.PREDICTED, name, ne1, ne2, cs.relationStateNames);
+            RelVar rv = new RelVar(prm.relVarType, name, ne1, ne2, cs.relationStateNames);
             rvs.add(rv);
             relVars.add(rv);
         }
@@ -135,6 +139,43 @@ public class RelationsFactorGraphBuilder {
     
     public List<RelVar> getRelVars() {
         return relVars;
+    }
+
+    /* ------------------------- Encode ------------------------- */
+
+    public void addVarAssignments(AnnoSentence sent, List<String> relLabels, VarConfig vc) {
+        List<Pair<NerMention, NerMention>> nePairs = sent.getNePairs();
+        for (RelVar var : relVars) {      
+            NerMention ne1 = var.ment1;
+            NerMention ne2 = var.ment2;
+            int k = nePairs.indexOf(new Pair<NerMention,NerMention>(ne1, ne2));
+            String relation = relLabels.get(k);
+            assert var != null;
+            vc.put(var, relation);
+        }
+    }
+    
+    /* ------------------------- Decode ------------------------- */
+
+    public void decode(VarConfig mbrVarConfig, AnnoSentence predSent) {
+        List<String> rels = getRelLabelsFromVarConfig(mbrVarConfig, predSent);
+        predSent.setRelLabels(rels);
+    }
+
+    private List<String> getRelLabelsFromVarConfig(VarConfig mbrVarConfig, AnnoSentence predSent) {
+        List<Pair<NerMention, NerMention>> nePairs = predSent.getNePairs();
+        List<String> rels = new ArrayList<>();
+        for (int i=0; i<nePairs.size(); i++) {
+            rels.add(null);
+        }
+        for (RelVar var : relVars) {      
+            NerMention ne1 = var.ment1;
+            NerMention ne2 = var.ment2;
+            int k = nePairs.indexOf(new Pair<NerMention,NerMention>(ne1, ne2));
+            String relation = mbrVarConfig.getStateName(var);
+            rels.set(k, relation);
+        }
+        return rels;
     }
     
 }

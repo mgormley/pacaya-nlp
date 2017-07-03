@@ -1,5 +1,7 @@
 package edu.jhu.nlp.eval;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -14,10 +16,14 @@ public class ProportionAnnotated implements Evaluator {
 
     private static final Logger log = LoggerFactory.getLogger(ProportionAnnotated.class);    
     private Set<AT> ats;
+
+    public ProportionAnnotated(AT... ats) {
+        this.ats = new HashSet<>(Arrays.asList(ats));
+    }
     
     public ProportionAnnotated(Set<AT> ats) {
         this.ats = ats;
-    }    
+    }
     
     @Override
     public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String name) {        

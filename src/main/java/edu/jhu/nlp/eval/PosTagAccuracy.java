@@ -51,7 +51,9 @@ public class PosTagAccuracy implements Loss<AnnoSentence>, Evaluator {
         accuracy = (double) correct / (double) total;
         log.info(String.format("POS tag accuracy on %s: %.4f", dataName, accuracy));    
         rep.report(dataName+"PosAccuracy", accuracy);
-        return getErrors();
+        double error = getErrors();
+        log.info(String.format("POS tag error on %s: %.4f", dataName, error));    
+        return error;
     }
 
     private void evaluate(AnnoSentence pred, AnnoSentence gold) {

@@ -4,7 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.Evaluator;
-import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 
@@ -21,13 +21,16 @@ public class SrlSelfLoops implements Evaluator {
         int numPredArgSelfLoop = 0;
         int numPredArgs = 0;
         for (AnnoSentence sent : sents) {
-            if (sent.getSrlGraph() != null) {
-                for (SrlEdge edge : sent.getSrlGraph().getEdges()) {
-                    if (edge.getArg().getPosition() == edge.getPred().getPosition()) {
-                        numPredArgSelfLoop += 1;
+            DepGraph srl = sent.getSrlGraph();
+            if (srl != null) {
+                for (int p=-1; p<srl.size(); p++) {
+                    for (int c=0; c<srl.size(); c++) {
+                        if (srl.get(p, c) != null) {
+                            if (p == c) { numPredArgSelfLoop++; }
+                            numPredArgs++;
+                        }
                     }
                 }
-                numPredArgs += sent.getSrlGraph().getEdges().size();
             }
         }
         log.info(String.format("Proportion pred-arg self loops on %s: %.4f (%d / %d)", name, (double) numPredArgSelfLoop/numPredArgs, numPredArgSelfLoop, numPredArgs));

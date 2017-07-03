@@ -8,9 +8,8 @@ import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.nlp.depparse.DepParseEncoder;
 import edu.jhu.nlp.features.TemplateLanguage;
+import edu.jhu.nlp.joint.JointNlpFactorGraph.IsArgLabel;
 import edu.jhu.nlp.joint.JointNlpFactorGraph.JointNlpFactorGraphPrm;
-import edu.jhu.nlp.relations.RelationsEncoder;
-import edu.jhu.nlp.srl.SrlEncoder;
 import edu.jhu.pacaya.gm.app.Encoder;
 import edu.jhu.pacaya.gm.data.LFgExample;
 import edu.jhu.pacaya.gm.data.LabeledFgExample;
@@ -18,9 +17,11 @@ import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.data.UnlabeledFgExample;
 import edu.jhu.pacaya.gm.feat.FactorTemplateList;
 import edu.jhu.pacaya.gm.feat.ObsFeatureConjoiner;
-import edu.jhu.pacaya.gm.model.VarConfig;
+import edu.jhu.pacaya.gm.model.Var;
 import edu.jhu.pacaya.gm.model.Var.VarType;
+import edu.jhu.pacaya.gm.model.VarConfig;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.prim.tuple.Pair;
 
 /**
  * Encodes a joint NLP factor graph and its variable assignment.
@@ -62,24 +63,32 @@ public class JointNlpEncoder implements Encoder<AnnoSentence, AnnoSentence> {
 
         // Get the variable assignments given in the training data.
         VarConfig vc = new VarConfig();
+
         if (prm.fgPrm.includePos && prm.fgPrm.posPrm.posTagVarType != VarType.LATENT) {
             if (gold != null && gold.getPosTags() != null) {
                 fg.getPosTagBuilder().addVarAssignments(gold.getPosTags(), vc);;
             }
         }
-        if (prm.fgPrm.includeDp) {
+        if (prm.fgPrm.includeDp && prm.fgPrm.dpPrm.linkVarType != VarType.LATENT) {
             if (gold != null && gold.getParents() != null) {
                 DepParseEncoder.addDepParseTrainAssignment(gold.getParents(), fg.getDpBuilder(), vc);
             }
         }
-        if (prm.fgPrm.includeSrl) {
+        if (prm.fgPrm.includeSrl && prm.fgPrm.srlPrm.srlVarType != VarType.LATENT) {
             if (gold != null && gold.getSrlGraph() != null) {
-                SrlEncoder.addSrlTrainAssignment(sent, gold.getSrlGraph(), fg.getSrlBuilder(), vc, prm.fgPrm.srlPrm.predictSense, prm.fgPrm.srlPrm.predictPredPos);
+                fg.getSrlBuilder().addVarAssignments(gold.getSrlGraph(), vc);
             }
         }
-        if (prm.fgPrm.includeRel) {
+
+        if (prm.fgPrm.includeSprl) {
+            if (gold != null && gold.getSprl() != null) {
+                fg.getSprlBuilder().annoToConfig(gold,  vc);
+            }
+        }
+
+        if (prm.fgPrm.includeRel && prm.fgPrm.relPrm.relVarType != VarType.LATENT) {
             if (gold != null && gold.getRelLabels() != null) {
-                RelationsEncoder.addRelVarAssignments(sent, gold.getRelLabels(), fg.getRelBuilder(), vc);
+                fg.getRelBuilder().addVarAssignments(sent, gold.getRelLabels(), vc);
             }
         }
         

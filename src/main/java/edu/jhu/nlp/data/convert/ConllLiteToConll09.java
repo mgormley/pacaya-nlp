@@ -62,13 +62,7 @@ public class ConllLiteToConll09 {
     public static void main(String[] args) throws IOException {
         ArgParser parser = new ArgParser(ConllLiteToConll09.class);
         parser.registerClass(ConllLiteToConll09.class);
-        try {
-            parser.parseArgs(args);
-        } catch (ParseException e) {
-            log.error(e.getMessage());
-            parser.printUsage();
-            System.exit(1);
-        }
+        parser.parseArgs(args);
                 
         ConllLiteToConll09 pipeline = new ConllLiteToConll09();
         pipeline.run();

@@ -33,6 +33,9 @@ import edu.jhu.nlp.features.TemplateLanguage.RulePiece;
 import edu.jhu.nlp.features.TemplateLanguage.SymbolProperty;
 import edu.jhu.nlp.features.TemplateLanguage.TokPropList;
 import edu.jhu.nlp.features.TemplateLanguage.TokProperty;
+import edu.jhu.nlp.tag.AbstractTagReducer;
+import edu.jhu.nlp.tag.StrictPosTagAnnotator;
+import edu.jhu.nlp.tag.TagReducer;
 import edu.jhu.nlp.words.PrefixAnnotator;
 import edu.jhu.pacaya.parse.cky.Rule;
 import edu.jhu.pacaya.util.collections.QLists;
@@ -67,11 +70,14 @@ public class TemplateFeatureExtractorTest {
         LocalObservations local = LocalObservations.getAll(pidx, cidx, midx, rule, ri, rj, rk, ne1, ne2);
         
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(AnnoSentenceTest.getDogConll09Sentence(), true);
-        addFakeBrownClusters(sent);
+        addFakeAnnos(sent);
+
         // Add fake coarse POS tags.
         sent.setCposTags(sent.getPosTags());
         
-        CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
+        CorpusStatisticsPrm prm = new CorpusStatisticsPrm();
+        prm.language = "en";
+        CorpusStatistics cs = new CorpusStatistics(prm);
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);  
         
@@ -159,6 +165,8 @@ public class TemplateFeatureExtractorTest {
         assertEquals("baratos", extr.getTokProp(TokProperty.WORD, 3));
         assertEquals("barato", extr.getTokProp(TokProperty.LEMMA, 3));
         assertEquals("a", extr.getTokProp(TokProperty.POS, 3));
+        assertEquals("coarse", extr.getTokProp(TokProperty.CPOS, 3));
+        assertEquals("OTHER", extr.getTokProp(TokProperty.STRICT_POS, 3));
         assertEquals("postype=qualificative_gen=m_num=p", extr.getTokProp(TokProperty.MORPHO, 3));
         assertEquals("postype=qualificative", extr.getTokProp(TokProperty.MORPHO1, 3));
         assertEquals("gen=m", extr.getTokProp(TokProperty.MORPHO2, 3));
@@ -166,7 +174,6 @@ public class TemplateFeatureExtractorTest {
         assertEquals("11010", extr.getTokProp(TokProperty.BC0, 3));
         assertEquals("1101011", extr.getTokProp(TokProperty.BC1, 3));
         assertEquals("cpred", extr.getTokProp(TokProperty.DEPREL, 3));
-        assertEquals("UNK-LC-s", extr.getTokProp(TokProperty.UNK, 3));
         assertEquals("LC", extr.getTokProp(TokProperty.CAPITALIZED, 3));
         // 
         assertEquals("Resultaban", extr.getTokProp(TokProperty.WORD, 1));
@@ -192,6 +199,8 @@ public class TemplateFeatureExtractorTest {
         assertEquals("BOS", extr.getTokProp(TokProperty.WORD, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.LEMMA, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.POS, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.CPOS, -1));
+        assertEquals("BOS", extr.getTokProp(TokProperty.STRICT_POS, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO1, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.MORPHO2, -1));
@@ -199,7 +208,6 @@ public class TemplateFeatureExtractorTest {
         assertEquals("BOS", extr.getTokProp(TokProperty.BC0, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.BC1, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.DEPREL, -1));
-        assertEquals("BOS", extr.getTokProp(TokProperty.UNK, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.LC, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE1, -1));
         assertEquals("BOS", extr.getTokProp(TokProperty.CHPRE2, -1));
@@ -220,6 +228,8 @@ public class TemplateFeatureExtractorTest {
         assertEquals("EOS", extr.getTokProp(TokProperty.WORD, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.LEMMA, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.POS, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.CPOS, n));
+        assertEquals("EOS", extr.getTokProp(TokProperty.STRICT_POS, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO1, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.MORPHO2, n));
@@ -227,7 +237,6 @@ public class TemplateFeatureExtractorTest {
         assertEquals("EOS", extr.getTokProp(TokProperty.BC0, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.BC1, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.DEPREL, n));
-        assertEquals("EOS", extr.getTokProp(TokProperty.UNK, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.LC, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE1, n));
         assertEquals("EOS", extr.getTokProp(TokProperty.CHPRE2, n));
@@ -534,9 +543,10 @@ public class TemplateFeatureExtractorTest {
 
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor1() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence1(), true);
-        addFakeBrownClusters(sent);
-        PrefixAnnotator.addPrefixes(sent);
-        CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
+        addFakeAnnos(sent);
+        CorpusStatisticsPrm prm = new CorpusStatisticsPrm();
+        prm.language = "es";
+        CorpusStatistics cs = new CorpusStatistics(prm);
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;
@@ -544,11 +554,18 @@ public class TemplateFeatureExtractorTest {
 
     private static TemplateFeatureExtractor getCoNLLSentenceExtractor2() {
         AnnoSentence sent = CoNLL09Sentence.toAnnoSentence(CoNLL09SentencesForTests.getSpanishConll09Sentence2(), true);
-        addFakeBrownClusters(sent);
+        TemplateFeatureExtractorTest.addFakeAnnos(sent);
         CorpusStatistics cs = new CorpusStatistics(new CorpusStatisticsPrm());
         cs.init(QLists.getList(sent));
         TemplateFeatureExtractor extr = new TemplateFeatureExtractor(sent, cs);
         return extr;
+    }
+
+    protected static void addFakeAnnos(AnnoSentence sent) {
+        StrictPosTagAnnotator.addStrictPosTags(sent);
+        addFakeCoarsePosTags(sent);
+        PrefixAnnotator.addPrefixes(sent);
+        addFakeBrownClusters(sent);
     }
     
     public static void addFakeBrownClusters(AnnoSentence sent) {
@@ -559,7 +576,15 @@ public class TemplateFeatureExtractorTest {
         sent.setClusters(clusters);
     }
     
-
+    public static void addFakeCoarsePosTags(AnnoSentence sent) {
+        AbstractTagReducer red = new AbstractTagReducer(){
+            @Override
+            public String reduceTag(String tag) {
+                return "coarse";
+            }
+        };
+        red.annotate(sent);
+    }
     
     /** Adds features for a single feature template. (The parent index and child index are the only local observations.) */
     // TODO: Remove this method when convenient.

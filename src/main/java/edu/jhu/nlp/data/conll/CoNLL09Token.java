@@ -88,15 +88,15 @@ public class CoNLL09Token {
         ppos = fromUnderscoreString(splits[5]);
         feat = getFeats(fromUnderscoreString(splits[6]));
         pfeat = getFeats(fromUnderscoreString(splits[7]));
-        head = Integer.parseInt(splits[8]);
-        phead = Integer.parseInt(splits[9]);
+        head = headFromUnderscoreString(splits[8]);
+        phead = headFromUnderscoreString(splits[9]);
         deprel = fromUnderscoreString(splits[10]);
         pdeprel = fromUnderscoreString(splits[11]);
         fillpred = (fromUnderscoreString(splits[12]) != null);
         pred = fromUnderscoreString(splits[13]);
         apreds = new ArrayList<String>(Arrays.asList(Arrays.copyOfRange(splits, 14, splits.length)));
     }
-    
+
     public CoNLL09Token(int id, String form, String lemma, String plemma,
             String pos, String ppos, List<String> feat, List<String> pfeat,
             int head, int phead, String deprel, String pdeprel,
@@ -171,6 +171,14 @@ public class CoNLL09Token {
         }
     }
 
+    /** Returns the integer or -1 for "_" */
+    private static int headFromUnderscoreString(String s) {
+        if ("_".equals(s)) {
+            return -1;
+        } else {
+            return Integer.parseInt(s);
+        }
+    }
 
     /**
      * Convert from the null representation of an optional string to the underscore representation.

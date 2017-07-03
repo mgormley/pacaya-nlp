@@ -1,22 +1,28 @@
 package edu.jhu.nlp.eval;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import edu.jhu.nlp.Evaluator;
 import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
-import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
 import edu.jhu.pacaya.util.Prm;
+import edu.jhu.pacaya.util.cli.Opt;
 import edu.jhu.pacaya.util.report.Reporter;
+import edu.jhu.prim.tuple.Pair;
 
 /**
- * Computes the precision, recall, and micro-averaged F1 of SRL.
+ * Computes the micro-averaged precision, recall, and F1 of SRL.
  * 
  * @author mgormley
  */
 // TODO: Support other options: predictSense = true, predictPredicatePosition = true.
-public class SrlEvaluator implements Evaluator {
+public class SrlEvaluator extends F1Evaluator implements Evaluator {
 
     public static class SrlEvaluatorPrm extends Prm {
         private static final long serialVersionUID = 1L;
@@ -28,6 +34,8 @@ public class SrlEvaluator implements Evaluator {
         public boolean evalPredPosition = false;
         /** Whether to evaluate arguments (i.e. semantic roles). */
         public boolean evalRoles = true;
+        /** Mimic eval09.pl definition of predicate sense equality. */
+        public boolean mimicEval09pl = true;
         public SrlEvaluatorPrm() { }
         public SrlEvaluatorPrm(boolean labeled, boolean evalSense, boolean evalPredicatePosition, boolean evalRoles) {
             this.labeled = labeled;
@@ -44,75 +52,35 @@ public class SrlEvaluator implements Evaluator {
 
     private final SrlEvaluatorPrm prm;
 
-    private double precision;
-    private double recall;
-    private double f1;
-    // Precision = # correctly predicted positive / # predicted positive
-    // Recall = # correctly predicted positive / # true positive
-    private int numCorrectPositive;
-    private int numCorrectNegative;
-    private int numPredictPositive;
-    private int numTruePositive;
-    private int numInstances;
-    private int numMissing;
-    
     public SrlEvaluator(SrlEvaluatorPrm prm) {
         this.prm = prm;
     }
 
-    protected void reset() {
-        precision = 0;
-        recall = 0;
-        f1 = 0;
-        numCorrectPositive = 0;
-        numCorrectNegative = 0;
-        numPredictPositive = 0;
-        numTruePositive = 0;
-        numInstances = 0;
-        numMissing = 0;
-    }
-    
-    /** Computes the precision, recall, and micro-averaged F1 of SRL. */
-    public double evaluate(AnnoSentenceCollection predSents, AnnoSentenceCollection goldSents, String dataName) {
-        reset();
-        
-        assert predSents.size() == goldSents.size();
-        
-        // For each sentence.
-        for (int s = 0; s < goldSents.size(); s++) {
-            AnnoSentence goldSent = goldSents.get(s);
-            AnnoSentence predSent = predSents.get(s);            
-            accum(goldSent, predSent);
-        }
-        String detail = prm.labeled ? "Labeled" : "Unlabeled";
+    @Override
+    protected String getDataType() {
+        String detail = "Srl";
+        detail += prm.labeled ? "Labeled" : "Unlabeled";
         detail += prm.evalPredSense ? "Sense" : "";
         detail += prm.evalPredPosition ? "Position" : "";
-        detail += prm.evalRoles ? "Roles" : "";                
-        log.debug(String.format("SRL %s # correct positives on %s: %d", detail, dataName, numCorrectPositive));
-        log.debug(String.format("SRL %s # predicted positives on %s: %d", detail, dataName, numPredictPositive));
-        log.debug(String.format("SRL %s # true positives on %s: %d", detail, dataName, numTruePositive));
-
-        log.info(String.format("SRL Num sents not annotated on %s: %d", dataName, numMissing));
-        log.info(String.format("SRL Num instances on %s: %d", dataName, numInstances));
-        log.info(String.format("SRL %s accuracy on %s: %.4f", detail, dataName, (double)(numCorrectPositive + numCorrectNegative)/numInstances));
-        log.info(String.format("SRL %s Precision on %s: %.4f", detail, dataName, precision));
-        log.info(String.format("SRL %s Recall on %s: %.4f", detail, dataName, recall));
-        log.info(String.format("SRL %s F1 on %s: %.4f", detail, dataName, f1));
-        
-        rep.report(dataName+detail+"SrlPrecision", precision);
-        rep.report(dataName+detail+"SrlRecall", recall);
-        rep.report(dataName+detail+"SrlF1", f1);
-        
-        return -f1;
+        detail += prm.evalRoles ? "Roles" : "";
+        return detail;
     }
 
-    /** Update the sufficient statistics with another sentence. */
-    public void accum(AnnoSentence goldSent, AnnoSentence predSent) {
-        DepGraph gold = (goldSent.getSrlGraph() == null) ? null : goldSent.getSrlGraph().toDepGraph();
-        DepGraph pred = (predSent.getSrlGraph() == null) ? null : predSent.getSrlGraph().toDepGraph();
+    @Override
+    protected boolean isNilLabel(String label) {
+        return NO_LABEL.equals(label);
+    }
+
+    @Override
+    protected Pair<List<String>,List<String>> getLabels(AnnoSentence goldSent, AnnoSentence predSent) {
+        DepGraph gold = goldSent.getSrlGraph();
+        DepGraph pred = predSent.getSrlGraph();
         
-        if (gold == null) { return; }
-        if (pred == null) { numMissing++; }
+        List<String> goldLabels = new ArrayList<>();
+        List<String> predLabels = new ArrayList<>();
+        
+        if (gold == null) { return new Pair<>(null, null); }
+        if (pred == null) { predLabels = null; }
         
         // For each gold edge.
         int n = goldSent.size();
@@ -126,37 +94,24 @@ public class SrlEvaluator implements Evaluator {
                 continue;
             }
             for (int c=0; c < n; c++) {                      
+                // in some cases, some pairs that are known don't have labels that we can evaluate on; skip those
+                if (goldSent.getPairsToSkip() != null && goldSent.getPairsToSkip().contains(new Pair<>(p, c))) {
+                    continue;
+                }
                 if (!prm.evalPredPosition && !hasPredicateForEdge(gold, p, c)) {
                     // Only consider predicates which appear in the gold annotations.
                     continue;
                 }
-                String goldLabel = getLabel(gold, p, c);
-                String predLabel = getLabel(pred, p, c);
-                
-                if (goldLabel.equals(predLabel)) {
-                    if (!goldLabel.equals(NO_LABEL)) {
-                        numCorrectPositive++;
-                    } else {
-                        numCorrectNegative++;
-                    }
+                goldLabels.add(getLabel(gold, p, c));
+                if (pred != null) {
+                    predLabels.add(getLabel(pred, p, c));
                 }
-                if (!NO_LABEL.equals(goldLabel)) {
-                    numTruePositive++;
-                }
-                if (!NO_LABEL.equals(predLabel)) {
-                    numPredictPositive++;
-                }
-                numInstances++;
-                log.trace(String.format("p=%d c=%d eq=%s goldLabel=%s predLabel=%s", 
-                        p, c, goldLabel.equals(predLabel) ? "T" : "F", goldLabel, predLabel)); 
             }
         }
-
-        precision = (numPredictPositive == 0) ? 0.0 : (double) numCorrectPositive / numPredictPositive;
-        recall = (numTruePositive == 0) ? 0.0 :  (double) numCorrectPositive / numTruePositive;
-        f1 = (precision == 0.0 && recall == 0.0) ? 0.0 : (double) (2 * precision * recall) / (precision + recall);        
+        
+        return new Pair<>(goldLabels, predLabels);
     }
-
+    
     private boolean hasPredicateForEdge(DepGraph gold, int p, int c) {
         if (p == -1 && gold.get(p, c) == null) {
             // The parent for this edge is a predicate not found in the gold data.
@@ -170,6 +125,8 @@ public class SrlEvaluator implements Evaluator {
         }
     }
 
+    Pattern senseSuffix = Pattern.compile(".+\\.(.+)");
+    
     private String getLabel(DepGraph dg, int p, int c) {
         if (dg == null) {
             return null;
@@ -179,45 +136,24 @@ public class SrlEvaluator implements Evaluator {
             return NO_LABEL;
         } else if (!prm.labeled || (p == -1 && !prm.evalPredSense)){
             return SOME_LABEL;
+        } else if (prm.mimicEval09pl && p == -1) {
+            // The eval09.pl script only checks if the numeric sense matches.
+            // Thus, trading.01 and trade.01 would count as correct -- we mimic
+            // this behavior here.
+            Matcher match = senseSuffix.matcher(label);
+            if (match.matches()) {
+                return match.group(1);
+            }
+            return label;
         } else {
             return label;
         }
     }
 
-    public double getPrecision() {
-        return precision;
-    }
-
-    public double getRecall() {
-        return recall;
-    }
-
-    public double getF1() {
-        return f1;
-    }
-
-    public int getNumCorrectPositive() {
-        return numCorrectPositive;
-    }
-
-    public int getNumCorrectNegative() {
-        return numCorrectNegative;
-    }
-
-    public int getNumPredictPositive() {
-        return numPredictPositive;
-    }
-
-    public int getNumTruePositive() {
-        return numTruePositive;
-    }
-
-    public int getNumInstances() {
-        return numInstances;
-    }
-
-    public int getNumMissing() {
-        return numMissing;
+    @Override
+    protected List<String> getLabels(AnnoSentence sent) {
+        throw new IllegalStateException("This method is never called.");
     }
     
 }
+

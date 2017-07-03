@@ -3,12 +3,10 @@ package edu.jhu.nlp.joint;
 
 import java.util.List;
 
-import edu.jhu.nlp.data.conll.SrlGraph;
+import edu.jhu.nlp.data.DepGraph;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.depparse.DepEdgeMaskDecoder.DepEdgeMaskDecoderPrm;
 import edu.jhu.nlp.depparse.DepParseDecoder;
-import edu.jhu.nlp.relations.RelationsDecoder;
-import edu.jhu.nlp.srl.SrlDecoder;
 import edu.jhu.pacaya.gm.app.Decoder;
 import edu.jhu.pacaya.gm.data.UFgExample;
 import edu.jhu.pacaya.gm.decode.MbrDecoder;
@@ -57,14 +55,18 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
 
         AnnoSentence predSent = sent.getShallowCopy();
 
+        // Get the SPRL
+        if (fg.getSprlBuilder() != null) {
+            fg.getSprlBuilder().configToAnno(mbrVarConfig, predSent);
+        }
         // Get the POS tags.
         if (fg.getPosTagBuilder() != null) {
             List<String> posTags = fg.getPosTagBuilder().getTagsFromMbrVarConfig(mbrVarConfig);
             predSent.setPosTags(posTags);
         }
         // Get the SRL graph.
-        if (fg.getSrlBuilder() != null) {
-            SrlGraph srlGraph = SrlDecoder.getSrlGraphFromVarConfig(mbrVarConfig, n);
+        if (fg.getSrlBuilder() != null) {            
+            DepGraph srlGraph = fg.getSrlBuilder().getSrlGraphFromMbrVarConfig(mbrVarConfig); 
             predSent.setSrlGraph(srlGraph);
             predSent.setKnownPredsFromSrlGraph();
         }
@@ -75,8 +77,7 @@ public class JointNlpDecoder implements Decoder<AnnoSentence, AnnoSentence> {
         }
         // Get the relations.
         if (fg.getRelBuilder() != null) {
-            List<String> rels = RelationsDecoder.getRelLabelsFromVarConfig(mbrVarConfig);
-            predSent.setRelLabels(rels);
+            fg.getRelBuilder().decode(mbrVarConfig, predSent);
         }
         
         return predSent;

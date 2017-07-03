@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.zip.ZipEntry;
@@ -25,6 +26,7 @@ import edu.jhu.hlt.concrete.EntityMention;
 import edu.jhu.hlt.concrete.EntityMentionSet;
 import edu.jhu.hlt.concrete.MentionArgument;
 import edu.jhu.hlt.concrete.Parse;
+import edu.jhu.hlt.concrete.Property;
 import edu.jhu.hlt.concrete.Section;
 import edu.jhu.hlt.concrete.Sentence;
 import edu.jhu.hlt.concrete.SituationMention;
@@ -42,22 +44,31 @@ import edu.jhu.hlt.concrete.util.ConcreteException;
 import edu.jhu.hlt.concrete.util.TokenizationUtils.TagTypes;
 import edu.jhu.nlp.data.NerMention;
 import edu.jhu.nlp.data.NerMentions;
+//import edu.jhu.nlp.data.Properties;
 import edu.jhu.nlp.data.RelationMention;
 import edu.jhu.nlp.data.RelationMentions;
 import edu.jhu.nlp.data.Span;
+import edu.jhu.nlp.data.conll.SrlGraph;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlArg;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlEdge;
+import edu.jhu.nlp.data.conll.SrlGraph.SrlPred;
 import edu.jhu.nlp.data.simple.AnnoSentence;
 import edu.jhu.nlp.data.simple.AnnoSentenceCollection;
+import edu.jhu.nlp.sprl.BinarySprlLabelConverter;
+import edu.jhu.nlp.sprl.SprlLabelConverter;
+import edu.jhu.nlp.sprl.SprlProperties;
 import edu.jhu.pacaya.parse.cky.data.NaryTree;
 import edu.jhu.pacaya.util.Prm;
 import edu.jhu.prim.Primitives.MutableInt;
 import edu.jhu.prim.arrays.IntArrays;
 import edu.jhu.prim.map.IntIntHashMap;
+import edu.jhu.prim.set.IntHashSet;
 import edu.jhu.prim.tuple.Pair;
 import edu.jhu.prim.util.Lambda.FnO1ToVoid;
 
 /**
  * Reader of Concrete protocol buffer files.
- *  
+ *
  * @author mgormley
  */
 public class ConcreteReader {
@@ -65,24 +76,33 @@ public class ConcreteReader {
     public static class ConcreteReaderPrm extends Prm {
         private static final long serialVersionUID = 1L;
         public String posTool = null;
+        public String cposTool = null;
         public String lemmaTool = null;
         public String chunkTool = null;
-        public String depParseTool = null; 
+        public String depParseTool = null;
         public String parseTool = null;
         public String nerTool = null;
         public String relationTool = null;
+//        public String missingSrlTool = null;
+        public String srlTool = null;
+        public String sprlTool = null;
+        public SprlLabelConverter sprlConverter = new BinarySprlLabelConverter(3.5);
     }
-    
+
     private static final Logger log = LoggerFactory.getLogger(ConcreteReader.class);
 
     private CompactCommunicationSerializer ser = new CompactCommunicationSerializer();
     private int numEntityMentions = 0;
     private int numOverlapingMentions = 0;
     private int numSituationMentions = 0;
+    private int numSrlPredicates = 0;
     private ConcreteReaderPrm prm;
-    
-    public ConcreteReader(ConcreteReaderPrm prm) { 
+
+    public ConcreteReader(ConcreteReaderPrm prm) {
         this.prm = prm;
+        if (prm.cposTool == null) {
+            log.warn("Using default pos tagging as cpos tagging!");
+        }
     }
 
     /**
@@ -99,8 +119,9 @@ public class ConcreteReader {
             sents = sentsFromCommFile(inFile);
         }
         log.debug("Num entity mentions: " + numEntityMentions);
-        log.debug("Num overlapping entity mentions: " + numOverlapingMentions);        
+        log.debug("Num overlapping entity mentions: " + numOverlapingMentions);
         log.debug("Num situation mentions: " + numSituationMentions);
+        log.debug("Num srl predicates: " + numSrlPredicates);
         return sents;
     }
 
@@ -117,7 +138,7 @@ public class ConcreteReader {
             throw new RuntimeException(e);
         }
     }
-    
+
     public AnnoSentenceCollection sentsFromZipFile(File zipFile) throws IOException {
         try {
             AnnoSentenceCollection annoSents = new AnnoSentenceCollection();
@@ -136,9 +157,9 @@ public class ConcreteReader {
             throw new RuntimeException(e);
         }
     }
-    
+
     // Adapted from ThriftIO.
-    // TODO: Move to Files? 
+    // TODO: Move to Files?
     /** Reads an input stream into a correctly sized array of bytes. */
     private static byte[] toBytes(InputStream input) throws IOException {
         byte[] buffer = new byte[8192];
@@ -149,7 +170,7 @@ public class ConcreteReader {
         }
         return baos.toByteArray();
     }
-    
+
     public AnnoSentenceCollection sentsFromCommFile(File concreteFile) throws IOException {
         try {
             Communication communication = ser.fromPathString(concreteFile.getAbsolutePath());
@@ -158,7 +179,7 @@ public class ConcreteReader {
         } catch (ConcreteException e) {
             throw new RuntimeException(e);
         }
-    }    
+    }
 
     public AnnoSentenceCollection sentsFromCommInputStream(InputStream is) throws IOException {
         try {
@@ -182,22 +203,32 @@ public class ConcreteReader {
      */
     protected void addSentences(Communication comm, AnnoSentenceCollection aSents) {
         List<AnnoSentence> tmpSents = new ArrayList<>();
-        
+
         for (Section cSection : comm.getSectionList()) {
-            for (Sentence cSent : cSection.getSentenceList()) { 
+            for (Sentence cSent : cSection.getSentenceList()) {
                 Tokenization cToks = cSent.getTokenization();
                 tmpSents.add(getAnnoSentence(cToks));
             }
         }
 
         if (comm.getEntityMentionSetListSize() > 0) {
-            addNerMentionsFromEntityMentions(comm, tmpSents);
+            addNerMentionsFromEntityMentions(comm, tmpSents, prm.nerTool);
 
             if (comm.getSituationMentionSetListSize() > 0) {
-                addRelationsFromSituationMentions(comm, tmpSents);
+                // relations
+                addRelationsFromSituationMentions(comm, tmpSents, prm.relationTool);
+                // srl
+                addSrlFromSituationMentions(comm, tmpSents, prm.srlTool);
+/*
+                if (prm.missingSrlTool != null) {
+                    addMissingSrlPairs(comm, tmpSents, prm.missingSrlTool);
+                }
+                */
+                // sprl
+                addSprlFromSituationMentions(comm, tmpSents, prm.sprlTool);
             }
         }
-        
+
         aSents.addAll(tmpSents);
         // Update source sentences.
         if (aSents.getSourceSents() == null) {
@@ -207,23 +238,45 @@ public class ConcreteReader {
         ((ArrayList<Communication>)aSents.getSourceSents()).add(comm);
     }
 
-    private void addNerMentionsFromEntityMentions(Communication comm, List<AnnoSentence> tmpSents) {
-        EntityMentionSet cEms = ConcreteUtils.getFirstEntityMentionSetWithName(comm, prm.nerTool );
-        if (cEms == null) {
-            return;
-        }
-        
-        List<List<NerMention>> mentions = new ArrayList<>();
+    private void addNerMentionsFromEntityMentions(Communication comm, List<AnnoSentence> tmpSents, String nerTool) {
+        List<List<NerMention>> allMentions = getNerMentionsFromEntityMentions(comm, nerTool);
+
         for (int i=0; i<tmpSents.size(); i++) {
-            mentions.add(new ArrayList<NerMention>());
+            AnnoSentence aSent = tmpSents.get(i);
+            List<NerMention> mentions = allMentions.get(i);
+            NerMentions ner = new NerMentions(aSent.size(), mentions);
+            numEntityMentions += mentions.size();
+            numOverlapingMentions += ner.getNumOverlapping();
+            aSent.setNamedEntities(ner);
         }
-        
+
+    }
+
+    public static List<List<NerMention>> getNerMentionsFromEntityMentions(Communication comm, String tool) {
+        EntityMentionSet cEms = ConcreteUtils.getFirstEntityMentionSetWithName(comm, tool);
+        List<Integer> sentenceLengths = getSentenceLengthsFromCommunication(comm);
+        List<List<NerMention>> mentions = new ArrayList<>(sentenceLengths.size());
+        for (int i = 0; i < sentenceLengths.size(); i++) {
+            mentions.add(new ArrayList<>());
+        }
+
+        if (cEms == null) {
+            return mentions;
+        }
+
         Map<String, Integer> toksUuid2SentIdx = generateTokUuid2SentIdxMap(comm);
-        
         for (EntityMention cEm : cEms.getMentionList()) {
             TokenRefSequence cEmToks = cEm.getTokens();
-            Span span = getSpan(cEmToks);
-            
+
+            //TODO: Matt's orinal here just did span = getSpan(cEmToks)
+            Span span = null;
+            if (cEmToks.getTokenIndexList().size() == 0) {
+                log.warn("entity with no tokens: " + cEm);
+                span = new Span(-1, -1);
+            } else {
+                span = getSpan(cEmToks);
+            }
+
             int sentIdx = toksUuid2SentIdx.get(cEmToks.getTokenizationId().getUuidString());
             String entityType = cEm.getEntityType();
             String entitySubtype = null;
@@ -241,7 +294,7 @@ public class ConcreteReader {
                 entitySubtype = splits[1];
             }
             NerMention aEm = new NerMention(
-                    span, 
+                    span,
                     entityType,
                     entitySubtype,
                     cEm.getPhraseType(),
@@ -249,27 +302,158 @@ public class ConcreteReader {
                     cEm.getUuid().getUuidString());
             mentions.get(sentIdx).add(aEm);
         }
-        
-        for (int i=0; i<tmpSents.size(); i++) {
-            AnnoSentence aSent = tmpSents.get(i);
-            NerMentions ner = new NerMentions(aSent.size(), mentions.get(i));
-            numOverlapingMentions += ner.getNumOverlapping();
-            aSent.setNamedEntities(ner);
-        }
-        
-        numEntityMentions += cEms.getMentionList().size();
+        return mentions;
     }
 
-    private void addRelationsFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents) {
-        SituationMentionSet cSms = ConcreteUtils.getFirstSituationMentionSetWithName(comm, prm.relationTool);
+
+    private void addSprlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
+        int i = 0;
+        for (SprlProperties sprl : getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get2()) {
+            AnnoSentence sent = tmpSents.get(i);
+            sent.setSprl(sprl);
+            sent.setKnownSprlPreds(new IntHashSet(sprl.getPreds()));
+            sent.setKnownSprlPairs(new HashSet<>(sprl.getPairs()));
+            i++;
+        }
+    }
+
+    /*
+    private void addMissingSrlPairs(Communication comm, List<AnnoSentence> tmpSents, String tool) {
+        int totalSkipped = 0;
+        for (Indexed<SrlGraph> g : enumerate(getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get1())) {
+            AnnoSentence sent = tmpSents.get(g.index());
+            HashSet<Pair<Integer, Integer>> missingLabels = new HashSet<>();
+            for (SrlEdge e : g.get().getEdges()) {
+                if (e.getLabel().startsWith("*") && e.getLabel().endsWith("*")) {
+                    missingLabels.add(new Pair<>(e.getPred().getPosition(), e.getArg().getPosition()));
+                }
+            }
+            sent.setPairsToSkip(missingLabels);
+            totalSkipped += missingLabels.size();
+        }
+        if (totalSkipped > 0) {
+            log.info(String.format("added %d pairs to skip corresponding to missing SRL labels", totalSkipped));
+        }
+    }
+    */
+    
+    private void addSrlFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
+        int i = 0;
+        for (SrlGraph g : getSrlFromSituationMentions(comm, tool, prm.sprlConverter).get1()) {
+            AnnoSentence sent = tmpSents.get(i);
+            sent.setSrlGraph(g.toDepGraph());
+            sent.setKnownPredsFromSrlGraph();
+            numSrlPredicates += g.getNumPreds();
+            sent.setKnownPairsFromSrlGraph();
+            i++;
+        }
+    }
+
+
+    /**
+     * Extracts a list of SrlGraphs corresponding to the sentences in the communication comm and annotations of the given tool
+     */
+    public static Pair<List<SrlGraph>, List<SprlProperties>>  getSrlFromSituationMentions(Communication comm, String tool, SprlLabelConverter sprlConverter) {
+        SituationMentionSet cSms = ConcreteUtils.getFirstSituationMentionSetWithName(comm, tool);
+        List<Integer> sentenceLengths = getSentenceLengthsFromCommunication(comm);
+        List<SrlGraph> srlGraphs = new ArrayList<>(sentenceLengths.size());
+        List<SprlProperties> allSprl = new ArrayList<>(sentenceLengths.size());
+        for (int i = 0; i < sentenceLengths.size(); i++) {
+            srlGraphs.add(new SrlGraph(sentenceLengths.get(i))); 
+            allSprl.add(new SprlProperties(sprlConverter));
+        }
+
+        if (cSms != null) {
+
+            Map<String, NerMention> emId2em = getUuid2ArgsMap(comm, tool);
+            Map<String, Integer> emId2SentIdx = getUuid2SentIdxMap(comm, tool);
+
+            for (SituationMention cSm : cSms.getMentionList()) {
+                List<MentionArgument> args = cSm.getArgumentList();
+                if (args.size() < 1) {
+                    log.warn("skipping predicate with no args: " + cSm);
+                    continue;
+                }
+
+                int sentIdx = emId2SentIdx.get(args.get(0).getEntityMentionId().getUuidString());
+                SrlGraph srlGraph = srlGraphs.get(sentIdx);
+                SprlProperties sprl = allSprl.get(sentIdx);
+                // add predicate
+                int predLoc = Collections.min(cSm.getTokens().getTokenIndexList());
+                SrlPred srlPred = null;
+                srlPred = srlGraph.getPredAt(predLoc);
+                if (srlPred == null) {
+                    srlPred = new SrlPred(predLoc, cSm.getSituationKind());
+                    srlGraph.addPred(srlPred);
+                }
+
+                for (MentionArgument cArg : args) {
+                    String role = cArg.getRole();
+                    String cEmId = cArg.getEntityMentionId().getUuidString();
+                    if (sentIdx != emId2SentIdx.get(cEmId)) {
+                        throw new IllegalStateException("pred with args in difference sentences. Orig sent: " + sentIdx + ", cArg: " + cArg.toString());
+                    }
+
+                    // add argument
+                    int argLoc = emId2em.get(cEmId).getHead();
+                    if (argLoc < 0) {
+                        // TODO: consider handling this differently
+                        // the layout of args into an array indexed by position below, doesn't lend itself to empty arguments
+                        log.warn("skipping invisible argument. cArg: " + cArg);
+                        continue;
+                    }
+                    SrlArg srlArg = srlGraph.getArgAt(argLoc);
+                    if (srlArg == null) {
+                        srlArg = new SrlArg(argLoc);
+                        srlGraph.addArg(srlArg);
+                    }
+                    srlGraph.addEdge(new SrlEdge(srlPred, srlArg, role));
+
+                    // add properties
+                    List<Property> propertyList = cArg.getPropertyList();
+                    if (propertyList != null && propertyList.size() > 0) {
+                        int ntriplesBefore = sprl.getLabeledProperties().size();
+                        for (Property prop : cArg.getPropertyList()) {
+                            sprl.set(predLoc, argLoc, prop.getValue(), sprlConverter.toLabel(Math.abs(prop.getPolarity()), Math.signum(prop.getPolarity())));
+                        }
+                        if (sprl.getLabeledProperties().size() == ntriplesBefore) {
+                            // this happens sometimes just because the same argument is used in multiple
+                            // copies of the predicate (for example, d runs from a to b to c; results in 2 predicates d runs from a to b and d runs from a to c  
+                            log.debug(String.format("Concrete Argument property list was already in sprl (sentId: %s): %s", sentIdx, cArg));
+                        }
+                    }
+                }
+            }
+        }
+        return new Pair<>(srlGraphs, allSprl);
+    }
+
+    /**
+     * Returns a list of sentence lengths corresponding to all of the sentences in the communication
+     * @param comm
+     * @return
+     */
+    public static List<Integer> getSentenceLengthsFromCommunication(Communication comm) {
+        List<Integer> sentenceLengths = new ArrayList<>();
+        for (Section cSection : comm.getSectionList()) {
+            for (Sentence cSent : cSection.getSentenceList()) {
+                sentenceLengths.add(cSent.getTokenization().getTokenList().getTokenListSize());
+            }
+        }
+        return sentenceLengths;
+
+    }
+
+    private void addRelationsFromSituationMentions(Communication comm, List<AnnoSentence> tmpSents, String tool) {
+        SituationMentionSet cSms = ConcreteUtils.getFirstSituationMentionSetWithName(comm, tool);
         if (cSms == null) {
             return;
         }
-        
+
         for (int i=0; i<tmpSents.size(); i++) {
             tmpSents.get(i).setRelations(new RelationMentions());
         }
-        
+
         Map<String, NerMention> emId2em = getUuid2ArgsMap(tmpSents);
         Map<String, Integer> emId2SentIdx = getUuid2SentIdxMap(tmpSents);
 
@@ -285,7 +469,7 @@ public class ConcreteReader {
                 type = splits[0];
                 subtype = splits[1];
             }
-            
+
             // Arguments and sentence index.
             List<Pair<String,NerMention>> aArgs = new ArrayList<>();
             int sentIdx = -1;
@@ -294,7 +478,7 @@ public class ConcreteReader {
                 UUID cEmId = cArg.getEntityMentionId();
                 NerMention aEm = emId2em.get(cEmId.getUuidString());
                 aArgs.add(new Pair<String,NerMention>(role, aEm));
-                
+
                 Integer idxI = emId2SentIdx.get(cEmId.getUuidString());
                 if (idxI == null) {
                     throw new IllegalStateException("Could not find entity in NerMentions with ID: " + cEmId.getUuidString());
@@ -305,21 +489,52 @@ public class ConcreteReader {
                 }
                 sentIdx = idx;
             }
-            
+
             // Situation's trigger extent.
             Span trigger = null;
             if (cSm.getTokens() != null) {
                 trigger = getSpan(cSm.getTokens());
             }
-            
+            if (sentIdx < 0) {
+                log.trace("situation mention with no args: " + cSm);
+            	continue;
+            }
             RelationMention aSm = new RelationMention(type, subtype, aArgs, trigger);
             AnnoSentence aSent = tmpSents.get(sentIdx);
             RelationMentions aRels = aSent.getRelations();
             aRels.add(aSm);
             aSent.setRelations(aRels);
-        }        
+        }
         numSituationMentions += cSms.getMentionList().size();
     }
+
+
+    /**
+     * returns a map from uuid to nerMention for the first given EntityMention tool in the given communication
+     */
+    public static Map<String, NerMention> getUuid2ArgsMap(Communication comm, String tool) {
+        Map<String, NerMention> emId2em = new HashMap<>();
+        for (List<NerMention> nerMentions : getNerMentionsFromEntityMentions(comm, tool)) {
+            for (NerMention aEm : nerMentions) {
+                emId2em.put(aEm.getId(), aEm);
+            }
+        }
+        return emId2em;
+    }
+
+    /** Gets a map from UUIDs to our sentence indices. */
+    public static Map<String, Integer> getUuid2SentIdxMap(Communication comm, String tool) {
+        Map<String, Integer> emId2SentIdx = new HashMap<>();
+        int i = 0;
+        for (List<NerMention> nerMentions : getNerMentionsFromEntityMentions(comm, tool)) {
+            for (NerMention aEm : nerMentions) {
+                emId2SentIdx.put(aEm.getId(), i);
+            }
+            i += 1;
+        }
+        return emId2SentIdx;
+    }
+
 
     /** Get a map from UUIDs to our entity mentions. */
     private Map<String, NerMention> getUuid2ArgsMap(List<AnnoSentence> tmpSents) {
@@ -343,7 +558,7 @@ public class ConcreteReader {
         return emId2SentIdx;
     }
 
-    private Map<String, Integer> generateTokUuid2SentIdxMap(Communication comm) {
+    public static Map<String, Integer> generateTokUuid2SentIdxMap(Communication comm) {
         Map<String,Integer> toksUuid2SentIdx = new HashMap<>();
         int i=0;
         for (Section cSection : comm.getSectionList()) {
@@ -373,12 +588,14 @@ public class ConcreteReader {
 
         // POS tags, Lemmas, and Chunks.
         TokenTagging posTags = ConcreteUtils.getFirstXTagsWithName(tokenization, TagTypes.POS.name(), prm.posTool);
+        TokenTagging cposTags = ConcreteUtils.getFirstXTagsWithName(tokenization, TagTypes.POS.name(), prm.cposTool);
         TokenTagging lemmas = ConcreteUtils.getFirstXTagsWithName(tokenization, TagTypes.LEMMA.name(), prm.lemmaTool);
         TokenTagging chunks = ConcreteUtils.getFirstXTagsWithName(tokenization, "CHUNK", prm.chunkTool);
         as.setPosTags(getTagging(posTags));
+        as.setCposTags(getTagging(cposTags));
         as.setLemmas(getTagging(lemmas));
         as.setChunks(getTagging(chunks));
-        
+
         // Dependency Parse
         if (tokenization.isSetDependencyParseList()) {
             int numWords = words.size();
@@ -390,21 +607,20 @@ public class ConcreteReader {
                 as.setDeprels(pair.get2());
             }
         }
-        
+
         // Constituency Parse
         if (tokenization.isSetParseList()) {
             NaryTree tree = getParse(ConcreteUtils.getFirstParseWithName(tokenization, prm.parseTool ));
             as.setNaryTree(tree);
         }
-        
-        // TODO: Semantic Role Labeling Graph
-        
+
         return as;
     }
 
+
     private static NaryTree getParse(Parse parse) {
         IntIntHashMap id2idx = new IntIntHashMap();
-        
+
         List<Constituent> cs = parse.getConstituentList();
         // Create the node for each constituent.
         NaryTree[] trees = new NaryTree[cs.size()];
@@ -418,7 +634,7 @@ public class ConcreteReader {
             boolean isLexical = (c.getChildList().size() == 0);
             trees[i] = new NaryTree(c.getTag(), span.start(), span.end(), new ArrayList<NaryTree>(), isLexical);
         }
-        
+
         // Add the children for each node.
         for (int i=0; i<cs.size(); i++) {
             Constituent c = cs.get(i);
@@ -427,13 +643,13 @@ public class ConcreteReader {
                 trees[i].addChild(trees[j]);
             }
         }
-        
+
         // Find the root.
         NaryTree root = trees[0];
         while (root.getParent() != null) {
             root = root.getParent();
         }
-        
+
         final MutableInt numNodes = new MutableInt(0);
         root.preOrderTraversal(new FnO1ToVoid<NaryTree>() {
             @Override
@@ -441,11 +657,11 @@ public class ConcreteReader {
                 numNodes.v++;
             }
         });
-        
+
         if (numNodes.v != cs.size()) {
             log.warn(String.format("Not all constituents were included in the tree: expected=%d actual=%d", cs.size(), numNodes.v));
         }
-        
+
         return root;
     }
 
@@ -501,7 +717,7 @@ public class ConcreteReader {
         Span span = new Span(start, end);
         return span;
     }
-    
+
     /**
      * Reads a file containing a single Commmunication concrete object as bytes,
      * converts it to a AnnoSentence and prints it out in human readable
@@ -522,7 +738,7 @@ public class ConcreteReader {
         ConcreteReader reader = new ConcreteReader(new ConcreteReaderPrm());
         for (AnnoSentence sent : reader.sentsFromPath(inputFile)) {
             System.out.println(sent);
-        }        
+        }
     }
 
 }

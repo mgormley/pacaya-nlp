@@ -1,8 +1,6 @@
 package edu.jhu.nlp.features;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -26,12 +24,6 @@ public class SignatureBuilder implements Serializable {
         this.lexAlphabet = new IntObjectBimap<String>(lexAlphabet);
         this.lexAlphabet.stopGrowth();
     }
-
-    public Set<String> getSimpleUnkFeatures(String word, int loc, String language) {        
-        Set<String> simpleUnkFeatures = new HashSet<String>();
-        simpleUnkFeatures.add(word);
-        return simpleUnkFeatures;
-    }
     
     //Overloaded version of below, to start adding "language" as an option.
     public String getSignature(String word, int loc, String language) {
@@ -39,7 +31,7 @@ public class SignatureBuilder implements Serializable {
     }
 
     public String getSignature(String word, int loc, int unknownLevel) {
-        return word;
+        throw new RuntimeException("SignatureBuilder.getSignature() is not implemented in the public version of this code.");
     }
     
 }

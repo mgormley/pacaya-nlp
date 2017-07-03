@@ -26,12 +26,12 @@ import edu.jhu.prim.tuple.Pair;
  */
 public class SrlWordFeatures implements WordFeatures {
 
-    public enum SrlWordFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, HEAD_TYPE_LOC_ST_LT, FULL }
+    public enum SrlWordFeatType { HEAD_ONLY, HEAD_TYPE, HEAD_TYPE_CONTEXT, HEAD_TYPE_LOC, HEAD_TYPE_LOC_ST, HEAD_TYPE_LOC_ST_LT, FULL }
 
     public static class SrlWordFeaturesPrm extends Prm {
         private static final long serialVersionUID = 1L;
         @Opt(hasArg=true, description="The feature set for embeddings.")
-        public SrlWordFeatType embFeatType = SrlWordFeatType.FULL;
+        public SrlWordFeatType srlEmbFeatType = SrlWordFeatType.HEAD_TYPE_LOC;
     }
     
     private static final Logger log = LoggerFactory.getLogger(SrlWordFeatures.class);
@@ -78,8 +78,6 @@ public class SrlWordFeatures implements WordFeatures {
         int right = Math.max(head, modifier);
         String hC = prefix(sent.getCluster(head), 4);
         String mC = prefix(sent.getCluster(modifier), 4);
-        String hD = prefix(sent.getCluster(head), 6);
-        String mD = prefix(sent.getCluster(modifier), 6);
         String hC_mC = hC + mC;
 
         // In the comments below, we use the following abbreviations.
@@ -90,7 +88,7 @@ public class SrlWordFeatures implements WordFeatures {
         //- hC : equals h.bc0
         //- hD : equals h.bc1
         
-        switch (prm.embFeatType) {
+        switch (prm.srlEmbFeatType) {
         case FULL:
         case HEAD_TYPE_LOC_ST_LT:
             //- {l} \cross {hC, mC, hC_mC}
@@ -105,6 +103,8 @@ public class SrlWordFeatures implements WordFeatures {
         case HEAD_TYPE_LOC_ST:
             //- {h} \cross {hD, mD}
             //- {m} \cross {hD, mD}
+            String hD = prefix(sent.getCluster(head), 6);
+            String mD = prefix(sent.getCluster(modifier), 6);
             addEmbFeat("h-hD:"+hD,    head, fvs);
             addEmbFeat("h-mD:"+mD,    head, fvs);
             addEmbFeat("m-hD:"+hD,    modifier, fvs);
@@ -141,7 +141,8 @@ public class SrlWordFeatures implements WordFeatures {
             } else {
                 log.trace("No dependency tree for sentence");
             }
-            
+        case HEAD_TYPE_CONTEXT:
+
             //     - -1_h: immediately to the left of the head
             //     - +1_h: immediately to the right of the head
             //     - -2_h: two to the left of the head
