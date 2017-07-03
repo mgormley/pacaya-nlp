@@ -301,11 +301,23 @@
       <groupId>edu.jhu.hlt</groupId>
       <artifactId>concrete-util</artifactId>
       <version>${concrete.java.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-slf4j-impl</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     <dependency>
       <groupId>edu.jhu.hlt</groupId>
       <artifactId>miscommunication</artifactId>
       <version>${concrete.java.version}</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-slf4j-impl</artifactId>
+        </exclusion>
+      </exclusions> 
     </dependency>
     <dependency>
       <groupId>org.glassfish</groupId>
