@@ -210,7 +210,7 @@ public class BitshiftTokenFeatures {
     
 
     /**
-     * Token features.
+     * Token features based on word, lemma, POS tag, coarse POS tag.
      */
     public static void addRichTokenFeatures(final IntAnnoSentence sent, final int head, 
             final FeatureVector feats, final int mod,
