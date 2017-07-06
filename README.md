@@ -6,13 +6,14 @@ Pacaya NLP is a suite of Natural Language Processing (NLP) tools built using [Pa
 
 ## Using the Library
 
-The latest version is deployed on Maven Central:
+The latest version is deployed on 
+[Maven Central](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22edu.jhu.pacaya-nlp%22%20AND%20a%3A%22pacaya-nlp%22):
 
 ```xml
 <dependency>
     <groupId>edu.jhu.pacaya-nlp</groupId>
     <artifactId>pacaya-nlp</artifactId>
-    <version>3.1.3</version>
+    <version>3.1.5</version>
 </dependency>
 ```
 
@@ -24,7 +25,7 @@ This project has several dependencies all of which are available on Maven Centra
 Among others we make extensive use:
 
 * [Prim](https://github.com/mgormley/prim): a Java primitives library
-* [Optimize](https://github.com/minyans/optimize): a numerical optimization library
+* [Optimize](https://github.com/mgormley/optimize): a numerical optimization library
 * [Pacaya](https://github.com/mgormley/pacaya): modeling library for hybrids of graphical models and neural networks
 
 #### Installing dependencies locally
@@ -85,6 +86,16 @@ Among others we make extensive use:
 ## Citations
 
 This library includes code for the papers below. Please cite as appropriate.
+
+```bibtex
+@inproceedings{yu_embedding_2016,
+    author = {Adam Teichert and Adam Poliak and Benjamin Van Durme and Matthew R. Gormley},
+    title = {Semantic Proto-Role Labeling},
+    booktitle = {Proceedings of {AAAI} Conference on Artificial Intelligence},
+    year = {2017},
+    url = {http://aaai.org/ocs/index.php/AAAI/AAAI17/paper/view/14997}
+}
+```
 
 ```bibtex
 @article{gormley_approximation-aware_2015,
