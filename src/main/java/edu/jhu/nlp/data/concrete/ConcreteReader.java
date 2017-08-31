@@ -479,15 +479,16 @@ public class ConcreteReader {
                 throw new IllegalStateException(String.format("Invalid dep value %d for dependendency tree %s", arc.getDep(), dependencyParse.getUuid()));
             }
             if (parents[c] != -2) {
-                throw new IllegalStateException("Multiple parents for token: " + dependencyParse);
+                log.warn("Multiple parents for token: " + dependencyParse + ". Using only the first.");
+                continue;
             }
             if (!arc.isSetGov()) {
-                parents[c] = -1;
-            } else {
-                parents[c] = arc.getGov();
-            }
-            // Label.
-            deprels.set(c, arc.getEdgeType());
+		parents[c] = -1;
+	    } else {
+		parents[c] = arc.getGov();
+	    }
+	    // Label.
+	    deprels.set(c, arc.getEdgeType());
         }
         if (IntArrays.contains(parents, -2)) {
             log.trace("Dependency tree contains token(s) with no head: " + dependencyParse.getUuid());
